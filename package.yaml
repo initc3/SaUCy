@@ -1,0 +1,63 @@
+name:                saucy
+version:             0.1.0.0
+github:              "kev-liao/saucy"
+license:             BSD3
+author:              "Kevin Liao"
+maintainer:          "kliao6@illinois.edu"
+copyright:           "Copyright (c) 2018 Kevin Liao"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/kev-liao/saucy#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- containers
+- text
+- parsec
+- pretty
+- transformers
+- haskeline
+- mtl
+- optparse-applicative
+- repline
+- silently
+- tasty
+- tasty-hunit
+- tasty-hspec
+- tasty-quickcheck
+- tasty-smallcheck
+
+library:
+  source-dirs: src
+
+executables:
+  saucy:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - saucy
+
+tests:
+  saucy-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - saucy
