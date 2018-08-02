@@ -1,0 +1,43 @@
+let map f lst = match lst with | [] => [] | x:xs => x::xs
+let map f lst = match lst with | [] => [] | x:xs => x:xs
+:t map 
+let map f lst = match lst with | [] => [] | x:xs => xs
+let map f lst = match lst with | [] => [] | x:xs => (f x):(map f xs)
+let map f lst = match lst with | [] => [] | x:xs => (f x) : (map f xs)
+:type compose
+let compose f g = lam x . f (g x)
+let compose f g = lam x . f g x
+match 3 with | n when false => 1 | n when n == 3 => 3
+match 3 with | 1 => 1 | n when n == 3 => 3
+match 3 with | 1 => 1 | 2 => 2 | n when n == 3 => 3
+match 3 with | 1 => 1 | 2 => 2 | n => 3
+match 3 with | 1 => 1 | 2 => 2 | 3 => 3
+match 3 with | n when false => true | n when n == 3 => false
+match 3 with | n when false => true | n when n == 3=> false
+match 3 with | n when false => true | n => false
+match 3 with | n when n == 2 => true | n => false
+match 3 with | n when n == 3 => true | n => false
+match 3 with | n when 1 == 2 => true | n => false
+match 3 with | n => true | n => false
+match 3 with | 2 => true | 3 => false
+match 3 with | n when n==2 => true | n when n==3 => false
+match 3 with | n when n == 2 => true | n when n == 3 => false
+match 3 with | n when n == 2 => true | n when n == 3 => false
+match 3 with | n when n == 2 => true | n when n == 3 => false
+match 3 with | n when n < 2 => true | n when n < 10 => false
+match 3 with | n when n < 2 => true | n when m < 10 => false
+2 < 3
+1 < 2
+let f n = if n == 0 then 1 else n * f (n - 1) in f 6
+let f n = if n == 0 then 1 else n * f (n - 1)
+let f n = if n == 0 then n * f (n - 1)
+let f n = if n == 0 then 1 else n * f (n - 1) in f 6
+let f n = if n == 0 then 1 else n * f (n - 1)
+let f n = f f n
+let f n = if n == 10 then n else 1 + f (n + 1)
+let x:xs = true in x
+let x:xs = true
+let (x, y, z) = (0, 1, true) in if y then x else y
+let x:xs = [1] in x
+let x:xs = [1] in xs
+let (x, y, z) = (0, 1, true) in if z then x else y
