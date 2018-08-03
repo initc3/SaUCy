@@ -1,6 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module Infer where
 
@@ -60,6 +59,7 @@ instance Substitutable Type where
     apply s (TSet t) = TSet (apply s t)
     apply s (TRef t) = TRef (apply s t)
     apply s (TThunk t) = TThunk (apply s t)
+    apply s (TChan t) = TChan (apply s t)
 
     ftv (TVar a) = Set.singleton a
     ftv TCon{} = Set.empty
@@ -69,6 +69,7 @@ instance Substitutable Type where
     ftv (TSet t) = ftv t
     ftv (TRef t) = ftv t
     ftv (TThunk t) = ftv t
+    ftv (TChan t) = ftv t
 
 instance Substitutable Scheme where
     apply (Subst s) (Forall as t) = Forall as $ apply s' t
@@ -224,9 +225,8 @@ inferPatList pats exprs = do
 
 listConstraints ts cs = do
     thd <- fresh
-    return (case null ts of
-        True  -> (thd, cs)
-        False -> (head ts, cs ++ map (\x -> (thd, x)) ts))
+    return $ if null ts then (thd, cs) else
+                 (head ts, cs ++ map (\x -> (thd, x)) ts)
         
 inferPat :: Pattern -> Maybe Expr -> Infer (Type, [Constraint], [(Name, Type)])
 inferPat pat expr = case (pat, expr) of
@@ -239,23 +239,23 @@ inferPat pat expr = case (pat, expr) of
         return (tv, [], [(x, tv)])
         
     (PInt _, Just e) -> do
-      (te, ce) <- infer e
-      return (tyInt, (te, tyInt) : ce, [])
+        (te, ce) <- infer e
+        return (tyInt, (te, tyInt) : ce, [])
     (PInt _, Nothing) -> return (tyInt, [], [])
       
     (PBool _, Just e) -> do
-      (te, ce) <- infer e
-      return (tyBool, (te, tyBool) : ce, [])
+        (te, ce) <- infer e
+        return (tyBool, (te, tyBool) : ce, [])
     (PBool _, Nothing) -> return (tyBool, [], [])
       
     (PString _, Just e) -> do
-      (te, ce) <- infer e
-      return (tyString, (te, tyString) : ce, [])
+        (te, ce) <- infer e
+        return (tyString, (te, tyString) : ce, [])
     (PString _, Nothing) -> return (tyString, [], [])
       
     (PTag _, Just e) -> do
-      (te, ce) <- infer e
-      return (tyTag, (te, tyTag) : ce, [])
+        (te, ce) <- infer e
+        return (tyTag, (te, tyTag) : ce, [])
     (PTag _, Nothing) -> return (tyTag, [], [])
 
     (PTuple ps, Just (ETuple es)) -> do
@@ -314,16 +314,16 @@ inferPat pat expr = case (pat, expr) of
         return (TList thd, cs, es)
     (PCons phd ptl, Just e) -> do
         (te, ce) <- infer e
-        (thd, chd, ehd) <- inferPat phd $ Nothing
-        (ttl, ctl, etl) <- inferPat ptl $ Nothing
+        (thd, chd, ehd) <- inferPat phd Nothing
+        (ttl, ctl, etl) <- inferPat ptl Nothing
         let cs = ce ++ chd ++ ctl ++ [ (te, TList thd)
                                      , (te, ttl)
                                      , (TList thd, ttl) ]
             es = ehd ++ etl
         return (TList thd, cs, es)
     (PCons phd ptl, Nothing) -> do
-        (thd, chd, ehd) <- inferPat phd $ Nothing
-        (ttl, ctl, etl) <- inferPat ptl $ Nothing
+        (thd, chd, ehd) <- inferPat phd Nothing
+        (ttl, ctl, etl) <- inferPat ptl Nothing
         let cs = chd ++ ctl ++ [(TList thd, ttl)]
             es = ehd ++ etl
         return (TList thd, cs, es)
@@ -370,16 +370,16 @@ infer expr = case expr of
     ELit (LTag _) -> return (tyTag, [])
     ELit LUnit -> return (tyUnit, [])
 
-    -- TODO: Refactor?
     ETuple es -> do
         tcs <- mapM infer es
         let (ts, cs) = concatTCs tcs
         return (TProd ts, cs)
         
     EList [] -> do
-        ty <- fresh
-        return (TList ty, [])
-        
+        tv <- fresh
+        return (TList tv, [])
+
+    -- Refactor
     EList es -> do
         tcs <- mapM infer es
         let tyFst = fst $ head tcs
@@ -398,14 +398,6 @@ infer expr = case expr of
             cs'   = map (\x -> (tyFst, fst x)) tcs
         return (TSet tyFst, cs ++ cs')
     
-    {-EBin op e1 e2 -> do
-        (t1, c1) <- infer e1
-        (t2, c2) <- infer e2
-        tv <- fresh
-        let u1 = t1 `TArr` (t2 `TArr` tv)
-        u2 <- binops op
-        return (tv, c1 ++ c2 ++ [(u1, u2)])-}
-
     EBinArith op e1 e2 -> do
         (t1, c1) <- infer e1
         (t2, c2) <- infer e2
@@ -492,18 +484,18 @@ infer expr = case expr of
     -- TODO: Cannot infer type of rd e, need annotations?
     ERd e -> do
         (t, c) <- infer e
-        ty <- fresh
-        return (ty, c ++ [(t, tyChan)])
+        tv <- fresh
+        return (tv, c ++ [(t, TChan tv)])
     
     EWr e1 e2 -> do
         (t1, c1) <- infer e1
         (t2, c2) <- infer e2
-        return (tyUnit, c1 ++ c2 ++ [(t2, tyChan)])
+        return (tyUnit, c1 ++ c2 ++ [(t2, TChan t1)])
         
     ENu x e -> do
         env <- ask
-        let sc = generalize env tyChan
-        (t, c) <- inEnv (x, sc) $ local (apply emptySubst) (infer e)
+        tv <- fresh
+        (t, c) <- inEnv (x, Forall [] tv) (infer e)  -- Is this correct?
         return (t, c)
 
     ERepl e -> do
@@ -514,7 +506,6 @@ infer expr = case expr of
         (t, c) <- infer e
         return (tyUnit, c)
 
-    -- TODO: Warning if t1 is not of type tyUnit
     ESeq e1 e2 -> do
         (t1, c1) <- infer e1
         (t2, c2) <- infer e2
@@ -585,6 +576,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fv (TSet a) = fv a
     fv (TRef a) = fv a
     fv (TThunk a) = fv a
+    fv (TChan a) = fv a
     
     normtype (TVar a)   =
         case Prelude.lookup a ord of
@@ -597,6 +589,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     normtype (TSet a)   = TSet (normtype a)
     normtype (TRef a)   = TRef (normtype a)
     normtype (TThunk a)   = TThunk (normtype a)
+    normtype (TChan a)   = TChan (normtype a)
     
 -------------------------------------------------------------------------------
 -- Constraint Solver
@@ -630,6 +623,7 @@ unifies (TProd ts1) (TProd ts2) = unifyMany ts1 ts2
 unifies (TSet t1) (TSet t2) = unifies t1 t2
 unifies (TRef t1) (TRef t2) = unifies t1 t2
 unifies (TThunk t1) (TThunk t2) = unifies t1 t2
+unifies (TChan t1) (TChan t2) = unifies t1 t2
 unifies t1 t2 = throwError $ UnificationFail t1 t2
 
 solver :: Unifier -> Solve Subst

@@ -1,3 +1,32 @@
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+GetBit 1
+:browse
+:load bitflip.ilc
 let map f lst = match lst with | [] => [] | x:xs => x::xs
 let map f lst = match lst with | [] => [] | x:xs => x:xs
 :t map 

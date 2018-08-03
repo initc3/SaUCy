@@ -136,13 +136,13 @@ eNu = do
     reserved "."
     ENu c <$> expr
 
-eRd = mklexer ERd $ reserved "rd" >> expr
+eRd = mklexer ERd $ reserved "rd" >> atomExpr
 
 eWr = do
     reserved "wr"
     e <- expr
     reserved "->"
-    EWr e <$> expr
+    EWr e <$> atomExpr
 
 eFork = mklexer EFork $ reservedOp "|>" >> atomExpr
 

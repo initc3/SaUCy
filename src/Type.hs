@@ -17,6 +17,7 @@ data Type
     | TSet Type
     | TRef Type
     | TThunk Type
+    | TChan Type
     deriving (Show, Eq, Ord)
 
 infixr `TArr`
@@ -24,13 +25,12 @@ infixr `TArr`
 data Scheme = Forall [TVar] Type
     deriving (Show, Eq, Ord)
 
-tyInt, tyBool, tyString, tyTag, tyUnit, tyChan :: Type
+tyInt, tyBool, tyString, tyTag, tyUnit :: Type
 tyInt  = TCon "Int"
 tyBool = TCon "Bool"
 tyString = TCon "String"
 tyTag = TCon "Tag"
 tyUnit = TCon "Unit"
-tyChan = TCon "Chan" -- TODO: Typed channels
 
 newtype TypeEnv = TypeEnv { types :: Map.Map Name Scheme }
     deriving (Eq, Show)

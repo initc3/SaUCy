@@ -86,6 +86,7 @@ instance Pretty Type where
   ppr p (TSet a) = PP.braces $ ppr p a
   ppr p (TRef a) = PP.text "Ref" <+> ppr p a
   ppr p (TThunk a) = PP.text "Thunk" <+> ppr p a
+  ppr p (TChan a) = PP.text "Chan" <+> ppr p a
 
 instance Pretty Scheme where
   ppr p (Forall [] t) = ppr p t
