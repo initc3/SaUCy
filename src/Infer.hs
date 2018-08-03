@@ -217,121 +217,150 @@ concatTCEs = foldr f ([], [], [])
 concatTCs = foldr f ([], [])
   where
     f (t, c) (t', c') = (t : t', c ++ c')
-
-inferPat :: Pattern -> Expr -> Infer (Type, [Constraint], [(Name, Type)])
+    
+inferPat :: Pattern -> Maybe Expr -> Infer (Type, [Constraint], [(Name, Type)])
 inferPat p e = case (p, e) of
-    (PVar x, e) -> do
+    (PVar x, Just e) -> do
         ty <- fresh
-        (t, c) <- infer e
-        return (t, (t, ty) : c, [(x, ty)])
-
-    (PInt _, e) -> do
-      (t, c) <- infer e
-      return (t, (t, tyInt) : c, [])
-
-    (PBool _, e) -> do
-      (t, c) <- infer e
-      return (t, (t, tyBool) : c, [])
-
-    (PString _, e) -> do
-      (t, c) <- infer e
-      return (t, (t, tyString) : c, [])
-      
-    (PTag _, e) -> do
-      (t, c) <- infer e
-      return (t, (t, tyTag) : c, [])
-
-    (PTuple ps, ETuple es) -> do
-        when (length ps /= length es) (error "pattern match failed")
-        (t, c) <- infer $ ETuple es
-        tces <- zipWithM inferPat ps es
-        let (ts, cs, es) = concatTCEs tces
-        return (t, c ++ cs ++ [(TProd ts, t)], es)
-
-    -- TODO: combine with PList
-    (PTuple ps, e) -> do
-        tys <- mapM (const fresh) ps
-        let env = concatMap (\(p, t) -> case p of
-                      PVar x' -> [(x', t)]
-                      _       -> []       ) $ zip ps tys
-        (t, c) <- infer e
-        return (t, (TProd tys, t) : c, env)
+        (tye, ce) <- infer e
+        return (ty, (ty, tye) : ce, [(x, ty)])
+    (PVar x, Nothing) -> do
+        ty <- fresh
+        return (ty, [], [(x, ty)])
         
-    (PList ps, EList es) -> do
-        (t, c) <- infer $ EList es
-        tces <- zipWithM inferPat ps es
+    (PInt _, Just e) -> do
+      (tye, ce) <- infer e
+      return (tyInt, (tye, tyInt) : ce, [])
+    (PInt _, Nothing) -> do
+      return (tyInt, [], [])
+      
+    (PBool _, Just e) -> do
+      (tye, ce) <- infer e
+      return (tyBool, (tye, tyBool) : ce, [])
+    (PBool _, Nothing) -> do
+      return (tyBool, [], [])
+      
+    (PString _, Just e) -> do
+      (tye, ce) <- infer e
+      return (tyString, (tye, tyString) : ce, [])
+    (PString _, Nothing) -> do
+      return (tyString, [], [])
+      
+    (PTag _, Just e) -> do
+      (tye, ce) <- infer e
+      return (tyTag, (tye, tyTag) : ce, [])
+    (PTag _, Nothing) -> do
+      return (tyTag, [], [])
+
+    (PTuple ps, Just (ETuple es)) -> do
+        when (length ps /= length es) (error "pattern match failed") -- TODO:
+                -- Custom error
+        (tyes, ces) <- infer $ ETuple es  -- TODO: Refactor
+        tces <- zipWithM inferPat ps $ map Just es
+        let (ts, cs, es) = concatTCEs tces
+        return (TProd ts, ces ++ cs ++ [(TProd ts, tyes)], es)
+    (PTuple ps, Just e) -> do
+        tces <- zipWithM inferPat ps $ repeat Nothing
+        let (ts, cs, es) = concatTCEs tces
+        (tye, ce) <- infer e
+        return (TProd ts, (TProd ts, tye) : ce, es)
+    (PTuple ps, Nothing) -> do
+        tces <- zipWithM inferPat ps $ repeat Nothing
+        let (ts, cs, es) = concatTCEs tces
+        return (TProd ts, cs, es)
+
+    (PList ps, Just (EList es)) -> do
+        when (length ps /= length es) (error "pattern match failed") -- TODO:
+                -- Custom error
+        (tyes, ces) <- infer $ EList es  -- TODO: Refactor
+        tces <- zipWithM inferPat ps $ map Just es
         let (ts, cs, es) = concatTCEs tces
         -- TODO: refactor
-        t' <- if null ts then fresh
-              else return $ head ts
+        tyhd <- if null ts then fresh
+                else return $ head ts
         cs' <- if null ts then return cs
-               else return $ cs ++ map (\x -> (head ts, x)) ts
-        return (t, c ++ cs ++ [(TList t', t)], es)
-
-    -- TODO
-    (PList ps, e) -> do
-        tys <- mapM (const fresh) ps
-        let env = concatMap (\(p, t) -> case p of
-                      PVar x' -> [(x', t)]
-                      _       -> []       ) $ zip ps tys
-        (t, c) <- infer e
-        t' <- if null tys then fresh
-                  else return $ head tys
-        return (t, (TList t', t) : c, env)
-
-    (PSet ps, ESet es) -> do
-        when (length ps /= length es) (error "pattern match failed")
-        (t, c) <- infer $ ESet es
-        tces <- zipWithM inferPat ps es
+               else return $ cs ++ map (\x -> (tyhd, x)) ts
+        return (TList tyhd, ces ++ cs' ++ [(TList tyhd, tyes)], es)
+    (PList ps, Just e) -> do
+        (tye, ce) <- infer e
+        tces <- zipWithM inferPat ps $ repeat Nothing
         let (ts, cs, es) = concatTCEs tces
-        t' <- if null ts then fresh
-                  else return $ head ts
-        return (t, c ++ cs ++ [(TSet t', t)], es)
-        
-    (PSet ps, e) -> do
-        tys <- mapM (const fresh) ps
-        let env = concatMap (\(p, t) -> case p of
-                      PVar x' -> [(x', t)]
-                      _       -> []       ) $ zip ps tys
-        (t, c) <- infer e
-        t' <- if null tys then fresh
-                  else return $ head tys
-        return (t, (TSet t', t) : c, env)
+        tyhd <- if null ts then fresh
+                else return $ head ts
+        cs' <- if null ts then return cs
+               else return $ cs ++ map (\x -> (tyhd, x)) ts
+        return (TList tyhd, ce ++ cs' ++ [(TList tyhd, tye)], es)
+    (PList ps, Nothing) -> do
+        tces <- zipWithM inferPat ps $ repeat Nothing
+        let (ts, cs, es) = concatTCEs tces
+        tyhd <- if null ts then fresh
+                else return $ head ts
+        cs' <- if null ts then return cs
+               else return $ cs ++ map (\x -> (tyhd, x)) ts
+        return (TList tyhd, cs', es)
 
-    (PCons p ps, e@(EList (hd:tl))) -> do
-        (t1, c1) <- infer e
-        (t2, c2, e2) <- inferPat p hd
-        (t3, c3, e3) <- inferPat ps $ EList tl
-        return (t1, c1 ++ c2 ++ c3 ++ [(t1, t3), (TList t2, t1)], e2 ++ e3)
+    (PSet ps, Just (ESet es)) -> do
+        when (length ps /= length es) (error "pattern match failed") -- TODO:
+                -- Custom error
+        (tyes, ces) <- infer $ ESet es  -- TODO: Refactor
+        tces <- zipWithM inferPat ps $ map Just es
+        let (ts, cs, es) = concatTCEs tces
+        -- TODO: refactor
+        tyhd <- if null ts then fresh
+                else return $ head ts
+        cs' <- if null ts then return cs
+               else return $ cs ++ map (\x -> (tyhd, x)) ts
+        return (TSet tyhd, ces ++ cs' ++ [(TSet tyhd, tyes)], es)
+    (PSet ps, Just e) -> do
+        (tye, ce) <- infer e
+        tces <- zipWithM inferPat ps $ repeat Nothing
+        let (ts, cs, es) = concatTCEs tces
+        tyhd <- if null ts then fresh
+                else return $ head ts
+        cs' <- if null ts then return cs
+               else return $ cs ++ map (\x -> (tyhd, x)) ts
+        return (TSet tyhd, ce ++ cs' ++ [(TSet tyhd, tye)], es)
+    (PSet ps, Nothing) -> do
+        tces <- zipWithM inferPat ps $ repeat Nothing
+        let (ts, cs, es) = concatTCEs tces
+        tyhd <- if null ts then fresh
+                else return $ head ts
+        cs' <- if null ts then return cs
+               else return $ cs ++ map (\x -> (tyhd, x)) ts
+        return (TSet tyhd, cs', es)
 
-    -- TODO: match (k, v):rest
-    (p@(PCons _ _), e) -> do
-        (tye, c) <- infer e
-        let ps = flatten [] p
-        let varinit = concatMap (\case
-                                    PVar x' -> [x']
-                                    _       -> []) (init ps)
-        tyinit <- mapM (const fresh) varinit
-        tylast <- fresh
-        let env          = zip varinit tyinit
-            cs           = concatMap (\x -> [(TList x, tye)]) tyinit
-            (cs', env')  = case last ps of
-                PVar x -> ((tylast, tye):cs, (x, tylast):env)
-                _      -> (cs, env)
-        return (tylast, c ++ cs', env')
+    (PCons phd ptl, Just e@(EList (hd:tl))) -> do
+        (tye, ce) <- infer e
+        (tyhd, chd, ehd) <- inferPat phd $ Just hd
+        (tytl, ctl, etl) <- inferPat ptl $ Just $ EList tl
+        return (TList tyhd, ce ++ chd ++ ctl ++ [(tye, TList tyhd), (tye, tytl)], ehd ++ etl)
+    (PCons phd ptl, Just e) -> do
+        (tye, ce) <- infer e
+        (tyhd, chd, ehd) <- inferPat phd $ Nothing
+        (tytl, ctl, etl) <- inferPat ptl $ Nothing
+        return (TList tyhd, ce ++ chd ++ ctl ++ [(tye, TList tyhd), (tye, tytl), (TList tyhd, tytl)], ehd ++ etl)
+    (PCons phd ptl, Nothing) -> do
+        (tyhd, chd, ehd) <- inferPat phd $ Nothing
+        (tytl, ctl, etl) <- inferPat ptl $ Nothing
+        return (TList tyhd, chd ++ ctl ++ [(TList tyhd, tytl)], ehd ++ etl)
 
-    (PUnit, e) -> do
-      (t, c) <- infer e
-      return (t, c ++ [(t, tyUnit)], [])
+    (PUnit, Just e) -> do
+      (tye, ce) <- infer e
+      return (tyUnit, ce ++ [(tye, tyUnit)], [])
+    (PUnit, Nothing) -> do
+      return (tyUnit, [], [])
 
-    (PWildcard, e) -> do
-      (t, c) <- infer e
-      return (t, c, [])
+    (PWildcard, Just _) -> do
+      ty <- fresh
+      return (ty, [], [])
+    (PWildcard, Nothing) -> do
+      ty <- fresh
+      return (ty, [], [])
 
 inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint])
 inferBranch expr (pat, guard, branch) = do
     env <- ask
-    (t1, c1, env') <- inferPat pat expr
+    (t1, c1, env') <- inferPat pat $ Just expr
     case runSolve c1 of
         Left err -> throwError err
         Right sub -> do
@@ -343,9 +372,6 @@ inferBranch expr (pat, guard, branch) = do
                               (local (apply sub) (infer branch))
                               env'
             return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)])
-
-flatten acc (PCons p1 p2@(PCons _ _)) = p1 : flatten [] p2
-flatten acc (PCons p1 p2) = p1 : p2 : acc
 
 infer :: Expr -> Infer (Type, [Constraint])
 infer expr = case expr of
@@ -403,7 +429,7 @@ infer expr = case expr of
         tv <- fresh
         let u1 = t1 `TArr` (t2 `TArr` tv)
         u2 <- abinops op
-        return (tv, c1 ++ c2 ++ [(u1, u2)])
+        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)])
 
     EBinBool op e1 e2 -> do
         (t1, c1) <- infer e1
@@ -411,7 +437,7 @@ infer expr = case expr of
         tv <- fresh
         let u1 = t1 `TArr` (t2 `TArr` tv)
         u2 <- bbinops op
-        return (tv, c1 ++ c2 ++ [(u1, u2)])
+        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)])
         
     EBinRel op e1 e2 -> do
         (t1, c1) <- infer e1
@@ -419,7 +445,7 @@ infer expr = case expr of
         tv <- fresh
         let u1 = t1 `TArr` (t2 `TArr` tv)
         u2 <- rbinops op
-        return (tv, c1 ++ c2 ++ [(u1, u2)])
+        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)])
 
     EUnBool op e -> do
         (t, c) <- infer e
@@ -436,7 +462,7 @@ infer expr = case expr of
 
     ELet p e1 e2 -> do
         env <- ask
-        (t1, c1, env') <- inferPat p e1
+        (t1, c1, env') <- inferPat p $ Just e1
         case runSolve c1 of
             Left err -> throwError err
             Right sub -> do

@@ -1,6 +1,6 @@
 {- ILC Standard Prelude -}
 
-let lookup x assoc =
+letrec lookup x assoc =
     match assoc with
     | []                      => error "lookup: not in list"
     | (k, v):rest when x == k => v
