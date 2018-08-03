@@ -170,7 +170,8 @@ table = [ [ binaryOp "*" (EBinArith Mul) Ex.AssocLeft
         , [ binaryOp "+" (EBinArith Add) Ex.AssocLeft
           , binaryOp "-" (EBinArith Sub) Ex.AssocLeft ]
         , [ prefixOp "not" (EUnBool Not) ]
-        , [ binaryOp ":" (EBin Cons) Ex.AssocRight ]
+        , [ binaryOp ":" (EBin Cons) Ex.AssocRight
+          , binaryOp "++" (EBin Concat) Ex.AssocLeft ]
         , [ binaryOp "<" (EBinRel Lt) Ex.AssocNone
           , binaryOp ">" (EBinRel Gt) Ex.AssocNone
           , binaryOp "<=" (EBinRel Leq) Ex.AssocNone

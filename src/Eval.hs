@@ -160,7 +160,7 @@ eval env e = newEmptyMVar >>= \v ->
 
 eval' :: TermEnv -> MVar Value -> Expr -> IO ()
 eval' env m expr = case expr of
-    EVar x -> putMVar m $ env Map.! x  -- TODO: Change to lookup
+    EVar x -> putMVar m $ env Map.! x
     -- EImpVar x ->
     ELit (LInt n) -> putMVar m $ VInt n
     ELit (LBool b) -> putMVar m $ VBool b
@@ -170,12 +170,10 @@ eval' env m expr = case expr of
     ETuple es -> evalList env m VTuple es
     EList es -> evalList env m VList es
     ESet es -> evalList env m VSet $ nub es  -- TODO: Use Set
-    -- TODO: Handle unit, wildcard arguments
     ELam p e -> putMVar m $ VClosure (f p) env e
       where
         f (PVar x) = Just x
         f _        = Nothing
-    -- TODO: Unit argument error
     EApp e1 e2 -> evalSub env e1 >>= \v1 ->
                   evalSub env e2 >>=
                   evalApp v1     >>= putMVar m
@@ -184,7 +182,7 @@ eval' env m expr = case expr of
             case x of
                 Just x' -> let env' = extendEnv env x' v
                            in evalSub env' e
-                Nothing -> error "" -- evalSub env e
+                Nothing -> evalSub env e
     EFix e -> evalSub env e' >>= putMVar m
       where
         e' = ELam (PVar "_x") (EApp (EApp e (EFix e)) (EVar "_x"))
@@ -239,11 +237,15 @@ eval' env m expr = case expr of
     EBinRel Geq e1 e2 -> evalRel (>=) env m e1 e2
     EBinRel Eql e1 e2 -> evalRelPoly (==) env m e1 e2
     EBinRel Neq e1 e2 -> evalRelPoly (/=) env m e1 e2
-    EBin Cons e1 e2 -> evalSub env e1 >>= \v1 ->
-                       evalSub env e2 >>= \v2 ->
-                       let lst = case (v1, v2) of
-                                     (x, VList xs) -> VList $ x:xs
-                       in putMVar m lst
+    EBin Cons e1 e2 -> evalSubs env e1 e2 >>=
+                       (\case (x, VList xs) -> return $ VList $ x:xs) >>=
+                       putMVar m
+    EBin Concat e1 e2 ->
+        evalSubs env e1 e2 >>=
+        (\case
+            (VList xs, VList ys)     -> return $ VList $ xs ++ ys
+            (VString xs, VString ys) -> return $ VString $ xs ++ ys) >>=
+        putMVar m
     EUnBool Not e -> evalSub env e >>= neg >>= putMVar m
       where
         neg (VBool b) = return $ VBool $ not b
@@ -259,7 +261,7 @@ eval' env m expr = case expr of
 exec :: [Decl] -> IO Value
 exec = go emptyTmEnv
   where
-    go env [(x, e)] = eval env e
+    go env [(_, e)] = eval env e
     go env ((x, e):rest) = eval env e >>= \v ->
                                let env' = extendEnv env x v
                                in go env' rest

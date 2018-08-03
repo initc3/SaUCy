@@ -4,7 +4,6 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 module Infer where
 
-
 import Control.Monad.Except
 import Control.Monad.Identity
 import Control.Monad.Reader
@@ -179,7 +178,6 @@ eqbinop = do
 bunops :: BUnop -> Type
 bunops Not = tyBool  `TArr` tyBool
 
--- TODO: Cannot infer type of xs in let x:xs = ...
 getBinds :: Pattern -> Expr -> [(Name, Expr)]
 getBinds = go []
   where
@@ -263,9 +261,11 @@ inferPat p e = case (p, e) of
         (t, c) <- infer $ EList es
         tces <- zipWithM inferPat ps es
         let (ts, cs, es) = concatTCEs tces
-        -- TODO: Check ts?
+        -- TODO: refactor
         t' <- if null ts then fresh
-                  else return $ head ts
+              else return $ head ts
+        cs' <- if null ts then return cs
+               else return $ cs ++ map (\x -> (head ts, x)) ts
         return (t, c ++ cs ++ [(TList t', t)], es)
 
     -- TODO
@@ -304,6 +304,7 @@ inferPat p e = case (p, e) of
         (t3, c3, e3) <- inferPat ps $ EList tl
         return (t1, c1 ++ c2 ++ c3 ++ [(t1, t3), (TList t2, t1)], e2 ++ e3)
 
+    -- TODO: match (k, v):rest
     (p@(PCons _ _), e) -> do
         (tye, c) <- infer e
         let ps = flatten [] p
@@ -363,8 +364,7 @@ infer expr = case expr of
     -- TODO: Refactor?
     ETuple es -> do
         tcs <- mapM infer es
-        let ts = foldr ((:) . fst) [] tcs
-            cs = concatMap snd tcs
+        let (ts, cs) = concatTCs tcs
         return (TProd ts, cs)
         
     EList [] -> do
@@ -531,6 +531,11 @@ infer expr = case expr of
        (t1, c1) <- infer e1
        (t2, c2) <- infer e2
        return (t2, c1 ++ c2 ++ [(TList t1, t2)])
+
+    EBin Concat e1 e2  -> do
+       (t1, c1) <- infer e1
+       (t2, c2) <- infer e2
+       return (t1, c1 ++ c2 ++ [(t1, t2)])
 
     EUn Thunk e -> do
         (t, c) <- infer e

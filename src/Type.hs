@@ -24,7 +24,7 @@ infixr `TArr`
 data Scheme = Forall [TVar] Type
     deriving (Show, Eq, Ord)
 
-tyInt, tyBool, tyString, tyTag, tyUnit :: Type
+tyInt, tyBool, tyString, tyTag, tyUnit, tyChan :: Type
 tyInt  = TCon "Int"
 tyBool = TCon "Bool"
 tyString = TCon "String"

@@ -1,5 +1,11 @@
 {- ILC Standard Prelude -}
 
+let lookup x assoc =
+    match assoc with
+    | []                      => error "lookup: not in list"
+    | (k, v):rest when x == k => v
+    | _:rest                  => lookup x rest
+
 let head lst =
     match lst with
     | [] => error "head: empty list"

@@ -45,8 +45,10 @@ data Lit
 -- | Binary operators
 data Binop
     = Cons
+    | Concat
     deriving (Eq, Show)
 
+-- | Arithmetic
 data ABinop
     = Add
     | Sub
@@ -55,11 +57,13 @@ data ABinop
     | Mod
     deriving (Eq, Show)
 
+-- | Booleans
 data BBinop
     = And
     | Or
     deriving (Eq, Show)
 
+-- | Relations
 data RBinop
     = Lt
     | Gt
@@ -77,6 +81,7 @@ data Unop
     | Error
     deriving (Eq, Show)
 
+-- | Booleans
 data BUnop
     = Not
     deriving (Eq, Show)
