@@ -34,7 +34,7 @@ newtype EvalError
     deriving (Typeable)
 
 instance Show EvalError where
-    show (EvalError s) = "Exception: " ++ s
+    show (EvalError s) = "Exceptions: " ++ s
     
 instance Exception EvalError
 

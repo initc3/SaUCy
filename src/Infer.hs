@@ -217,145 +217,128 @@ concatTCEs = foldr f ([], [], [])
 concatTCs = foldr f ([], [])
   where
     f (t, c) (t', c') = (t : t', c ++ c')
-    
+
+inferPatList pats exprs = do
+    tces <- zipWithM inferPat pats exprs
+    return $ concatTCEs tces
+
+listConstraints ts cs = do
+    thd <- fresh
+    return (case null ts of
+        True  -> (thd, cs)
+        False -> (head ts, cs ++ map (\x -> (thd, x)) ts))
+        
 inferPat :: Pattern -> Maybe Expr -> Infer (Type, [Constraint], [(Name, Type)])
-inferPat p e = case (p, e) of
+inferPat pat expr = case (pat, expr) of
     (PVar x, Just e) -> do
-        ty <- fresh
-        (tye, ce) <- infer e
-        return (ty, (ty, tye) : ce, [(x, ty)])
+        tv <- fresh
+        (te, ce) <- infer e
+        return (tv, (tv, te) : ce, [(x, tv)])
     (PVar x, Nothing) -> do
-        ty <- fresh
-        return (ty, [], [(x, ty)])
+        tv <- fresh
+        return (tv, [], [(x, tv)])
         
     (PInt _, Just e) -> do
-      (tye, ce) <- infer e
-      return (tyInt, (tye, tyInt) : ce, [])
-    (PInt _, Nothing) -> do
-      return (tyInt, [], [])
+      (te, ce) <- infer e
+      return (tyInt, (te, tyInt) : ce, [])
+    (PInt _, Nothing) -> return (tyInt, [], [])
       
     (PBool _, Just e) -> do
-      (tye, ce) <- infer e
-      return (tyBool, (tye, tyBool) : ce, [])
-    (PBool _, Nothing) -> do
-      return (tyBool, [], [])
+      (te, ce) <- infer e
+      return (tyBool, (te, tyBool) : ce, [])
+    (PBool _, Nothing) -> return (tyBool, [], [])
       
     (PString _, Just e) -> do
-      (tye, ce) <- infer e
-      return (tyString, (tye, tyString) : ce, [])
-    (PString _, Nothing) -> do
-      return (tyString, [], [])
+      (te, ce) <- infer e
+      return (tyString, (te, tyString) : ce, [])
+    (PString _, Nothing) -> return (tyString, [], [])
       
     (PTag _, Just e) -> do
-      (tye, ce) <- infer e
-      return (tyTag, (tye, tyTag) : ce, [])
-    (PTag _, Nothing) -> do
-      return (tyTag, [], [])
+      (te, ce) <- infer e
+      return (tyTag, (te, tyTag) : ce, [])
+    (PTag _, Nothing) -> return (tyTag, [], [])
 
     (PTuple ps, Just (ETuple es)) -> do
-        when (length ps /= length es) (error "pattern match failed") -- TODO:
-                -- Custom error
-        (tyes, ces) <- infer $ ETuple es  -- TODO: Refactor
-        tces <- zipWithM inferPat ps $ map Just es
-        let (ts, cs, es) = concatTCEs tces
-        return (TProd ts, ces ++ cs ++ [(TProd ts, tyes)], es)
+        when (length ps /= length es) (error "fail") -- TODO: -- Custom error
+        (tes, ces) <- infer $ ETuple es
+        (ts, cs, es) <- inferPatList ps $ map Just es
+        return (TProd ts, ces ++ cs ++ [(TProd ts, tes)], es)
     (PTuple ps, Just e) -> do
-        tces <- zipWithM inferPat ps $ repeat Nothing
-        let (ts, cs, es) = concatTCEs tces
-        (tye, ce) <- infer e
-        return (TProd ts, (TProd ts, tye) : ce, es)
+        (ts, cs, es) <- inferPatList ps $ repeat Nothing
+        (te, ce) <- infer e
+        return (TProd ts, (TProd ts, te) : ce, es)
     (PTuple ps, Nothing) -> do
-        tces <- zipWithM inferPat ps $ repeat Nothing
-        let (ts, cs, es) = concatTCEs tces
+        (ts, cs, es) <- inferPatList ps $ repeat Nothing
         return (TProd ts, cs, es)
 
     (PList ps, Just (EList es)) -> do
-        when (length ps /= length es) (error "pattern match failed") -- TODO:
-                -- Custom error
-        (tyes, ces) <- infer $ EList es  -- TODO: Refactor
-        tces <- zipWithM inferPat ps $ map Just es
-        let (ts, cs, es) = concatTCEs tces
-        -- TODO: refactor
-        tyhd <- if null ts then fresh
-                else return $ head ts
-        cs' <- if null ts then return cs
-               else return $ cs ++ map (\x -> (tyhd, x)) ts
-        return (TList tyhd, ces ++ cs' ++ [(TList tyhd, tyes)], es)
+        when (length ps /= length es) (error "fail") -- TODO
+        (tes, ces) <- infer $ EList es
+        (ts, cs, es) <- inferPatList ps $ map Just es
+        (thd, cs) <- listConstraints ts cs
+        return (TList thd, ces ++ cs ++ [(TList thd, tes)], es)
     (PList ps, Just e) -> do
-        (tye, ce) <- infer e
-        tces <- zipWithM inferPat ps $ repeat Nothing
-        let (ts, cs, es) = concatTCEs tces
-        tyhd <- if null ts then fresh
-                else return $ head ts
-        cs' <- if null ts then return cs
-               else return $ cs ++ map (\x -> (tyhd, x)) ts
-        return (TList tyhd, ce ++ cs' ++ [(TList tyhd, tye)], es)
+        (te, ce) <- infer e
+        (ts, cs, es) <- inferPatList ps $ repeat Nothing
+        (thd, cs) <- listConstraints ts cs
+        return (TList thd, ce ++ cs ++ [(TList thd, te)], es)
     (PList ps, Nothing) -> do
         tces <- zipWithM inferPat ps $ repeat Nothing
         let (ts, cs, es) = concatTCEs tces
-        tyhd <- if null ts then fresh
-                else return $ head ts
-        cs' <- if null ts then return cs
-               else return $ cs ++ map (\x -> (tyhd, x)) ts
-        return (TList tyhd, cs', es)
+        (thd, cs) <- listConstraints ts cs
+        return (TList thd, cs, es)
 
     (PSet ps, Just (ESet es)) -> do
-        when (length ps /= length es) (error "pattern match failed") -- TODO:
-                -- Custom error
-        (tyes, ces) <- infer $ ESet es  -- TODO: Refactor
-        tces <- zipWithM inferPat ps $ map Just es
-        let (ts, cs, es) = concatTCEs tces
-        -- TODO: refactor
-        tyhd <- if null ts then fresh
-                else return $ head ts
-        cs' <- if null ts then return cs
-               else return $ cs ++ map (\x -> (tyhd, x)) ts
-        return (TSet tyhd, ces ++ cs' ++ [(TSet tyhd, tyes)], es)
+        when (length ps /= length es) (error "fail") -- TODO
+        (tes, ces) <- infer $ ESet es
+        (ts, cs, es) <- inferPatList ps $ map Just es
+        (thd, cs) <- listConstraints ts cs
+        return (TSet thd, ces ++ cs ++ [(TSet thd, tes)], es)
     (PSet ps, Just e) -> do
-        (tye, ce) <- infer e
-        tces <- zipWithM inferPat ps $ repeat Nothing
-        let (ts, cs, es) = concatTCEs tces
-        tyhd <- if null ts then fresh
-                else return $ head ts
-        cs' <- if null ts then return cs
-               else return $ cs ++ map (\x -> (tyhd, x)) ts
-        return (TSet tyhd, ce ++ cs' ++ [(TSet tyhd, tye)], es)
+        (te, ce) <- infer e
+        (ts, cs, es) <- inferPatList ps $ repeat Nothing
+        (thd, cs) <- listConstraints ts cs
+        return (TSet thd, ce ++ cs ++ [(TSet thd, te)], es)
     (PSet ps, Nothing) -> do
         tces <- zipWithM inferPat ps $ repeat Nothing
         let (ts, cs, es) = concatTCEs tces
-        tyhd <- if null ts then fresh
-                else return $ head ts
-        cs' <- if null ts then return cs
-               else return $ cs ++ map (\x -> (tyhd, x)) ts
-        return (TSet tyhd, cs', es)
+        (thd, cs) <- listConstraints ts cs
+        return (TSet thd, cs, es)
 
     (PCons phd ptl, Just e@(EList (hd:tl))) -> do
-        (tye, ce) <- infer e
-        (tyhd, chd, ehd) <- inferPat phd $ Just hd
-        (tytl, ctl, etl) <- inferPat ptl $ Just $ EList tl
-        return (TList tyhd, ce ++ chd ++ ctl ++ [(tye, TList tyhd), (tye, tytl)], ehd ++ etl)
+        (te, ce) <- infer e
+        (thd, chd, ehd) <- inferPat phd $ Just hd
+        (ttl, ctl, etl) <- inferPat ptl $ Just $ EList tl
+        let cs = ce ++ chd ++ ctl ++ [(te, TList thd), (te, ttl)]
+            es = ehd ++ etl
+        return (TList thd, cs, es)
     (PCons phd ptl, Just e) -> do
-        (tye, ce) <- infer e
-        (tyhd, chd, ehd) <- inferPat phd $ Nothing
-        (tytl, ctl, etl) <- inferPat ptl $ Nothing
-        return (TList tyhd, ce ++ chd ++ ctl ++ [(tye, TList tyhd), (tye, tytl), (TList tyhd, tytl)], ehd ++ etl)
+        (te, ce) <- infer e
+        (thd, chd, ehd) <- inferPat phd $ Nothing
+        (ttl, ctl, etl) <- inferPat ptl $ Nothing
+        let cs = ce ++ chd ++ ctl ++ [ (te, TList thd)
+                                     , (te, ttl)
+                                     , (TList thd, ttl) ]
+            es = ehd ++ etl
+        return (TList thd, cs, es)
     (PCons phd ptl, Nothing) -> do
-        (tyhd, chd, ehd) <- inferPat phd $ Nothing
-        (tytl, ctl, etl) <- inferPat ptl $ Nothing
-        return (TList tyhd, chd ++ ctl ++ [(TList tyhd, tytl)], ehd ++ etl)
+        (thd, chd, ehd) <- inferPat phd $ Nothing
+        (ttl, ctl, etl) <- inferPat ptl $ Nothing
+        let cs = chd ++ ctl ++ [(TList thd, ttl)]
+            es = ehd ++ etl
+        return (TList thd, cs, es)
 
     (PUnit, Just e) -> do
-      (tye, ce) <- infer e
-      return (tyUnit, ce ++ [(tye, tyUnit)], [])
-    (PUnit, Nothing) -> do
-      return (tyUnit, [], [])
+        (te, ce) <- infer e
+        return (tyUnit, ce ++ [(te, tyUnit)], [])
+    (PUnit, Nothing) -> return (tyUnit, [], [])
 
     (PWildcard, Just _) -> do
-      ty <- fresh
-      return (ty, [], [])
+        ty <- fresh
+        return (ty, [], [])
     (PWildcard, Nothing) -> do
-      ty <- fresh
-      return (ty, [], [])
+        ty <- fresh
+        return (ty, [], [])
 
 inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint])
 inferBranch expr (pat, guard, branch) = do

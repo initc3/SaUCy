@@ -10,17 +10,8 @@ extra-source-files:
 - README.md
 - ChangeLog.md
 
-# Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
-
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/kev-liao/saucy#readme>
-
 dependencies:
-- base >= 4.7 && < 5
+- base
 - containers
 - text
 - parsec
@@ -31,11 +22,7 @@ dependencies:
 - optparse-applicative
 - repline
 - silently
-- tasty
-- tasty-hunit
-- tasty-hspec
-- tasty-quickcheck
-- tasty-smallcheck
+
 
 library:
   source-dirs: src
@@ -61,3 +48,9 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - saucy
+    - tasty
+    - tasty-discover
+    - tasty-hunit
+    - tasty-hspec
+    - tasty-quickcheck
+    - tasty-smallcheck
