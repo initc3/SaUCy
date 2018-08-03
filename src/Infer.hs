@@ -630,9 +630,9 @@ solver :: Unifier -> Solve Subst
 solver (su, cs) =
     case cs of
         [] -> return su
-        ((t1, t2) : cs0) -> do
+        ((t1, t2) : cs') -> do
           su1 <- unifies t1 t2
-          solver (su1 `compose` su, apply su1 cs0)
+          solver (su1 `compose` su, apply su1 cs')
 
 bind :: TVar -> Type-> Solve Subst
 bind a t | t == TVar a     = return emptySubst

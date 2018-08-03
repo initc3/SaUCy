@@ -20,6 +20,12 @@ data Type
     | TChan Type
     deriving (Show, Eq, Ord)
 
+data Mode
+    = MV
+    | MW
+    | MR
+    deriving (Show, Eq, Ord)
+
 infixr `TArr`
 
 data Scheme = Forall [TVar] Type
