@@ -19,7 +19,7 @@ data Expr
     | ENu Name Expr
     | ERd Expr
     | EWr Expr Expr
-    | EFork Expr
+    | EFork Expr Expr
     | ERepl Expr
     | ERef Expr
     | EDeref Expr

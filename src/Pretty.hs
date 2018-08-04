@@ -92,8 +92,16 @@ instance Pretty Scheme where
   ppr p (Forall [] t) = ppr p t
   ppr p (Forall ts t) = PP.text "\x2200" <+> PP.hcat (PP.punctuate PP.space (map (ppr p) ts)) <+> PP.text "." <+> ppr p t
 
+instance Pretty Mode where
+  ppr _ MV = PP.text "V"
+  ppr _ MR = PP.text "R"
+  ppr _ MW = PP.text "W"
+
 ppscheme :: Scheme -> String
 ppscheme = PP.render . ppr 0
+
+ppschmode :: (Scheme, Mode) -> String
+ppschmode (sc, m) = PP.render $ PP.parens $ ppr 0 sc <+> PP.text "@" <+> ppr 0 m
 
 pptype :: Type -> String
 pptype = PP.render . ppr 0

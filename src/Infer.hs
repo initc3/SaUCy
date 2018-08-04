@@ -100,22 +100,22 @@ data TypeError
 -------------------------------------------------------------------------------
 
 -- | Run the inference monad
-runInfer :: TypeEnv -> Infer (Type, [Constraint]) -> Either TypeError (Type, [Constraint])
+runInfer :: TypeEnv -> Infer (Type, [Constraint], Mode) -> Either TypeError (Type, [Constraint], Mode)
 runInfer env m = runExcept $ evalStateT (runReaderT m env) initInfer
 
 -- | Solve for toplevel type of an expression in a give environment
-inferExpr :: TypeEnv -> Expr -> Either TypeError Scheme
+inferExpr :: TypeEnv -> Expr -> Either TypeError (Scheme, Mode)
 inferExpr env ex = case runInfer env (infer ex) of
     Left err       -> Left err
-    Right (ty, cs) -> case runSolve cs of
+    Right (ty, cs, m) -> case runSolve cs of
         Left err    -> Left err
-        Right subst -> Right $ closeOver $ apply subst ty
+        Right subst -> Right (closeOver $ apply subst ty, m)
 
 -- | Return internal constraints used in solving for type of expression
 constraintsExpr :: TypeEnv -> Expr -> Either TypeError ([Constraint], Subst, Type, Scheme)
 constraintsExpr env ex = case runInfer env (infer ex) of
     Left       err -> Left err
-    Right (ty, cs) -> case runSolve cs of
+    Right (ty, cs, ms) -> case runSolve cs of
         Left err    -> Left err
         Right subst -> Right (cs, subst, ty, sc)
           where sc = closeOver $ apply subst ty
@@ -219,6 +219,10 @@ concatTCs = foldr f ([], [])
   where
     f (t, c) (t', c') = (t : t', c ++ c')
 
+concatTCMs = foldr f ([], [], [])
+  where
+    f (t, c, m) (t', c', m') = (t : t', c ++ c', m : m')
+
 inferPatList pats exprs = do
     tces <- zipWithM inferPat pats exprs
     return $ concatTCEs tces
@@ -232,40 +236,40 @@ inferPat :: Pattern -> Maybe Expr -> Infer (Type, [Constraint], [(Name, Type)])
 inferPat pat expr = case (pat, expr) of
     (PVar x, Just e) -> do
         tv <- fresh
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         return (tv, (tv, te) : ce, [(x, tv)])
     (PVar x, Nothing) -> do
         tv <- fresh
         return (tv, [], [(x, tv)])
         
     (PInt _, Just e) -> do
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         return (tyInt, (te, tyInt) : ce, [])
     (PInt _, Nothing) -> return (tyInt, [], [])
       
     (PBool _, Just e) -> do
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         return (tyBool, (te, tyBool) : ce, [])
     (PBool _, Nothing) -> return (tyBool, [], [])
       
     (PString _, Just e) -> do
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         return (tyString, (te, tyString) : ce, [])
     (PString _, Nothing) -> return (tyString, [], [])
       
     (PTag _, Just e) -> do
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         return (tyTag, (te, tyTag) : ce, [])
     (PTag _, Nothing) -> return (tyTag, [], [])
 
     (PTuple ps, Just (ETuple es)) -> do
         when (length ps /= length es) (error "fail") -- TODO: -- Custom error
-        (tes, ces) <- infer $ ETuple es
+        (tes, ces, _) <- infer $ ETuple es
         (ts, cs, es) <- inferPatList ps $ map Just es
         return (TProd ts, ces ++ cs ++ [(TProd ts, tes)], es)
     (PTuple ps, Just e) -> do
         (ts, cs, es) <- inferPatList ps $ repeat Nothing
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         return (TProd ts, (TProd ts, te) : ce, es)
     (PTuple ps, Nothing) -> do
         (ts, cs, es) <- inferPatList ps $ repeat Nothing
@@ -273,12 +277,12 @@ inferPat pat expr = case (pat, expr) of
 
     (PList ps, Just (EList es)) -> do
         when (length ps /= length es) (error "fail") -- TODO
-        (tes, ces) <- infer $ EList es
+        (tes, ces, _) <- infer $ EList es
         (ts, cs, es) <- inferPatList ps $ map Just es
         (thd, cs) <- listConstraints ts cs
         return (TList thd, ces ++ cs ++ [(TList thd, tes)], es)
     (PList ps, Just e) -> do
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         (ts, cs, es) <- inferPatList ps $ repeat Nothing
         (thd, cs) <- listConstraints ts cs
         return (TList thd, ce ++ cs ++ [(TList thd, te)], es)
@@ -290,12 +294,12 @@ inferPat pat expr = case (pat, expr) of
 
     (PSet ps, Just (ESet es)) -> do
         when (length ps /= length es) (error "fail") -- TODO
-        (tes, ces) <- infer $ ESet es
+        (tes, ces, _) <- infer $ ESet es
         (ts, cs, es) <- inferPatList ps $ map Just es
         (thd, cs) <- listConstraints ts cs
         return (TSet thd, ces ++ cs ++ [(TSet thd, tes)], es)
     (PSet ps, Just e) -> do
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         (ts, cs, es) <- inferPatList ps $ repeat Nothing
         (thd, cs) <- listConstraints ts cs
         return (TSet thd, ce ++ cs ++ [(TSet thd, te)], es)
@@ -306,14 +310,14 @@ inferPat pat expr = case (pat, expr) of
         return (TSet thd, cs, es)
 
     (PCons phd ptl, Just e@(EList (hd:tl))) -> do
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         (thd, chd, ehd) <- inferPat phd $ Just hd
         (ttl, ctl, etl) <- inferPat ptl $ Just $ EList tl
         let cs = ce ++ chd ++ ctl ++ [(te, TList thd), (te, ttl)]
             es = ehd ++ etl
         return (TList thd, cs, es)
     (PCons phd ptl, Just e) -> do
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         (thd, chd, ehd) <- inferPat phd Nothing
         (ttl, ctl, etl) <- inferPat ptl Nothing
         let cs = ce ++ chd ++ ctl ++ [ (te, TList thd)
@@ -329,7 +333,7 @@ inferPat pat expr = case (pat, expr) of
         return (TList thd, cs, es)
 
     (PUnit, Just e) -> do
-        (te, ce) <- infer e
+        (te, ce, _) <- infer e
         return (tyUnit, ce ++ [(te, tyUnit)], [])
     (PUnit, Nothing) -> return (tyUnit, [], [])
 
@@ -348,92 +352,92 @@ inferBranch expr (pat, guard, branch) = do
         Left err -> throwError err
         Right sub -> do
             let sc t = generalize (apply sub env) (apply sub t)
-            (t2, c2) <- foldr (\(x, t) -> inEnv (x, sc t))
+            (t2, c2, m2) <- foldr (\(x, t) -> inEnv (x, sc t))
                               (local (apply sub) (infer guard))
                               env'
-            (t3, c3) <- foldr (\(x, t) -> inEnv (x, sc t))
+            (t3, c3, m3) <- foldr (\(x, t) -> inEnv (x, sc t))
                               (local (apply sub) (infer branch))
                               env'
             return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)])
 
-infer :: Expr -> Infer (Type, [Constraint])
+infer :: Expr -> Infer (Type, [Constraint], Mode)
 infer expr = case expr of
     EVar x -> do
         t <- lookupEnv x
-        return (t, [])
+        return (t, [], MV)
 
     -- EImpVar x
         
-    ELit (LInt _) -> return (tyInt, [])
-    ELit (LBool _) -> return (tyBool, [])
-    ELit (LString _) -> return (tyString, [])
-    ELit (LTag _) -> return (tyTag, [])
-    ELit LUnit -> return (tyUnit, [])
+    ELit (LInt _) -> return (tyInt, [], MV)
+    ELit (LBool _) -> return (tyBool, [], MV)
+    ELit (LString _) -> return (tyString, [], MV)
+    ELit (LTag _) -> return (tyTag, [], MV)
+    ELit LUnit -> return (tyUnit, [], MV)
 
     ETuple es -> do
-        tcs <- mapM infer es
-        let (ts, cs) = concatTCs tcs
-        return (TProd ts, cs)
+        tcms <- mapM infer es
+        let (ts, cs, ms) = concatTCMs tcms
+        return (TProd ts, cs, MV)
         
     EList [] -> do
         tv <- fresh
-        return (TList tv, [])
+        return (TList tv, [], MV)
 
     -- Refactor
     EList es -> do
-        tcs <- mapM infer es
-        let tyFst = fst $ head tcs
-            cs    = concatMap snd tcs
-            cs'   = map (\x -> (tyFst, fst x)) tcs
-        return (TList tyFst, cs ++ cs')
+        tcms <- mapM infer es
+        let tyFst = (\(x, _, _) -> x) $ head tcms
+            cs    = concatMap (\(_,x,_) -> x) tcms
+            cs'   = map (\(x, _, _) -> (tyFst, x)) tcms
+        return (TList tyFst, cs ++ cs', MV)
 
     ESet [] -> do
         ty <- fresh
-        return (TSet ty, [])
+        return (TSet ty, [], MV)
         
     ESet es -> do
-        tcs <- mapM infer es
-        let tyFst = fst $ head tcs
-            cs    = concatMap snd tcs
-            cs'   = map (\x -> (tyFst, fst x)) tcs
-        return (TSet tyFst, cs ++ cs')
+        tcms <- mapM infer es
+        let tyFst = (\(x, _, _) -> x) $ head tcms
+            cs    = concatMap (\(_,x,_) -> x) tcms
+            cs'   = map (\(x, _, _) -> (tyFst, x)) tcms
+        return (TSet tyFst, cs ++ cs', MV)
     
     EBinArith op e1 e2 -> do
-        (t1, c1) <- infer e1
-        (t2, c2) <- infer e2
+        (t1, c1, m1) <- infer e1
+        (t2, c2, m2) <- infer e2
         tv <- fresh
         let u1 = t1 `TArr` (t2 `TArr` tv)
         u2 <- abinops op
-        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)])
+        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)], MV)
 
     EBinBool op e1 e2 -> do
-        (t1, c1) <- infer e1
-        (t2, c2) <- infer e2
+        (t1, c1, m1) <- infer e1
+        (t2, c2, m2) <- infer e2
         tv <- fresh
         let u1 = t1 `TArr` (t2 `TArr` tv)
         u2 <- bbinops op
-        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)])
+        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)], MV)
         
     EBinRel op e1 e2 -> do
-        (t1, c1) <- infer e1
-        (t2, c2) <- infer e2
+        (t1, c1, m1) <- infer e1
+        (t2, c2, m2) <- infer e2
         tv <- fresh
         let u1 = t1 `TArr` (t2 `TArr` tv)
         u2 <- rbinops op
-        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)])
+        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)], MV)
 
     EUnBool op e -> do
-        (t, c) <- infer e
+        (t, c, m) <- infer e
         tv <- fresh
         let u1 = t `TArr` tv
             u2 = bunops op
-        return (tv, c ++ [(u1, u2)])
+        return (tv, c ++ [(u1, u2)], MV)
 
     EIf e1 e2 e3 -> do
-        (t1, c1) <- infer e1
-        (t2, c2) <- infer e2
-        (t3, c3) <- infer e3
-        return (t2, c1 ++ c2 ++ c3 ++ [(t1, tyBool), (t2, t3)])
+        (t1, c1, m1) <- infer e1
+        (t2, c2, m2) <- infer e2
+        (t3, c3, m3) <- infer e3
+        return (t2, c1 ++ c2 ++ c3 ++ [(t1, tyBool), (t2, t3)], MV)
 
     ELet p e1 e2 -> do
         env <- ask
@@ -442,125 +446,126 @@ infer expr = case expr of
             Left err -> throwError err
             Right sub -> do
                 let sc t = generalize (apply sub env) (apply sub t)
-                (t2, c2) <- foldr (\(x, t) -> inEnv (x, sc t))
-                                  (local (apply sub) (infer e2))
+                (t2, c2, m2) <- foldr (\(x, t) -> inEnv (x, sc t))
+                                  (local (apply sub) (infer e2)) -- TODO
                                   env'
-                return (t2, c1 ++ c2)
+                return (t2, c1 ++ c2, MV)
 
     EMatch e bs -> do
         tcs <- mapM (inferBranch e) bs
         let (ts, cs) = concatTCs tcs
             ty       = head ts
             cs'      = zip (tail ts) (repeat ty)
-        return (ty, cs ++ cs')
+        return (ty, cs ++ cs', MV)
 
     ELam (PVar x) e -> do
         ty <- fresh
-        (t, c) <- inEnv (x, Forall [] ty) (infer e)
-        return (ty `TArr` t, c)
+        (t, c, m) <- inEnv (x, Forall [] ty) (infer e)
+        return (ty `TArr` t, c, MV)
 
     ELam PUnit e -> do
-        (t, c) <- infer e
-        return (tyUnit `TArr` t, c)
+        (t, c, m) <- infer e
+        return (tyUnit `TArr` t, c, MV)
 
     ELam PWildcard e -> do
         ty <- fresh
-        (t, c) <- infer e
-        return (ty `TArr` t, c)
+        (t, c, m) <- infer e
+        return (ty `TArr` t, c, MV)
         
-    EFix e1 -> do
-      (t1, c1) <- infer e1
+    EFix e -> do
+      (t, c, m) <- infer e
       tv <- fresh
-      return (tv, c1 ++ [(tv `TArr` tv, t1)])
+      return (tv, c ++ [(tv `TArr` tv, t)], MV)
         
     -- TODO: Need other patterns for ELam
         
     EApp e1 e2 -> do
-        (t1, c1) <- infer e1
-        (t2, c2) <- infer e2
+        (t1, c1, m1) <- infer e1
+        (t2, c2, m2) <- infer e2
         tv <- fresh
-        return (tv, c1 ++ c2 ++ [(t1, t2 `TArr` tv)])
+        return (tv, c1 ++ c2 ++ [(t1, t2 `TArr` tv)], MV)
 
     -- TODO: Cannot infer type of rd e, need annotations?
     ERd e -> do
-        (t, c) <- infer e
+        (t, c, m) <- infer e
         tv <- fresh
-        return (tv, c ++ [(t, TChan tv)])
+        return (tv, c ++ [(t, TChan tv)], MV)
     
     EWr e1 e2 -> do
-        (t1, c1) <- infer e1
-        (t2, c2) <- infer e2
-        return (tyUnit, c1 ++ c2 ++ [(t2, TChan t1)])
+        (t1, c1, m1) <- infer e1
+        (t2, c2, m2) <- infer e2
+        return (tyUnit, c1 ++ c2 ++ [(t2, TChan t1)], MV)
         
     ENu x e -> do
         env <- ask
         tv <- fresh
-        (t, c) <- inEnv (x, Forall [] tv) (infer e)  -- Is this correct?
-        return (t, c)
+        (t, c, m) <- inEnv (x, Forall [] tv) (infer e)  -- Is this correct?
+        return (t, c, MV)
 
     ERepl e -> do
-        (t, c) <- infer e
-        return (tyUnit, c)
+        (t, c, m) <- infer e
+        return (tyUnit, c, MV)
     
-    EFork e -> do
-        (t, c) <- infer e
-        return (tyUnit, c)
+    EFork e1 e2 -> do
+        (t1, c1, m1) <- infer e1
+        (t2, c2, m2) <- infer e2
+        return (t2, c1 ++ c2, MV)
 
     ESeq e1 e2 -> do
-        (t1, c1) <- infer e1
-        (t2, c2) <- infer e2
-        return (t2, c1 ++ c2)
+        (t1, c1, m1) <- infer e1
+        (t2, c2, m2) <- infer e2
+        return (t2, c1 ++ c2, MV)
 
     -- TODO: Additional function constraints?
     ERef e -> do
-        (t, c) <- infer e
+        (t, c, m) <- infer e
         tv <- fresh
-        return (tv, c ++ [(tv, TRef t)])
+        return (tv, c ++ [(tv, TRef t)], MV)
 
     EDeref e -> do
-        (t, c) <- infer e
+        (t, c, m) <- infer e
         tv <- fresh
-        return (tv, c ++ [(TRef tv, t)])
+        return (tv, c ++ [(TRef tv, t)], MV)
 
     EAssign x e -> do
         t1 <- lookupEnv x
-        (t2, c2) <- infer e
-        return (tyUnit, c2 ++ [(t1, TRef t2)])
+        (t2, c2, m2) <- infer e
+        return (tyUnit, c2 ++ [(t1, TRef t2)], MV)
 
     EBin Cons e1 e2  -> do
-       (t1, c1) <- infer e1
-       (t2, c2) <- infer e2
-       return (t2, c1 ++ c2 ++ [(TList t1, t2)])
+       (t1, c1, m1) <- infer e1
+       (t2, c2, m2) <- infer e2
+       return (t2, c1 ++ c2 ++ [(TList t1, t2)], MV)
 
     EBin Concat e1 e2  -> do
-       (t1, c1) <- infer e1
-       (t2, c2) <- infer e2
-       return (t1, c1 ++ c2 ++ [(t1, t2)])
+       (t1, c1, m1) <- infer e1
+       (t2, c2, n2) <- infer e2
+       return (t1, c1 ++ c2 ++ [(t1, t2)], MV)
 
     EUn Thunk e -> do
-        (t, c) <- infer e
+        (t, c, m) <- infer e
         tv <- fresh
-        return (tv, c ++ [(tv, TThunk t)])
+        return (tv, c ++ [(tv, TThunk t)], MV)
 
     EUn Force e -> do
-        (t, c) <- infer e
+        (t, c, m) <- infer e
         tv <- fresh
-        return (tv, c ++ [(TThunk tv, t)])
+        return (tv, c ++ [(TThunk tv, t)], MV)
 
     EUn Print e -> do
-       (t, c) <- infer e
-       return (tyUnit, c)
+       (t, c, m) <- infer e
+       return (tyUnit, c, MV)
 
     EUn Error e  -> do
        ty <- fresh
-       (t, c) <- infer e
-       return (ty, c ++ [(t, tyString)])
+       (t, c, m) <- infer e
+       return (ty, c ++ [(t, tyString)], MV)
 
 inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
 inferTop env [] = Right env
 inferTop env ((name, ex):xs) = case inferExpr env ex of
     Left err -> Left err
-    Right ty -> inferTop (extend env (name, ty)) xs
+    Right (ty, m) -> inferTop (extend env (name, ty)) xs -- TODO
 
 normalize :: Scheme -> Scheme
 normalize (Forall _ body) = Forall (map snd ord) (normtype body)

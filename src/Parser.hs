@@ -144,7 +144,10 @@ eWr = do
     reserved "->"
     EWr e <$> atomExpr
 
-eFork = mklexer EFork $ reservedOp "|>" >> atomExpr
+eFork = do
+    e1 <- expr'
+    reservedOp "|>"
+    EFork e1 <$> expr
 
 eRepl = mklexer ERepl $ reservedOp "!" >> atomExpr  
 
@@ -196,7 +199,7 @@ eUn = eThunk
    <|> ePrint
    <|> eError
 
-expr = try eSeq <|> expr'
+expr = try eSeq <|> try eFork <|> expr'
 
 expr' = Ex.buildExpressionParser table term
 
@@ -222,7 +225,6 @@ term = try eApp
    <|> eNu
    <|> eRd
    <|> eWr
-   <|> eFork
    <|> eRepl
    <|> eRef
    <|> eDeref

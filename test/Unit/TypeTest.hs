@@ -20,7 +20,7 @@ test_types = testGroup "Unit.TypeTest" $ map f examples
             Left err          -> error "bad test"
             Right [(_, expr)] -> case inferExpr emptyTyEnv expr of
                                      Left err -> "ill-typed"
-                                     Right sc -> ppscheme sc
+                                     Right (sc, m) -> ppscheme sc
 
 examples =
     [ ( "compose"

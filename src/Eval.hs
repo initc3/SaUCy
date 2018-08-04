@@ -207,9 +207,11 @@ eval' env m expr = case expr of
                  evalSub env e1 >>= writeChan c >> putMVar m VUnit
       where
         getChan (VChannel _ c) = return c
-    EFork e -> newEmptyMVar >>= \m' ->
-               forkIO (eval' env m' e) >>
-               putMVar m VUnit
+    EFork e1 e2 -> newEmptyMVar >>= \m1 ->
+                   newEmptyMVar >>= \m2 ->
+                   forkIO (eval' env m1 e1) >>
+                   forkIO (eval' env m2 e2) >>
+                   takeMVar m2 >>= putMVar m
     ERepl e -> newEmptyMVar >>= \m' ->
                forkIO (forever $ eval' env m' e) >>
                putMVar m VUnit
