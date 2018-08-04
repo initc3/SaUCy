@@ -69,6 +69,10 @@ instance Show TypeError where
   show (Ambiguous cs) =
     concat ["Cannot not match expected type: '" ++ pptype a ++ "' with actual type: '" ++ pptype b ++ "'\n" | (a,b) <- cs]
   show (UnboundVariable a) = "Not in scope: " ++ a
+  show (ParFail m1 m2) = 
+    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " || " ++ ppmode m2]
+  show (SeqFail m1 m2) =
+    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " ; " ++ ppmode m2]
 
 
 instance Pretty TVar where
@@ -101,13 +105,16 @@ ppscheme :: Scheme -> String
 ppscheme = PP.render . ppr 0
 
 ppschmode :: (Scheme, Mode) -> String
-ppschmode (sc, m) = PP.render $ PP.parens $ ppr 0 sc <+> PP.text "@" <+> ppr 0 m
+ppschmode (sc, m) = PP.render $ ppr 0 sc <+> PP.text "@" <+> ppr 0 m
 
 pptype :: Type -> String
 pptype = PP.render . ppr 0
 
-ppsignature :: (String, Scheme) -> String
-ppsignature (a, b) = a ++ " :: " ++ ppscheme b
+ppmode :: Mode -> String
+ppmode = PP.render . ppr 0
+
+ppsignature :: (String, (Scheme, Mode)) -> String
+ppsignature (a, schmode) = a ++ " :: " ++ ppschmode schmode
 
 ppenv :: TypeEnv -> [String]
 ppenv (TypeEnv env) = map ppsignature $ Map.toList env

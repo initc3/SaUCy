@@ -49,7 +49,7 @@ instance Show Value where
     show (VSet vs) = show vs
     show (VTuple vs) = show vs
     show VUnit = show ()
-    show VClosure {} = "<closure>"
+    show VClosure {} = "<closure>" -- TODO
     show VThunk {} = "<thunk>"
     show (VChannel x _) = x
     show (VRef x) = show x

@@ -71,10 +71,10 @@ instance Substitutable Type where
     ftv (TThunk t) = ftv t
     ftv (TChan t) = ftv t
 
-instance Substitutable Scheme where
-    apply (Subst s) (Forall as t) = Forall as $ apply s' t
+instance Substitutable (Scheme, Mode) where
+    apply (Subst s) (Forall as t, m) = (Forall as $ apply s' t, m)
                             where s' = Subst $ foldr Map.delete s as
-    ftv (Forall as t) = ftv t `Set.difference` Set.fromList as
+    ftv (Forall as t, m) = ftv t `Set.difference` Set.fromList as
 
 instance Substitutable Constraint where
     apply s (t1, t2) = (apply s t1, apply s t2)
@@ -94,6 +94,46 @@ data TypeError
     | UnboundVariable Name
     | Ambiguous [Constraint]
     | UnificationMismatch [Type] [Type]
+    | ParFail Mode Mode
+    | SeqFail Mode Mode
+
+{-data ModeError
+    = ParFail Mode Mode
+    | SeqFail Mode Mode-}
+
+-- | Modes
+parMode :: Mode -> Mode -> Infer Mode
+parMode m1 m2 = case (m1, m2) of
+    (MW, MV) -> return MW
+    (MV, MW) -> return MW
+    (MW, MR) -> return MW
+    (MR, MW) -> return MW
+    (MR, MR) -> return MR
+    _        -> throwError $ ParFail m1 m2
+
+seqMode :: Mode -> Mode -> Infer Mode
+seqMode m1 m2 = case (m1, m2) of
+    (MV, m)  -> return m
+    (MW, MV) -> return MW
+    (MR, _)  -> return MR
+    (MW, MR) -> return MW
+    _        -> throwError $ SeqFail m1 m2
+{-parMode :: Mode -> Mode -> Either TypeError Mode
+parMode m1 m2 = case (m1, m2) of
+    (MW, MV) -> Right MW
+    (MV, MW) -> Right MW
+    (MW, MR) -> Right MW
+    (MR, MW) -> Right MW
+    (MR, MR) -> Right MR
+    _        -> Left $ ParFail m1 m2
+
+seqMode :: Mode -> Mode -> Either TypeError Mode
+seqMode m1 m2 = case (m1, m2) of
+    (MV, m)  -> Right m
+    (MW, MV) -> Right MW
+    (MR, _)  -> Right MR
+    (MW, MR) -> Right MW
+    _        -> Left $ SeqFail m1 m2-}
 
 -------------------------------------------------------------------------------
 -- Inference
@@ -123,17 +163,18 @@ constraintsExpr env ex = case runInfer env (infer ex) of
 closeOver :: Type-> Scheme
 closeOver = normalize . generalize emptyTyEnv
 
-inEnv :: (Name, Scheme) -> Infer a -> Infer a
+inEnv :: (Name, (Scheme, Mode)) -> Infer a -> Infer a
 inEnv (x, sc) m = do
     let scope e = remove e x `extend` (x, sc)
     local scope m
 
-lookupEnv :: Name -> Infer Type
+lookupEnv :: Name -> Infer (Type, Mode)
 lookupEnv x = do
     (TypeEnv env) <- ask
     case Map.lookup x env of
         Nothing -> throwError $ UnboundVariable x
-        Just s  -> instantiate s
+        Just (s, m)  -> do s' <- instantiate s
+                           return (s', m)
 
 letters :: [String]
 letters = [1..] >>= flip replicateM ['a'..'z']
@@ -144,7 +185,7 @@ fresh = do
     put s{count = count s + 1}
     return $ TVar $ TV (letters !! count s)
 
-instantiate :: Scheme -> Infer Type-- ^ T-Inst
+instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
     as' <- mapM (const fresh) as
     let s = Subst $ Map.fromList $ zip as as'
@@ -215,6 +256,11 @@ concatTCEs = foldr f ([], [], [])
   where
     f (t, c, e) (t', c', e') = (t : t', c ++ c', e ++ e')
 
+{-concatTCEs' = foldr f ([], [], [])
+  where
+    f (t, c, e) (t', c', e') = (t : t', c ++ c', (map g e) ++ e')
+    g (x, t) = (x, (t, MV))-}
+
 concatTCs = foldr f ([], [])
   where
     f (t, c) (t', c') = (t : t', c ++ c')
@@ -232,15 +278,15 @@ listConstraints ts cs = do
     return $ if null ts then (thd, cs) else
                  (head ts, cs ++ map (\x -> (thd, x)) ts)
         
-inferPat :: Pattern -> Maybe Expr -> Infer (Type, [Constraint], [(Name, Type)])
+inferPat :: Pattern -> Maybe Expr -> Infer (Type, [Constraint], [(Name, (Type, Mode))])
 inferPat pat expr = case (pat, expr) of
     (PVar x, Just e) -> do
         tv <- fresh
-        (te, ce, _) <- infer e
-        return (tv, (tv, te) : ce, [(x, tv)])
+        (te, ce, m) <- infer e
+        return (tv, (tv, te) : ce, [(x, (tv, m))])
     (PVar x, Nothing) -> do
         tv <- fresh
-        return (tv, [], [(x, tv)])
+        return (tv, [], [(x, (tv, MV))])
         
     (PInt _, Just e) -> do
         (te, ce, _) <- infer e
@@ -352,10 +398,10 @@ inferBranch expr (pat, guard, branch) = do
         Left err -> throwError err
         Right sub -> do
             let sc t = generalize (apply sub env) (apply sub t)
-            (t2, c2, m2) <- foldr (\(x, t) -> inEnv (x, sc t))
+            (t2, c2, m2) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
                               (local (apply sub) (infer guard))
                               env'
-            (t3, c3, m3) <- foldr (\(x, t) -> inEnv (x, sc t))
+            (t3, c3, m3) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
                               (local (apply sub) (infer branch))
                               env'
             return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)])
@@ -363,8 +409,8 @@ inferBranch expr (pat, guard, branch) = do
 infer :: Expr -> Infer (Type, [Constraint], Mode)
 infer expr = case expr of
     EVar x -> do
-        t <- lookupEnv x
-        return (t, [], MV)
+        (t, m) <- lookupEnv x
+        return (t, [], m)
 
     -- EImpVar x
         
@@ -442,40 +488,42 @@ infer expr = case expr of
     ELet p e1 e2 -> do
         env <- ask
         (t1, c1, env') <- inferPat p $ Just e1
+        (_, _, m1) <- infer e1  -- TODO
         case runSolve c1 of
             Left err -> throwError err
             Right sub -> do
                 let sc t = generalize (apply sub env) (apply sub t)
-                (t2, c2, m2) <- foldr (\(x, t) -> inEnv (x, sc t))
-                                  (local (apply sub) (infer e2)) -- TODO
+                (t2, c2, m2) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+                                  (local (apply sub) (infer e2))
                                   env'
-                return (t2, c1 ++ c2, MV)
+                m <-  seqMode m1 m2
+                return (t2, c1 ++ c2, m)
 
     EMatch e bs -> do
         tcs <- mapM (inferBranch e) bs
         let (ts, cs) = concatTCs tcs
             ty       = head ts
             cs'      = zip (tail ts) (repeat ty)
-        return (ty, cs ++ cs', MV)
+        return (ty, cs ++ cs', MV) -- TODO
 
     ELam (PVar x) e -> do
         ty <- fresh
-        (t, c, m) <- inEnv (x, Forall [] ty) (infer e)
-        return (ty `TArr` t, c, MV)
+        (t, c, m) <- inEnv (x, (Forall [] ty, MV)) (infer e)
+        return (ty `TArr` t, c, m)
 
     ELam PUnit e -> do
         (t, c, m) <- infer e
-        return (tyUnit `TArr` t, c, MV)
+        return (tyUnit `TArr` t, c, m)
 
     ELam PWildcard e -> do
         ty <- fresh
         (t, c, m) <- infer e
-        return (ty `TArr` t, c, MV)
+        return (ty `TArr` t, c, m)
         
     EFix e -> do
       (t, c, m) <- infer e
       tv <- fresh
-      return (tv, c ++ [(tv `TArr` tv, t)], MV)
+      return (tv, c ++ [(tv `TArr` tv, t)], m)
         
     -- TODO: Need other patterns for ELam
         
@@ -483,38 +531,40 @@ infer expr = case expr of
         (t1, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
         tv <- fresh
-        return (tv, c1 ++ c2 ++ [(t1, t2 `TArr` tv)], MV)
+        return (tv, c1 ++ c2 ++ [(t1, t2 `TArr` tv)], m1)
 
     -- TODO: Cannot infer type of rd e, need annotations?
     ERd e -> do
         (t, c, m) <- infer e
         tv <- fresh
-        return (tv, c ++ [(t, TChan tv)], MV)
+        return (tv, c ++ [(t, TChan tv)], MR)
     
     EWr e1 e2 -> do
         (t1, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
-        return (tyUnit, c1 ++ c2 ++ [(t2, TChan t1)], MV)
+        return (tyUnit, c1 ++ c2 ++ [(t2, TChan t1)], MW)
         
     ENu x e -> do
         env <- ask
         tv <- fresh
-        (t, c, m) <- inEnv (x, Forall [] tv) (infer e)  -- Is this correct?
-        return (t, c, MV)
+        (t, c, m) <- inEnv (x, (Forall [] tv, MV)) (infer e)  -- Is this correct?
+        return (t, c, m)
 
     ERepl e -> do
         (t, c, m) <- infer e
-        return (tyUnit, c, MV)
+        return (tyUnit, c, MV) -- TODO
     
     EFork e1 e2 -> do
         (t1, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
-        return (t2, c1 ++ c2, MV)
+        m <- parMode m1 m2
+        return (t2, c1 ++ c2, m)
 
     ESeq e1 e2 -> do
         (t1, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
-        return (t2, c1 ++ c2, MV)
+        m <- seqMode m1 m2
+        return (t2, c1 ++ c2, m)
 
     -- TODO: Additional function constraints?
     ERef e -> do
@@ -525,10 +575,10 @@ infer expr = case expr of
     EDeref e -> do
         (t, c, m) <- infer e
         tv <- fresh
-        return (tv, c ++ [(TRef tv, t)], MV)
+        return (tv, c ++ [(TRef tv, t)], m) -- TODO
 
     EAssign x e -> do
-        t1 <- lookupEnv x
+        (t1, m1) <- lookupEnv x
         (t2, c2, m2) <- infer e
         return (tyUnit, c2 ++ [(t1, TRef t2)], MV)
 
@@ -550,7 +600,7 @@ infer expr = case expr of
     EUn Force e -> do
         (t, c, m) <- infer e
         tv <- fresh
-        return (tv, c ++ [(TThunk tv, t)], MV)
+        return (tv, c ++ [(TThunk tv, t)], m) -- TODO
 
     EUn Print e -> do
        (t, c, m) <- infer e
@@ -565,7 +615,7 @@ inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
 inferTop env [] = Right env
 inferTop env ((name, ex):xs) = case inferExpr env ex of
     Left err -> Left err
-    Right (ty, m) -> inferTop (extend env (name, ty)) xs -- TODO
+    Right (ty, m) -> inferTop (extend env (name, (ty, m))) xs
 
 normalize :: Scheme -> Scheme
 normalize (Forall _ body) = Forall (map snd ord) (normtype body)

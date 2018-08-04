@@ -150,7 +150,7 @@ examples =
                                ])
               ]
       )
-    , ( "GetBit"
+    {-, ( "GetBit"
       , "let GetBit = lam x . nu c . |> (rd c) ; |> (wr 0 -> c) ; |> (wr 1 -> c) GetBit 1"
       , Right [ ( "GetBit"
                 , ELam (PVar "x")
@@ -162,5 +162,5 @@ examples =
               , ("it", EApp (EVar "GetBit")
                             (ELit $ LInt 1))
               ]
-      )
+      )-}
     ]

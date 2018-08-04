@@ -38,7 +38,7 @@ tyString = TCon "String"
 tyTag = TCon "Tag"
 tyUnit = TCon "Unit"
 
-newtype TypeEnv = TypeEnv { types :: Map.Map Name Scheme }
+newtype TypeEnv = TypeEnv { types :: Map.Map Name (Scheme, Mode) }
     deriving (Eq, Show)
 
 emptyTyEnv :: TypeEnv
@@ -47,10 +47,10 @@ emptyTyEnv = TypeEnv Map.empty
 remove :: TypeEnv -> Name -> TypeEnv
 remove (TypeEnv env) var = TypeEnv (Map.delete var env)
 
-extend :: TypeEnv -> (Name, Scheme) -> TypeEnv
+extend :: TypeEnv -> (Name, (Scheme, Mode)) -> TypeEnv
 extend env (x, s) = env { types = Map.insert x s (types env) }
 
-lookup :: Name -> TypeEnv -> Maybe Scheme
+lookup :: Name -> TypeEnv -> Maybe (Scheme, Mode)
 lookup key (TypeEnv tys) = Map.lookup key tys
 
 merge :: TypeEnv -> TypeEnv -> TypeEnv

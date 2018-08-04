@@ -33,9 +33,9 @@ examples =
       , "let f x = match x with | (a,b):[] => a"
       , "\8704 a b . [(a,b)] -> a")
     , ( "typed chan"
-      , "let f () = nu c . |> (wr 1 -> c); c"
+      , "let f () = nu c . wr 1 -> c |> c"
       , "Unit -> Chan Int")
     , ( "ill-typed chan"
-      , "let f () = nu c . |> (wr 1 -> c); |> (wr () -> c); c"
+      , "let f () = nu c . wr 1 -> c |> wr () -> c |> c"
       , "ill-typed")
     ]
