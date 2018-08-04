@@ -97,10 +97,6 @@ data TypeError
     | ParFail Mode Mode
     | SeqFail Mode Mode
 
-{-data ModeError
-    = ParFail Mode Mode
-    | SeqFail Mode Mode-}
-
 -- | Modes
 parMode :: Mode -> Mode -> Infer Mode
 parMode m1 m2 = case (m1, m2) of
@@ -118,22 +114,6 @@ seqMode m1 m2 = case (m1, m2) of
     (MR, _)  -> return MR
     (MW, MR) -> return MW
     _        -> throwError $ SeqFail m1 m2
-{-parMode :: Mode -> Mode -> Either TypeError Mode
-parMode m1 m2 = case (m1, m2) of
-    (MW, MV) -> Right MW
-    (MV, MW) -> Right MW
-    (MW, MR) -> Right MW
-    (MR, MW) -> Right MW
-    (MR, MR) -> Right MR
-    _        -> Left $ ParFail m1 m2
-
-seqMode :: Mode -> Mode -> Either TypeError Mode
-seqMode m1 m2 = case (m1, m2) of
-    (MV, m)  -> Right m
-    (MW, MV) -> Right MW
-    (MR, _)  -> Right MR
-    (MW, MR) -> Right MW
-    _        -> Left $ SeqFail m1 m2-}
 
 -------------------------------------------------------------------------------
 -- Inference
