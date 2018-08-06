@@ -93,6 +93,12 @@ Note that in particular, the following mode compositions are \emph{not derivable
 %
 \and
 %
+\Infer{fix}
+{\Delta; \Gamma, f:\tau |- e : \tau |> m}
+{\Delta; \Gamma |- \fix{f}{e} : \tau |> m}
+%
+\and
+%
 \Infer{nu}
 {\Delta; \Gamma, x: {\sf Ch}\ \tau_1 |- e : \tau |> m}
 {\Delta; \Gamma |- \eNu{x}{e} : \tau |> m}
@@ -122,6 +128,35 @@ Note that in particular, the following mode compositions are \emph{not derivable
 }
 {\Delta_1, \Delta_2 |- e_1 \xFork e_2 : \tau |> m_3}
 %
+\and
+%
+\Infer{thunk}
+{\Delta; \Gamma |- e : \tau |> m}
+{\Delta; \Gamma |- \thunk{e} : \tyU{\tau} |> \Vm}
+%
+\and
+%
+\Infer{force}
+{\Delta; \Gamma |- e : \tyU{\tau} |> \Vm}
+{\Delta; \Gamma |- \eForce{e} : \tau |> \Vm}
+%
+\and
+%
+\Infer{ref}
+{\Delta; \Gamma |- e : \tau |> m}
+{\Delta; \Gamma |- \Ref{e} : \tyM{\tau} |> \Vm}
+%
+\and
+%
+\Infer{deref}
+{\Delta; \Gamma |- e : \tyM{\tau} |> \Vm}
+{\Delta; \Gamma |- \Deref{e} : \tau |> \Vm}
+%
+\and
+%
+\Infer{assign}
+{\Gamma(x) = \tyM{\tau} \\ \Delta, \Gamma |- e : \tau |> m}
+{\Delta; \Gamma |- \Assign{x}{e} : \Unit |> \Vm}
 \end{mathpar}
 \end{figure}
 

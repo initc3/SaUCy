@@ -47,10 +47,12 @@
 % ILC Computation types
 \newcommand{\xF}{\boldsf{F}}
 \newcommand{\xU}{\boldsf{U}}
+\newcommand{\xM}{\boldsf{M}}
 \newcommand{\tyFp}[1]{\xF(#1)}
 \newcommand{\tyF}[1]{\xF\,#1}
 \newcommand{\tyUp}[1]{\xU(#1)}
 \newcommand{\tyU}[1]{\xU\,#1}
+\newcommand{\tyM}[1]{\xM\,#1}
 
 % ILC Read and Write channel types
 \newcommand{\xRd}{\boldsf{Rd}}
@@ -125,12 +127,13 @@
 \newcommand{\Name}[1]{\xName\tbrack{#1}}
 
 
-\newcommand{\Ref}[1]{\xRef\tbrack{#1}\,}
 \newcommand{\Thk}[1]{\xThunk\tbrack{#1}\,}
 \newcommand{\Unthk}[1]{\xUnthunk\tbrack{#1}\,}
 \newcommand{\Thunk}[2]{\keyword{thunk}\Lparen{#1},{#2}\Rparen}
 \newcommand{\Unthunk}[1]{\keyword{unthunk}\Lparen{#1}\Rparen}
-\newcommand{\Refe}[2]{\keyword{ref}\Lparen{#1},{#2}\Rparen} % Ref expression form
+\newcommand{\Ref}[1]{\keyword{ref}\Lparen{#1}\Rparen}
+\newcommand{\Deref}[1]{\keyword{deref}\Lparen{#1}\Rparen}
+\newcommand{\Assign}[2]{\keyword{assign}\Lparen{#1},{#2}\Rparen}
 
 \newcommand{\List}[3]{\tyname{List}\tbrack{#1;#2}~{#3}}
 \newcommand{\Art}[2]{\tyname{Art}\tbrack{#1}~{#2}}
@@ -149,6 +152,8 @@
 \newcommand{\Let}[3]{\keyword{let}\Lparen{#1},{#2}.{#3}\Rparen}
 \newcommand{\eLet}[3]{\keyword{let}\Lparen{#1},{#2}.{#3}\Rparen}
 \newcommand{\LetBang}[3]{\keyword{let!}\Lparen{#1},{#2}.{#3}\Rparen}
+
+\newcommand{\fix}[2]{\keyword{fix}\Lparen{#1}.{#2}\Rparen}
 
 % Channel read and Channel write expressions
 \newcommand{\eRd}[1]{\keyword{rd}\Lparen{#1}\Rparen}
