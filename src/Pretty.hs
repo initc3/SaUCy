@@ -70,7 +70,7 @@ instance Show TypeError where
     concat ["Cannot not match expected type: '" ++ pptype a ++ "' with actual type: '" ++ pptype b ++ "'\n" | (a,b) <- cs]
   show (UnboundVariable a) = "Not in scope: " ++ a
   show (ParFail m1 m2) = 
-    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " || " ++ ppmode m2]
+    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " | " ++ ppmode m2]
   show (SeqFail m1 m2) =
     concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " ; " ++ ppmode m2]
 

@@ -1,0 +1,131 @@
+\def\OPTIONConf{0}%
+\def\OPTIONArxiv{0}%
+%
+\documentclass[10pt]{article}
+\input{defs}
+
+\begin{document}
+
+\title{Interactive Lambda Calculus (ILC) Language Definition}
+\author{Kevin Liao, Andrew Miller}
+\date{University of Illinois, Urbana-Champaign}
+
+\maketitle
+\thispagestyle{empty}
+
+\begin{figure}[htbp]
+{
+  \centering
+
+\begin{grammar}
+  Modes & $m,n,p$ &$\bnfas$& $\Wm \bnfalt \Rm \bnfalt \Vm$ & (Write, Read and Value) 
+\end{grammar}
+
+\judgbox{m || n => p}{~~The parallel composition of modes $m$ and $n$ is mode~$p$.}
+\begin{mathpar}
+\Infer{sym}{m || n => p}{n || m => p}
+\and \Infer{wv}{ }{\Wm || \Vm => \Wm}
+\and \Infer{wr}{ }{\Wm || \Rm => \Wm}
+\and \Infer{rr}{ }{\Rm || \Rm => \Rm}
+\end{mathpar}
+\\[2mm]
+\judgbox{m ;; n => p}{~~The sequential composition of modes $m$ and $n$ is mode~$p$.}
+\begin{mathpar}
+\and \Infer{v$\ast$}{ }{\Vm ;; n => n}
+\and \Infer{wv}{ }{\Wm ;; \Vm => \Wm}
+\and \Infer{r$\ast$}{ }{\Rm ;; n => \Rm}
+\and \Infer{wr}{ }{\Wm ;; \Rm => \Wm}
+\end{mathpar}
+}
+Note that in particular, the following mode compositions are \emph{not derivable}:
+\begin{itemize}
+\item $\Wm || \Wm => p$ is \emph{not} derivable for any mode~$p$
+\item $\Wm ;; \Wm => p$ is \emph{not} derivable for any mode~$p$
+\end{itemize}
+\caption{Syntax of modes; sequential and parallel mode composition.}
+\label{fig:expr}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\judgbox{\Delta ; \Gamma |- e : \tau |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has type $\tau$ and mode $m$.}
+\begin{mathpar}
+%
+\Infer{taut}
+{x:\sigma |> m \in \Delta; \Gamma}
+{\Delta; \Gamma |- x:\sigma |> m}
+%
+\and
+%
+\Infer{inst}
+{\sigma_1 > \sigma\\\\
+\Delta; \Gamma |- e:\sigma_1 |> m}
+{\Delta; \Gamma |- e:\sigma |> m}
+%
+\and
+%
+\Infer{gen}
+{ \alpha \not \in {\sf fv}(\Delta; \Gamma)\\\\
+\Delta; \Gamma |- e:\sigma |> m}
+{\Delta; \Gamma |- e:\forall\alpha\sigma}
+%
+\and
+%
+\Infer{lam}
+{\Delta ; \Gamma, x:\tau |-         e : \tau_1      |> m}
+{\Delta ; \Gamma      |- \lam{x} e : \tau -> \tau_1 |> m}
+%
+\and
+%
+\Infer{app}
+{\Delta_1 ; \Gamma |- e_1 : \tau_1 -> \tau_2 |> m\\\\
+ \Delta_2 ; \Gamma |- e_2 : \tau_1        |> \Vm}
+{\Delta_1, \Delta_2 ; \Gamma |- e_1 e_2 : \tau_2 |> m}
+%
+\and
+%
+\Infer{let}
+{ m_1 ;; m_2 => m_3\\\\
+\Delta_1 ; \Gamma |- e_1 : \sigma |> m_1 \\\\
+\Delta_2 ; \Gamma, x:\sigma |- e_2 : \tau |> m_2
+}
+{\Delta_1, \Delta_2 ; \Gamma |- \Let{e_1}{x}{e_2} : \tau |> m_3}
+%
+\and
+%
+\Infer{nu}
+{\Delta; \Gamma, x: {\sf Ch}\ \tau_1 |- e : \tau |> m}
+{\Delta; \Gamma |- \eNu{x}{e} : \tau |> m}
+%
+\\
+%
+\Infer{rd}
+{\Delta; \Gamma |- e : {\sf Ch}\ \tau |> \Vm}
+{\Delta    |- \eRd{e} : \tau |> \Rm}
+%
+\and
+%
+\Infer{wr}
+{\Delta_1; \Gamma   |- e_1 : \tau |> m \\
+ \Delta_2; \Gamma   |- e_2 : {\sf Ch}\ \tau |> \Vm}
+{\Delta_1, \Delta_2 |- \eWr{e_1}{e_2} : \Unit |> \Wm}
+%
+\\
+%
+\Infer{fork}
+{
+ m_1 || m_2 => m_3
+ \\\\
+ \Delta_1; \Gamma |- e_1 : \tau_1 |> m_1
+ \\\\
+ \Delta_2; \Gamma |- e_2 : \tau |> m_2
+}
+{\Delta_1, \Delta_2 |- e_1 \xFork e_2 : \tau |> m_3}
+%
+\end{mathpar}
+\end{figure}
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+\end{document}

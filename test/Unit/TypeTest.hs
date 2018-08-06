@@ -20,22 +20,34 @@ test_types = testGroup "Unit.TypeTest" $ map f examples
             Left err          -> error "bad test"
             Right [(_, expr)] -> case inferExpr emptyTyEnv expr of
                                      Left err -> "ill-typed"
-                                     Right (sc, m) -> ppscheme sc
+                                     Right scm -> ppschmode scm
 
 examples =
     [ ( "compose"
       , "let compose f g = lam x . f (g x)"
-      , "\8704 a b c . (a -> b) -> (c -> a) -> c -> b")
+      , "\8704 a b c . (a -> b) -> (c -> a) -> c -> b @ V")
     , ( "map"
       , "letrec map f lst = match lst with | [] => [] | x:xs => (f x) : (map f xs)"
-      , "\8704 a b . (a -> b) -> [a] -> [b]")
+      , "\8704 a b . (a -> b) -> [a] -> [b] @ V")
     , ( "assoclist"
       , "let f x = match x with | (a,b):[] => a"
-      , "\8704 a b . [(a,b)] -> a")
+      , "\8704 a b . [(a,b)] -> a @ V")
     , ( "typed chan"
       , "let f () = nu c . wr 1 -> c |> c"
-      , "Unit -> Chan Int")
+      , "Unit -> Chan Int @ W")
+    , ( "simple read"
+      , "let f () = nu c . rd c"
+      , "\8704 a . Unit -> a @ R")
+    , ( "simple write"
+      , "let f () = nu c . wr 1 -> c"
+      , "Unit -> Unit @ W")
     , ( "ill-typed chan"
       , "let f () = nu c . wr 1 -> c |> wr () -> c |> c"
+      , "ill-typed")
+    , ( "parallel write"
+      , "let f () = nu c . wr 1 -> c |> wr 1 -> c"
+      , "ill-typed")
+    , ( "sequential write"
+      , "let f () = nu c . wr 1 -> c ; wr 1 -> c"
       , "ill-typed")
     ]

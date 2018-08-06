@@ -236,11 +236,6 @@ concatTCEs = foldr f ([], [], [])
   where
     f (t, c, e) (t', c', e') = (t : t', c ++ c', e ++ e')
 
-{-concatTCEs' = foldr f ([], [], [])
-  where
-    f (t, c, e) (t', c', e') = (t : t', c ++ c', (map g e) ++ e')
-    g (x, t) = (x, (t, MV))-}
-
 concatTCs = foldr f ([], [])
   where
     f (t, c) (t', c') = (t : t', c ++ c')
