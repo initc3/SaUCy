@@ -28,10 +28,12 @@
 
 % ILC Values
 \newcommand{\vUnit}{\texttt{()}}
+\newcommand{\Inj}{\keyword{inj}}
 
 % ILC Types
 \newcommand{\tyUnit}{\tyname{unit}}
 \newcommand{\tyNat}{\tyname{nat}}
+\newcommand{\tyBool}{\tyname{bool}}
 
 % ILC Computation types
 \newcommand{\xF}{\boldsf{F}}
@@ -123,9 +125,14 @@
 \newcommand{\Thunk}[2]{\keyword{thunk}\Lparen{#1},{#2}\Rparen}
 \newcommand{\Unthunk}[1]{\keyword{unthunk}\Lparen{#1}\Rparen}
 \newcommand{\Ref}[1]{\keyword{ref}\Lparen{#1}\Rparen}
-\newcommand{\Deref}[1]{\keyword{deref}\Lparen{#1}\Rparen}
-\newcommand{\Assign}[2]{\keyword{assign}\Lparen{#1},{#2}\Rparen}
+\newcommand{\Get}[1]{\keyword{get}\Lparen{#1}\Rparen}
+\newcommand{\Set}[2]{\keyword{set}\Lparen{#1},{#2}\Rparen}
 \newcommand{\Seq}[2]{\keyword{seq}\Lparen{#1},{#2}\Rparen}
+\newcommand{\If}[3]{\keyword{if}\Lparen{#1},{#2},{#3}\Rparen}
+\newcommand{\Case}[5]{\keyword{split}\Lparen{#1},{#2}.{#3},{#4}.{#5}\Rparen}
+\newcommand{\Split}[4]{\keyword{split}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
+
+\newcommand{\ftv}[1]{{\rm ftv}\Lparen{#1}\Rparen}
 
 \newcommand{\List}[3]{\tyname{List}\tbrack{#1;#2}~{#3}}
 \newcommand{\Art}[2]{\tyname{Art}\tbrack{#1}~{#2}}

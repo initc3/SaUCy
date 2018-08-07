@@ -52,137 +52,183 @@ Note that in particular, the following mode compositions are \emph{not derivable
 
 \begin{figure}[htbp]
 \centering
-\judgbox{\Delta ; \Gamma |- e : \tau |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has type $\tau$ and mode $m$.}
+\judgbox{\Delta ; \Gamma |- e : S |> m}{~~Under $\Delta$ and $\Gamma$, value~$v$ has type scheme $S$ and mode $m$.}
 \begin{mathpar}
 %
 \infer[\textsc{T-var}]
-{\Delta; \Gamma(x) = \sigma |> m}
-{\Delta; \Gamma |- x:\sigma |> m}
+{\Delta; \Gamma(x) = S}
+{\Delta; \Gamma |- x: S}
 %
 \and
 %
 \infer[\textsc{T-unit}]
 { }
-{\Delta ; \Gamma |- \vUnit : \tyUnit |> \Mv}
+{\Delta ; \Gamma |- \vUnit : \tyUnit}
+%
+\and
+%
+\infer[\textsc{T-inj}]
+{i \in \{1, 2\}\\\\
+\Delta; \Gamma |- v : V_i |> m}
+{\Delta ; \Gamma |- \Inj_iv  : V_1 + V_2}
 %
 \and
 %
 \infer[\textsc{T-pair}]
-{m_1; m_2 => m_3\\\\
-\Delta_1; \Gamma |- e_1 : \tau_1 |> m_1\\\\
-\Delta_2; \Gamma |- e_2 : \tau_2 |> m_2}
-{\Delta_1, \Delta_2; \Gamma |- (e_1, e_2) : \tau_1 \times \tau_2 |> m_3}
+{\Delta_1; \Gamma |- v_1 : V_1\\\\
+\Delta_2; \Gamma |- v_2 : V_2}
+{\Delta_1, \Delta_2; \Gamma |- (v_1, v_2) : V_1 \times V_2}
 %
 \and
 %
-\infer[\textsc{T-inst}]
-{\Delta; \Gamma |- e : \sigma_1 |> m\\
-\sigma_1 \sqsubseteq \sigma_2}
-{\Delta; \Gamma |- e : \sigma_2 |> m}
-%
-\and
-%
-\infer[\textsc{T-gen}]
-{\Delta; \Gamma |- e : \sigma |> m\\
-\alpha \not \in {\rm fv}(\Gamma)}
-{\Delta; \Gamma |- e : \forall\alpha . \sigma}
-%
-\and
-%
-\infer[\textsc{T-lam}]
-{\Delta ; \Gamma, x:\tau_1 |-       e : \tau_2      |> m}
-{\Delta ; \Gamma      |- \lam{x} e : \tau_1 -> \tau_2 |> m}
-%
-\and
-%
-\infer[\textsc{T-app}]
-{\Delta_1 ; \Gamma |- e_1 : \tau_1 -> \tau_2 |> m\\\\
- \Delta_2 ; \Gamma |- e_2 : \tau_1        |> \Vm}
-{\Delta_1, \Delta_2 ; \Gamma |- e_1 e_2 : \tau_2 |> m}
-%
-\and
-%
-\infer[\textsc{T-let}]
-{ m_1 ;; m_2 => m_3\\\\
-\Delta_1 ; \Gamma |- e_1 : \sigma |> m_1 \\\\
-\Delta_2 ; \Gamma, x:\sigma |- e_2 : \tau |> m_2
-}
-{\Delta_1, \Delta_2 ; \Gamma |- \Let{e_1}{x}{e_2} : \tau |> m_3}
-%
-\and
-%
-\infer[\textsc{T-fix?}]
-{\Delta; \Gamma, f:\tau |- e : \tau |> m}
-{\Delta; \Gamma |- \fix{f}{e} : \tau |> m}
-%
-\and
-%
-\infer[\textsc{T-nu}]
-{\Delta; \Gamma, x: (\tyRd{\tau_1} \times \tyWr{\tau_1}) |- e : \tau_2 |> m}
-{\Delta; \Gamma |- \eNu{x}{e} : \tau_2 |> m}
-%
-\\
-%
-\infer[\textsc{T-rd?}]
-{\Delta; \Gamma |- e : \tyRd \tau |> \Vm}
-{\Delta    |- \eRd{e} : (\tau \times \tyRd \tau) |> \Rm}
-%
-\and
-%
-\infer[\textsc{T-wr}]
-{\Delta_1; \Gamma   |- e_1 : \tau\\
- \Delta_2; \Gamma   |- e_2 : \tyWr{\tau}}
-{\Delta_1, \Delta_2 |- \eWr{e_1}{e_2} : \tyUnit |> \Wm}
-%
-\\
-%
-\infer[\textsc{T-fork}]
-{
- m_1 || m_2 => m_3
- \\\\
- \Delta_1; \Gamma |- e_1 : \tau_1 |> m_1
- \\\\
- \Delta_2; \Gamma |- e_2 : \tau_2 |> m_2
-}
-{\Delta_1, \Delta_2; \Gamma |- e_1 \xFork e_2 : \tau_2 |> m_3}
-%
-\and
-%
-\infer[\textsc{T-thunk}]
-{\Delta; \Gamma |- e : \tau |> m}
-{\Delta; \Gamma |- \thunk{e} : \tyU{\tau} |> m}
-%
-\and
-%
-\infer[\textsc{T-force?}]
-{\Delta; \Gamma |- e : \tyU{\tau} |> m}
-{\Delta; \Gamma |- \eForce{e} : \tau |> m}
+\infer[\textsc{T-thunk?}]
+{\Delta; \Gamma |- e : C |> m}
+{\Delta; \Gamma |- \thunk{e} : \tyU{C} |> m}
 %
 \and
 %
 \infer[\textsc{T-ref}]
-{\Delta; \Gamma |- e : \tau |> m}
-{\Delta; \Gamma |- \Ref{e} : \tyM{\tau} |> m}
+{\Delta; \Gamma |- v : A}
+{\Delta; \Gamma |- \Ref{v} : \tyM{A}}
+\end{mathpar}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\judgbox{\Delta ; \Gamma |- e : \tau |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has type scheme $S$ and mode $m$.}
+\begin{mathpar}
+\infer[\textsc{T-inst}]
+{\Delta; \Gamma |- e : S_1 |> m\\
+S_1 \sqsubseteq S_2}
+{\Delta; \Gamma |- e : S_2 |> m}
 %
 \and
 %
-\infer[\textsc{T-deref}]
-{\Delta; \Gamma |- e : \tyM{\tau} |> m}
-{\Delta; \Gamma |- \Deref{e} : \tau |> m}
+\infer[\textsc{T-gen}]
+{\Delta; \Gamma |- e : S |> m\\
+\overline{a} \not \in \ftv{\Gamma}}
+{\Delta; \Gamma |- e : \forall\overline{a} . S}
 %
 \and
 %
-\infer[\textsc{T-assign}]
-{\Gamma(x) = \tyM{\tau} \\ \Delta, \Gamma |- e : \tau |> m}
-{\Delta; \Gamma |- \Assign{x}{e} : \tyUnit |> m}
+\infer[\textsc{T-lam}]
+{\Delta ; \Gamma, x:A |- e : C |> m}
+{\Delta ; \Gamma |- \lam{x} e : A -> C |> m}
+%
+\and
+%
+\infer[\textsc{T-app}]
+{\Delta_1 ; \Gamma |- v : A\\\\
+\Delta_2 ; \Gamma |- e : A -> C |> m}
+{\Delta_1, \Delta_2 ; \Gamma |- e v :  |> m}
+%
+\and
+%
+\infer[\textsc{T-let}]
+{m_1 ;; m_2 => m_3\\\\
+\Delta_1 ; \Gamma |- e_1 : S |> m_1 \\\\
+\Delta_2 ; \Gamma, x:S |- e_2 : C |> m_2
+}
+{\Delta_1, \Delta_2 ; \Gamma |- \Let{e_1}{x}{e_2} : C |> m_3}
+%
+\and
+%
+\infer[\textsc{T-let!}]
+{\Delta_1 ; \Gamma |- v : S\\\\
+\Delta_2 ; \Gamma, x:S |- e : C |> m}
+{\Delta_1, \Delta_2 ; \Gamma |- \Let{v}{x}{e} : C |> m}
+%
+\and
+%
+\infer[\textsc{T-fix?}]
+{\Delta; \Gamma, f:C |- e : C |> m}
+{\Delta; \Gamma |- \fix{f}{e} : C |> m}
+%
+\and
+%
+\infer[\textsc{T-nu}]
+{\Delta, x: (\tyRd{S} \times \tyWr{S}); \Gamma |- e : C |> m}
+{\Delta; \Gamma |- \eNu{x}{e} : C |> m}
+%
+\and
+%
+\infer[\textsc{T-rd}]
+{\Delta; \Gamma |- e : \tyRd A}
+{\Delta    |- \eRd{e} : (A \times \tyRd A) |> \Rm}
+%
+\and
+%
+\infer[\textsc{T-wr}]
+{\Delta_1; \Gamma   |- v_1 : A\\\\
+ \Delta_2; \Gamma   |- v_2 : \tyWr{A}}
+{\Delta_1, \Delta_2 |- \eWr{v_1}{v_2} : \tyUnit |> \Wm}
+%
+\and
+%
+\infer[\textsc{T-fork}]
+{m_1 || m_2 => m_3\\\\
+\Delta_1; \Gamma |- e_1 : C_1 |> m_1\\\\
+\Delta_2; \Gamma |- e_2 : C_2 |> m_2
+}
+{\Delta_1, \Delta_2; \Gamma |- e_1 \xFork e_2 : C_2 |> m_3}
+%
+\and
+%
+\infer[\textsc{T-force?}]
+{\Delta; \Gamma |- v : \tyU{C} |> m}
+{\Delta; \Gamma |- \eForce{v} : C |> m}
+%
+\and
+%
+\infer[\textsc{T-get}]
+{\Delta; \Gamma |- v : \tyM{A}}
+{\Delta; \Gamma |- \Get{v} : A}
+%
+\and
+%
+\infer[\textsc{T-set}]
+{\Delta, \Gamma, x: \tyM{S} |- v : S}
+{\Delta; \Gamma |- \Set{x}{v} : \tyUnit}
 %
 \and
 %
 \infer[\textsc{T-seq}]
 {m_1 ;; m_2 => m_3\\\\
-\Delta_1; \Gamma |- e_1 : \tau_1 |> m_1\\\\
-\Delta_2; \Gamma |- e_2 : \tau_2 |> m_2}
-{\Delta_1, \Delta_2; \Gamma |- \Seq{e_1}{e_2} : \tau_2 |> m_3}
+\Delta_1; \Gamma |- e_1 : C_1 |> m_1\\\\
+\Delta_2; \Gamma |- e_2 : C_2 |> m_2}
+{\Delta_1, \Delta_2; \Gamma |- \Seq{e_1}{e_2} : C_2 |> m_3}
+%
+\and
+%
+\infer[\textsc{T-if}]
+{m_1 ;; m_2 => m_3\\\\
+\Delta_1; \Gamma |- e_1 : \tyBool |> m_1\\\\
+\Delta_2; \Gamma |- e_2 : C |> m_2\\\\
+\Delta_2; \Gamma |- e_3 : C |> m_2}
+{\Delta_1, \Delta_2; \Gamma |- \If{e_1}{e_2}{e_3} : C |> m_3}
+%
+\and
+%
+\infer[\textsc{T-if!}]
+{\Delta_1; \Gamma |- v : \tyBool\\\\
+\Delta_2; \Gamma |- e_1 : C |> m\\\\
+\Delta_2; \Gamma |- e_2 : C |> m}
+{\Delta_1, \Delta_2; \Gamma |- \If{v}{e_1}{e_2} : C |> m}
+%
+\and
+%
+\infer[\textsc{T-case}]
+{\Delta_1; \Gamma |- v : A_1 + A_2\\\\
+\Delta_2; \Gamma,x_1:A_1 |- e_1 : C |> m\\\\
+\Delta_2; \Gamma,x_2:A_2 |- e_2 : C |> m}
+{\Delta_1, \Delta_2; \Gamma |- \Case{v}{x_1}{e_1}{x_2}{e_2} : C |> m}
+%
+\and
+%
+\infer[\textsc{T-split}]
+{\Delta_1; \Gamma |- v : A_1 \times A_2\\\\
+\Delta_2; \Gamma,x_1:A_1, x_2:A_2 |- e : C |> m}
+{\Delta_1, \Delta_2; \Gamma |- \Split{v}{x_1}{x_2}{e} : C |> m}
 \end{mathpar}
 \end{figure}
 
