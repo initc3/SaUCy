@@ -23,50 +23,41 @@
 \predate{\begin{center}\itshape}
 \postdate{\end{center}\vspace{-.6cm}}
 
-\setlist[enumerate]{nosep}
-
-\setlength{\bibsep}{0.0pt}
-\renewcommand{\bibsection}{\noindent\textbf{References.}}
-
-\newcommand{\mc}[1]{\mathcal{{#1}}}
-\newcommand{\myheader}[1]{\noindent\textbf{#1}}
-\newcommand{\myheaderi}[1]{\textbf{#1}}
-\newcommand{\todo}[1]{\emph{\hl{TODO:} {#1}}}
-\newcommand{\lang}{ILC\xspace}
-\newcommand{\saucy}{SaUCy\xspace}
-\newcommand{\package}{Pack\xspace}
-\newcommand{\fstar}{$\text{F}^{\star}$}
-
 \newcommand{\runonboldsf}{\sffamily\bfseries\selectfont}
 \newcommand{\boldsf}[1]{\text{\runonboldsf #1}}
 
+% ILC Values
 \newcommand{\vUnit}{\texttt{()}}
-\newcommand{\Unit}{\tyname{unit}}
-\newcommand{\Nat}{\tyname{nat}}
+
+% ILC Types
+\newcommand{\tyUnit}{\tyname{unit}}
+\newcommand{\tyNat}{\tyname{nat}}
 
 % ILC Computation types
 \newcommand{\xF}{\boldsf{F}}
 \newcommand{\xU}{\boldsf{U}}
 \newcommand{\xM}{\boldsf{M}}
 \newcommand{\tyFp}[1]{\xF(#1)}
-\newcommand{\tyF}[1]{\xF\,#1}
 \newcommand{\tyUp}[1]{\xU(#1)}
+\newcommand{\tyMp}[1]{\xM(#1)}
+\newcommand{\tyF}[1]{\xF\,#1}
 \newcommand{\tyU}[1]{\xU\,#1}
 \newcommand{\tyM}[1]{\xM\,#1}
 
 % ILC Read and Write channel types
 \newcommand{\xRd}{\boldsf{Rd}}
-\newcommand{\tyRdp}[1]{\xRd(#1)}
-\newcommand{\tyRd}[1]{\xRd\,#1}
-
 \newcommand{\xWr}{\boldsf{Wr}}
-\newcommand{\tyWr}[1]{\xWr\,#1}
+\newcommand{\tyRdp}[1]{\xRd(#1)}
 \newcommand{\tyWrp}[1]{\xWr(#1)}
+\newcommand{\tyRd}[1]{\xRd\,#1}
+\newcommand{\tyWr}[1]{\xWr\,#1}
 
 % ILC Modes
-\newcommand{\Rm}{\textsf{R}} % read mode
-\newcommand{\Wm}{\textsf{W}} % write mode
-\newcommand{\Vm}{\textsf{V}} % value mode
+\newcommand{\Rm}{\textsf{R}}
+\newcommand{\Wm}{\textsf{W}}
+\newcommand{\Vm}{\textsf{V}}
+
+
 \newcommand{\xFork}{\mathrel{|\rhd}}
 
 %% Math ligatures (thanks to the semantic package) that make it
@@ -134,6 +125,7 @@
 \newcommand{\Ref}[1]{\keyword{ref}\Lparen{#1}\Rparen}
 \newcommand{\Deref}[1]{\keyword{deref}\Lparen{#1}\Rparen}
 \newcommand{\Assign}[2]{\keyword{assign}\Lparen{#1},{#2}\Rparen}
+\newcommand{\Seq}[2]{\keyword{seq}\Lparen{#1},{#2}\Rparen}
 
 \newcommand{\List}[3]{\tyname{List}\tbrack{#1;#2}~{#3}}
 \newcommand{\Art}[2]{\tyname{Art}\tbrack{#1}~{#2}}

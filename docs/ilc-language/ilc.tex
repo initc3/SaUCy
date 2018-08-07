@@ -7,8 +7,12 @@
 \begin{document}
 
 \title{Interactive Lambda Calculus (ILC) Language Definition}
-\author{Kevin Liao, Andrew Miller}
-\date{University of Illinois, Urbana-Champaign}
+\author{Kevin Liao\textsuperscript{\textasteriskcentered},
+        Matthew Hammer\textsuperscript{\textdagger},
+        Andrew Miller\textsuperscript{\textasteriskcentered}}
+\date{\textsuperscript{\textasteriskcentered} University of Illinois,
+  Urbana-Champaign \hspace{0.5cm} \textsuperscript{\textdagger} University of
+  Colorado Boulder}
 
 \maketitle
 \thispagestyle{empty}
@@ -51,40 +55,54 @@ Note that in particular, the following mode compositions are \emph{not derivable
 \judgbox{\Delta ; \Gamma |- e : \tau |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has type $\tau$ and mode $m$.}
 \begin{mathpar}
 %
-\Infer{taut}
-{x:\sigma |> m \in \Delta; \Gamma}
+\infer[\textsc{T-var}]
+{\Delta; \Gamma(x) = \sigma |> m}
 {\Delta; \Gamma |- x:\sigma |> m}
 %
 \and
 %
-\Infer{inst}
-{\sigma_1 > \sigma\\\\
-\Delta; \Gamma |- e:\sigma_1 |> m}
-{\Delta; \Gamma |- e:\sigma |> m}
+\infer[\textsc{T-unit}]
+{ }
+{\Delta ; \Gamma |- \vUnit : \tyUnit |> \Mv}
 %
 \and
 %
-\Infer{gen}
-{ \alpha \not \in {\sf fv}(\Delta; \Gamma)\\\\
-\Delta; \Gamma |- e:\sigma |> m}
-{\Delta; \Gamma |- e:\forall\alpha\sigma}
+\infer[\textsc{T-pair}]
+{m_1; m_2 => m_3\\\\
+\Delta_1; \Gamma |- e_1 : \tau_1 |> m_1\\\\
+\Delta_2; \Gamma |- e_2 : \tau_2 |> m_2}
+{\Delta_1, \Delta_2; \Gamma |- (e_1, e_2) : \tau_1 \times \tau_2 |> m_3}
 %
 \and
 %
-\Infer{lam}
-{\Delta ; \Gamma, x:\tau |-         e : \tau_1      |> m}
-{\Delta ; \Gamma      |- \lam{x} e : \tau -> \tau_1 |> m}
+\infer[\textsc{T-inst}]
+{\Delta; \Gamma |- e : \sigma_1 |> m\\
+\sigma_1 \sqsubseteq \sigma_2}
+{\Delta; \Gamma |- e : \sigma_2 |> m}
 %
 \and
 %
-\Infer{app}
+\infer[\textsc{T-gen}]
+{\Delta; \Gamma |- e : \sigma |> m\\
+\alpha \not \in {\rm fv}(\Gamma)}
+{\Delta; \Gamma |- e : \forall\alpha . \sigma}
+%
+\and
+%
+\infer[\textsc{T-lam}]
+{\Delta ; \Gamma, x:\tau_1 |-       e : \tau_2      |> m}
+{\Delta ; \Gamma      |- \lam{x} e : \tau_1 -> \tau_2 |> m}
+%
+\and
+%
+\infer[\textsc{T-app}]
 {\Delta_1 ; \Gamma |- e_1 : \tau_1 -> \tau_2 |> m\\\\
  \Delta_2 ; \Gamma |- e_2 : \tau_1        |> \Vm}
 {\Delta_1, \Delta_2 ; \Gamma |- e_1 e_2 : \tau_2 |> m}
 %
 \and
 %
-\Infer{let}
+\infer[\textsc{T-let}]
 { m_1 ;; m_2 => m_3\\\\
 \Delta_1 ; \Gamma |- e_1 : \sigma |> m_1 \\\\
 \Delta_2 ; \Gamma, x:\sigma |- e_2 : \tau |> m_2
@@ -93,70 +111,78 @@ Note that in particular, the following mode compositions are \emph{not derivable
 %
 \and
 %
-\Infer{fix}
+\infer[\textsc{T-fix?}]
 {\Delta; \Gamma, f:\tau |- e : \tau |> m}
 {\Delta; \Gamma |- \fix{f}{e} : \tau |> m}
 %
 \and
 %
-\Infer{nu}
-{\Delta; \Gamma, x: {\sf Ch}\ \tau_1 |- e : \tau |> m}
-{\Delta; \Gamma |- \eNu{x}{e} : \tau |> m}
+\infer[\textsc{T-nu}]
+{\Delta; \Gamma, x: (\tyRd{\tau_1} \times \tyWr{\tau_1}) |- e : \tau_2 |> m}
+{\Delta; \Gamma |- \eNu{x}{e} : \tau_2 |> m}
 %
 \\
 %
-\Infer{rd}
-{\Delta; \Gamma |- e : {\sf Ch}\ \tau |> \Vm}
-{\Delta    |- \eRd{e} : \tau |> \Rm}
+\infer[\textsc{T-rd?}]
+{\Delta; \Gamma |- e : \tyRd \tau |> \Vm}
+{\Delta    |- \eRd{e} : (\tau \times \tyRd \tau) |> \Rm}
 %
 \and
 %
-\Infer{wr}
-{\Delta_1; \Gamma   |- e_1 : \tau |> m \\
- \Delta_2; \Gamma   |- e_2 : {\sf Ch}\ \tau |> \Vm}
-{\Delta_1, \Delta_2 |- \eWr{e_1}{e_2} : \Unit |> \Wm}
+\infer[\textsc{T-wr}]
+{\Delta_1; \Gamma   |- e_1 : \tau\\
+ \Delta_2; \Gamma   |- e_2 : \tyWr{\tau}}
+{\Delta_1, \Delta_2 |- \eWr{e_1}{e_2} : \tyUnit |> \Wm}
 %
 \\
 %
-\Infer{fork}
+\infer[\textsc{T-fork}]
 {
  m_1 || m_2 => m_3
  \\\\
  \Delta_1; \Gamma |- e_1 : \tau_1 |> m_1
  \\\\
- \Delta_2; \Gamma |- e_2 : \tau |> m_2
+ \Delta_2; \Gamma |- e_2 : \tau_2 |> m_2
 }
-{\Delta_1, \Delta_2 |- e_1 \xFork e_2 : \tau |> m_3}
+{\Delta_1, \Delta_2; \Gamma |- e_1 \xFork e_2 : \tau_2 |> m_3}
 %
 \and
 %
-\Infer{thunk}
+\infer[\textsc{T-thunk}]
 {\Delta; \Gamma |- e : \tau |> m}
-{\Delta; \Gamma |- \thunk{e} : \tyU{\tau} |> \Vm}
+{\Delta; \Gamma |- \thunk{e} : \tyU{\tau} |> m}
 %
 \and
 %
-\Infer{force}
-{\Delta; \Gamma |- e : \tyU{\tau} |> \Vm}
-{\Delta; \Gamma |- \eForce{e} : \tau |> \Vm}
+\infer[\textsc{T-force?}]
+{\Delta; \Gamma |- e : \tyU{\tau} |> m}
+{\Delta; \Gamma |- \eForce{e} : \tau |> m}
 %
 \and
 %
-\Infer{ref}
+\infer[\textsc{T-ref}]
 {\Delta; \Gamma |- e : \tau |> m}
-{\Delta; \Gamma |- \Ref{e} : \tyM{\tau} |> \Vm}
+{\Delta; \Gamma |- \Ref{e} : \tyM{\tau} |> m}
 %
 \and
 %
-\Infer{deref}
-{\Delta; \Gamma |- e : \tyM{\tau} |> \Vm}
-{\Delta; \Gamma |- \Deref{e} : \tau |> \Vm}
+\infer[\textsc{T-deref}]
+{\Delta; \Gamma |- e : \tyM{\tau} |> m}
+{\Delta; \Gamma |- \Deref{e} : \tau |> m}
 %
 \and
 %
-\Infer{assign}
+\infer[\textsc{T-assign}]
 {\Gamma(x) = \tyM{\tau} \\ \Delta, \Gamma |- e : \tau |> m}
-{\Delta; \Gamma |- \Assign{x}{e} : \Unit |> \Vm}
+{\Delta; \Gamma |- \Assign{x}{e} : \tyUnit |> m}
+%
+\and
+%
+\infer[\textsc{T-seq}]
+{m_1 ;; m_2 => m_3\\\\
+\Delta_1; \Gamma |- e_1 : \tau_1 |> m_1\\\\
+\Delta_2; \Gamma |- e_2 : \tau_2 |> m_2}
+{\Delta_1, \Delta_2; \Gamma |- \Seq{e_1}{e_2} : \tau_2 |> m_3}
 \end{mathpar}
 \end{figure}
 
