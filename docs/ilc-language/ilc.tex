@@ -69,7 +69,7 @@ Note that in particular, the following mode compositions are \emph{not derivable
 %
 \Infer{inj}
 {i \in \{1, 2\}\\\\
-\Delta; \Gamma |- v : V_i |> m}
+\Delta; \Gamma |- v : V_i}
 {\Delta ; \Gamma |- \Inj_iv  : V_1 + V_2}
 %
 \and
@@ -83,7 +83,7 @@ Note that in particular, the following mode compositions are \emph{not derivable
 %
 \Infer{thunk}
 {\Delta; \Gamma |- e : C |> m}
-{\Delta; \Gamma |- \thunk{e} : \tyU{C |> m}}
+{\Delta; \Gamma |- \thunk{e} : \tyUp{C, m}}
 %
 \and
 %
@@ -215,7 +215,7 @@ S_1 \sqsubseteq S_2}
 \and
 %
 \Infer{force}
-{\Delta; \Gamma |- v : \tyU{C |> m}}
+{\Delta; \Gamma |- v : \tyUp{C, m}}
 {\Delta; \Gamma |- \eForce{v} : C |> m}
 %
 \and
