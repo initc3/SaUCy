@@ -18,6 +18,78 @@
 \thispagestyle{empty}
 
 \begin{figure}[htbp]
+  \centering
+
+\begin{grammar}
+  Value Types
+  & $A,B$
+      &$\bnfas$&
+      $x$ & Value variable
+      \\ &&& $\bnfaltbrk \vUnit$ & Unit value
+      \\ &&& $\bnfaltbrk \tyNat$         & Natural number
+      \\ &&& $\bnfaltbrk A ** B$ & Product
+      \\ &&& $\bnfaltbrk A + B$ & Sum type
+      \\ &&& $\bnfaltbrk *! A$ & Intuitionistic type
+      \\ &&& $\bnfaltbrk \tyRd{A}$ & Read channel
+      \\ &&& $\bnfaltbrk \tyWr{A}$ & Write channel
+      \\ &&& $\bnfaltbrk \tyU{C}$ & Thunk type
+  \\[1ex]
+  Computation Types
+  & $C, D$
+      &$\bnfas$ & 
+             $A -> C$ & Value-consuming computation
+      \\ &&& $\bnfaltbrk \tyF{A}$ & Value-producing computation
+  \\[1ex]
+  Linear Typing Contexts
+  & $\Delta$
+     &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:A$
+  \\
+  Intuitionisitic Typing Contexts
+  & $\Gamma$
+     &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
+\end{grammar}
+
+  \caption{Syntax of types and typing contexts}
+  \label{fig:expr}
+\end{figure}
+
+
+\begin{figure}[htbp]
+  \centering
+
+\begin{grammar}
+  Values
+  & $v$
+      &$\bnfas$&
+      $x$
+      \\ &&& $\bnfaltbrk \vUnit$ & Unit value
+      \\ &&& $\bnfaltbrk n$         & Natural number
+      \\ &&& $\bnfaltbrk \vPair{v_1}{v_2}$ & Pair of values
+      \\ &&& $\bnfaltbrk \vInj{i}{v}$ & Injected value
+      \\ &&& $\bnfaltbrk \vChan{c}$ & Channel (either read or write end)
+      \\ &&& $\bnfaltbrk \vThunk{e}$ & Thunk (suspended, closed expression)
+  \\[1ex]
+  Expressions
+  & $e$
+      &$\bnfas$&
+             $\Split{v}{x_1}{x_2}{e}$ & Pair elimination
+      \\ &&& $\bnfaltbrk \Case{v}{x_1}{e_1}{x_2}{e_2}$ & Injection elimination
+      \\ &&& $\bnfaltbrk \Ret{v}$ & Value-producing computation
+      \\ &&& $\bnfaltbrk \Let{e_1}{x}{e_2}$ & Let-binding/sequencing
+      \\ &&& $\bnfaltbrk \eApp{e}{v}$ & Function application
+      \\ &&& $\bnfaltbrk \lam{x} e$ & Function abstraction
+      \\ &&& $\bnfaltbrk \eForce{v}$ & Unsuspend (force) a thunk
+      \\ &&& $\bnfaltbrk \eWr{v_1}{v_2}$ & Write channel~$v_1$ with value~$v_2$
+      \\ &&& $\bnfaltbrk \eRd{v}$ & Read channel~$v$
+      \\ &&& $\bnfaltbrk \eNu{x}{e}$ & Allocate channel as~$x$ in~$e$      \\ &&& $\bnfaltbrk e_1 *&& e_2$ & Fork~$e_1$, continue as~$e_2$
+      \\ &&& $\bnfaltbrk e_1 *|| e_2$ & External choice between~$e_1$ and~$e_2$
+\end{grammar}
+
+  \caption{Syntax of values and expressions}
+  \label{fig:expr}
+\end{figure}
+
+\begin{figure}[htbp]
 {
   \centering
 
@@ -70,7 +142,7 @@ Note that in particular, the following mode compositions are \emph{not derivable
 \Infer{inj}
 {i \in \{1, 2\}\\\\
 \Delta; \Gamma |- v : V_i}
-{\Delta ; \Gamma |- \Inj_iv  : V_1 + V_2}
+{\Delta ; \Gamma |- \vInj{i}{v}  : V_1 + V_2}
 %
 \and
 %
@@ -111,16 +183,15 @@ S_1 \sqsubseteq S_2}
 %
 \and
 %
-\Infer{lam}
-{\Delta ; \Gamma, x:A |- e : C |> m}
-{\Delta ; \Gamma |- \lam{x} e : A -> C |> m}
+\Infer{ret}
+{\Delta; \Gamma |- v : A}
+{\Delta; \Gamma|- \Ret{v} : \tyF{A} |> \Vm}
 %
 \and
 %
-\Infer{app}
-{\Delta_1 ; \Gamma |- v : A\\\\
-\Delta_2 ; \Gamma |- e : A -> C |> m}
-{\Delta_1, \Delta_2 ; \Gamma |- e v :  |> m}
+\Infer{ret!}
+{\emptyctxt ; \Gamma |- v : A}
+{\emptyctxt ; \Gamma |- \Ret{v} : \tyF (*! A) |> \Vm}
 %
 \and
 %
@@ -134,9 +205,22 @@ S_1 \sqsubseteq S_2}
 \and
 %
 \Infer{let!}
-{\Delta_1 ; \Gamma |- v : S\\\\
+{\Delta_1 ; \Gamma |- v : *! S\\\\
 \Delta_2 ; \Gamma, x:S |- e : C |> m}
-{\Delta_1, \Delta_2 ; \Gamma |- \Let{v}{x}{e} : C |> m}
+{\Delta_1, \Delta_2 ; \Gamma |- \LetBang{v}{x}{e} : C |> m}
+%
+\and
+%
+\Infer{lam}
+{\Delta ; \Gamma, x:A |- e : C |> m}
+{\Delta ; \Gamma |- \lam{x} e : A -> C |> m}
+%
+\and
+%
+\Infer{app}
+{\Delta_1 ; \Gamma |- v : A\\\\
+\Delta_2 ; \Gamma |- e : A -> C |> m}
+{\Delta_1, \Delta_2 ; \Gamma |- e v :  |> m}
 %
 \and
 %
@@ -147,8 +231,8 @@ S_1 \sqsubseteq S_2}
 \and
 %
 \Infer{nu}
-{\Delta, x: (\tyRd{S} \times \tyWr{S}); \Gamma |- e : C |> m}
-{\Delta; \Gamma |- \eNu{x}{e} : C |> m}
+{\Delta, x:\big(\tyRd A ** *!(\tyWr A)\big) ; \Gamma |- e : C |> m}
+{\Delta                                 ; \Gamma |- \eNu{x}{e} : C |> m}
 %
 \and
 %
@@ -167,18 +251,25 @@ S_1 \sqsubseteq S_2}
 %
 \Infer{fork}
 {m_1 || m_2 => m_3\\\\
-\Delta_1; \Gamma |- e_1 : C_1 |> m_1\\\\
-\Delta_2; \Gamma |- e_2 : C_2 |> m_2
+\Delta_1; \Gamma |- e_1 : C |> m_1\\\\
+\Delta_2; \Gamma |- e_2 : D |> m_2}
+{\Delta_1, \Delta_2 |- e_1 \xFork e_2 : D |> m_3}
+%
+\and
+%
+\Infer{choice}
+{\Delta_1; \Gamma |- e_1 : C |> \Rm\\\\
+\Delta_2; \Gamma |- e_2 : C |> \Rm
 }
-{\Delta_1, \Delta_2; \Gamma |- e_1 \xFork e_2 : C_2 |> m_3}
+{\Delta_1, \Delta_2; \Gamma |- \eChoose{e_1, e_2} : C |> \Rm}
 %
 \and
 %
 \Infer{seq}
 {m_1 ;; m_2 => m_3\\\\
-\Delta_1; \Gamma |- e_1 : C_1 |> m_1\\\\
-\Delta_2; \Gamma |- e_2 : C_2 |> m_2}
-{\Delta_1, \Delta_2; \Gamma |- \Seq{e_1}{e_2} : C_2 |> m_3}
+\Delta_1; \Gamma |- e_1 : C |> m_1\\\\
+\Delta_2; \Gamma |- e_2 : C |> m_2}
+{\Delta_1, \Delta_2; \Gamma |- \Seq{e_1}{e_2} : D |> m_3}
 %
 \and
 %
@@ -191,7 +282,7 @@ S_1 \sqsubseteq S_2}
 %
 \and
 %
-\Infer{if!}
+\Infer{if?}
 {\Delta_1; \Gamma |- v : \tyBool\\\\
 \Delta_2; \Gamma |- e_1 : C |> m\\\\
 \Delta_2; \Gamma |- e_2 : C |> m}

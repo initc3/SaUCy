@@ -28,7 +28,6 @@
 
 % ILC Values
 \newcommand{\vUnit}{\texttt{()}}
-\newcommand{\Inj}{\keyword{inj}}
 
 % ILC Types
 \newcommand{\tyUnit}{\tyname{unit}}
@@ -58,6 +57,19 @@
 \newcommand{\Rm}{\textsf{R}}
 \newcommand{\Wm}{\textsf{W}}
 \newcommand{\Vm}{\textsf{V}}
+
+%\newcommand{\Split}[4]{\keyword{split}\Lparen{#1}, {#2}.{#3}.{#4}\Rparen}
+%\newcommand{\Case}[5]{\keyword{case}\Lparen{#1}, {#2}.{#3}, {#4}.{#5}\Rparen}
+
+\newcommand{\inj}[1]{\keyword{inj}_{#1}\,}
+\newcommand{\Inj}[1]{\inj{#1}}
+
+\newcommand{\vPair}[2]{\Lparen{#1}\texttt{,}{#2}\Rparen}
+\newcommand{\vInj}[2]{\keyword{inj}_{#1}\Lparen#2\Rparen}
+\newcommand{\vThunk}[1]{\keyword{thunk}\Lparen#1\Rparen}
+
+\newcommand{\eFork}[2]{\ensuremath{#1 *&& #2}}
+\newcommand{\eChoose}[2]{\ensuremath{#1 *|| #2}}
 
 
 \newcommand{\xFork}{\mathrel{|\rhd}}
@@ -129,7 +141,7 @@
 \newcommand{\Set}[2]{\keyword{set}\Lparen{#1},{#2}\Rparen}
 \newcommand{\Seq}[2]{\keyword{seq}\Lparen{#1},{#2}\Rparen}
 \newcommand{\If}[3]{\keyword{if}\Lparen{#1},{#2},{#3}\Rparen}
-\newcommand{\Case}[5]{\keyword{split}\Lparen{#1},{#2}.{#3},{#4}.{#5}\Rparen}
+\newcommand{\Case}[5]{\keyword{case}\Lparen{#1},{#2}.{#3},{#4}.{#5}\Rparen}
 \newcommand{\Split}[4]{\keyword{split}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
 
 \newcommand{\ftv}[1]{{\rm ftv}\Lparen{#1}\Rparen}
