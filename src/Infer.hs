@@ -59,7 +59,8 @@ instance Substitutable Type where
     apply s (TSet t) = TSet (apply s t)
     apply s (TRef t) = TRef (apply s t)
     apply s (TThunk t) = TThunk (apply s t)
-    apply s (TChan t) = TChan (apply s t)
+    apply s (TRdChan t) = TRdChan (apply s t)
+    apply s (TWrChan t) = TWrChan (apply s t)
 
     ftv (TVar a) = Set.singleton a
     ftv TCon{} = Set.empty
@@ -69,7 +70,8 @@ instance Substitutable Type where
     ftv (TSet t) = ftv t
     ftv (TRef t) = ftv t
     ftv (TThunk t) = ftv t
-    ftv (TChan t) = ftv t
+    ftv (TRdChan t) = ftv t
+    ftv (TWrChan t) = ftv t
 
 instance Substitutable (Scheme, Mode) where
     apply (Subst s) (Forall as t, m) = (Forall as $ apply s' t, m)
@@ -509,17 +511,19 @@ infer expr = case expr of
     ERd e -> do
         (t, c, m) <- infer e
         tv <- fresh
-        return (TProd [tv, TChan tv], c ++ [(t, TChan tv)], MR)
+        return (TProd [tv, TRdChan tv], c ++ [(t, TRdChan tv)], MR)
     
     EWr e1 e2 -> do
         (t1, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
-        return (tyUnit, c1 ++ c2 ++ [(t2, TChan t1)], MW)
+        return (tyUnit, c1 ++ c2 ++ [(t2, TWrChan t1)], MW)
         
-    ENu x e -> do
+    ENu (rdc, wrc) e -> do
         env <- ask
         tv <- fresh
-        (t, c, m) <- inEnv (x, (Forall [] $ TChan tv, MV)) (infer e)  -- Is this correct?
+        let newChans = [ (rdc, (Forall [] $ TRdChan tv, MV))
+                       , (wrc, (Forall [] $ TWrChan tv, MV))]
+        (t, c, m) <- foldr (\p a -> inEnv p a) (infer e) newChans
         return (t, c , m)
 
     ERepl e -> do
@@ -538,7 +542,6 @@ infer expr = case expr of
         m <- seqMode m1 m2
         return (t2, c1 ++ c2, m)
 
-    -- TODO: Additional function constraints?
     ERef e -> do
         (t, c, m) <- infer e
         tv <- fresh
@@ -603,7 +606,8 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fv (TSet a) = fv a
     fv (TRef a) = fv a
     fv (TThunk a) = fv a
-    fv (TChan a) = fv a
+    fv (TRdChan a) = fv a
+    fv (TWrChan a) = fv a
     
     normtype (TVar a)   =
         case Prelude.lookup a ord of
@@ -616,7 +620,8 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     normtype (TSet a)   = TSet (normtype a)
     normtype (TRef a)   = TRef (normtype a)
     normtype (TThunk a)   = TThunk (normtype a)
-    normtype (TChan a)   = TChan (normtype a)
+    normtype (TRdChan a)   = TRdChan (normtype a)
+    normtype (TWrChan a)   = TWrChan (normtype a)
     
 -------------------------------------------------------------------------------
 -- Constraint Solver
@@ -650,7 +655,8 @@ unifies (TProd ts1) (TProd ts2) = unifyMany ts1 ts2
 unifies (TSet t1) (TSet t2) = unifies t1 t2
 unifies (TRef t1) (TRef t2) = unifies t1 t2
 unifies (TThunk t1) (TThunk t2) = unifies t1 t2
-unifies (TChan t1) (TChan t2) = unifies t1 t2
+unifies (TRdChan t1) (TRdChan t2) = unifies t1 t2
+unifies (TWrChan t1) (TWrChan t2) = unifies t1 t2
 unifies t1 t2 = throwError $ UnificationFail t1 t2
 
 solver :: Unifier -> Solve Subst

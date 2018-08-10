@@ -16,7 +16,7 @@ data Expr
     | ELet Pattern Expr Expr
     | EIf Expr Expr Expr
     | EMatch Expr [(Pattern, Expr, Expr)]
-    | ENu Name Expr
+    | ENu (Name, Name) Expr
     | ERd Expr
     | EWr Expr Expr
     | EFork Expr Expr

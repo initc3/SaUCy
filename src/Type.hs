@@ -17,7 +17,8 @@ data Type
     | TSet Type
     | TRef Type
     | TThunk Type
-    | TChan Type
+    | TRdChan Type
+    | TWrChan Type
     deriving (Show, Eq, Ord)
 
 data Mode

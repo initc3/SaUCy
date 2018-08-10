@@ -130,11 +130,28 @@ eMatch = do
     bs <- many1 branch
     return $ EMatch e bs
 
+chan1 = do
+    c <- identifier
+    return (c, c ++ "'")
+
+pair = do
+    c1 <- identifier
+    comma
+    c2 <- identifier
+    return (c1, c2)
+    
+chan2 = do
+    cs <- parens pair
+    return cs
+
+chan = try chan1 <|> chan2
+
 eNu = do
     reserved "nu"
-    c <- identifier
+    cs <- commaSep1 chan
     reserved "."
-    ENu c <$> expr
+    e <- expr
+    return $ foldr ENu e cs
 
 eRd = mklexer ERd $ reserved "rd" >> atomExpr
 

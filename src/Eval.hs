@@ -1,6 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 module Eval where
 
+import Control.Arrow
 import Control.Concurrent
 import Control.Concurrent.Chan
 import Control.Exception
@@ -197,9 +198,11 @@ eval' env m expr = case expr of
     EMatch e bs -> evalSub env e >>=
                    evalPatMatch env bs >>=
                    putMVar m
-    ENu x e -> newChan >>= \c ->
-               let env' = extendEnv env x $ VChannel x c
-               in evalSub env' e >>= putMVar m
+    ENu (rdc, wrc) e ->
+        newChan >>= \c ->
+        let env' = updateEnv env [f rdc, f wrc]
+            f x  = (x, VChannel x c)
+        in evalSub env' e >>= putMVar m
     ERd e -> evalSub env e >>= \c -> getChan c >>=
              readChan >>= \v ->
              putMVar m $ VTuple [v, c]
