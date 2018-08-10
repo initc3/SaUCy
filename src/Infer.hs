@@ -490,7 +490,7 @@ infer expr = case expr of
 
     ELet p e1 e2 -> do
         env <- ask
-        (t1, c1, env') <- inferPat p $ Just e1
+        (_, c1, env') <- inferPat p $ Just e1
         (_, _, m1) <- infer e1  -- TODO
         case runSolve c1 of
             Left err -> throwError err
@@ -500,7 +500,7 @@ infer expr = case expr of
                                   (local (apply sub) (infer e2))
                                   env'
                 m <-  seqMode m1 m2
-                return (t2, c1 ++ c2 ++ [(t1, t2)], m)
+                return (t2, c1 ++ c2, m)
 
     EMatch e bs -> do
         tcs <- mapM (inferBranch e) bs
