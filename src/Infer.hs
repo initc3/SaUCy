@@ -550,7 +550,7 @@ infer expr = case expr of
         tv <- fresh
         let newChans = [ (rdc, (Forall [] $ TRdChan tv, MV))
                        , (wrc, (Forall [] $ TWrChan tv, MV))]
-        (t, c, m) <- foldr (\p a -> inEnv p a) (infer e) newChans
+        (t, c, m) <- foldr inEnv (infer e) newChans
         return (t, c , m)
 
     ERepl e -> do

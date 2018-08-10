@@ -246,8 +246,8 @@ eval' env m expr = case expr of
         forkFinally (eval' env m' e1) (\_ -> putMVar choice True) >>= \t1 ->
         forkFinally (eval' env m' e2) (\_ -> putMVar choice False) >>= \t2 ->
         takeMVar choice >>= \isleft ->
-        when (isleft) (killThread t2) >>
-        when (not isleft) (killThread t1) >>
+        when isleft (killThread t2) >>
+        unless isleft (killThread t1) >>
         takeMVar m' >>= putMVar m
     ERepl e -> newEmptyMVar >>= \m' ->
                forkIO (forever $ eval' env m' e) >>
