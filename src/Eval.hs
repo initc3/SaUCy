@@ -200,7 +200,9 @@ eval' env m expr = case expr of
     ENu x e -> newChan >>= \c ->
                let env' = extendEnv env x $ VChannel x c
                in evalSub env' e >>= putMVar m
-    ERd e -> evalSub env e >>= getChan >>= readChan >>= putMVar m
+    ERd e -> evalSub env e >>= \c -> getChan c >>=
+             readChan >>= \v ->
+             putMVar m $ VTuple [v, c]
       where
         getChan (VChannel _ c) = return c
     EWr e1 e2 -> evalSub env e2 >>= getChan >>= \c ->

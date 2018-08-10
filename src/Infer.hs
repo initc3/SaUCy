@@ -500,19 +500,16 @@ infer expr = case expr of
       tv <- fresh
       return (tv, c ++ [(tv `TArr` tv, t)], m)
         
-    -- TODO: Need other patterns for ELam
-        
     EApp e1 e2 -> do
         (t1, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
         tv <- fresh
         return (tv, c1 ++ c2 ++ [(t1, t2 `TArr` tv)], m1)
 
-    -- TODO: Cannot infer type of rd e, need annotations?
     ERd e -> do
         (t, c, m) <- infer e
         tv <- fresh
-        return (tv, c ++ [(t, TChan tv)], MR)
+        return (TProd [tv, TChan tv], c ++ [(t, TChan tv)], MR)
     
     EWr e1 e2 -> do
         (t1, c1, m1) <- infer e1
@@ -522,8 +519,8 @@ infer expr = case expr of
     ENu x e -> do
         env <- ask
         tv <- fresh
-        (t, c, m) <- inEnv (x, (Forall [] tv, MV)) (infer e)  -- Is this correct?
-        return (t, c, m)
+        (t, c, m) <- inEnv (x, (Forall [] $ TChan tv, MV)) (infer e)  -- Is this correct?
+        return (t, c , m)
 
     ERepl e -> do
         (t, c, m) <- infer e
