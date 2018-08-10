@@ -393,15 +393,15 @@ inferPat pat expr = case (pat, expr) of
 inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint])
 inferBranch expr (pat, pguard, branch) = do
     env <- ask
-    (t1, c1, env') <- inferPat pat $ Just expr
+    (_, c1, env') <- inferPat pat $ Just expr
     case runSolve c1 of
         Left err -> throwError err
         Right sub -> do
             let sc t = generalize (apply sub env) (apply sub t)
-            (t2, c2, m2) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+            (t2, c2, _) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
                               (local (apply sub) (infer pguard))
                               env'
-            (t3, c3, m3) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+            (t3, c3, _) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
                               (local (apply sub) (infer branch))
                               env'
             return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)])
@@ -412,7 +412,7 @@ infer expr = case expr of
         (t, m) <- lookupEnv x
         return (t, [], m)
 
-    EImpVar _ -> $(todo "implicit variables")
+    EImpVar _ -> $(todo "Infer implicit variables")
         
     ELit (LInt _) -> return (tyInt, [], MV)
     ELit (LBool _) -> return (tyBool, [], MV)
@@ -423,6 +423,7 @@ infer expr = case expr of
     ETuple es -> do
         tcms <- mapM infer es
         let (ts, cs, _) = concatTCMs tcms
+        -- TODO: Check all ms
         return (TProd ts, cs, MV)
         
     EList [] -> do
@@ -449,31 +450,31 @@ infer expr = case expr of
         return (TSet tyFst, cs ++ cs', MV)
     
     EBinArith op e1 e2 -> do
-        (t1, c1, m1) <- infer e1
-        (t2, c2, m2) <- infer e2
+        (t1, c1, MV) <- infer e1
+        (t2, c2, MV) <- infer e2
         tv <- fresh
         let u1 = t1 `TArr` (t2 `TArr` tv)
         u2 <- abinops op
         return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)], MV)
 
     EBinBool op e1 e2 -> do
-        (t1, c1, m1) <- infer e1
-        (t2, c2, m2) <- infer e2
+        (t1, c1, MV) <- infer e1
+        (t2, c2, MV) <- infer e2
         tv <- fresh
         let u1 = t1 `TArr` (t2 `TArr` tv)
         u2 <- bbinops op
         return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)], MV)
         
     EBinRel op e1 e2 -> do
-        (t1, c1, m1) <- infer e1
-        (t2, c2, m2) <- infer e2
+        (t1, c1, MV) <- infer e1
+        (t2, c2, MV) <- infer e2
         tv <- fresh
         let u1 = t1 `TArr` (t2 `TArr` tv)
         u2 <- rbinops op
         return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)], MV)
 
     EUnBool op e -> do
-        (t, c, m) <- infer e
+        (t, c, MV) <- infer e
         tv <- fresh
         let u1 = t `TArr` tv
             u2 = bunops op
@@ -483,7 +484,9 @@ infer expr = case expr of
         (t1, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
         (t3, c3, m3) <- infer e3
-        return (t2, c1 ++ c2 ++ c3 ++ [(t1, tyBool), (t2, t3)], MV)
+        when (m2 /= m3) (error "modes")
+        m <- seqMode m1 m2
+        return (t2, c1 ++ c2 ++ c3 ++ [(t1, tyBool), (t2, t3)], m)
 
     ELet p e1 e2 -> do
         env <- ask
@@ -497,7 +500,7 @@ infer expr = case expr of
                                   (local (apply sub) (infer e2))
                                   env'
                 m <-  seqMode m1 m2
-                return (t2, c1 ++ c2, m)
+                return (t2, c1 ++ c2 ++ [(t1, t2)], m)
 
     EMatch e bs -> do
         tcs <- mapM (inferBranch e) bs
@@ -529,22 +532,21 @@ infer expr = case expr of
         
     EApp e1 e2 -> do
         (t1, c1, m1) <- infer e1
-        (t2, c2, m2) <- infer e2
+        (t2, c2, MV) <- infer e2 -- TODO
         tv <- fresh
         return (tv, c1 ++ c2 ++ [(t1, t2 `TArr` tv)], m1)
 
     ERd e -> do
-        (t, c, m) <- infer e
+        (t, c, _) <- infer e -- TODO
         tv <- fresh
         return (TProd [tv, TRdChan tv], c ++ [(t, TRdChan tv)], MR)
     
     EWr e1 e2 -> do
-        (t1, c1, m1) <- infer e1
-        (t2, c2, m2) <- infer e2
+        (t1, c1, _) <- infer e1 -- TODO
+        (t2, c2, _) <- infer e2
         return (tyUnit, c1 ++ c2 ++ [(t2, TWrChan t1)], MW)
         
     ENu (rdc, wrc) e -> do
-        env <- ask
         tv <- fresh
         let newChans = [ (rdc, (Forall [] $ TRdChan tv, MV))
                        , (wrc, (Forall [] $ TWrChan tv, MV))]
@@ -553,16 +555,16 @@ infer expr = case expr of
 
     ERepl e -> do
         (t, c, m) <- infer e
-        return (tyUnit, c, MV) -- TODO
+        return (t, c, m) -- TODO
     
     EFork e1 e2 -> do
-        (t1, c1, m1) <- infer e1
+        (_, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
         m <- parMode m1 m2
         return (t2, c1 ++ c2, m)
 
     EChoice e1 e2 -> do
-        (t1, c1, m1) <- infer e1
+        (t1, c1, m1) <- infer e1 -- TODO
         (t2, c2, m2) <- infer e2
         m <- choiceMode m1 m2
         return (t1, c1 ++ c2 ++ [(t1, t2)], m)
@@ -574,32 +576,32 @@ infer expr = case expr of
         return (t2, c1 ++ c2, m)
 
     ERef e -> do
-        (t, c, m) <- infer e
+        (t, c, _) <- infer e
         tv <- fresh
         return (tv, c ++ [(tv, TRef t)], MV)
 
     EDeref e -> do
-        (t, c, m) <- infer e
+        (t, c, _) <- infer e
         tv <- fresh
-        return (tv, c ++ [(TRef tv, t)], m) -- TODO
+        return (tv, c ++ [(TRef tv, t)], MV) -- TODO
 
     EAssign x e -> do
-        (t1, m1) <- lookupEnv x
-        (t2, c2, m2) <- infer e
+        (t1, _) <- lookupEnv x
+        (t2, c2, _) <- infer e
         return (tyUnit, c2 ++ [(t1, TRef t2)], MV)
 
     EBin Cons e1 e2  -> do
-       (t1, c1, m1) <- infer e1
-       (t2, c2, m2) <- infer e2
+       (t1, c1, MV) <- infer e1
+       (t2, c2, MV) <- infer e2
        return (t2, c1 ++ c2 ++ [(TList t1, t2)], MV)
 
     EBin Concat e1 e2  -> do
-       (t1, c1, m1) <- infer e1
-       (t2, c2, m2) <- infer e2
+       (t1, c1, MV) <- infer e1
+       (t2, c2, MV) <- infer e2
        return (t1, c1 ++ c2 ++ [(t1, t2)], MV)
 
     EUn Thunk e -> do
-        (t, c, m) <- infer e
+        (t, c, _) <- infer e -- TODO
         tv <- fresh
         return (tv, c ++ [(tv, TThunk t)], MV)
 
@@ -609,12 +611,12 @@ infer expr = case expr of
         return (tv, c ++ [(TThunk tv, t)], m) -- TODO
 
     EUn Print e -> do
-       (_, c, m) <- infer e
+       (_, c, _) <- infer e
        return (tyUnit, c, MV)
 
     EUn Error e  -> do
        ty <- fresh
-       (t, c, m) <- infer e
+       (t, c, _) <- infer e
        return (ty, c ++ [(t, tyString)], MV)
 
 inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
