@@ -2,7 +2,6 @@ module Type where
 
 import Syntax
 
-import Data.Monoid
 import qualified Data.Map as Map
 
 newtype TVar = TV String

@@ -25,13 +25,6 @@ instance Pretty Expr where
   ppr _ (ELit (LString s)) = PP.text $ show s
   ppr _ (ELit (LBool b)) = PP.text $ show b
   ppr _ (ELit LUnit) = PP.text "()"
-  {-ppr p (EList (e:es)) = ppr p e <+> ppr p (EList es)
-  ppr p (EList []) = PP.text "[]"-}
-  {-ppr p (EPair e1 e2) =
-        PP.text "(" <+> ppr p e1
-    <+> PP.text "," <+> ppr p e2
-    <+> PP.text ")"-}
-  -- ppr p (EIsZero a) = (parensIf (p > 0) $ PP.text "iszero" <+> ppr (p+1) a)
   ppr p (EIf e1 e2 e3) =
         PP.text "if"   <+> ppr p e1
     <+> PP.text "then" <+> ppr p e2
@@ -48,7 +41,7 @@ instance Pretty Value where
     ppr p (VSet vs) = PP.braces $ ppList p vs
     ppr p (VTuple vs) = PP.parens $ ppList p vs
     ppr _ VUnit = PP.text "()"
-    ppr _ (VClosure x _ _) = PP.text "closure"
+    ppr _ (VClosure _ _ _) = PP.text "closure"
     ppr p (VThunk _ e) = PP.text "thunk(" <> ppr p e <> PP.text ")"
     ppr _ (VChannel x _) = PP.text x
     ppr _ (VRef x) = PP.text $ show x
@@ -60,22 +53,6 @@ ppexpr = PP.render . ppr 0
 
 ppval :: Value -> String
 ppval = PP.render . ppr 0
-
-instance Show TypeError where
-  show (UnificationFail a b) =
-    concat ["Cannot unify types: \n\t", pptype a, "\nwith \n\t", pptype b]
-  show (InfiniteType (TV a) b) =
-    concat ["Cannot construct the infinite type: ", a, " = ", pptype b]
-  show (Ambiguous cs) =
-    concat ["Cannot not match expected type: '" ++ pptype a ++ "' with actual type: '" ++ pptype b ++ "'\n" | (a,b) <- cs]
-  show (UnboundVariable a) = "Not in scope: " ++ a
-  show (ParFail m1 m2) = 
-    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " | " ++ ppmode m2]
-  show (SeqFail m1 m2) =
-    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " ; " ++ ppmode m2]
-  show (ChoiceFail m1 m2) =
-    concat ["Subexpressions of choice must be of mode R: Given ", ppmode m1 ++ " and " ++ ppmode m2]
-
 
 instance Pretty TVar where
   ppr _ (TV x) = PP.text x
@@ -103,6 +80,21 @@ instance Pretty Mode where
   ppr _ MV = PP.text "V"
   ppr _ MR = PP.text "R"
   ppr _ MW = PP.text "W"
+
+instance Show TypeError where
+  show (UnificationFail a b) =
+    concat ["Cannot unify types: \n\t", pptype a, "\nwith \n\t", pptype b]
+  show (InfiniteType (TV a) b) =
+    concat ["Cannot construct the infinite type: ", a, " = ", pptype b]
+  show (Ambiguous cs) =
+    concat ["Cannot not match expected type: '" ++ pptype a ++ "' with actual type: '" ++ pptype b ++ "'\n" | (a,b) <- cs]
+  show (UnboundVariable a) = "Not in scope: " ++ a
+  show (ParFail m1 m2) = 
+    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " | " ++ ppmode m2]
+  show (SeqFail m1 m2) =
+    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " ; " ++ ppmode m2]
+  show (ChoiceFail m1 m2) =
+    concat ["Subexpressions of choice must be of mode R: Given ", ppmode m1 ++ " and " ++ ppmode m2]
 
 ppscheme :: Scheme -> String
 ppscheme = PP.render . ppr 0

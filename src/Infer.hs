@@ -1,5 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 module Infer where
 
@@ -9,9 +10,8 @@ import Control.Monad.Reader
 import Control.Monad.State
 import Data.List (nub)
 import qualified Data.Map as Map
-import Data.Maybe
-import Data.Monoid
 import qualified Data.Set as Set
+import Development.Placeholders
 
 import Syntax
 import Type
@@ -76,7 +76,7 @@ instance Substitutable Type where
 instance Substitutable (Scheme, Mode) where
     apply (Subst s) (Forall as t, m) = (Forall as $ apply s' t, m)
                             where s' = Subst $ foldr Map.delete s as
-    ftv (Forall as t, m) = ftv t `Set.difference` Set.fromList as
+    ftv (Forall as t, _) = ftv t `Set.difference` Set.fromList as
 
 instance Substitutable Constraint where
     apply s (t1, t2) = (apply s t1, apply s t2)
@@ -143,7 +143,7 @@ inferExpr env ex = case runInfer env (infer ex) of
 constraintsExpr :: TypeEnv -> Expr -> Either TypeError ([Constraint], Subst, Type, Scheme)
 constraintsExpr env ex = case runInfer env (infer ex) of
     Left       err -> Left err
-    Right (ty, cs, ms) -> case runSolve cs of
+    Right (ty, cs, _) -> case runSolve cs of
         Left err    -> Left err
         Right subst -> Right (cs, subst, ty, sc)
           where sc = closeOver $ apply subst ty
@@ -190,9 +190,11 @@ abinops Mul = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
 abinops Div = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
 abinops Mod = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
 
+bbinops :: BBinop -> Infer Type
 bbinops And = return $ tyBool `TArr` (tyBool `TArr` tyBool)
 bbinops Or  = return $ tyBool `TArr` (tyBool `TArr` tyBool)
 
+rbinops :: RBinop -> Infer Type
 rbinops Lt  = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
 rbinops Gt  = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
 rbinops Leq = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
@@ -200,6 +202,7 @@ rbinops Geq = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
 rbinops Eql = eqbinop
 rbinops Neq = eqbinop
 
+eqbinop :: Infer Type
 eqbinop = do
     t1 <- fresh
     t2 <- fresh
@@ -240,28 +243,42 @@ getPVars = go []
         acc2 = getPVars ps
     go acc _ = acc
 
+concatTCEs :: [(Type, [Constraint], [(Name, (Type, Mode))])]
+           -> ([Type], [Constraint], [(Name, (Type, Mode))])
 concatTCEs = foldr f ([], [], [])
   where
     f (t, c, e) (t', c', e') = (t : t', c ++ c', e ++ e')
 
+concatTCs :: [(Type, [Constraint])]
+           -> ([Type], [Constraint])
 concatTCs = foldr f ([], [])
   where
     f (t, c) (t', c') = (t : t', c ++ c')
 
+concatTCMs :: [(Type, [Constraint], Mode)]
+           -> ([Type], [Constraint], [Mode])
 concatTCMs = foldr f ([], [], [])
   where
     f (t, c, m) (t', c', m') = (t : t', c ++ c', m : m')
 
+inferPatList :: [Pattern]
+             -> [Maybe Expr]
+             -> Infer ([Type], [Constraint], [(Name, (Type, Mode))])
 inferPatList pats exprs = do
     tces <- zipWithM inferPat pats exprs
     return $ concatTCEs tces
 
+listConstraints :: [Type]
+                -> [Constraint]
+                -> Infer (Type, [Constraint])
 listConstraints ts cs = do
     thd <- fresh
     return $ if null ts then (thd, cs) else
                  (head ts, cs ++ map (\x -> (thd, x)) ts)
         
-inferPat :: Pattern -> Maybe Expr -> Infer (Type, [Constraint], [(Name, (Type, Mode))])
+inferPat :: Pattern
+         -> Maybe Expr
+         -> Infer (Type, [Constraint], [(Name, (Type, Mode))])
 inferPat pat expr = case (pat, expr) of
     (PVar x, Just e) -> do
         tv <- fresh
@@ -294,57 +311,57 @@ inferPat pat expr = case (pat, expr) of
     (PTuple ps, Just (ETuple es)) -> do
         when (length ps /= length es) (error "fail") -- TODO: -- Custom error
         (tes, ces, _) <- infer $ ETuple es
-        (ts, cs, es) <- inferPatList ps $ map Just es
-        return (TProd ts, ces ++ cs ++ [(TProd ts, tes)], es)
+        (ts, cs, env) <- inferPatList ps $ map Just es
+        return (TProd ts, ces ++ cs ++ [(TProd ts, tes)], env)
     (PTuple ps, Just e) -> do
-        (ts, cs, es) <- inferPatList ps $ repeat Nothing
+        (ts, cs, env) <- inferPatList ps $ repeat Nothing
         (te, ce, _) <- infer e
-        return (TProd ts, (TProd ts, te) : ce, es)
+        return (TProd ts, cs ++ ce ++ [(TProd ts, te)], env)
     (PTuple ps, Nothing) -> do
-        (ts, cs, es) <- inferPatList ps $ repeat Nothing
-        return (TProd ts, cs, es)
+        (ts, cs, env) <- inferPatList ps $ repeat Nothing
+        return (TProd ts, cs, env)
 
     (PList ps, Just (EList es)) -> do
         when (length ps /= length es) (error "fail") -- TODO
         (tes, ces, _) <- infer $ EList es
-        (ts, cs, es) <- inferPatList ps $ map Just es
-        (thd, cs) <- listConstraints ts cs
-        return (TList thd, ces ++ cs ++ [(TList thd, tes)], es)
+        (ts, cs, env) <- inferPatList ps $ map Just es
+        (thd, cs') <- listConstraints ts cs
+        return (TList thd, ces ++ cs' ++ [(TList thd, tes)], env)
     (PList ps, Just e) -> do
         (te, ce, _) <- infer e
-        (ts, cs, es) <- inferPatList ps $ repeat Nothing
-        (thd, cs) <- listConstraints ts cs
-        return (TList thd, ce ++ cs ++ [(TList thd, te)], es)
+        (ts, cs, env) <- inferPatList ps $ repeat Nothing
+        (thd, cs') <- listConstraints ts cs
+        return (TList thd, ce ++ cs' ++ [(TList thd, te)], env)
     (PList ps, Nothing) -> do
         tces <- zipWithM inferPat ps $ repeat Nothing
-        let (ts, cs, es) = concatTCEs tces
-        (thd, cs) <- listConstraints ts cs
-        return (TList thd, cs, es)
+        let (ts, cs, env) = concatTCEs tces
+        (thd, cs') <- listConstraints ts cs
+        return (TList thd, cs', env)
 
     (PSet ps, Just (ESet es)) -> do
         when (length ps /= length es) (error "fail") -- TODO
         (tes, ces, _) <- infer $ ESet es
-        (ts, cs, es) <- inferPatList ps $ map Just es
-        (thd, cs) <- listConstraints ts cs
-        return (TSet thd, ces ++ cs ++ [(TSet thd, tes)], es)
+        (ts, cs, env) <- inferPatList ps $ map Just es
+        (thd, cs') <- listConstraints ts cs
+        return (TSet thd, ces ++ cs' ++ [(TSet thd, tes)], env)
     (PSet ps, Just e) -> do
         (te, ce, _) <- infer e
-        (ts, cs, es) <- inferPatList ps $ repeat Nothing
-        (thd, cs) <- listConstraints ts cs
-        return (TSet thd, ce ++ cs ++ [(TSet thd, te)], es)
+        (ts, cs, env) <- inferPatList ps $ repeat Nothing
+        (thd, cs') <- listConstraints ts cs
+        return (TSet thd, ce ++ cs' ++ [(TSet thd, te)], env)
     (PSet ps, Nothing) -> do
         tces <- zipWithM inferPat ps $ repeat Nothing
-        let (ts, cs, es) = concatTCEs tces
-        (thd, cs) <- listConstraints ts cs
-        return (TSet thd, cs, es)
+        let (ts, cs, env) = concatTCEs tces
+        (thd, cs') <- listConstraints ts cs
+        return (TSet thd, cs', env)
 
     (PCons phd ptl, Just e@(EList (hd:tl))) -> do
         (te, ce, _) <- infer e
         (thd, chd, ehd) <- inferPat phd $ Just hd
         (ttl, ctl, etl) <- inferPat ptl $ Just $ EList tl
         let cs = ce ++ chd ++ ctl ++ [(te, TList thd), (te, ttl)]
-            es = ehd ++ etl
-        return (TList thd, cs, es)
+            env = ehd ++ etl
+        return (TList thd, cs, env)
     (PCons phd ptl, Just e) -> do
         (te, ce, _) <- infer e
         (thd, chd, ehd) <- inferPat phd Nothing
@@ -352,14 +369,14 @@ inferPat pat expr = case (pat, expr) of
         let cs = ce ++ chd ++ ctl ++ [ (te, TList thd)
                                      , (te, ttl)
                                      , (TList thd, ttl) ]
-            es = ehd ++ etl
-        return (TList thd, cs, es)
+            env = ehd ++ etl
+        return (TList thd, cs, env)
     (PCons phd ptl, Nothing) -> do
         (thd, chd, ehd) <- inferPat phd Nothing
         (ttl, ctl, etl) <- inferPat ptl Nothing
         let cs = chd ++ ctl ++ [(TList thd, ttl)]
-            es = ehd ++ etl
-        return (TList thd, cs, es)
+            env = ehd ++ etl
+        return (TList thd, cs, env)
 
     (PUnit, Just e) -> do
         (te, ce, _) <- infer e
@@ -374,7 +391,7 @@ inferPat pat expr = case (pat, expr) of
         return (ty, [], [])
 
 inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint])
-inferBranch expr (pat, guard, branch) = do
+inferBranch expr (pat, pguard, branch) = do
     env <- ask
     (t1, c1, env') <- inferPat pat $ Just expr
     case runSolve c1 of
@@ -382,7 +399,7 @@ inferBranch expr (pat, guard, branch) = do
         Right sub -> do
             let sc t = generalize (apply sub env) (apply sub t)
             (t2, c2, m2) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
-                              (local (apply sub) (infer guard))
+                              (local (apply sub) (infer pguard))
                               env'
             (t3, c3, m3) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
                               (local (apply sub) (infer branch))
@@ -395,7 +412,7 @@ infer expr = case expr of
         (t, m) <- lookupEnv x
         return (t, [], m)
 
-    -- EImpVar x
+    EImpVar _ -> $(todo "implicit variables")
         
     ELit (LInt _) -> return (tyInt, [], MV)
     ELit (LBool _) -> return (tyBool, [], MV)
@@ -405,7 +422,7 @@ infer expr = case expr of
 
     ETuple es -> do
         tcms <- mapM infer es
-        let (ts, cs, ms) = concatTCMs tcms
+        let (ts, cs, _) = concatTCMs tcms
         return (TProd ts, cs, MV)
         
     EList [] -> do
@@ -502,6 +519,8 @@ infer expr = case expr of
         ty <- fresh
         (t, c, m) <- infer e
         return (ty `TArr` t, c, m)
+
+    ELam _ _ -> error "Infer.infer"
         
     EFix e -> do
       (t, c, m) <- infer e
@@ -546,10 +565,10 @@ infer expr = case expr of
         (t1, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
         m <- choiceMode m1 m2
-        return (t2, c1 ++ c2, m)
+        return (t1, c1 ++ c2 ++ [(t1, t2)], m)
 
     ESeq e1 e2 -> do
-        (t1, c1, m1) <- infer e1
+        (_, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
         m <- seqMode m1 m2
         return (t2, c1 ++ c2, m)
@@ -576,7 +595,7 @@ infer expr = case expr of
 
     EBin Concat e1 e2  -> do
        (t1, c1, m1) <- infer e1
-       (t2, c2, n2) <- infer e2
+       (t2, c2, m2) <- infer e2
        return (t1, c1 ++ c2 ++ [(t1, t2)], MV)
 
     EUn Thunk e -> do
@@ -590,7 +609,7 @@ infer expr = case expr of
         return (tv, c ++ [(TThunk tv, t)], m) -- TODO
 
     EUn Print e -> do
-       (t, c, m) <- infer e
+       (_, c, m) <- infer e
        return (tyUnit, c, MV)
 
     EUn Error e  -> do

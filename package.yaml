@@ -15,6 +15,7 @@ dependencies:
 - containers
 - text
 - parsec
+- placeholders
 - pretty
 - transformers
 - haskeline
