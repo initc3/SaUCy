@@ -98,6 +98,7 @@ data TypeError
     | UnificationMismatch [Type] [Type]
     | ParFail Mode Mode
     | SeqFail Mode Mode
+    | ChoiceFail Mode Mode
 
 -- | Modes
 parMode :: Mode -> Mode -> Infer Mode
@@ -116,6 +117,11 @@ seqMode m1 m2 = case (m1, m2) of
     (MR, _)  -> return MR
     (MW, MR) -> return MW
     _        -> throwError $ SeqFail m1 m2
+
+choiceMode :: Mode -> Mode -> Infer Mode
+choiceMode m1 m2 = case (m1, m2) of
+    (MR, MR) -> return MR
+    _        -> throwError $ ChoiceFail m1 m2
 
 -------------------------------------------------------------------------------
 -- Inference
@@ -534,6 +540,12 @@ infer expr = case expr of
         (t1, c1, m1) <- infer e1
         (t2, c2, m2) <- infer e2
         m <- parMode m1 m2
+        return (t2, c1 ++ c2, m)
+
+    EChoice e1 e2 -> do
+        (t1, c1, m1) <- infer e1
+        (t2, c2, m2) <- infer e2
+        m <- choiceMode m1 m2
         return (t2, c1 ++ c2, m)
 
     ESeq e1 e2 -> do

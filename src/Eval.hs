@@ -217,6 +217,16 @@ eval' env m expr = case expr of
                    forkIO (eval' env m1 e1) >>
                    forkIO (eval' env m2 e2) >>
                    takeMVar m2 >>= putMVar m
+    -- TODO: Refactor
+    EChoice e1 e2 ->
+        newEmptyMVar >>= \m' ->
+        newEmptyMVar >>= \choice ->
+        forkFinally (eval' env m' e1) (\_ -> putMVar choice 1) >>= \t1 ->
+        forkFinally (eval' env m' e2) (\_ -> putMVar choice 2) >>= \t2 ->
+        takeMVar choice >>= \ran ->
+        when (ran == 1) (killThread t2) >>
+        when (ran == 2) (killThread t1) >>
+        takeMVar m' >>= putMVar m
     ERepl e -> newEmptyMVar >>= \m' ->
                forkIO (forever $ eval' env m' e) >>
                putMVar m VUnit

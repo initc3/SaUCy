@@ -20,6 +20,7 @@ data Expr
     | ERd Expr
     | EWr Expr Expr
     | EFork Expr Expr
+    | EChoice Expr Expr
     | ERepl Expr
     | ERef Expr
     | EDeref Expr

@@ -33,21 +33,21 @@ examples =
       , "let f x = match x with | (a,b):[] => a"
       , "\8704 a b . [(a,b)] -> a @ V")
     , ( "typed chan"
-      , "let f () = nu c . wr 1 -> c |> c"
-      , "Unit -> Chan Int @ W")
+      , "let f () = nu (rc, wc) . wr 1 -> wc |> let (_, rc) = rd rc in rc"
+      , "Unit -> Rd Int @ W")
     , ( "simple read"
       , "let f () = nu c . rd c"
-      , "\8704 a . Unit -> a @ R")
+      , "\8704 a . Unit -> (a,Rd a) @ R")
     , ( "simple write"
-      , "let f () = nu c . wr 1 -> c"
+      , "let f () = nu c . wr 1 -> c'"
       , "Unit -> Unit @ W")
     , ( "ill-typed chan"
-      , "let f () = nu c . wr 1 -> c |> wr () -> c |> c"
+      , "let f () = nu (rc, wc) . wr 1 -> wc |> wr () -> wc |> rc"
       , "ill-typed")
     , ( "parallel write"
-      , "let f () = nu c . wr 1 -> c |> wr 1 -> c"
+      , "let f () = nu (rc, wc) . wr 1 -> wc |> wr 1 -> wc"
       , "ill-typed")
     , ( "sequential write"
-      , "let f () = nu c . wr 1 -> c ; wr 1 -> c"
+      , "let f () = nu (rc, wc) . wr 1 -> wc ; wr 1 -> wc"
       , "ill-typed")
     ]

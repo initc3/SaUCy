@@ -20,8 +20,8 @@ test_parser =
 examples =
     [ ( "allocate channel then write"
       , "nu c . wr 1 -> c"
-      , Right [ ("it", ENu "c" (EWr (ELit $ LInt 1)
-                               (EVar "c")))
+      , Right [ ("it", ENu ("c", "c'") (EWr (ELit $ LInt 1)
+                                       (EVar "c")))
               ]
       )
     , ( "let binding w/ tuple matching"

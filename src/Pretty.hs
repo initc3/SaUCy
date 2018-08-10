@@ -73,6 +73,8 @@ instance Show TypeError where
     concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " | " ++ ppmode m2]
   show (SeqFail m1 m2) =
     concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " ; " ++ ppmode m2]
+  show (ChoiceFail m1 m2) =
+    concat ["Subexpressions of choice must be of mode R: Given ", ppmode m1 ++ " and " ++ ppmode m2]
 
 
 instance Pretty TVar where
