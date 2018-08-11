@@ -6,7 +6,7 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Interactive Lambda Calculus (ILC) abstract syntax tree.
+-- ILC abstract syntax tree.
 --
 --------------------------------------------------------------------------------
 
