@@ -1,17 +1,25 @@
-module Pretty where
-{-    (
-      ppexpr
-    , ppval
-    ) where-}
+--------------------------------------------------------------------------------
+-- |
+-- Module      :  Language.ILC.Pretty
+-- Copyright   :  (C) 2018 Kevin Liao
+-- License     :  BSD-style (see LICENSE)
+-- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
+-- Stability   :  experimental
+--
+-- Pretty printing functions.
+--
+--------------------------------------------------------------------------------
+
+module Language.ILC.Pretty where
 
 import qualified Data.Map as Map
 import Text.PrettyPrint (Doc, (<>), (<+>))
 import qualified Text.PrettyPrint as PP
 
-import Eval
-import Infer
-import Syntax
-import Type
+import Language.ILC.Eval
+import Language.ILC.Infer
+import Language.ILC.Syntax
+import Language.ILC.Type
 
 parensIf :: Bool -> Doc -> Doc
 parensIf True = PP.parens

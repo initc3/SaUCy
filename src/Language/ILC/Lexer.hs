@@ -1,17 +1,24 @@
-module Lexer where
+--------------------------------------------------------------------------------
+-- |
+-- Module      :  Language.ILC.Lexer
+-- Copyright   :  (C) 2018 Kevin Liao
+-- License     :  BSD-style (see LICENSE)
+-- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
+-- Stability   :  experimental
+--
+-- Lexing functions.
+--
+--------------------------------------------------------------------------------
+
+module Language.ILC.Lexer where
 
 import Data.Functor.Identity (Identity)
 import Text.Parsec
 import qualified Text.Parsec.Expr as Ex
--- import Text.Parsec.Language (emptyDef)
 import Text.Parsec.String (Parser)
 import qualified Text.Parsec.Token as Tok
 
-import Syntax
-
--------------------------------------------------------------------------------
--- Lexer
--------------------------------------------------------------------------------
+import Language.ILC.Syntax
 
 langDef :: Tok.LanguageDef ()
 langDef = Tok.LanguageDef

@@ -1,5 +1,4 @@
-module Unit.PatternTest
-  (
+module Unit.PatternTest (
     test_patternMatch
   ) where
 
@@ -7,9 +6,8 @@ import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Eval
--- import Parser
-import Syntax
+import Language.ILC.Eval
+import Language.ILC.Syntax
 
 test_patternMatch :: TestTree
 test_patternMatch =

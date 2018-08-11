@@ -1,5 +1,16 @@
-module Parser
-    (
+--------------------------------------------------------------------------------
+-- |
+-- Module      :  Language.ILC.Parser
+-- Copyright   :  (C) 2018 Kevin Liao
+-- License     :  BSD-style (see LICENSE)
+-- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
+-- Stability   :  experimental
+--
+-- Parse source into an AST.
+--
+--------------------------------------------------------------------------------
+
+module Language.ILC.Parser (
       parser
     ) where
 
@@ -8,8 +19,8 @@ import Text.Parsec
 import qualified Text.Parsec.Expr as Ex
 import Text.Parsec.String (Parser)
 
-import Lexer
-import Syntax
+import Language.ILC.Lexer
+import Language.ILC.Syntax
 
 -- | Parse expressions
 
@@ -219,7 +230,8 @@ ePrint :: Parser Expr
 ePrint = mklexer (EUn Print) $ reserved "print" >> atomExpr
 
 eError :: Parser Expr
-eError = mklexer (EUn Syntax.Error) $ reserved "error" >> atomExpr
+-- TODO
+eError = mklexer (EUn Language.ILC.Syntax.Error) $ reserved "error" >> atomExpr
 
 eUn :: Parser Expr
 eUn = eThunk

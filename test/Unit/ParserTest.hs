@@ -1,5 +1,4 @@
-module Unit.ParserTest
-  (
+module Unit.ParserTest (
     test_parser
   ) where
 
@@ -7,9 +6,9 @@ import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Eval
-import Parser
-import Syntax
+import Language.ILC.Eval
+import Language.ILC.Parser
+import Language.ILC.Syntax
 
 test_parser :: TestTree
 test_parser =
@@ -150,17 +149,4 @@ examples =
                                ])
               ]
       )
-    {-, ( "GetBit"
-      , "let GetBit = lam x . nu c . |> (rd c) ; |> (wr 0 -> c) ; |> (wr 1 -> c) GetBit 1"
-      , Right [ ( "GetBit"
-                , ELam (PVar "x")
-                       (ENu "c" (ESeq (EFork (ERd (EVar "c")))
-                                      (ESeq (EFork (EWr (ELit $ LInt 0)
-                                                        (EVar "c")))
-                                            (EFork (EWr (ELit $ LInt 1)
-                                                        (EVar "c")))))))
-              , ("it", EApp (EVar "GetBit")
-                            (ELit $ LInt 1))
-              ]
-      )-}
     ]

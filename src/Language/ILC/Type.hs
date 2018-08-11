@@ -1,6 +1,18 @@
-module Type where
+--------------------------------------------------------------------------------
+-- |
+-- Module      :  Language.ILC.Type
+-- Copyright   :  (C) 2018 Kevin Liao
+-- License     :  BSD-style (see LICENSE)
+-- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
+-- Stability   :  experimental
+--
+-- Types and modes.
+--
+--------------------------------------------------------------------------------
 
-import Syntax
+module Language.ILC.Type where
+
+import Language.ILC.Syntax
 
 import qualified Data.Map as Map
 

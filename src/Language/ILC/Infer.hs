@@ -1,8 +1,21 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-module Infer where
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeSynonymInstances       #-}
+
+--------------------------------------------------------------------------------
+-- |
+-- Module      :  Language.ILC.Infer
+-- Copyright   :  (C) 2018 Kevin Liao
+-- License     :  BSD-style (see LICENSE)
+-- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
+-- Stability   :  experimental
+--
+-- Damas-Milner type inference for ILC programs.
+--
+--------------------------------------------------------------------------------
+
+module Language.ILC.Infer where
 
 import Control.Monad.Except
 import Control.Monad.Identity
@@ -13,8 +26,8 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Development.Placeholders
 
-import Syntax
-import Type
+import Language.ILC.Syntax
+import Language.ILC.Type
 
 --------------------------------------------------------------------------------
 -- Classes

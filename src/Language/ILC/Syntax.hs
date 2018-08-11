@@ -1,4 +1,28 @@
-module Syntax where
+--------------------------------------------------------------------------------
+-- |
+-- Module      :  Language.ILC.Syntax
+-- Copyright   :  (C) 2018 Kevin Liao
+-- License     :  BSD-style (see LICENSE)
+-- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
+-- Stability   :  experimental
+--
+-- Interactive Lambda Calculus (ILC) abstract syntax tree.
+--
+--------------------------------------------------------------------------------
+
+module Language.ILC.Syntax (
+      Name(..)
+    , Expr(..)
+    , Lit(..)
+    , Binop(..)
+    , ABinop(..)
+    , BBinop(..)
+    , RBinop(..)
+    , Unop(..)
+    , BUnop(..)
+    , Pattern(..)
+    , Decl(..)
+    ) where
 
 type Name = String
 
@@ -106,5 +130,5 @@ data Pattern
 type Decl = (Name, Expr)
 
 -- | Program with main expression
-data Program = Program [Decl] Expr  -- TODO: Main
+data Program = Program [Decl] Expr  -- ^ TODO: Main
     deriving (Eq, Show)

@@ -1,6 +1,19 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE TemplateHaskell #-}
-module Eval where
+
+--------------------------------------------------------------------------------
+-- |
+-- Module      :  Language.ILC.Syntax
+-- Copyright   :  (C) 2018 Kevin Liao
+-- License     :  BSD-style (see LICENSE)
+-- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
+-- Stability   :  experimental
+--
+-- Evaluating ILC expressions.
+--
+--------------------------------------------------------------------------------
+
+module Language.ILC.Eval where
 
 import Control.Concurrent
 import Control.Exception
@@ -12,7 +25,7 @@ import Data.Maybe
 import Data.Typeable
 import Development.Placeholders
 
-import Syntax
+import Language.ILC.Syntax
 
 data Value
     = VInt Integer

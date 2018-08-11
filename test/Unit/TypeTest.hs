@@ -1,5 +1,4 @@
-module Unit.TypeTest
-  (
+module Unit.TypeTest (
     test_types
   ) where
 
@@ -7,11 +6,11 @@ import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Eval
-import Infer (inferExpr)
-import Parser
-import Pretty
-import Type (emptyTyEnv)
+import Language.ILC.Eval
+import Language.ILC.Infer (inferExpr)
+import Language.ILC.Parser
+import Language.ILC.Pretty
+import Language.ILC.Type (emptyTyEnv)
 
 test_types = testGroup "Unit.TypeTest" $ map f examples
   where f (str, src, ty) = testCase (printf "Infer type of %s" str) $
