@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -Wall #-}
 
 --------------------------------------------------------------------------------
 -- |
@@ -65,10 +66,7 @@ instance Show Value where
     show VClosure {} = "<closure>" -- TODO
     show VThunk {} = "<thunk>"
     show (VChannel x _) = x
-    show (VRef x) = show x
-
-instance Show (IORef a) where
-    show _ = "ref"
+    show (VRef _) = "<ref>"
 
 type TermEnv = Map.Map Name Value
 
@@ -278,19 +276,19 @@ eval' env m expr = case expr of
         getRef _        = error "Eval.eval': EAssign"
     ESeq e1 e2 -> evalSub env e1 >> evalSub env e2 >>= putMVar m
     -- TODO: Refactor
-    EBinArith Add e1 e2 -> evalArith (+) env m e1 e2
-    EBinArith Sub e1 e2 -> evalArith (-) env m e1 e2
-    EBinArith Mul e1 e2 -> evalArith (*) env m e1 e2
-    EBinArith Div e1 e2 -> evalArith quot env m e1 e2
-    EBinArith Mod e1 e2 -> evalArith mod env m e1 e2
-    EBinBool And e1 e2 -> evalBool (&&) env m e1 e2
-    EBinBool Or e1 e2 -> evalBool (||) env m e1 e2
-    EBinRel Lt e1 e2 -> evalRel (<) env m e1 e2
-    EBinRel Gt e1 e2 -> evalRel (>) env m e1 e2
-    EBinRel Leq e1 e2 -> evalRel (<=) env m e1 e2
-    EBinRel Geq e1 e2 -> evalRel (>=) env m e1 e2
-    EBinRel Eql e1 e2 -> evalRelPoly (==) env m e1 e2
-    EBinRel Neq e1 e2 -> evalRelPoly (/=) env m e1 e2
+    EBin Add e1 e2 -> evalArith (+) env m e1 e2
+    EBin Sub e1 e2 -> evalArith (-) env m e1 e2
+    EBin Mul e1 e2 -> evalArith (*) env m e1 e2
+    EBin Div e1 e2 -> evalArith quot env m e1 e2
+    EBin Mod e1 e2 -> evalArith mod env m e1 e2
+    EBin And e1 e2 -> evalBool (&&) env m e1 e2
+    EBin Or e1 e2 -> evalBool (||) env m e1 e2
+    EBin Lt e1 e2 -> evalRel (<) env m e1 e2
+    EBin Gt e1 e2 -> evalRel (>) env m e1 e2
+    EBin Leq e1 e2 -> evalRel (<=) env m e1 e2
+    EBin Geq e1 e2 -> evalRel (>=) env m e1 e2
+    EBin Eql e1 e2 -> evalRelPoly (==) env m e1 e2
+    EBin Neq e1 e2 -> evalRelPoly (/=) env m e1 e2
     EBin Cons e1 e2 ->
         evalSubs env e1 e2 >>=
         (\case (x, VList xs) -> return $ VList $ x:xs
@@ -301,21 +299,21 @@ eval' env m expr = case expr of
         (\case
             (VList xs, VList ys)     -> return $ VList $ xs ++ ys
             (VString xs, VString ys) -> return $ VString $ xs ++ ys
-            _                        -> error "Eval.eval': EBin") >>=
+            _                        -> error "Eval.eval': Concat") >>=
         putMVar m
-    EUnBool Not e -> evalSub env e >>= neg >>= putMVar m
+    EUn Not e -> evalSub env e >>= neg >>= putMVar m
       where
         neg (VBool b) = return $ VBool $ not b
-        neg _         = error "Eval.eval'"
-    EUn Thunk e -> putMVar m $ VThunk env e
-    EUn Force e -> evalSub env e >>= force >>= putMVar m
+        neg _         = error "Eval.eval': Not"
+    EThunk e -> putMVar m $ VThunk env e
+    EForce e -> evalSub env e >>= force >>= putMVar m
       where
         force (VThunk env' e') = evalSub env' e'
-        force _                = error "Eval.eval': EUn Force"
-    EUn Print e -> evalSub env e >>= print >> putMVar m VUnit
-    EUn Error e -> evalSub env e >>= getString >>= throwIO . EvalError
+        force _                = error "Eval.eval': EForce"
+    EPrint e -> evalSub env e >>= print >> putMVar m VUnit
+    EError e -> evalSub env e >>= getString >>= throwIO . EvalError
       where getString (VString s) = return s
-            getString _           = return "Eval.eval': EUn Error"
+            getString _           = return "Eval.eval': EError"
 
 -- TODO: Types    
 exec :: [Decl] -> IO Value

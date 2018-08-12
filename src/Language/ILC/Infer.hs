@@ -1,6 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TupleSections              #-}
 {-# LANGUAGE TypeSynonymInstances       #-}
 
 --------------------------------------------------------------------------------
@@ -196,24 +197,21 @@ generalize :: TypeEnv -> Type-> Scheme -- ^ T-Gen
 generalize env t = Forall as t
     where as = Set.toList $ ftv t `Set.difference` ftv env
 
-abinops :: ABinop -> Infer Type
-abinops Add = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
-abinops Sub = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
-abinops Mul = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
-abinops Div = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
-abinops Mod = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
-
-bbinops :: BBinop -> Infer Type
-bbinops And = return $ tyBool `TArr` (tyBool `TArr` tyBool)
-bbinops Or  = return $ tyBool `TArr` (tyBool `TArr` tyBool)
-
-rbinops :: RBinop -> Infer Type
-rbinops Lt  = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
-rbinops Gt  = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
-rbinops Leq = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
-rbinops Geq = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
-rbinops Eql = eqbinop
-rbinops Neq = eqbinop
+binops :: Binop -> Infer Type
+binops Add = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
+binops Sub = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
+binops Mul = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
+binops Div = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
+binops Mod = return $ tyInt  `TArr` (tyInt  `TArr` tyInt)
+binops And = return $ tyBool `TArr` (tyBool `TArr` tyBool)
+binops Or  = return $ tyBool `TArr` (tyBool `TArr` tyBool)
+binops Lt  = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
+binops Gt  = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
+binops Leq = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
+binops Geq = return $ tyInt  `TArr` (tyInt  `TArr` tyBool)
+binops Eql = eqbinop
+binops Neq = eqbinop
+binops _   = error "Infer.binops"
 
 eqbinop :: Infer Type
 eqbinop = do
@@ -221,8 +219,8 @@ eqbinop = do
     t2 <- fresh
     return $ t1  `TArr` (t2  `TArr` tyBool)
 
-bunops :: BUnop -> Type
-bunops Not = tyBool  `TArr` tyBool
+unops :: Unop -> Type
+unops Not = tyBool  `TArr` tyBool
 
 getBinds :: Pattern -> Expr -> [(Name, Expr)]
 getBinds = go []
@@ -287,7 +285,7 @@ listConstraints :: [Type]
 listConstraints ts cs = do
     thd <- fresh
     return $ if null ts then (thd, cs) else
-                 (head ts, cs ++ map (\x -> (thd, x)) ts)
+                 (head ts, cs ++ map ((thd,)) ts)
         
 inferPat :: Pattern
          -> Maybe Expr
@@ -461,36 +459,31 @@ infer expr = case expr of
             cs    = concatMap (\(_,x,_) -> x) tcms
             cs'   = map (\(x, _, _) -> (tyFst, x)) tcms
         return (TSet tyFst, cs ++ cs', MV)
+
+    -- TODO: Move into EBin?
+    EBin Cons e1 e2  -> do
+       (t1, c1, MV) <- infer e1
+       (t2, c2, MV) <- infer e2
+       return (t2, c1 ++ c2 ++ [(TList t1, t2)], MV)
+
+    EBin Concat e1 e2  -> do
+       (t1, c1, MV) <- infer e1
+       (t2, c2, MV) <- infer e2
+       return (t1, c1 ++ c2 ++ [(t1, t2)], MV)
     
-    EBinArith op e1 e2 -> do
+    EBin op e1 e2 -> do
         (t1, c1, MV) <- infer e1
         (t2, c2, MV) <- infer e2
         tv <- fresh
         let u1 = t1 `TArr` (t2 `TArr` tv)
-        u2 <- abinops op
+        u2 <- binops op
         return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)], MV)
 
-    EBinBool op e1 e2 -> do
-        (t1, c1, MV) <- infer e1
-        (t2, c2, MV) <- infer e2
-        tv <- fresh
-        let u1 = t1 `TArr` (t2 `TArr` tv)
-        u2 <- bbinops op
-        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)], MV)
-        
-    EBinRel op e1 e2 -> do
-        (t1, c1, MV) <- infer e1
-        (t2, c2, MV) <- infer e2
-        tv <- fresh
-        let u1 = t1 `TArr` (t2 `TArr` tv)
-        u2 <- rbinops op
-        return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)], MV)
-
-    EUnBool op e -> do
+    EUn op e -> do
         (t, c, MV) <- infer e
         tv <- fresh
         let u1 = t `TArr` tv
-            u2 = bunops op
+            u2 = unops op
         return (tv, c ++ [(u1, u2)], MV)
 
     EIf e1 e2 e3 -> do
@@ -603,31 +596,23 @@ infer expr = case expr of
         (t2, c2, _) <- infer e
         return (tyUnit, c2 ++ [(t1, TRef t2)], MV)
 
-    EBin Cons e1 e2  -> do
-       (t1, c1, MV) <- infer e1
-       (t2, c2, MV) <- infer e2
-       return (t2, c1 ++ c2 ++ [(TList t1, t2)], MV)
 
-    EBin Concat e1 e2  -> do
-       (t1, c1, MV) <- infer e1
-       (t2, c2, MV) <- infer e2
-       return (t1, c1 ++ c2 ++ [(t1, t2)], MV)
 
-    EUn Thunk e -> do
+    EThunk e -> do
         (t, c, _) <- infer e -- TODO
         tv <- fresh
         return (tv, c ++ [(tv, TThunk t)], MV)
 
-    EUn Force e -> do
+    EForce e -> do
         (t, c, m) <- infer e
         tv <- fresh
         return (tv, c ++ [(TThunk tv, t)], m) -- TODO
 
-    EUn Print e -> do
+    EPrint e -> do
        (_, c, _) <- infer e
        return (tyUnit, c, MV)
 
-    EUn Error e  -> do
+    EError e  -> do
        ty <- fresh
        (t, c, _) <- infer e
        return (ty, c ++ [(t, tyString)], MV)

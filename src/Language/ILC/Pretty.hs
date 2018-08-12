@@ -52,7 +52,7 @@ instance Pretty Value where
     ppr _ (VClosure _ _ _) = PP.text "closure"
     ppr p (VThunk _ e) = PP.text "thunk(" <> ppr p e <> PP.text ")"
     ppr _ (VChannel x _) = PP.text x
-    ppr _ (VRef x) = PP.text $ show x
+    ppr _ (VRef _) = PP.text "ref"
 
 ppList p vs = PP.hcat $ PP.punctuate PP.comma $ map (ppr p) vs
 

@@ -27,7 +27,7 @@ examples =
       , "let (x, y) = (1, 2) in x + y"
       , Right [ ("it", ELet (PTuple [PVar "x", PVar "y"])
                             (ETuple [ELit $ LInt 1, ELit $ LInt 2])
-                            (EBinArith Add (EVar "x")
+                            (EBin Add (EVar "x")
                                            (EVar "y")))
               ]
       )
@@ -55,7 +55,7 @@ examples =
                             (ELit $ LInt 1)
                             (ELet (PVar "y")
                                   (ELit $ LInt 2)
-                                  (EBinArith Add (EVar "x")
+                                  (EBin Add (EVar "x")
                                                  (EVar "y"))))
               ]
       )
@@ -63,7 +63,7 @@ examples =
       , "let x = 1 let y = 2 let z = x + y"
       , Right [ ("x", ELit $ LInt 1)
               , ("y", ELit $ LInt 2)
-              , ("z", EBinArith Add (EVar "x")
+              , ("z", EBin Add (EVar "x")
                                     (EVar "y"))
               ]
       )
@@ -71,7 +71,7 @@ examples =
       , "let z = let x = 1 in 2 * x let y = 1;; \"foo\""
       , Right [ ("z", ELet (PVar "x")
                            (ELit $ LInt 1)
-                           (EBinArith Mul (ELit $ LInt 2)
+                           (EBin Mul (ELit $ LInt 2)
                                           (EVar "x")))
               , ("y", ELit $ LInt 1)
               , ("it", ELit $ LString "foo")
@@ -103,7 +103,7 @@ examples =
                             (ESeq (ELit $ LInt 1)
                                   (EAssign "y"
                                            (ELit $ LInt 1)))
-                            (EBinArith Add (EVar "x")
+                            (EBin Add (EVar "x")
                                            (EVar "y")))
               ]
       )
@@ -140,7 +140,7 @@ examples =
       , "match b with | 0 when 0 < 1 => 0 | 1 when true => 1"
       , Right [ ("it", EMatch (EVar "b")
                                [ ( PInt 0
-                                 , EBinRel Lt (ELit $ LInt 0)
+                                 , EBin Lt (ELit $ LInt 0)
                                               (ELit $ LInt 1)
                                  , ELit $ LInt 0)
                                , ( PInt 1

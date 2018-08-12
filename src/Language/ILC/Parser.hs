@@ -1,4 +1,6 @@
---------------------------------------------------------------------------------
+{-# LANGUAGE TemplateHaskell #-}
+
+------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Parser
 -- Copyright   :  (C) 2018 Kevin Liao
@@ -15,6 +17,7 @@ module Language.ILC.Parser (
     ) where
 
 import Data.Functor.Identity (Identity)
+import Development.Placeholders
 import Text.Parsec
 import qualified Text.Parsec.Expr as Ex
 import Text.Parsec.String (Parser)
@@ -72,7 +75,8 @@ eApp = do
     args <- many1 atomExpr
     return $ foldl EApp f args
 
--- TODO: EFix
+eFix :: Parser Expr
+eFix = $(todo "Parse fixed point expressions")
 
 normalLet :: Parser Expr
 normalLet = do
@@ -201,37 +205,36 @@ eSeq = do
     ESeq e <$> expr
   
 table :: [[Ex.Operator String () Identity Expr]]
-table = [ [ binaryOp "*" (EBinArith Mul) Ex.AssocLeft
-          , binaryOp "/" (EBinArith Div) Ex.AssocLeft ]
-        , [ binaryOp "%" (EBinArith Mod) Ex.AssocLeft ]
-        , [ binaryOp "+" (EBinArith Add) Ex.AssocLeft
-          , binaryOp "-" (EBinArith Sub) Ex.AssocLeft ]
-        , [ prefixOp "not" (EUnBool Not) ]
+table = [ [ binaryOp "*" (EBin Mul) Ex.AssocLeft
+          , binaryOp "/" (EBin Div) Ex.AssocLeft ]
+        , [ binaryOp "%" (EBin Mod) Ex.AssocLeft ]
+        , [ binaryOp "+" (EBin Add) Ex.AssocLeft
+          , binaryOp "-" (EBin Sub) Ex.AssocLeft ]
+        , [ prefixOp "not" (EUn Not) ]
         , [ binaryOp ":" (EBin Cons) Ex.AssocRight
           , binaryOp "++" (EBin Concat) Ex.AssocLeft ]
-        , [ binaryOp "<" (EBinRel Lt) Ex.AssocNone
-          , binaryOp ">" (EBinRel Gt) Ex.AssocNone
-          , binaryOp "<=" (EBinRel Leq) Ex.AssocNone
-          , binaryOp ">=" (EBinRel Geq) Ex.AssocNone
-          , binaryOp "==" (EBinRel Eql) Ex.AssocNone
-          , binaryOp "<>" (EBinRel Neq) Ex.AssocNone
+        , [ binaryOp "<" (EBin Lt) Ex.AssocNone
+          , binaryOp ">" (EBin Gt) Ex.AssocNone
+          , binaryOp "<=" (EBin Leq) Ex.AssocNone
+          , binaryOp ">=" (EBin Geq) Ex.AssocNone
+          , binaryOp "==" (EBin Eql) Ex.AssocNone
+          , binaryOp "<>" (EBin Neq) Ex.AssocNone
           ]
-        , [ binaryOp "&&" (EBinBool And) Ex.AssocLeft ]
-        , [ binaryOp "||" (EBinBool Or) Ex.AssocLeft ]
+        , [ binaryOp "&&" (EBin And) Ex.AssocLeft ]
+        , [ binaryOp "||" (EBin Or) Ex.AssocLeft ]
         ]
 
 eThunk :: Parser Expr
-eThunk = mklexer (EUn Thunk) $ reserved "thunk" >> atomExpr
+eThunk = mklexer EThunk $ reserved "thunk" >> atomExpr
 
 eForce :: Parser Expr
-eForce = mklexer (EUn Force) $ reserved "force" >> atomExpr
+eForce = mklexer EForce $ reserved "force" >> atomExpr
 
 ePrint :: Parser Expr
-ePrint = mklexer (EUn Print) $ reserved "print" >> atomExpr
+ePrint = mklexer EPrint $ reserved "print" >> atomExpr
 
 eError :: Parser Expr
--- TODO
-eError = mklexer (EUn Language.ILC.Syntax.Error) $ reserved "error" >> atomExpr
+eError = mklexer EError $ reserved "error" >> atomExpr
 
 eUn :: Parser Expr
 eUn = eThunk

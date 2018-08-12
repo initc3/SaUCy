@@ -11,19 +11,17 @@
 --------------------------------------------------------------------------------
 
 module Language.ILC.Syntax (
-      Name(..)
+      Name
     , Expr(..)
     , Lit(..)
     , Binop(..)
-    , ABinop(..)
-    , BBinop(..)
-    , RBinop(..)
     , Unop(..)
-    , BUnop(..)
     , Pattern(..)
-    , Decl(..)
+    , Decl
     ) where
 
+
+-- | Variable names
 type Name = String
 
 -- | Expressions
@@ -50,12 +48,12 @@ data Expr
     | EDeref Expr
     | EAssign Name Expr
     | ESeq Expr Expr
+    | EThunk Expr
+    | EForce Expr
+    | EPrint Expr
+    | EError Expr
     | EBin Binop Expr Expr
-    | EBinArith ABinop Expr Expr
-    | EBinBool BBinop Expr Expr
-    | EBinRel RBinop Expr Expr
     | EUn Unop Expr
-    | EUnBool BUnop Expr
     deriving (Eq, Show)
 
 -- | Literals
@@ -69,45 +67,25 @@ data Lit
 
 -- | Binary operators
 data Binop
-    = Cons
-    | Concat
-    deriving (Eq, Show)
-
--- | Arithmetic
-data ABinop
     = Add
     | Sub
     | Mul
     | Div
     | Mod
-    deriving (Eq, Show)
-
--- | Booleans
-data BBinop
-    = And
+    | And
     | Or
-    deriving (Eq, Show)
-
--- | Relations
-data RBinop
-    = Lt
+    | Lt
     | Gt
     | Leq
     | Geq
     | Eql
     | Neq
+    | Cons
+    | Concat
     deriving (Eq, Show)
 
--- | Unary operators
+-- | Unary operator
 data Unop
-    = Thunk
-    | Force
-    | Print
-    | Error
-    deriving (Eq, Show)
-
--- | Booleans
-data BUnop
     = Not
     deriving (Eq, Show)
 
