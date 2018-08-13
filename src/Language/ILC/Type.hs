@@ -27,6 +27,7 @@ module Language.ILC.Type (
     , lookupTyEnv
     , prettySchmode
     , prettySignature
+    , prettyTyEnv
     ) where
 
 import qualified Data.Map as Map
@@ -105,7 +106,7 @@ instance Pretty Type where
         isArrow TArr {} = True
         isArrow _ = False
     pretty (TList a) = brackets $ pretty a
-    pretty (TProd as) = prettyTuple $ map pretty as
+    pretty (TProd as) = _prettyTuple as
     pretty (TSet a) = pretty a
     pretty (TRef a) = text "Ref" <+> pretty a
     pretty (TThunk a) = text "Thunk" <+> pretty a
@@ -119,7 +120,7 @@ instance Pretty Mode where
 
 instance Pretty Scheme where
     pretty (Forall [] t) = pretty t
-    pretty (Forall ts t) = text "∀" <+> sep (map pretty ts)
+    pretty (Forall ts t) = text "∀" <+> hsep (map pretty ts)
                                     <+> text "." <+> pretty t
 
 prettySchmode :: (Scheme, Mode) -> Doc
@@ -128,3 +129,6 @@ prettySchmode (sc, m) = pretty sc <+> text "@" <+> pretty m
 prettySignature :: (String, (Scheme, Mode)) -> Doc
 prettySignature (a, schmode) = text a <+> text "::"
                                       <+> prettySchmode schmode
+
+prettyTyEnv :: TypeEnv -> [String]
+prettyTyEnv (TypeEnv env) = map (show . prettySignature) $ Map.toList env

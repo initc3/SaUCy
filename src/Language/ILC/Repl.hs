@@ -117,7 +117,7 @@ execi update source = do
 showOutput :: String -> IState -> Repl ()
 showOutput arg st = do
     case lookupTyEnv "it" (tyenv st)  of  -- ^ TODO
-        Just val -> liftIO $ putStrLn $ show $ prettySignature (arg, val)
+        Just val -> liftIO $ putDoc $ prettySignature (arg, val)
         Nothing -> return ()
     
 cmd :: String -> Repl ()
@@ -128,7 +128,7 @@ process src = do
     let cmds = parser src
     case cmds of
         Left err -> print err
-        Right cmds -> Language.ILC.Eval.exec cmds >>= return . ppval >>= putStrLn -- ^ TODO
+        Right cmds -> Language.ILC.Eval.exec cmds >>= putDoc . pretty
 
 --------------------------------------------------------------------------------
 -- Commands
@@ -138,7 +138,7 @@ process src = do
 browse :: [String] -> Repl ()
 browse _ = do
     st <- get
-    liftIO $ mapM_ putStrLn $ ppenv (tyenv st)
+    liftIO $ mapM_ putStrLn $ prettyTyEnv (tyenv st)
 
 -- :load command
 load :: [String] -> Repl ()
@@ -152,7 +152,7 @@ typeof args = do
     st <- get
     let arg = unwords args
     case lookupTyEnv arg (tyenv st) of
-        Just val -> liftIO $ putStrLn $ ppsignature (arg, val)
+        Just val -> liftIO $ putDoc $ prettySignature (arg, val)
         Nothing -> execi False arg
 
 -- :quit command

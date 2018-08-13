@@ -30,6 +30,7 @@ import Data.List (nub)
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Development.Placeholders
+import Text.PrettyPrint.ANSI.Leijen
 
 import Language.ILC.Syntax
 import Language.ILC.Type
@@ -117,6 +118,27 @@ data TypeError
     | ParFail Mode Mode
     | SeqFail Mode Mode
     | ChoiceFail Mode Mode
+
+instance Show TypeError where
+    show = show . pretty
+
+instance Pretty TypeError where
+    pretty v = text "lol"
+
+{-instance Show TypeError where
+  show (UnificationFail a b) =
+    concat ["Cannot unify types: \n\t", pptype a, "\nwith \n\t", pptype b]
+  show (InfiniteType (TV a) b) =
+    concat ["Cannot construct the infinite type: ", a, " = ", pptype b]
+  show (Ambiguous cs) =
+    concat ["Cannot not match expected type: '" ++ pptype a ++ "' with actual type: '" ++ pptype b ++ "'\n" | (a,b) <- cs]
+  show (UnboundVariable a) = "Not in scope: " ++ a
+  show (ParFail m1 m2) = 
+    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " | " ++ ppmode m2]
+  show (SeqFail m1 m2) =
+    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " ; " ++ ppmode m2]
+  show (ChoiceFail m1 m2) =
+    concat ["Subexpressions of choice must be of mode R: Given ", ppmode m1 ++ " and " ++ ppmode m2]    -}
 
 -- | Modes
 parMode :: Mode -> Mode -> Infer Mode

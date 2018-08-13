@@ -24,10 +24,10 @@ test_types = testGroup "Unit.TypeTest" $ map f examples
 examples =
     [ ( "compose"
       , "let compose f g = lam x . f (g x)"
-      , "∀ a\nb\nc . (a -> b) -> (c -> a) -> c -> b @ V")
+      , "∀ a b c . (a -> b) -> (c -> a) -> c -> b @ V")
     , ( "map"
       , "letrec map f lst = match lst with | [] => [] | x:xs => (f x) : (map f xs)"
-      , "∀ a\nb . (a -> b) -> [a] -> [b] @ V")
+      , "∀ a b . (a -> b) -> [a] -> [b] @ V")
     , ( "assoclist"
       , "let f x = match x with | (a,b):[] => a"
       , "∀ a b . [(a,b)] -> a @ V")
