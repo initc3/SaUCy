@@ -10,7 +10,25 @@
 --
 --------------------------------------------------------------------------------
 
-module Language.ILC.Lexer where
+module Language.ILC.Lexer (
+      whitespace
+    , identifier
+    , integer
+    , stringLit
+    , parens
+    , brackets
+    , braces
+    , reserved
+    , colon
+    , comma
+    , commaSep
+    , commaSep1
+    , commaSep2
+    , reservedOp
+    , binaryOp
+    , prefixOp
+    , mklexer
+    ) where
 
 import Data.Functor.Identity (Identity)
 import Text.Parsec
@@ -113,17 +131,17 @@ braces = Tok.braces lexer
 reserved :: String -> Parser ()
 reserved = Tok.reserved lexer
 
-semiSep :: Parser a -> Parser [a]
-semiSep = Tok.semiSep lexer
-
-comma :: Parser String
-comma = Tok.comma lexer
-
 colon :: Parser String
 colon = Tok.colon lexer
 
 semi :: Parser String
 semi = Tok.semi lexer
+
+semiSep :: Parser a -> Parser [a]
+semiSep = Tok.semiSep lexer
+
+comma :: Parser String
+comma = Tok.comma lexer
 
 commaSep :: Parser a -> Parser [a]
 commaSep = Tok.commaSep lexer

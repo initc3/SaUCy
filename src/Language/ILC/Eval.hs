@@ -14,7 +14,15 @@
 --
 --------------------------------------------------------------------------------
 
-module Language.ILC.Eval where
+module Language.ILC.Eval (
+      Value(..)
+    , TermEnv
+    , emptyTmEnv
+    , extendTmEnv
+    , evalSub
+    , getBinds
+    , exec
+    ) where
 
 import Control.Concurrent
 import Control.Exception
@@ -25,9 +33,12 @@ import qualified Data.Map.Strict as Map
 import Data.Maybe
 import Data.Typeable
 import Development.Placeholders
+import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Language.ILC.Syntax
+import Language.ILC.Util
 
+-- | Values
 data Value
     = VInt Integer
     | VBool Bool
@@ -39,57 +50,68 @@ data Value
     | VUnit
     | VClosure (Maybe Name) TermEnv Expr
     | VThunk TermEnv Expr
-    | VChannel Name (Chan Value)
+    | VRdChan Name (Chan Value)
+    | VWrChan Name (Chan Value)
     | VRef (IORef Value)
     deriving (Eq)
 
+instance Show Value where
+    show (VRdChan c _) = c
+    show (VWrChan c _) = c
+    show (VRef _)      = "ref"
+    show v             = show v
+
+instance Pretty Value where
+    pretty (VInt n)    = integer n
+    pretty (VBool True) = text "true"
+    pretty (VBool False) = text "false"
+    pretty (VString s) = text s
+    pretty (VTag t)    = text t
+    pretty (VList vs) = prettyList vs
+    pretty (VTuple vs) = prettyTuple (map pretty vs)
+    pretty (VSet vs) = prettySet (map pretty vs)
+    pretty VUnit = text "()"
+    pretty VClosure{} = text "<closure>"
+    pretty VThunk{} = text "<thunk>"
+    pretty (VRdChan c _) = text "Rd" <+> text c
+    pretty (VWrChan c _) = text "Wr" <+> text c
+    pretty (VRef _) = text "<ref>"
+
+-- | Evaluating EError throws EvalError
 newtype EvalError
     = EvalError String
     deriving (Typeable)
 
-instance Show EvalError where
-    show (EvalError s) = "Exceptions: " ++ s
-    
 instance Exception EvalError
 
--- TODO: Use pp
-instance Show Value where
-    show (VInt n) = show n
-    show (VBool b) | b         = "true"
-                   | otherwise = "false"
-    show (VString s) = show s
-    show (VTag t) = show t
-    show (VList vs) = show vs
-    show (VSet vs) = show vs
-    show (VTuple vs) = show vs
-    show VUnit = show ()
-    show VClosure {} = "<closure>" -- TODO
-    show VThunk {} = "<thunk>"
-    show (VChannel x _) = x
-    show (VRef _) = "<ref>"
+instance Show EvalError where
+    show (EvalError s) = "Exception: " ++ s
 
+-- | Term environment: map from names to values
 type TermEnv = Map.Map Name Value
 
 emptyTmEnv :: TermEnv
 emptyTmEnv = Map.empty
 
-extendEnv :: TermEnv -> Name -> Value -> TermEnv
-extendEnv env x v = Map.insert x v env
+extendTmEnv :: TermEnv -> Name -> Value -> TermEnv
+extendTmEnv env x v = Map.insert x v env
 
-updateEnv :: TermEnv -> [(Name, Value)] -> TermEnv
-updateEnv = foldl f
-  where
-    f env (x, v) = Map.insert x v env
+unionTmEnvs :: TermEnv -> [(Name, Value)] -> TermEnv
+unionTmEnvs env env' = Map.union env $ Map.fromList env'
 
+
+-- | Evaluate subexpression
 evalSub :: TermEnv -> Expr -> IO Value
 evalSub env e = newEmptyMVar >>= \m ->
                 eval' env m e >>
                 takeMVar m
-                
+
+-- | Evaluate two subexpressions                
 evalSubs :: TermEnv -> Expr -> Expr -> IO (Value, Value)
 evalSubs env e1 e2 = evalSub env e1 >>= \v1 ->
                      evalSub env e2 >>= \v2 ->
                      return (v1, v2)
+
 
 evalBinOp :: ((Value, Value) -> IO Value)
           -> TermEnv
@@ -135,7 +157,7 @@ evalPatMatch :: TermEnv -> [(Pattern, Expr, Expr)] -> Value -> IO Value
 evalPatMatch _ [] _ = error "pattern match failed"
 evalPatMatch env ((p, g, e):bs) val =
     case getBinds p val of
-        Just binds -> let env' = updateEnv env binds
+        Just binds -> let env' = unionTmEnvs env binds
                       in evalSub env' g >>=
                       \case
                           VBool True  -> evalSub env' e
@@ -150,7 +172,6 @@ letBinds :: Pattern -> Value -> [(Name, Value)]
 letBinds p v = fromMaybe (error "let pattern matching failed") $
                getBinds p v
 
--- TODO: cons pattern match not failing on let x:xs = "foo" in x               
 getBinds :: Pattern -> Value -> Maybe [(Name, Value)]
 getBinds = go []
   where
@@ -169,12 +190,11 @@ getBinds = go []
         acc1 = getBinds p v
         acc2 = getBinds ps (VList vs)
     go _ (PCons _ _) (VList []) = Nothing
-    -- TODO: Set pattern matching not implemented.
     go acc (PSet ps) (VSet vs) = gos acc ps vs
     go acc (PTuple ps) (VTuple vs) = gos acc ps vs
     go acc PUnit VUnit = Just acc
     go acc PWildcard _ = Just acc
-    go _ p v = error ("pattern match failed on" ++ show p ++ show v)
+    go _ p v = error ("pattern match failed on" ++ show p ++ show (pretty v))
     
     -- TODO: Refactor using concatMap?
     gos acc vs ps | length vs == length ps = foldl (<:>) (Just []) accs
@@ -210,7 +230,7 @@ eval' env m expr = case expr of
       where
         evalApp (VClosure x venv e) v =
             case x of
-                Just x' -> let env' = extendEnv venv x' v
+                Just x' -> let env' = extendTmEnv venv x' v
                            in evalSub env' e
                 Nothing -> evalSub env e
         evalApp _                  _ = error "Eval.eval': EApp"
@@ -219,7 +239,7 @@ eval' env m expr = case expr of
         e' = ELam (PVar "_x") (EApp (EApp e (EFix e)) (EVar "_x"))
     ELet p e1 e2 -> evalSub env e1 >>= \v1 ->
                     let binds = letBinds p v1
-                        env'  = updateEnv env binds
+                        env'  = unionTmEnvs env binds
                     in evalSub env' e2 >>= putMVar m
     EIf e1 e2 e3 -> evalSub env e1 >>= evalBranch >>= putMVar m
       where
@@ -231,19 +251,18 @@ eval' env m expr = case expr of
                    putMVar m
     ENu (rdc, wrc) e ->
         newChan >>= \c ->
-        let env' = updateEnv env [f rdc, f wrc]
-            f x  = (x, VChannel x c)
+        let env' = unionTmEnvs env [(rdc, VRdChan rdc c), (wrc, VWrChan wrc c)]
         in evalSub env' e >>= putMVar m
     ERd e -> evalSub env e >>= \c -> getChan c >>=
              readChan >>= \v ->
              putMVar m $ VTuple [v, c]
       where
-        getChan (VChannel _ c) = return c
+        getChan (VRdChan _ c) = return c
         getChan _              = error "Eval.eval': ERd"
     EWr e1 e2 -> evalSub env e2 >>= getChan >>= \c ->
                  evalSub env e1 >>= writeChan c >> putMVar m VUnit
       where
-        getChan (VChannel _ c) = return c
+        getChan (VWrChan _ c) = return c
         getChan _              = error "Eval.eval': EWr"
     EFork e1 e2 -> newEmptyMVar >>= \m1 ->
                    newEmptyMVar >>= \m2 ->
@@ -310,18 +329,16 @@ eval' env m expr = case expr of
       where
         force (VThunk env' e') = evalSub env' e'
         force _                = error "Eval.eval': EForce"
-    EPrint e -> evalSub env e >>= print >> putMVar m VUnit
+    EPrint e -> evalSub env e >>= putDoc . pretty >> putMVar m VUnit
     EError e -> evalSub env e >>= getString >>= throwIO . EvalError
       where getString (VString s) = return s
-            getString _           = return "Eval.eval': EError"
+            getString _           = error "Eval.eval': EError"
 
--- TODO: Types    
 exec :: [Decl] -> IO Value
 exec = go emptyTmEnv
   where
     go _   []       = error "Eval.exec"
     go env [(_, e)] = eval env e
     go env ((x, e):rest) = eval env e >>= \v ->
-                               let env' = extendEnv env x v
+                               let env' = extendTmEnv env x v
                                in go env' rest
-    -- go env ((CTySig _ _):rest) = go env rest

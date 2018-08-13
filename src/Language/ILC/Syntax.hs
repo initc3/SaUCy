@@ -20,7 +20,6 @@ module Language.ILC.Syntax (
     , Decl
     ) where
 
-
 -- | Variable names
 type Name = String
 

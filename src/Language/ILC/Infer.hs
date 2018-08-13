@@ -16,7 +16,11 @@
 --
 --------------------------------------------------------------------------------
 
-module Language.ILC.Infer where
+module Language.ILC.Infer (
+      TypeError(..)
+    , inferExpr
+    , inferTop
+    ) where
 
 import Control.Monad.Except
 import Control.Monad.Identity
@@ -167,7 +171,7 @@ closeOver = normalize . generalize emptyTyEnv
 
 inEnv :: (Name, (Scheme, Mode)) -> Infer a -> Infer a
 inEnv (x, sc) m = do
-    let scope e = remove e x `extend` (x, sc)
+    let scope e = removeTyEnv e x `extendTyEnv` (x, sc)
     local scope m
 
 lookupEnv :: Name -> Infer (Type, Mode)
@@ -621,7 +625,7 @@ inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
 inferTop env [] = Right env
 inferTop env ((name, ex):xs) = case inferExpr env ex of
     Left err -> Left err
-    Right (ty, m) -> inferTop (extend env (name, (ty, m))) xs
+    Right (ty, m) -> inferTop (extendTyEnv env (name, (ty, m))) xs
 
 normalize :: Scheme -> Scheme
 normalize (Forall _ body) = Forall (map snd ord) (normtype body)

@@ -11,6 +11,7 @@ extra-source-files:
 - ChangeLog.md
 
 dependencies:
+- ansi-wl-pprint
 - base
 - containers
 - text

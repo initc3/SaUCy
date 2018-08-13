@@ -10,11 +10,30 @@
 --
 --------------------------------------------------------------------------------
 
-module Language.ILC.Type where
-
-import Language.ILC.Syntax
+module Language.ILC.Type (
+      TVar(..)
+    , Type(..)
+    , Mode(..)
+    , Scheme(..)
+    , tyInt
+    , tyBool
+    , tyString
+    , tyTag
+    , tyUnit
+    , TypeEnv(..)
+    , emptyTyEnv
+    , removeTyEnv
+    , extendTyEnv
+    , lookupTyEnv
+    , prettySchmode
+    , prettySignature
+    ) where
 
 import qualified Data.Map as Map
+import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))    
+
+import Language.ILC.Syntax
+import Language.ILC.Util
 
 newtype TVar = TV String
   deriving (Show, Eq, Ord)
@@ -56,18 +75,56 @@ newtype TypeEnv = TypeEnv { types :: Map.Map Name (Scheme, Mode) }
 emptyTyEnv :: TypeEnv
 emptyTyEnv = TypeEnv Map.empty
 
-remove :: TypeEnv -> Name -> TypeEnv
-remove (TypeEnv env) var = TypeEnv (Map.delete var env)
+removeTyEnv :: TypeEnv -> Name -> TypeEnv
+removeTyEnv (TypeEnv env) var = TypeEnv (Map.delete var env)
 
-extend :: TypeEnv -> (Name, (Scheme, Mode)) -> TypeEnv
-extend env (x, s) = env { types = Map.insert x s (types env) }
+extendTyEnv :: TypeEnv -> (Name, (Scheme, Mode)) -> TypeEnv
+extendTyEnv env (x, s) = env { types = Map.insert x s (types env) }
 
-lookup :: Name -> TypeEnv -> Maybe (Scheme, Mode)
-lookup key (TypeEnv tys) = Map.lookup key tys
+lookupTyEnv :: Name -> TypeEnv -> Maybe (Scheme, Mode)
+lookupTyEnv key (TypeEnv tys) = Map.lookup key tys
 
-merge :: TypeEnv -> TypeEnv -> TypeEnv
-merge (TypeEnv a) (TypeEnv b) = TypeEnv (Map.union a b)
+mergeTyEnv :: TypeEnv -> TypeEnv -> TypeEnv
+mergeTyEnv (TypeEnv a) (TypeEnv b) = TypeEnv (Map.union a b)
 
 instance Monoid TypeEnv where
     mempty = emptyTyEnv
-    mappend = merge
+    mappend = mergeTyEnv
+    
+--------------------------------------------------------------------------------
+-- Pretty printing
+
+instance Pretty TVar where
+    pretty (TV x) = text x
+
+instance Pretty Type where
+    pretty (TVar a) = pretty a
+    pretty (TCon a) = pretty a
+    pretty (TArr a b) = maybeParens (isArrow a) (pretty a) <+> text "->" <+> pretty b
+      where
+        isArrow TArr {} = True
+        isArrow _ = False
+    pretty (TList a) = brackets $ pretty a
+    pretty (TProd as) = prettyTuple $ map pretty as
+    pretty (TSet a) = pretty a
+    pretty (TRef a) = text "Ref" <+> pretty a
+    pretty (TThunk a) = text "Thunk" <+> pretty a
+    pretty (TRdChan a) = text "Rd" <+> pretty a
+    pretty (TWrChan a) = text "Wr" <+> pretty a
+
+instance Pretty Mode where
+    pretty MV = text "V"
+    pretty MR = text "R"
+    pretty MW = text "W"
+
+instance Pretty Scheme where
+    pretty (Forall [] t) = pretty t
+    pretty (Forall ts t) = text "∀" <+> sep (map pretty ts)
+                                    <+> text "." <+> pretty t
+
+prettySchmode :: (Scheme, Mode) -> Doc
+prettySchmode (sc, m) = pretty sc <+> text "@" <+> pretty m
+
+prettySignature :: (String, (Scheme, Mode)) -> Doc
+prettySignature (a, schmode) = text a <+> text "::"
+                                      <+> prettySchmode schmode

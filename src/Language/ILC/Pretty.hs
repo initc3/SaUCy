@@ -10,7 +10,12 @@
 --
 --------------------------------------------------------------------------------
 
-module Language.ILC.Pretty where
+module Language.ILC.Pretty (
+      ppsignature
+    , ppval
+    , ppenv
+    , ppschmode
+    ) where
 
 import qualified Data.Map as Map
 import Text.PrettyPrint (Doc, (<>), (<+>))
@@ -20,6 +25,7 @@ import Language.ILC.Eval
 import Language.ILC.Infer
 import Language.ILC.Syntax
 import Language.ILC.Type
+
 
 parensIf :: Bool -> Doc -> Doc
 parensIf True = PP.parens
@@ -51,7 +57,8 @@ instance Pretty Value where
     ppr _ VUnit = PP.text "()"
     ppr _ (VClosure _ _ _) = PP.text "closure"
     ppr p (VThunk _ e) = PP.text "thunk(" <> ppr p e <> PP.text ")"
-    ppr _ (VChannel x _) = PP.text x
+    ppr _ (VRdChan x _) = PP.text x
+    ppr _ (VWrChan x _) = PP.text x
     ppr _ (VRef _) = PP.text "ref"
 
 ppList p vs = PP.hcat $ PP.punctuate PP.comma $ map (ppr p) vs

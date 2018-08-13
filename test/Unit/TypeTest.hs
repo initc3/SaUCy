@@ -9,8 +9,8 @@ import Test.Tasty.HUnit
 import Language.ILC.Eval
 import Language.ILC.Infer (inferExpr)
 import Language.ILC.Parser
-import Language.ILC.Pretty
-import Language.ILC.Type (emptyTyEnv)
+--import Language.ILC.Pretty
+import Language.ILC.Type (emptyTyEnv, prettySchmode)
 
 test_types = testGroup "Unit.TypeTest" $ map f examples
   where f (str, src, ty) = testCase (printf "Infer type of %s" str) $
@@ -19,24 +19,24 @@ test_types = testGroup "Unit.TypeTest" $ map f examples
             Left err          -> error "bad test"
             Right [(_, expr)] -> case inferExpr emptyTyEnv expr of
                                      Left err -> "ill-typed"
-                                     Right scm -> ppschmode scm
+                                     Right scm -> show $ prettySchmode scm
 
 examples =
     [ ( "compose"
       , "let compose f g = lam x . f (g x)"
-      , "\8704 a b c . (a -> b) -> (c -> a) -> c -> b @ V")
+      , "∀ a\nb\nc . (a -> b) -> (c -> a) -> c -> b @ V")
     , ( "map"
       , "letrec map f lst = match lst with | [] => [] | x:xs => (f x) : (map f xs)"
-      , "\8704 a b . (a -> b) -> [a] -> [b] @ V")
+      , "∀ a\nb . (a -> b) -> [a] -> [b] @ V")
     , ( "assoclist"
       , "let f x = match x with | (a,b):[] => a"
-      , "\8704 a b . [(a,b)] -> a @ V")
+      , "∀ a b . [(a,b)] -> a @ V")
     , ( "typed chan"
       , "let f () = nu (rc, wc) . wr 1 -> wc |> let (_, rc) = rd rc in rc"
       , "Unit -> Rd Int @ W")
     , ( "simple read"
       , "let f () = nu c . rd c"
-      , "\8704 a . Unit -> (a,Rd a) @ R")
+      , "∀ a . Unit -> (a,Rd a) @ R")
     , ( "simple write"
       , "let f () = nu c . wr 1 -> c'"
       , "Unit -> Unit @ W")

@@ -28,6 +28,7 @@ import Options.Applicative
 import System.Console.Repline hiding (Options)
 import System.Exit
 import System.IO.Silently (silence)
+import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Language.ILC.Eval
 import Language.ILC.Infer
@@ -89,7 +90,7 @@ hoistErr (Left err) = do
 
 -- TODO: Blocks on rd c if not function
 evalDecl :: TermEnv -> Decl -> IO TermEnv
-evalDecl env (x, expr) = silence $ evalSub env expr >>= return . extendEnv env x
+evalDecl env (x, expr) = silence $ evalSub env expr >>= return . extendTmEnv env x
     
 execi :: Bool -> String -> Repl ()
 execi update source = do
@@ -107,16 +108,16 @@ execi update source = do
 
     when update (put st')
     
-    case Prelude.lookup "it" mod of
+    case lookup "it" mod of
         Nothing -> return ()
         Just ex -> do
             val <- liftIO $ evalSub (tmenv st') ex
-            showOutput (show val) st'
+            showOutput (show $ pretty val) st'
 
 showOutput :: String -> IState -> Repl ()
 showOutput arg st = do
-    case Language.ILC.Type.lookup "it" (tyenv st)  of  -- ^ TODO
-        Just val -> liftIO $ putStrLn $ ppsignature (arg, val)
+    case lookupTyEnv "it" (tyenv st)  of  -- ^ TODO
+        Just val -> liftIO $ putStrLn $ show $ prettySignature (arg, val)
         Nothing -> return ()
     
 cmd :: String -> Repl ()
@@ -150,7 +151,7 @@ typeof :: [String] -> Repl ()
 typeof args = do
     st <- get
     let arg = unwords args
-    case Language.ILC.Type.lookup arg (tyenv st) of
+    case lookupTyEnv arg (tyenv st) of
         Just val -> liftIO $ putStrLn $ ppsignature (arg, val)
         Nothing -> execi False arg
 
@@ -187,7 +188,7 @@ completer = Prefix (wordCompleter comp) defaultMatcher
 
 shell :: Repl a -> IO ()
 shell pre = flip evalStateT initState 
-    $ evalRepl "\x03BB: " cmd options Language.ILC.Repl.completer pre
+    $ evalRepl "λ: " cmd options Language.ILC.Repl.completer pre
 
 main :: IO ()
 main = do
