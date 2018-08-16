@@ -123,7 +123,7 @@ instance Show TypeError where
     show = show . pretty
 
 instance Pretty TypeError where
-    pretty v = text "lol"
+    pretty v = text "type error: need to implement"
 
 -- | Modes
 parMode :: Mode -> Mode -> Infer Mode

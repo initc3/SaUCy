@@ -115,7 +115,7 @@ execi update source = do
 
 showOutput :: String -> IState -> Repl ()
 showOutput arg st = do
-    case lookupTyEnv "it" (tyenv st)  of  -- ^ TODO
+    case lookupTyEnv "it" (tyenv st) of
         Just val -> liftIO $ putDoc (prettySignature (arg, val) <> linebreak)
         Nothing -> return ()
     

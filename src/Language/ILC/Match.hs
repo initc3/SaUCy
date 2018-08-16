@@ -6,43 +6,61 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Returns MatchFail or variable bindings in a pattern match.
+-- Returns MatchFail or a list of variable bindings in the pattern match.
 --
 --------------------------------------------------------------------------------
 
 module Language.ILC.Match (
-      runMatch
-    , MatchFail(..)
-    ) where
+    runMatch
+  , MatchFail(..)
+  , letBinds
+  ) where
 
 import Control.Monad.Except
 import Control.Monad.Identity
 import Control.Monad.Writer
+import Text.PrettyPrint.ANSI.Leijen
 
 import Language.ILC.Syntax
 
 type Match a = ExceptT MatchFail (WriterT [(Name, Value)] Identity) a
 
--- | Run the match monad
+-- | Run the Match monad
 runMatch :: Pattern -> Value -> (Either MatchFail (), [(Name, Value)])
 runMatch pat val =
-    runIdentity (runWriterT (runExceptT (match pat val)))
+  runIdentity (runWriterT (runExceptT (match pat val)))
 
+-- | Failed pattern match
 data MatchFail = MatchFail Pattern Value deriving (Show, Eq)
 
+instance Pretty MatchFail where
+  pretty (MatchFail pat val) = hsep [ text "Irrefutable pattern failed:"
+                                    , text "could not match"
+                                    , text "`" <> pretty pat <> text "`"
+                                    , text "with"
+                                    , text "`" <> pretty val <> text "`."
+                                    ]
+
+-- | Get variable bindings in pattern match
 match :: Pattern -> Value -> Match ()
-match (PVar x) v = tell [(x, v)]
-match (PInt n) (VInt n') | n == n' = return ()
-match (PBool b) (VBool b') | b == b' = return ()
-match (PString s) (VString s') | s == s' = return ()
-match (PTag t) (VTag t') | t == t' = return ()
-match (PTuple ps) (VTuple vs) | eqlen ps vs = zipWithM_ match ps vs
-match (PList ps) (VList vs) | eqlen ps vs = zipWithM_ match ps vs
-match (PCons p ps) (VList (v:vs)) = match p v >> match ps (VList vs)
-match (PSet ps) (VSet vs) | eqlen ps vs= zipWithM_ match ps vs
-match PUnit VUnit = return ()
-match PWildcard _ = return ()
-match p v = throwError $ MatchFail p v
+match (PVar x)     v                          = tell [(x, v)]
+match (PInt n)     (VInt n')    | n == n'     = return ()
+match (PBool b)    (VBool b')   | b == b'     = return ()
+match (PString s)  (VString s') | s == s'     = return ()
+match (PTag t)     (VTag t')    | t == t'     = return ()
+match (PTuple ps)  (VTuple vs)  | eqlen ps vs = zipWithM_ match ps vs
+match (PList ps)   (VList vs)   | eqlen ps vs = zipWithM_ match ps vs
+match (PCons p ps) (VList (v:vs))             = match p v >> match ps (VList vs)
+match (PSet ps)    (VSet vs)    | eqlen ps vs = zipWithM_ match ps vs
+match PUnit        VUnit                      = return ()
+match PWildcard    _                          = return ()
+match p            v                          = throwError $ MatchFail p v
 
 eqlen :: [a] -> [b] -> Bool
 eqlen l1 l2 = length l1 == length l2
+
+-- | Returns let variable bindings or throws error
+letBinds :: Pattern -> Value -> [(Name, Value)]
+letBinds pat val = case runMatch pat val of
+  (Left err, _)     -> error $ show $ pretty err
+  (Right (), binds) -> binds

@@ -21,6 +21,7 @@ import Data.List
 import Text.PrettyPrint.ANSI.Leijen
 
 -- | Pretty prints a comma separated list
+-- TODO: Fix doc with to 80
 prettyTuple xs = encloseSep lparen rparen comma xs
 
 -- | No line breaks
