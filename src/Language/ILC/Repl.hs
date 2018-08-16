@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-{-# OPTIONS_GHC -Wall             #-}
+--{-# OPTIONS_GHC -Wall             #-}
 
 --------------------------------------------------------------------------------
 -- |
@@ -33,7 +33,6 @@ import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 import Language.ILC.Eval
 import Language.ILC.Infer
 import Language.ILC.Parser
-import Language.ILC.Pretty
 import Language.ILC.Syntax
 import Language.ILC.Type
 
@@ -117,7 +116,7 @@ execi update source = do
 showOutput :: String -> IState -> Repl ()
 showOutput arg st = do
     case lookupTyEnv "it" (tyenv st)  of  -- ^ TODO
-        Just val -> liftIO $ putDoc $ prettySignature (arg, val)
+        Just val -> liftIO $ putDoc (prettySignature (arg, val) <> linebreak)
         Nothing -> return ()
     
 cmd :: String -> Repl ()

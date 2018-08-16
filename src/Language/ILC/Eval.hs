@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall #-}
@@ -15,12 +16,8 @@
 --------------------------------------------------------------------------------
 
 module Language.ILC.Eval (
-      Value(..)
-    , TermEnv
-    , emptyTmEnv
-    , extendTmEnv
-    , evalSub
-    , getBinds
+      evalSub
+    , letBinds
     , exec
     ) where
 
@@ -35,47 +32,8 @@ import Data.Typeable
 import Development.Placeholders
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
+import Language.ILC.Match
 import Language.ILC.Syntax
-import Language.ILC.Util
-
--- | Values
-data Value
-    = VInt Integer
-    | VBool Bool
-    | VString String
-    | VTag String
-    | VList [Value]
-    | VSet [Value]
-    | VTuple [Value]
-    | VUnit
-    | VClosure (Maybe Name) TermEnv Expr
-    | VThunk TermEnv Expr
-    | VRdChan Name (Chan Value)
-    | VWrChan Name (Chan Value)
-    | VRef (IORef Value)
-    deriving (Eq)
-
-instance Show Value where
-    show (VRdChan c _) = c
-    show (VWrChan c _) = c
-    show (VRef _)      = "ref"
-    show v             = show v
-
-instance Pretty Value where
-    pretty (VInt n)    = integer n
-    pretty (VBool True) = text "true"
-    pretty (VBool False) = text "false"
-    pretty (VString s) = text s
-    pretty (VTag t)    = text t
-    pretty (VList vs) = prettyList vs
-    pretty (VTuple vs) = prettyTuple (map pretty vs)
-    pretty (VSet vs) = prettySet (map pretty vs)
-    pretty VUnit = text "()"
-    pretty VClosure{} = text "<closure>"
-    pretty VThunk{} = text "<thunk>"
-    pretty (VRdChan c _) = text "Rd" <+> text c
-    pretty (VWrChan c _) = text "Wr" <+> text c
-    pretty (VRef _) = text "<ref>"
 
 -- | Evaluating EError throws EvalError
 newtype EvalError
@@ -86,19 +44,6 @@ instance Exception EvalError
 
 instance Show EvalError where
     show (EvalError s) = "Exception: " ++ s
-
--- | Term environment: map from names to values
-type TermEnv = Map.Map Name Value
-
-emptyTmEnv :: TermEnv
-emptyTmEnv = Map.empty
-
-extendTmEnv :: TermEnv -> Name -> Value -> TermEnv
-extendTmEnv env x v = Map.insert x v env
-
-unionTmEnvs :: TermEnv -> [(Name, Value)] -> TermEnv
-unionTmEnvs env env' = Map.union env $ Map.fromList env'
-
 
 -- | Evaluate subexpression
 evalSub :: TermEnv -> Expr -> IO Value
@@ -153,55 +98,23 @@ evalRelPoly = evalBinOp . f
 evalList :: TermEnv -> MVar Value -> ([Value] -> Value) -> [Expr] -> IO ()
 evalList env m con es = (con <$> mapM (evalSub env) es) >>= putMVar m
 
-evalPatMatch :: TermEnv -> [(Pattern, Expr, Expr)] -> Value -> IO Value
-evalPatMatch _ [] _ = error "pattern match failed"
-evalPatMatch env ((p, g, e):bs) val =
-    case getBinds p val of
-        Just binds -> let env' = unionTmEnvs env binds
+evalMatch :: TermEnv -> [(Pattern, Expr, Expr)] -> Value -> IO Value
+evalMatch _ [] _ = error "pattern match failed"
+evalMatch env ((p, g, e):bs) val =
+    case runMatch p val of
+        (Right (), binds) -> let env' = unionTmEnvs env binds
                       in evalSub env' g >>=
                       \case
                           VBool True  -> evalSub env' e
-                          VBool False -> evalPatMatch env bs val
-                          _           -> error "Eval.evalPatMatch"
-        Nothing    -> evalPatMatch env bs val
+                          VBool False -> evalMatch env bs val
+                          _           -> error "Eval.evalMatch"
+        (Left _, _)    -> evalMatch env bs val
 
-(<:>) :: Applicative f => f [a] -> f [a] -> f [a]
-(<:>) a b = (++) <$> a <*> b
-
+-- | Returns let variable bindings or throws error
 letBinds :: Pattern -> Value -> [(Name, Value)]
-letBinds p v = fromMaybe (error "let pattern matching failed") $
-               getBinds p v
-
-getBinds :: Pattern -> Value -> Maybe [(Name, Value)]
-getBinds = go []
-  where
-    go acc (PVar x) v= Just ((x, v) : acc)
-    go acc (PInt n) (VInt n') | n == n'   = Just acc
-                              | otherwise = Nothing
-    go acc (PBool b) (VBool b') | b == b'   = Just acc
-                                | otherwise = Nothing
-    go acc (PString s) (VString s') | s == s'   = Just acc
-                                    | otherwise = Nothing
-    go acc (PTag t) (VTag t') | t == t'   = Just acc
-                              | otherwise = Nothing
-    go acc (PList ps) (VList vs) = gos acc ps vs
-    go acc (PCons p ps) (VList (v:vs)) = foldl1 (<:>) [acc1, acc2, Just acc]
-      where
-        acc1 = getBinds p v
-        acc2 = getBinds ps (VList vs)
-    go _ (PCons _ _) (VList []) = Nothing
-    go acc (PSet ps) (VSet vs) = gos acc ps vs
-    go acc (PTuple ps) (VTuple vs) = gos acc ps vs
-    go acc PUnit VUnit = Just acc
-    go acc PWildcard _ = Just acc
-    go _ p v = error ("pattern match failed on" ++ show p ++ show (pretty v))
-    
-    -- TODO: Refactor using concatMap?
-    gos acc vs ps | length vs == length ps = foldl (<:>) (Just []) accs
-                  | otherwise              = Nothing
-      where
-        accs  = map (\case (v, p) -> go acc v p) vp
-        vp    = zip vs ps
+letBinds pat val = case runMatch pat val of
+    (Left err, _)     -> error $ show err
+    (Right (), binds) -> binds
         
 eval :: TermEnv -> Expr -> IO Value
 eval env e = newEmptyMVar >>= \v ->
@@ -238,7 +151,9 @@ eval' env m expr = case expr of
       where
         e' = ELam (PVar "_x") (EApp (EApp e (EFix e)) (EVar "_x"))
     ELet p e1 e2 -> evalSub env e1 >>= \v1 ->
-                    let binds = letBinds p v1
+                    -- If binds is not strict, this can miss unused (but bad)
+                    -- pattern matches (e.g., let 1 = 2 ...).
+                    let !binds = letBinds p v1
                         env'  = unionTmEnvs env binds
                     in evalSub env' e2 >>= putMVar m
     EIf e1 e2 e3 -> evalSub env e1 >>= evalBranch >>= putMVar m
@@ -247,7 +162,7 @@ eval' env m expr = case expr of
         evalBranch (VBool False) = evalSub env e3
         evalBranch _             = error "Eval.eval': EIf"
     EMatch e bs -> evalSub env e >>=
-                   evalPatMatch env bs >>=
+                   evalMatch env bs >>=
                    putMVar m
     ENu (rdc, wrc) e ->
         newChan >>= \c ->

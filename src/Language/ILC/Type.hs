@@ -34,7 +34,7 @@ import qualified Data.Map as Map
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))    
 
 import Language.ILC.Syntax
-import Language.ILC.Util
+import Language.ILC.Pretty
 
 newtype TVar = TV String
   deriving (Show, Eq, Ord)

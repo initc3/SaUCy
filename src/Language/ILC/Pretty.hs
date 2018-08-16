@@ -11,50 +11,28 @@
 --------------------------------------------------------------------------------
 
 module Language.ILC.Pretty (
-    ) where
+    prettyTuple
+  , _prettyTuple
+  , prettySet
+  , maybeParens
+  ) where
 
-import qualified Data.Map as Map
-import Text.PrettyPrint (Doc, (<>), (<+>))
-import qualified Text.PrettyPrint as PP
+import Data.List
+import Text.PrettyPrint.ANSI.Leijen
 
-import Language.ILC.Eval
-import Language.ILC.Infer
-import Language.ILC.Syntax
-import Language.ILC.Type
+-- | Pretty prints a comma separated list
+prettyTuple xs = encloseSep lparen rparen comma xs
 
+-- | No line breaks
+_prettyTuple xs = parens $ hcat $ intersperse comma $ map pretty xs
 
-parensIf :: Bool -> Doc -> Doc
-parensIf True = PP.parens
-parensIf False = id
+-- | Pretty prints a comma separated list
+prettySet xs = encloseSep lbrace rbrace comma xs
 
-class Pretty p where
-  ppr :: Int -> p -> Doc
+-- | Pretty prints a space separated list
+prettySpace xs = encloseSep empty empty space xs
 
-instance Pretty Expr where
-  ppr _ (ELit (LInt n)) = PP.text $ show n
-  ppr _ (ELit (LString s)) = PP.text $ show s
-  ppr _ (ELit (LBool b)) = PP.text $ show b
-  ppr _ (ELit LUnit) = PP.text "()"
-  ppr p (EIf e1 e2 e3) =
-        PP.text "if"   <+> ppr p e1
-    <+> PP.text "then" <+> ppr p e2
-    <+> PP.text "else" <+> ppr p e3
-  ppr _ _ = PP.text "expr"
-
-ppexpr :: Expr -> String
-ppexpr = PP.render . ppr 0
-
-{-instance Show TypeError where
-  show (UnificationFail a b) =
-    concat ["Cannot unify types: \n\t", pptype a, "\nwith \n\t", pptype b]
-  show (InfiniteType (TV a) b) =
-    concat ["Cannot construct the infinite type: ", a, " = ", pptype b]
-  show (Ambiguous cs) =
-    concat ["Cannot not match expected type: '" ++ pptype a ++ "' with actual type: '" ++ pptype b ++ "'\n" | (a,b) <- cs]
-  show (UnboundVariable a) = "Not in scope: " ++ a
-  show (ParFail m1 m2) = 
-    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " | " ++ ppmode m2]
-  show (SeqFail m1 m2) =
-    concat ["Cannot derive mode composition: " ++ ppmode m1 ++ " ; " ++ ppmode m2]
-  show (ChoiceFail m1 m2) =
-    concat ["Subexpressions of choice must be of mode R: Given ", ppmode m1 ++ " and " ++ ppmode m2]-}
+-- | Enclose a 'Doc' in parens if the flag is 'True'
+maybeParens :: Bool -> Doc -> Doc
+maybeParens True  = parens
+maybeParens False = id
