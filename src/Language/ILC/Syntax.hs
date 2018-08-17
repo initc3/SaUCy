@@ -23,7 +23,6 @@ module Language.ILC.Syntax (
   , TermEnv
   , emptyTmEnv
   , extendTmEnv
-  , unionTmEnvs
   ) where
 
 import Control.Concurrent
@@ -172,11 +171,11 @@ instance Pretty Value where
 -- | Term environment is a map from names to values
 type TermEnv = Map.Map Name Value
 
+
+-- | Empty term environment
 emptyTmEnv :: TermEnv
 emptyTmEnv = Map.empty
 
+-- | Extend term environment
 extendTmEnv :: TermEnv -> Name -> Value -> TermEnv
 extendTmEnv env x v = Map.insert x v env
-
-unionTmEnvs :: TermEnv -> [(Name, Value)] -> TermEnv
-unionTmEnvs env env' = Map.union env $ Map.fromList env'

@@ -89,7 +89,7 @@ hoistErr (Left err) = do
 
 -- TODO: Blocks on rd c if not function
 evalDecl :: TermEnv -> Decl -> IO TermEnv
-evalDecl env (x, expr) = silence $ evalSub env expr >>= return . extendTmEnv env x
+evalDecl env (x, expr) = silence $ eval env expr >>= return . extendTmEnv env x
     
 execi :: Bool -> String -> Repl ()
 execi update source = do
@@ -110,7 +110,7 @@ execi update source = do
     case lookup "it" mod of
         Nothing -> return ()
         Just ex -> do
-            val <- liftIO $ evalSub (tmenv st') ex
+            val <- liftIO $ eval (tmenv st') ex
             showOutput (show $ pretty val) st'
 
 showOutput :: String -> IState -> Repl ()
