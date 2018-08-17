@@ -61,9 +61,8 @@ match p            v                          = throwError $ MatchFail p v
 eqlen :: [a] -> [b] -> Bool
 eqlen l1 l2 = length l1 == length l2
 
--- | Returns variable bindings in a let binding.
--- This pattern match is irrefutable so this function
--- throws an error if it fails.
+-- | Returns variable bindings in a let binding. This pattern match is
+-- irrefutable so this function throws an error if it fails.
 letBinds :: Pattern -> Value -> TermEnv
 letBinds pat val = case runMatch pat val of
   (Left err, _)     -> error $ show $ pretty err

@@ -171,7 +171,6 @@ instance Pretty Value where
 -- | Term environment is a map from names to values
 type TermEnv = Map.Map Name Value
 
-
 -- | Empty term environment
 emptyTmEnv :: TermEnv
 emptyTmEnv = Map.empty
