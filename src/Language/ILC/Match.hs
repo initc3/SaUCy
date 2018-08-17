@@ -6,14 +6,15 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Implements the Match monad for pattern matching. Returns either a MatchFail
--- or a list of variable bindings.
+-- Implements the @Match@ monad for pattern matching. 
 --
 --------------------------------------------------------------------------------
 
 module Language.ILC.Match (
-    runMatch
+    Match
+  , runMatch
   , MatchFail(..)
+  , match
   , letBinds
   ) where
 
@@ -25,14 +26,17 @@ import Text.PrettyPrint.ANSI.Leijen
 
 import Language.ILC.Syntax
 
+-- | The @Match@ monad returns either a @MatchFail@ error or a value of the
+-- given type. It uses the @Writer@ monad to keep track of a list of variable
+-- bindings (a term environment).
 type Match a = ExceptT MatchFail (WriterT TermEnv Identity) a
 
--- | Run the Match monad
+-- | Runs the @Match@ monad on the given pattern and value.
 runMatch :: Pattern -> Value -> (Either MatchFail (), TermEnv)
 runMatch pat val =
   runIdentity (runWriterT (runExceptT (match pat val)))
 
--- | Failed pattern match
+-- | The error type of pattern match failures.
 data MatchFail = MatchFail Pattern Value deriving (Show, Eq)
 
 instance Pretty MatchFail where
@@ -43,7 +47,7 @@ instance Pretty MatchFail where
                                     , text "`" <> pretty val <> text "`."
                                     ]
 
--- | Get variable bindings in pattern match
+-- | Returns an instance of the @Match@ monad given a pattern and a value.
 match :: Pattern -> Value -> Match ()
 match (PVar x)     v                          = tell $ fromList [(x, v)]
 match (PInt n)     (VInt n')    | n == n'     = return ()
@@ -61,8 +65,9 @@ match p            v                          = throwError $ MatchFail p v
 eqlen :: [a] -> [b] -> Bool
 eqlen l1 l2 = length l1 == length l2
 
--- | Returns variable bindings in a let binding. This pattern match is
--- irrefutable so this function throws an error if it fails.
+-- | Returns a term environment of variable bindings from a let binding. Pattern
+-- matches in let expressions are irrefutable so this function will throw an
+-- error if it fails.
 letBinds :: Pattern -> Value -> TermEnv
 letBinds pat val = case runMatch pat val of
   (Left err, _)     -> error $ show $ pretty err
