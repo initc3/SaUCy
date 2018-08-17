@@ -37,39 +37,39 @@ import Language.ILC.Pretty
 import Language.ILC.Syntax
 
 -- | Type variable
-newtype TVar = TV String deriving (Show, Eq, Ord)
+newtype TVar = TV String deriving (Eq, Ord, Show)
 
 -- | Types
-data Type = TVar TVar
-          | TCon String
-          | TArr Type Type
-          | TList Type
-          | TProd [Type]
-          | TSet Type
-          | TRef Type
-          | TThunk Type
-          | TRdChan Type
-          | TWrChan Type
-          deriving (Show, Eq, Ord)
+data Type = TVar TVar       -- ^ Type variable
+          | TCon String     -- ^ Type constructor
+          | TArr Type Type  -- ^ Arrow type
+          | TList Type      -- ^ List type
+          | TProd [Type]    -- ^ Product type
+          | TSet Type       -- ^ Set type
+          | TRef Type       -- ^ Reference type
+          | TThunk Type     -- ^ Thunk type
+          | TRdChan Type    -- ^ Read channel type
+          | TWrChan Type    -- ^ Write channel type
+          deriving (Eq, Ord, Show)
 
 -- | Modes
 data Mode = MV  -- ^ Value mode
           | MW  -- ^ Write mode
           | MR  -- ^ Read mode
-          deriving (Show, Eq, Ord)
+          deriving (Eq, Ord, Show)
 
 infixr `TArr`
 
 -- | Type scheme
-data Scheme = Forall [TVar] Type deriving (Show, Eq, Ord)
+data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)
 
 -- | Primitive types
 tyInt, tyBool, tyString, tyTag, tyUnit :: Type
-tyInt  = TCon "Int"
-tyBool = TCon "Bool"
+tyInt    = TCon "Int"
+tyBool   = TCon "Bool"
 tyString = TCon "String"
-tyTag = TCon "Tag"
-tyUnit = TCon "Unit"
+tyTag    = TCon "Tag"
+tyUnit   = TCon "Unit"
 
 -- | Type environment
 newtype TypeEnv = TypeEnv { types :: Map.Map Name (Scheme, Mode) }
