@@ -6,7 +6,8 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- ILC abstract syntax tree.
+-- Defines the ILC abstract syntax tree (expressions), values, the term
+-- environment, and environment functions.
 --
 --------------------------------------------------------------------------------
 
@@ -109,6 +110,20 @@ data Pattern = PVar Name
              | PSet [Pattern]
              deriving (Eq, Show)
 
+instance Pretty Pattern where
+  pretty (PVar x) = text x
+  pretty (PInt n) = integer n
+  pretty (PBool True) = text "true"
+  pretty (PBool False) = text "false"
+  pretty (PString s)   = text s
+  pretty (PTag t)      = text t
+  pretty PUnit         = text "()"
+  pretty PWildcard     = text "_"
+  pretty (PTuple ps)   = prettyTuple $ map pretty ps
+  pretty (PList ps)    = prettyList ps
+  pretty (PCons hd tl) = pretty hd <+> text ":" <+> pretty tl
+  pretty (PSet ps)     = prettySet $ map pretty ps
+
 -- | Toplevel declarations
 type Decl = (Name, Expr)
 
@@ -153,22 +168,8 @@ instance Pretty Value where
   pretty (VRdChan c _) = text "Rd" <+> text c
   pretty (VWrChan c _) = text "Wr" <+> text c
   pretty (VRef _)      = text "<ref>"
-
-instance Pretty Pattern where
-  pretty (PVar x) = text x
-  pretty (PInt n) = integer n
-  pretty (PBool True) = text "true"
-  pretty (PBool False) = text "false"
-  pretty (PString s)   = text s
-  pretty (PTag t)      = text t
-  pretty PUnit         = text "()"
-  pretty PWildcard     = text "_"
-  pretty (PTuple ps)   = prettyTuple $ map pretty ps
-  pretty (PList ps)    = prettyList ps
-  pretty (PCons hd tl) = pretty hd <+> text ":" <+> pretty tl
-  pretty (PSet ps)     = prettySet $ map pretty ps
   
--- | Term environment: map from names to values
+-- | Term environment is a map from names to values
 type TermEnv = Map.Map Name Value
 
 emptyTmEnv :: TermEnv

@@ -26,7 +26,6 @@ import Control.Monad
 import Data.IORef
 import Data.List
 import qualified Data.Map.Strict as Map
-import Data.Maybe
 import Data.Typeable
 import Development.Placeholders
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
@@ -99,7 +98,7 @@ evalMatch :: TermEnv -> [(Pattern, Expr, Expr)] -> Value -> IO Value
 evalMatch _ [] _ = error "pattern match failed" -- TODO
 evalMatch env ((p, g, e):bs) val =
   case runMatch p val of
-      (Right _, binds) -> let env' = unionTmEnvs env binds
+      (Right _, binds) -> let env' = Map.union env binds
                     in evalSub env' g >>=
                     \case
                         VBool True  -> evalSub env' e
@@ -147,7 +146,7 @@ eval' env m expr = case expr of
                   -- If binds is not strict, this can miss unused (but bad)
                   -- pattern matches (e.g., let 1 = 2 ...).
                   let !binds = letBinds p v1
-                      env'  = unionTmEnvs env binds
+                      env'  = Map.union env binds
                   in evalSub env' e2 >>= putMVar m
   EIf e1 e2 e3 -> evalSub env e1 >>= evalBranch >>= putMVar m
     where
@@ -159,7 +158,8 @@ eval' env m expr = case expr of
                  putMVar m
   ENu (rdc, wrc) e ->
       newChan >>= \c ->
-      let env' = unionTmEnvs env [(rdc, VRdChan rdc c), (wrc, VWrChan wrc c)]
+      let env' = Map.union env $ Map.fromList [ (rdc, VRdChan rdc c)
+                                              , (wrc, VWrChan wrc c)]
       in evalSub env' e >>= putMVar m
   ERd e -> evalSub env e >>= \c -> getChan c >>=
            readChan >>= \v ->

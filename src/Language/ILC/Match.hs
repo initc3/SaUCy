@@ -6,7 +6,8 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Returns MatchFail or a list of variable bindings in the pattern match.
+-- Implements the Match monad for pattern matching. Returns either a MatchFail
+-- or a list of variable bindings.
 --
 --------------------------------------------------------------------------------
 
@@ -19,14 +20,15 @@ module Language.ILC.Match (
 import Control.Monad.Except
 import Control.Monad.Identity
 import Control.Monad.Writer
+import Data.Map.Strict (fromList)
 import Text.PrettyPrint.ANSI.Leijen
 
 import Language.ILC.Syntax
 
-type Match a = ExceptT MatchFail (WriterT [(Name, Value)] Identity) a
+type Match a = ExceptT MatchFail (WriterT TermEnv Identity) a
 
 -- | Run the Match monad
-runMatch :: Pattern -> Value -> (Either MatchFail (), [(Name, Value)])
+runMatch :: Pattern -> Value -> (Either MatchFail (), TermEnv)
 runMatch pat val =
   runIdentity (runWriterT (runExceptT (match pat val)))
 
@@ -43,7 +45,7 @@ instance Pretty MatchFail where
 
 -- | Get variable bindings in pattern match
 match :: Pattern -> Value -> Match ()
-match (PVar x)     v                          = tell [(x, v)]
+match (PVar x)     v                          = tell $ fromList [(x, v)]
 match (PInt n)     (VInt n')    | n == n'     = return ()
 match (PBool b)    (VBool b')   | b == b'     = return ()
 match (PString s)  (VString s') | s == s'     = return ()
@@ -59,8 +61,10 @@ match p            v                          = throwError $ MatchFail p v
 eqlen :: [a] -> [b] -> Bool
 eqlen l1 l2 = length l1 == length l2
 
--- | Returns let variable bindings or throws error
-letBinds :: Pattern -> Value -> [(Name, Value)]
+-- | Returns variable bindings in a let binding.
+-- This pattern match is irrefutable so this function
+-- throws an error if it fails.
+letBinds :: Pattern -> Value -> TermEnv
 letBinds pat val = case runMatch pat val of
   (Left err, _)     -> error $ show $ pretty err
   (Right (), binds) -> binds
