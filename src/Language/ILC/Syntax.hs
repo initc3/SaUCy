@@ -132,19 +132,19 @@ data Program = Program [Decl] Expr  -- TODO: Main
   deriving (Eq, Show)
 
 -- | Values in ILC.
-data Value = VInt Integer
-           | VBool Bool
-           | VString String
-           | VTag String
-           | VList [Value]
-           | VSet [Value]
-           | VTuple [Value]
-           | VUnit
-           | VClosure (Maybe Name) TermEnv Expr
-           | VThunk TermEnv Expr
-           | VRdChan Name (Chan Value)
-           | VWrChan Name (Chan Value)
-           | VRef (IORef Value)
+data Value = VInt Integer                        -- ^ Integer value
+           | VBool Bool                          -- ^ Boolean value
+           | VString String                      -- ^ String value
+           | VTag String                         -- ^ Tag value
+           | VList [Value]                       -- ^ List value
+           | VSet [Value]                        -- ^ Set value
+           | VTuple [Value]                      -- ^ Tuple value
+           | VUnit                               -- ^ Unit value
+           | VClosure (Maybe Name) TermEnv Expr  -- ^ Closure value
+           | VThunk TermEnv Expr                 -- ^ Thunk value
+           | VRdChan Name (Chan Value)           -- ^ Read channel value
+           | VWrChan Name (Chan Value)           -- ^ Write channel value
+           | VRef (IORef Value)                  -- ^ Mutable reference value
            deriving (Eq, Show)
 
 instance Show (IORef a) where

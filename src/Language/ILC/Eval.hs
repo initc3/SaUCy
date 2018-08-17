@@ -24,7 +24,6 @@ import Control.Concurrent
 import Control.Exception
 import Control.Monad
 import Data.IORef
-import Data.List
 import qualified Data.Map.Strict as Map
 import Data.Typeable
 import Development.Placeholders
@@ -44,19 +43,28 @@ instance Exception EvalError
 instance Show EvalError where
   show (EvalError s) = "Exception: " ++ s
 
--- | Evaluates an expression to a value and fills the mvar
-eval' :: TermEnv -> MVar Value -> Expr -> Interpreter ()
-eval' env m expr = case expr of
-  EVar x -> putMVar m $ env Map.! x
-  EImpVar _ -> $(todo "Eval implicit variables")
-  ELit (LInt n) -> putMVar m $ VInt n
-  ELit (LBool b) -> putMVar m $ VBool b
+-- | Evaluates an expression to a value and puts it into the given MVar.
+evalPut :: TermEnv -> MVar Value -> Expr -> Interpreter ()
+evalPut env m expr = case expr of
+  EVar x           -> putMVar m $ env Map.! x
+  EImpVar _        -> $(todo "Eval implicit variables")
+  ELit (LInt n)    -> putMVar m $ VInt n
+  ELit (LBool b)   -> putMVar m $ VBool b
   ELit (LString s) -> putMVar m $ VString s
-  ELit (LTag t) -> putMVar m $ VTag t
-  ELit LUnit -> putMVar m VUnit
-  ETuple es -> evalList env m VTuple es
-  EList es -> evalList env m VList es
-  ESet es -> evalList env m VSet $ nub es  -- TODO: Use Set
+  ELit (LTag t)    -> putMVar m $ VTag t
+  ELit LUnit       -> putMVar m VUnit
+  
+  ETuple es -> do
+    res <- evalList env es
+    putMVar m $ VTuple res
+
+  EList es -> do
+    res <- evalList env es
+    putMVar m $ VList res
+
+  ESet es -> do
+    res <- evalList env es
+    putMVar m $ VSet res
   
   ELam p e -> putMVar m $ VClosure (f p) env e
     where
@@ -64,8 +72,7 @@ eval' env m expr = case expr of
       f _        = Nothing
       
   EApp e1 e2 -> do
-    v1 <- eval env e1
-    v2 <- eval env e2
+    (v1, v2) <- evalSubs env e1 e2
     res <- betaReduce env v1 v2
     putMVar m res
 
@@ -87,7 +94,7 @@ eval' env m expr = case expr of
     res <- case v1 of
       VBool True  -> eval env e2
       VBool False -> eval env e3
-      _           -> error "Eval.eval': EIf"
+      _           -> error "Eval.evalPut: EIf"
     putMVar m res
 
   EMatch e bs -> do
@@ -106,41 +113,36 @@ eval' env m expr = case expr of
     v <- eval env e
     let c = case v of
               VRdChan _ c' -> c'
-              _           -> error "Eval.eval': ERd"
+              _            -> error "Eval.evalPut: ERd"
     res <- readChan c
     putMVar m $ VTuple [res, v]
       
   EWr e1 e2 -> do
-    v1 <- eval env e1
-    v2 <- eval env e2
+    (v1, v2) <- evalSubs env e1 e2
     let c = case v2 of
               VWrChan _ c' -> c'
-              _            -> error "Eval.eval': EWr"
+              _            -> error "Eval.evalPut: EWr"
     writeChan c v1
     putMVar m VUnit
       
   EFork e1 e2 -> do
     m1 <- newEmptyMVar
     m2 <- newEmptyMVar
-    forkIO (eval' env m1 e1)
-    forkIO (eval' env m2 e2)
+    forkIO (evalPut env m1 e1)
+    forkIO (evalPut env m2 e2)
     res <- takeMVar m2
     putMVar m res
 
-  -- TODO: Refactor
-  EChoice e1 e2 ->
-    newEmptyMVar >>= \m' ->
-    newEmptyMVar >>= \choice ->
-    forkFinally (eval' env m' e1) (\_ -> putMVar choice True) >>= \t1 ->
-    forkFinally (eval' env m' e2) (\_ -> putMVar choice False) >>= \t2 ->
-    takeMVar choice >>= \isleft ->
-    when isleft (killThread t2) >>
-    unless isleft (killThread t1) >>
-    takeMVar m' >>= putMVar m
+  EChoice e1 e2 -> do
+    m' <- newEmptyMVar
+    forkIO (evalPut env m' e1)
+    forkIO (evalPut env m' e2)
+    res <- takeMVar m'
+    putMVar m res
     
   ERepl e -> do
     m' <- newEmptyMVar
-    forkIO (forever $ eval' env m' e)
+    forkIO (forever $ evalPut env m' e)
     putMVar m VUnit
 
   ERef e -> do
@@ -148,120 +150,107 @@ eval' env m expr = case expr of
     ref <- newIORef v
     putMVar m $ VRef ref
 
-  EDeref e -> eval env e >>= getRef >>= readIORef >>= putMVar m
-    where
-      getRef (VRef r) = return r
-      getRef _        = error "Eval.eval': EDeref"
-  EAssign x e -> getRef (env Map.! x) >>= \r ->
-                 eval env e >>=
-                 writeIORef r >> putMVar m VUnit
-    where
-      getRef (VRef r) = return r
-      getRef _        = error "Eval.eval': EAssign"
-  ESeq e1 e2 -> eval env e1 >> eval env e2 >>= putMVar m
-  -- TODO: Refactor
-  EBin Add e1 e2 -> evalArith (+) env m e1 e2
-  EBin Sub e1 e2 -> evalArith (-) env m e1 e2
-  EBin Mul e1 e2 -> evalArith (*) env m e1 e2
-  EBin Div e1 e2 -> evalArith quot env m e1 e2
-  EBin Mod e1 e2 -> evalArith mod env m e1 e2
-  EBin And e1 e2 -> evalBool (&&) env m e1 e2
-  EBin Or e1 e2 -> evalBool (||) env m e1 e2
-  EBin Lt e1 e2 -> evalRel (<) env m e1 e2
-  EBin Gt e1 e2 -> evalRel (>) env m e1 e2
-  EBin Leq e1 e2 -> evalRel (<=) env m e1 e2
-  EBin Geq e1 e2 -> evalRel (>=) env m e1 e2
-  EBin Eql e1 e2 -> evalRelPoly (==) env m e1 e2
-  EBin Neq e1 e2 -> evalRelPoly (/=) env m e1 e2
-  EBin Cons e1 e2 ->
-      evalSubs env e1 e2 >>=
-      (\case (x, VList xs) -> return $ VList $ x:xs
-             _             -> error "Eval.eval': EBin Cons") >>=
-      putMVar m
-  EBin Concat e1 e2 ->
-      evalSubs env e1 e2 >>=
-      (\case
-          (VList xs, VList ys)     -> return $ VList $ xs ++ ys
-          (VString xs, VString ys) -> return $ VString $ xs ++ ys
-          _                        -> error "Eval.eval': Concat") >>=
-      putMVar m
-  EUn Not e -> eval env e >>= neg >>= putMVar m
-    where
-      neg (VBool b) = return $ VBool $ not b
-      neg _         = error "Eval.eval': Not"
+  EDeref e -> do
+    v <- eval env e
+    let r = case v of
+              VRef r' -> r'
+              _       -> error "Eval.evalPut: EDeref"
+    res <- readIORef r
+    putMVar m res
+
+  EAssign x e -> do
+    let r = case env Map.! x of
+              VRef r' -> r'
+              _       -> error "Eval.evalPut: EAssign"
+    v <- eval env e
+    writeIORef r v
+    putMVar m VUnit
+      
+  ESeq e1 e2 -> do
+    (_, res) <- evalSubs env e1 e2
+    putMVar m res
+
+  EBin op e1 e2 -> do
+    vs  <- evalSubs env e1 e2
+    putMVar m $ evalBin op vs
+      
+  EUn Not e -> do
+    v <- eval env e
+    let res = case v of
+                VBool b -> VBool $ not b
+                _       -> error "Eval.evalPut: Not"
+    putMVar m res
+      
   EThunk e -> putMVar m $ VThunk env e
-  EForce e -> eval env e >>= force >>= putMVar m
-    where
-      force (VThunk env' e') = eval env' e'
-      force _                = error "Eval.eval': EForce"
-  EPrint e -> eval env e >>= putDoc . pretty >> putMVar m VUnit
-  EError e -> eval env e >>= getString >>= throwIO . EvalError
-    where getString (VString s) = return s
-          getString _           = error "Eval.eval': EError"
+  
+  EForce e -> do
+    v <- eval env e
+    res <- case v of
+             VThunk env' e' -> eval env' e'
+             _              -> error "Eval.evalPut: EForce"
+    putMVar m res
+      
+  EPrint e -> do
+    v <- eval env e
+    putDoc $ pretty v
+    putMVar m VUnit
+  
+  EError e -> do
+    v <- eval env e
+    case v of
+      VString s -> throwIO $ EvalError s
+      _         -> error "Eval.evalPut: EError"
 
 -- | Evaluate two subexpressions                
 evalSubs :: TermEnv -> Expr -> Expr -> Interpreter (Value, Value)
-evalSubs env e1 e2 = eval env e1 >>= \v1 ->
-                     eval env e2 >>= \v2 ->
-                     return (v1, v2)
+evalSubs env e1 e2 = do
+  v1 <- eval env e1
+  v2 <- eval env e2
+  return (v1, v2)
 
-evalBinOp :: ((Value, Value) -> Interpreter Value)
-          -> TermEnv
-          -> MVar Value
-          -> Expr
-          -> Expr
-          -> Interpreter ()
-evalBinOp f env m e1 e2 = evalSubs env e1 e2 >>= f >>= putMVar m
+evalBin :: Binop -> (Value, Value) -> Value
+evalBin Add    = evalArith (+)
+evalBin Sub    = evalArith (-)
+evalBin Mul    = evalArith (*)
+evalBin Div    = evalArith quot
+evalBin Mod    = evalArith mod
+evalBin And    = evalBool  (&&)
+evalBin Or     = evalBool  (||)
+evalBin Lt     = evalRel   (<)
+evalBin Gt     = evalRel   (>)
+evalBin Leq    = evalRel   (<=)
+evalBin Geq    = evalRel   (>=)
+evalBin Eql    = evalRelP  (==)
+evalBin Neq    = evalRelP  (/=)
+evalBin Cons   = evalCons
+evalBin Concat = evalConcat
 
-evalArith :: (Integer -> Integer -> Integer)
-          -> TermEnv
-          -> MVar Value
-          -> Expr
-          -> Expr
-          -> Interpreter ()
-evalArith = evalBinOp . f
-  where
-    f op (VInt n1, VInt n2) = return $ VInt (op n1 n2)
-    f _  _                  = error "Eval.evalArith"
+evalArith :: (Integer -> Integer -> Integer) -> (Value, Value) -> Value
+evalArith op (VInt n1, VInt n2) = VInt (op n1 n2)
+evalArith _  _                  = error "Eval.evalArith"
 
-evalBool :: (Bool -> Bool -> Bool)
-         -> TermEnv
-         -> MVar Value
-         -> Expr
-         -> Expr
-         -> Interpreter ()
-evalBool = evalBinOp . f
-  where
-    f op (VBool b1, VBool b2) = return $ VBool (op b1 b2)
-    f _  _                    = error "Eval.evalBool"
+evalBool :: (Bool -> Bool -> Bool) -> (Value, Value) -> Value
+evalBool op (VBool b1, VBool b2) = VBool (op b1 b2)
+evalBool _  _                    = error "Eval.evalBool"
 
-evalRel :: (Integer -> Integer -> Bool)
-        -> TermEnv
-        -> MVar Value
-        -> Expr
-        -> Expr
-        -> Interpreter ()
-evalRel = evalBinOp . f
-  where
-    f op (VInt n1, VInt n2) = return $ VBool (op n1 n2)
-    f _  _        = error "Eval.evalRel"
+evalRel :: (Integer -> Integer -> Bool) -> (Value, Value) -> Value
+evalRel op (VInt n1, VInt n2) = VBool (op n1 n2)
+evalRel _  _                  = error "Eval.evalRel"
 
-evalRelPoly :: (Value -> Value -> Bool)
-            -> TermEnv
-            -> MVar Value
-            -> Expr
-            -> Expr
-            -> Interpreter ()
-evalRelPoly = evalBinOp . f
-  where
-    f op (n1, n2) = return $ VBool (op n1 n2)
+evalRelP :: (Value -> Value -> Bool) -> (Value, Value) -> Value
+evalRelP op (v1, v2) = VBool (op v1 v2)
 
-evalList :: TermEnv
-         -> MVar Value ->
-         ([Value] -> Value)
-         -> [Expr]
-         -> Interpreter ()
-evalList env m con es = (con <$> mapM (eval env) es) >>= putMVar m
+evalCons :: (Value, Value) -> Value
+evalCons (v, VList vs) = VList $ v : vs
+evalCons _             = error "Eval.evalCons"
+
+evalConcat :: (Value, Value) -> Value
+evalConcat (VList xs  , VList ys  ) = VList   $ xs ++ ys
+evalConcat (VString xs, VString ys) = VString $ xs ++ ys
+evalConcat _                        = error "Eval.evalConcat"
+
+evalList :: TermEnv -> [Expr] -> Interpreter [Value]
+evalList env = mapM $ eval env
 
 betaReduce :: TermEnv -> Value -> Value -> IO Value
 betaReduce env (VClosure m env' e) v =
@@ -275,19 +264,22 @@ evalMatch :: TermEnv -> Value -> [(Pattern, Expr, Expr)] -> Interpreter Value
 evalMatch _ _ [] = error "pattern match failed" -- TODO
 evalMatch env val ((p, g, e):bs) =
   case runMatch p val of
-      (Right _, binds) -> let env' = Map.union env binds
-                    in eval env' g >>=
-                    \case
-                        VBool True  -> eval env' e
-                        VBool False -> evalMatch env val bs
-                        _           -> error "Eval.evalMatch"
-      (Left _, _)    -> evalMatch env val bs
+    (Right _, binds) -> evalBranch (Map.union env binds)
+    (Left  _, _)     -> evalMatch env val bs
+  where
+    evalBranch env' = do
+      v <- eval env' g
+      case v of
+        VBool True  -> eval env' e
+        VBool False -> evalMatch env val bs
+        _           -> error "Eval.evalMatch"
 
 -- | Evaluates an expression to a value
 eval :: TermEnv -> Expr -> Interpreter Value
-eval env e = newEmptyMVar  >>= \v ->
-             eval' env v e >>
-             takeMVar v
+eval env e = do
+  m <- newEmptyMVar
+  evalPut env m e
+  takeMVar m
 
 -- | Evaluates a list of declarations to a value. The return value is the
 -- evaluation of the last declaration in the list (i.e., the main function.)
@@ -296,6 +288,6 @@ exec = go emptyTmEnv
   where
     go _   []            = error "Eval.exec"
     go env [(_, e)]      = eval env e
-    go env ((x, e):rest) = eval env e >>= \v ->
-                           let env' = extendTmEnv env x v
-                           in go env' rest
+    go env ((x, e):rest) = do
+      v <- eval env e
+      go (extendTmEnv env x v) rest
