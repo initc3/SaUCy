@@ -1,33 +1,86 @@
-\usepackage[english]{babel}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
 \usepackage{amsfonts}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{boxedminipage}
 \usepackage{color}
 \usepackage{comment}
 \usepackage{enumitem}
-\usepackage[margin=1in]{geometry}
-\usepackage{mathpartir}
 \usepackage{joshuadunfield}
-\usepackage{natbib}
+\usepackage{lipsum}
+\usepackage{mathpartir}
+\usepackage{mathtools}
 \usepackage{semantic}
 \usepackage{soul}
-\usepackage{tgpagella}
-\usepackage{titling}
+\usepackage[most]{tcolorbox}
+\usepackage{upquote}
+\usepackage{wrapfig}
 \usepackage{xspace}
 
-\setlength{\droptitle}{-.6in}
-\pretitle{\begin{center}\Large\bfseries}
-\posttitle{\par\end{center}\vspace{-.4cm}}
-\preauthor{\begin{center}}
-\postauthor{\par\end{center}\vspace{-.5cm}}
-\predate{\begin{center}\itshape}
-\postdate{\end{center}\vspace{-.6cm}}
+% Commands
+\newcommand{\mc}[1]{\mathcal{{#1}}}
+\newcommand{\myheader}[1]{\noindent\textbf{#1}}
+\newcommand{\myheaderi}[1]{\textbf{#1}}
+\newcommand{\todo}[1]{\emph{\hl{TODO:} {#1}}}
+\newcommand{\saucy}{SaUCy\xspace}
+\newcommand{\package}{Pack\xspace}
+\newcommand{\fstar}{$\text{F}^{\star}$}
+\newcommand\myeq{\stackrel{\mathclap{\scriptsize\mbox{def}}}{=}}
+\newcommand{\mypar}{\par}
+\newcommand\doubleplus{+\kern-1.3ex+\kern0.8ex}
+
+% Smart contracts
+\newcommand{\money}[1]{\xspace{\${#1}}}
+\newcommand{\timeval}[1]{\textbf{\texttt{#1}}}
+\newcommand{\Xmoney}{{\textnormal{\money{\ensuremath{X}}}}}
+\def\BState{\State\hskip-\ALG@thistlm}
+\algdef{SE}[SUBALG]{Indent}{EndIndent}{}{\algorithmicend\ }%
+\algtext*{Indent}
+\algtext*{EndIndent}
+
+% Functionality and ILC boxes
+\newcommand{\Func}{\mc{F}}
+
+\newtcolorbox{func}[1][]{title={\textbf{Functionality}~{#1}},enhanced,%drop shadow={black!50!white},
+  coltitle=black,
+  top=0.2in,
+  attach boxed title to top left=
+  {xshift=0.5cm,yshift=-\tcboxedtitleheight/2},
+  boxed title style={size=small, colback=white},colback=white}
+
+\newtcolorbox{ilc}[1][]{title={\textbf{ILC}~$\Func_{\textsc{#1}}$},enhanced,%drop shadow={black!50!white},
+  coltitle=black,
+  top=0.1in,
+  attach boxed title to top left=
+  {xshift=0.5cm,yshift=-\tcboxedtitleheight/2},
+  boxed title style={size=small,colback=red!25},colback=white}
+
+\lstdefinestyle{myilc}
+{
+    language=Caml,
+    keywordstyle={\bfseries},
+    morekeywords={let, letrec, in, wr, rd, match, with},
+    basicstyle={\sffamily},
+    captionpos=b,
+    columns=fullflexible,
+    upquote = true,
+    mathescape=true,
+    showstringspaces=false,
+}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+% ILC
+
 
 \newcommand{\runonboldsf}{\sffamily\bfseries\selectfont}
 \newcommand{\boldsf}[1]{\text{\runonboldsf #1}}
 
 % ILC Values
-\newcommand{\vUnit}{\texttt{()}}
+\newcommand{\vUnit}{\textsf{()}}
 
 % ILC Types
 \newcommand{\tyUnit}{\tyname{unit}}
@@ -36,8 +89,8 @@
 
 % ILC Computation types
 \newcommand{\xF}{\boldsf{F}}
-\newcommand{\xU}{\boldsf{U}}
-\newcommand{\xM}{\boldsf{M}}
+\newcommand{\xU}{\textsf{U}}
+\newcommand{\xM}{\textsf{M}}
 \newcommand{\tyFp}[1]{\xF(#1)}
 \newcommand{\tyUp}[1]{\xU(#1)}
 \newcommand{\tyMp}[1]{\xM(#1)}
@@ -46,12 +99,16 @@
 \newcommand{\tyM}[1]{\xM\,#1}
 
 % ILC Read and Write channel types
-\newcommand{\xRd}{\boldsf{Rd}}
-\newcommand{\xWr}{\boldsf{Wr}}
+\newcommand{\xRd}{\textsf{Rd}}
+\newcommand{\xWr}{\textsf{Wr}}
+\newcommand{\xRdL}{\textsf{RdL}}
+\newcommand{\xWrL}{\textsf{WrL}}
 \newcommand{\tyRdp}[1]{\xRd(#1)}
 \newcommand{\tyWrp}[1]{\xWr(#1)}
 \newcommand{\tyRd}[1]{\xRd\,#1}
 \newcommand{\tyWr}[1]{\xWr\,#1}
+\newcommand{\tyRdL}[1]{\xRdL\,#1}
+\newcommand{\tyWrL}[1]{\xWrL\,#1}
 
 % ILC Modes
 \newcommand{\Rm}{\textsf{R}}
@@ -64,7 +121,7 @@
 \newcommand{\inj}[1]{\keyword{inj}_{#1}\,}
 \newcommand{\Inj}[1]{\inj{#1}}
 
-\newcommand{\vPair}[2]{\Lparen{#1}\texttt{,}{#2}\Rparen}
+\newcommand{\vPair}[2]{\Lparen{#1},{#2}\Rparen}
 \newcommand{\vInj}[2]{\keyword{inj}_{#1}\Lparen#2\Rparen}
 \newcommand{\vThunk}[1]{\keyword{thunk}\Lparen#1\Rparen}
 
@@ -78,11 +135,12 @@
 %% easier to typeset math using readable LaTeX text.
 %\mathlig{|-->}{\longmapsto}
 \mathlig{::=}{\bnfas}
+\mathlig{:=}{\coloneqq}
 \mathlig{|}{\;|\;}
 % \mathlig{[[}{\mbsf{[}}
 % \mathlig{]]}{\mbsf{]}}
-\mathlig{[[}{\texttt{\upshape[}}
-\mathlig{]]}{\texttt{\upshape]}}
+\mathlig{[[}{\textsf{\upshape[}}
+\mathlig{]]}{\textsf{\upshape]}}
 \mathlig{**}{\times}
 \mathlig{|>}{\rhd}
 \mathlig{->}{\arr}
@@ -94,6 +152,7 @@
 \mathlig{;;}{\mathrel{;}}
 \mathlig{*&&}{\mathrel{\xFork}}
 \mathlig{*||}{\mathrel{\oplus}}
+\mathlig{!!}{\Downarrow}
 
 \mathlig{@>}{\arr_{\namesort}}
 
@@ -104,7 +163,7 @@
 
 \newcommand{\disjoint}{\mathrel{\bot}}
 
-\newcommand{\tbrack}[1]{\texttt{\upshape[}{#1}\texttt{\upshape]}}
+\newcommand{\tbrack}[1]{\textsf{\upshape[}{#1}\textsf{\upshape]}}
 
 \newcommand{\rootname}{\textvtt{root}}
 
@@ -140,7 +199,7 @@
 \newcommand{\Get}[1]{\keyword{get}\Lparen{#1}\Rparen}
 \newcommand{\Set}[2]{\keyword{set}\Lparen{#1},{#2}\Rparen}
 \newcommand{\Seq}[2]{\keyword{seq}\Lparen{#1},{#2}\Rparen}
-\newcommand{\If}[3]{\keyword{if}\Lparen{#1},{#2},{#3}\Rparen}
+%\newcommand{\If}[3]{\keyword{if}\Lparen{#1},{#2},{#3}\Rparen}
 \newcommand{\Case}[5]{\keyword{case}\Lparen{#1},{#2}.{#3},{#4}.{#5}\Rparen}
 \newcommand{\Split}[4]{\keyword{split}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
 
@@ -153,11 +212,13 @@
 \let\Force\undefined
 \newcommand{\eForce}[1]{\keyword{force}\Lparen{#1}\Rparen}
 
+\newcommand{\eFix}[1]{\keyword{fix}\Lparen{#1}\Rparen}
+
 \newcommand{\App}[2]{#1\,#2}
 \newcommand{\eApp}[2]{#1\,#2}
 
-\newcommand{\Lparen}{\texttt{(}}
-\newcommand{\Rparen}{\texttt{)}}
+\newcommand{\Lparen}{\textsf{(}}
+\newcommand{\Rparen}{\textsf{)}}
 
 \newcommand{\Ret}[1]{\keyword{ret}\Lparen{#1}\Rparen}
 \newcommand{\Let}[3]{\keyword{let}\Lparen{#1},{#2}.{#3}\Rparen}
@@ -180,11 +241,46 @@
 \newcommand{\Config}[2]{\left<#1;#2\right>}
 
 \newcommand{\Chans}{\Sigma}
-\newcommand{\vChan}[1]{\texttt{chan}\Lparen#1\Rparen}
+%\newcommand{\vChan}[1]{\keyword{chan}\Lparen#1\Rparen}
+\newcommand{\vChan}[1]{#1}
 \newcommand{\emptyChans}{\varepsilon}
 
 \newcommand{\emptyctxt}{\cdot}
 
 \newcommand{\Procs}{\pi}
-\newcommand{\proc}{e}
+\newcommand{\proc}[2]{#1;#2}
 \newcommand{\emptyProcs}{\varepsilon}
+
+\newcommand{\msf}[1]{\ensuremath{{\mathsf {#1}}}}
+\newcommand{\mtt}[1]{\ensuremath{\mathtt {#1}}}
+\newcommand{\mcal}[1]{\ensuremath{\mathcal {#1}}}
+\newcommand{\val}{\msf{val}}
+\newcommand{\sn}{\msf{sn}}
+
+\newcommand{\tn}{\textnormal}
+\newcommand{\codeb}[1]{\textsf{#1}}
+\newcommand{\hash}{\ensuremath{\mathcal{H}}}
+\newcommand{\adv}{\ensuremath{{\mathcal A}}\xspace}
+\newcommand{\Adv}{\adv}
+\newcommand{\A}{\adv}
+\newcommand{\samples}{\overset{\$}{\leftarrow}}
+\newcommand{\SA}{\msf{SA}}
+% SaUCy specific
+\newcommand{\SaUCy}{\xspace{\msf{SaUCy}}\xspace}
+\newcommand{\leak}{\color{blue}\mtt{leak}}
+\newcommand{\eventually}[1]{\color{blue}\mtt{leak}}
+\newcommand{\poly}{\textnormal{poly}}
+\newcommand{\negl}{\textnormal{negl}}
+\newcommand{\execUC}[4]{\mathsf{execUC}({#1},{#2},{#3},{#4})}
+\newcommand{\chan}[1]{{\underline{\smash{\msf{#1}}}}}
+\newcommand{\functionality}[1]{\ensuremath{\mathcal{F}_{\textnormal{\msf{{#1}}}}}}
+\newcommand{\F}{\functionality}
+%\newcommand{\G}[1]{\mathcal{G}_{\textnormal{\tiny {\uppercase{#1}}}}}
+\newcommand{\GG}[1]{{\overline \mathcal{G}}_{\textnormal{\tiny {\uppercase{#1}}}}}
+\renewcommand{\C}[1]{\mathcal{C}_{\textnormal{\tiny {\uppercase{#1}}}}}
+\renewcommand{\P}{\ensuremath{\mathcal P}}
+\newcommand{\Ps}{\ensuremath{\{\mathcal{P}_i\}_{i \in [N]}}}
+\renewcommand{\S}{\ensuremath{\mathcal S}}
+\newcommand{\env}{\Z}
+\newcommand{\Z}{{\mcal{E}}}
+\newcommand{\R}{{\mathcal R}}

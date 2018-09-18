@@ -1,0 +1,67 @@
+\section{Introduction}
+\label{sec:introduction}
+
+The success of blockchains and cryptocurrencies have raised interest in building
+secure software systems that combine consensus protocols~\cite{miller2016honey},
+zero-knowledge proofs~\cite{kosba2016hawk}, multiparty
+computation~\cite{bentov2017instantaneous}, and other advanced techniques from
+distributed computing and cryptography.  However, these primitives are known to
+be error-prone and difficult to compose securely.  To the average developer,
+reasoning about asynchronous, distributed, and adversarial deployment
+environments is unnatural. On top of this, the security of a software system is
+generally a whole-system property, but vulnerabilities often arise from
+misunderstandings and mismatches as components are
+integrated~\cite{chong2016report}.
+
+Our solution is to develop a module system, \saucy, that will simplify the task
+of composing distributed protocols and cryptographic primitives.  The novel
+design idea of \saucy is to include with each module a rich behavioral
+specification in the form of an \emph{ideal functionality}, which serves as a
+self-contained specification of all desired security and liveness properties.
+This idea is rooted in the theory of \emph{universal composability}
+(UC)~\cite{canetti2001universally}, which is widely used in cryptography for
+on-paper proofs, but has not yet been adapted for software engineering.  Based
+on our prior experience providing formal specifications for smart contract and
+blockchain protocols~\cite{bentov2017instantaneous, kosba2016hawk,
+  miller2017sprites}, ideal functionalities are well-suited for modular design
+of complex security-oriented applications for several reasons:
+
+\begin{enumerate}
+\item The UC framework is an established standard for modeling distributed and
+  cryptographic protocols, so we can draw on existing literature for ideal
+  functionality models.
+\item Ideal functionalities are executable specifications, so they are amenable
+  to property-based testing and machine-checkable proofs.
+\item UC provides the strongest notion of security under concurrent
+  composition. When we substitute an ideal functionality for a distributed
+  protocol that realizes it, all the properties of the ideal functionality are
+  preserved. Hence a developer's understanding of the ideal functionality
+  carries over to the distributed implementation.
+\end{enumerate}
+
+\subsection{Our Approach}
+\label{subsec:approach}
+
+To reap the expected benefits of the \saucy module system, in this work, we will
+develop infrastructure to help authors write, test, and verify distributed
+protocol and cryptographic primitives.  This work will take place over three
+main tasks: The first task focuses on designing a new high-level language called
+ILC for expressing protocols and implementing the UC framework, the second
+task focuses on developing testing techniques for detecting security and
+liveness violations in the presence of Byzantine failures, and the third task
+focuses on building a verification tool for mechanizing security and liveness
+proofs in the UC framework.\smallskip
+
+\subsection{Organization}
+\label{subsec:org}
+
+This paper is organized as follows. Section~\ref{sec:background} provides an
+overview of the UC framework and potential applications.
+Section~\ref{sec:challenges} highlights several challenges in using
+UC. Section~\ref{sec:ilc} describes the design of our programming language
+Interactive Lambda Calculus (ILC). Section~\ref{sec:session} describes an
+extension of ILC with session types that will enable a form of verification for
+ILC programs. Section~\ref{sec:testing} details our plan to develop new
+techniques for testing security and liveness of ILC procotols in the presence of
+Byzantine failures. Section~\ref{sec:verification} details our plan to develop a
+proof assistant for mechanizing UC proofs.

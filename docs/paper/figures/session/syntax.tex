@@ -1,0 +1,55 @@
+\begin{figure}
+  \begin{grammar}
+    Expressions
+    & $e$
+        &$\bnfas$&
+        $\Sigma (s_1, s_2) . e \bnfalt \sigma s . e \bnfalt \mathsf{wr!}(e, s) \bnfalt
+    \mathsf{rd!}(s) \bnfalt \ldots$
+  \\[1ex]    
+  Session channels
+  & $s$
+      & $\bnfas$ & $s$
+  \end{grammar}
+  \caption{Syntax of extended expressions.}
+  \label{fig:session-syntax}
+\end{figure}
+
+\begin{comment}
+\begin{figure}[htbp]
+  \centering
+\begin{grammar}
+  Processes
+  & $P$
+      &$\bnfas$&
+      $e$ & Expression
+      \\ &&& $\bnfaltbrk \Sigma c. P$ & Allocate session channel as $c$ in $P$
+      \\ &&& $\bnfaltbrk \sigma c. P$ & Distribute session channel as $c$ in $P$
+      \\ &&& $\bnfaltbrk \mathsf{wr!}(c, e)$ & Write session channel $c$
+      \\ &&& $\bnfaltbrk \mathsf{rd!}(c)$ & Read session channel $c$
+      \\ &&& $\bnfaltbrk P_1 *&& P_2$ & Fork~$P_1$, continue as~$P_2$
+      \\ &&& $\bnfaltbrk P_1 *|| P_2$ & External choice between~$P_1$ and~$P_2$
+      \\ &&& $\bnfaltbrk \eNu{x}{P}$ & Allocate local channel as~$x$ in~$P$
+      \\ &&& $\bnfaltbrk \eWr{e_1}{e_2}$ & Write local channel
+      \\ &&& $\bnfaltbrk \eRd{e}$ & Read local channel
+      \\ &&& $\bnfaltbrk \mathsf{def}({P_1, x.P_2})$ & Recursion
+  \\[1ex]    
+  Expressions
+  & $e$
+      & $\bnfas$ & $x$ & Variable
+      \\ &&& $\bnfaltbrk \vUnit$ & Unit value
+      \\ &&& $\bnfaltbrk n$         & Natural number
+      \\ &&& $\bnfaltbrk \vPair{v_1}{v_2}$ & Pair of values
+      \\ &&& $\bnfaltbrk \vInj{i}{v}$ & Injected value
+      \\ &&& $\bnfaltbrk \vChan{c}$ & Channel (either read or write end)
+      \\ &&& $\bnfaltbrk \vThunk{e}$ & Thunk (suspended, closed expression)
+      \\ &&& $\bnfaltbrk \Split{v}{x_1}{x_2}{e}$ & Pair elimination
+      \\ &&& $\bnfaltbrk \Case{v}{x_1}{e_1}{x_2}{e_2}$ & Injection elimination
+      \\ &&& $\bnfaltbrk \Let{e_1}{x}{e_2}$ & Let-binding/sequencing
+      \\ &&& $\bnfaltbrk \eApp{e}{v}$ & Function application
+      \\ &&& $\bnfaltbrk \lam{x} e$ & Function abstraction
+      \\ &&& $\bnfaltbrk \eForce{v}$ & Unsuspend (force) a thunk
+\end{grammar}
+  \caption{Syntax of values and expressions}
+  \label{fig:syntax-session}
+\end{figure}
+\end{comment}

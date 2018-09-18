@@ -6,6 +6,6 @@
 *.log
 *.out
 *.ps
-*.pdf
 *~
 \#*\#
+\build

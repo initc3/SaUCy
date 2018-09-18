@@ -1,0 +1,19 @@
+\begin{figure*}
+  \begin{grammar}
+    Types
+    & $A,B$
+    &$\bnfas$& $\vUnit \bnfalt A ** B \bnfalt A + B \bnfalt *! A \bnfalt
+    \tyRd{A} \bnfalt \tyWr{A}$
+    \\ &&& $\bnfaltbrk A\ \keyword{ref} \bnfalt \tyU{(A ** m)} \bnfalt A -> B$
+    \\
+    Linear Typing Contexts
+    & $\Delta$
+    &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:A$
+    \\
+    Intuitionistic Typing Contexts
+    & $\Gamma$
+    &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
+  \end{grammar}
+\caption{Syntax of types.}
+\label{fig:syntax--types}
+\end{figure*}

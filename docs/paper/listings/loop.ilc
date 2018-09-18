@@ -1,0 +1,3 @@
+loop :: Rd a $->$ (a $->$ b) $->$ b $|>$ R
+letrec loop c f =
+  let (v, c) = rd c in f v; loop c f

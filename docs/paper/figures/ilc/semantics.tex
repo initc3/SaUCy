@@ -1,0 +1,118 @@
+\begin{figure*}
+\centering
+\begin{grammar}
+  Channels
+  & $\Chans$ 
+    & $\bnfas$ & $\emptyChans ~|~ \Chans, c$
+    \\[2mm]
+  Process pool
+  & $\Procs$ 
+    & $\bnfas$ & $\emptyProcs ~|~ \Procs, \proc{\sigma}{e}$
+    \\[2mm]
+  Configurations
+  & $C$
+     & $\bnfas$ & $\Config{\Chans}{\Procs} $
+     \\[2mm]
+ Evaluation contexts
+  & $E$
+     & $\bnfas$ & $\bullet \bnfalt \Let{E}{x}{e} \bnfalt \App{E}{e} \bnfalt \App{v}{E}
+ \bnfalt \Ref{E} \bnfalt \Get{E} \bnfalt \Set{E}{e}$
+     \\ &&& $\bnfaltbrk \Set{\ell}{E} \bnfalt E ; e \bnfalt \Split{E}{x_1}{x_2}{e} \bnfalt \Case{E}{x_1}{e_1}{x_2}{e_2}$
+\\[2mm]
+ Read contexts
+  & $R$
+     & $\bnfas$ & $\bullet \bnfalt \eRd{\vChan{c}} \oplus R \bnfalt R \oplus \eRd{\vChan{c}}$
+\end{grammar}
+\caption{Evaluation configurations and contexts.}
+\label{fig:configs}
+\end{figure*}
+
+\begin{figure*}
+\centering
+\judgbox{C_1 \equiv C_2}{~~Configurations~$C_1$ and $C_2$ are equivalent.}
+\begin{mathpar}
+\Infer{permProcs}
+{  \Procs_1 \equiv_\textsf{perm} \Procs_2 }
+{ \Config{\Chans}{\Procs_1} \equiv \Config{\Chans}{\Procs_2} }
+\end{mathpar}
+\caption{Structural congruence.}
+\label{fig:structural-congruence}
+\end{figure*}
+
+\begin{figure*}
+\judgbox{C_1 ---> C_2}{~~Configuration~$C_1$ reduces to $C_2$.}
+\begin{mathpar}
+\Infer{local}{ \sigma_1 ; e_1 ---> \sigma_2 ; e_2 }
+{ \Config{\Chans}{\Procs, \proc{\sigma_1}{E[e_1]}} --->
+  \Config{\Chans}{\Procs, \proc{\sigma_2}{E[e_2]}} }
+\and
+\Infer{fork}{ ~ }
+{ \Config{\Chans}{\Procs, \proc{\sigma}{E[ e_1 \xFork e_2 }] } --->
+  \Config{\Chans}{\Procs, \proc{\sigma}{e_1}, \proc{\sigma}{E[ e_2 ]}}}
+\and
+\Infer{congr}{
+C_1 \equiv C_1' 
+\\
+C_1' ---> C_2'
+\\
+C_2' \equiv C_2
+}
+{ C_1 ---> C_2 }
+\and
+\Infer{nu}{ c_1, c_2 \notin \Chans }
+{ \Config{\Chans}{\Procs, \proc{\sigma}{E[ \eNu{(x_1, x_2)}{e} ]}} --->
+  \Config{\Chans, c_1, c_2}{\Procs, \proc{\sigma}{E[ [\vChan{c_1}/x_1][\vChan{c_2}/x_2]e ]}}}
+\and
+\Infer{rw}
+{ c_2 \leadsto c_1 }
+{ \Config{\Chans}{\Procs, \sigma_1 ; E_1[R[ \eRd{\vChan{c_1}}] ], \sigma_2 ; E_2[ \eWr{\vChan{c_2}}{v}]} --->
+  \Config{\Chans}{\Procs, \sigma_1 ; E_1[ (v, \vChan{c_1})], \sigma_2 ; E_2[ \vUnit]} }
+\\
+\end{mathpar}
+
+\judgbox{\sigma_1 ; e_1 ---> \sigma_2 ; e_2}{~~Under store $\sigma_1$,
+  expression~$e_1$ reduces to~$\sigma_2 ; e_2$.}
+\begin{mathpar}
+\Infer{let}
+{}
+{ \sigma ; \Let{v}{x}{e} ---> \sigma ; [v/x]e }
+\and
+\Infer{app}
+{}
+{ \sigma ; \eApp{(\lam{x} e)}{v} ---> \sigma ; [v/x]e }
+\and
+\Infer{force}
+{ }
+{ \sigma ; \eForce{\vThunk{e}} ---> \sigma ; e }
+\and
+\Infer{split}
+{ }
+{ \sigma ; \Split{\vPair{v_1}{v_2}}{x_1}{x_2}{e} ---> \sigma ; [v_1/x_1][v_2/x_2]e }
+\and
+\Infer{case}
+{ }
+{ \sigma ; \Case{\vInj{i}{v}}{x_1}{e_1}{x_2}{e_2} ---> \sigma ; [v/x_i]e_i }
+\and
+\Infer{fix}
+{ }
+{ \sigma ; \eFix{e} -> \sigma ; e\ \eFix{e} }
+\and
+\Infer{seq}
+{ }
+{ \sigma ; (v; e) ---> \sigma ; e }
+\and
+\Infer{ref}
+{ \ell \not \in dom(\sigma) }
+{ \sigma ; \Ref{v} -> \sigma, \ell : v ; \ell }
+\and
+\Infer{get}
+{ \sigma(\ell) = v }
+{ \sigma ; \Get{\ell} -> \sigma; v }
+\and
+\Infer{set}
+{ }
+{ \sigma ; \Set{\ell}{v} -> [\ell \mapsto v]\sigma; \vUnit }
+\end{mathpar}
+\caption{Reduction semantics.}
+\label{fig:semantics}
+\end{figure*}

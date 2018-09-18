@@ -1,0 +1,19 @@
+\section{Mechanized UC Proofs}
+\label{sec:verification}
+
+Traditional cryptographic proofs require pervasive reasoning about
+probabilities, which is typically at odds with the compositionality of program
+logics, but UC allows us to reason about protocol components
+independently~\cite{chong2016report}. Taking advantage of this compatibility, we
+will develop a proof assistant for constructing and verifying machine-checked
+security proofs in the UC model. Given a protocol, functionality, and simulator
+description written in ILC, the verifier will be able to prove emulation
+between the real and ideal protocols using a probabilistic Relational Hoare
+Logic (pRHL)~\cite{barthe2011computer}. As an initial step, it may be useful to
+bootstrap from existing tools that support probabilistic reasoning, such as
+EasyCrypt~\cite{barthe2011computer} and \fstar~\cite{swamy2016dependent}, by
+compiling ILC into their languages. However, because neither of these tools
+natively support the simulation-based reasoning used in UC proofs, our end goal
+is to tailor our tool to UC-style reasoning. Importantly, our tool will use
+theorem provers and SMT solvers in combination, allowing the verifier to provide
+assistance for proof obligations that exceed the capabilities of SMT solvers.

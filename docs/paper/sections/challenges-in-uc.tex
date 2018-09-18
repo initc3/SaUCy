@@ -1,0 +1,142 @@
+\section{Challenges in Using UC}
+\label{sec:challenges}
+
+Although the UC framework is widely used for on-paper proofs, its modularity
+benefits have not been enjoyed in protocol implementations. To start, on-paper
+proofs can be error-prone and difficult to verify. On top of this, the UC
+framework has numerous variations (e.g., guc~\cite{canetti2007universally},
+juc~\cite{canetti2003universal}, symbolic UC~\cite{bohl2016symbolic},
+RSIM~\cite{backes2007reactive}, GNUC~\cite{hofheinz2015gnuc}), which makes it
+hard to keep track of the precise semantics of work done in UC. Finally, proofs
+of security do not cleanly extend to implementations, because there is too large
+a semantic gap between them and their proof abstractions.
+
+\subsection{Liveness Guarantees in Asynchronous Protocols}
+\label{subsec:liveness}
+
+\todo{} In an asynchronous protocol, an adversary should not be able to prevent liveness
+by crashing nodes or reordering messages. This setting is more challenging to
+reason about than the synchronous setting where timeouts are available, or the
+security with abort setting. We need to distinguish between events that
+\emph{may} occur if a particular party is uncorrupted, versus events that
+\emph{must eventually} hold regardless of which players are corrupted. We will
+explore this idea by incorporating type annotations based on modal logic into
+SaUCy.
+
+Only recently have liveness guarantees for asynchronous protocols been
+considered in UC security~\cite{coretti2016constant}. Their encoding of eventual
+delivery guarantees is unwieldy for formal reasoning, as it couples the temporal
+reasoning about message delivery (the adversary must eventually deliver each
+honest message) as a side effect of the running time bounds in the model
+analysis (see Appendix for functionality). (To delay the message by $t$, the
+adversary must make $t$ steps, and since the adversary's overall running time is
+bounded by $O(\sf{poly}{\lambda})$, $t$ must be bounded as well.) Our alternative
+type-based approach will model the intended behavior more correctly, expressing
+that any well-typed adversary must eventually deliver each message.
+
+\begin{figure}
+\begin{func}[$\Func_{\textsc{rbc}}$]
+    $\Func_{\textsc{rbc}}$ proceeds as follows, running with parties $P$, a
+  dealer $D$, and an adversary $S$.
+    \begin{enumerate}
+      \item Upon receiving a value $v$ from $D$, leak $v$ to $S$. For each party
+        $P_i$, \textbf{eventually} send $v$ to $P_i$.
+    \end{enumerate}
+\end{func}
+\caption{An ideal functionality for reliable broadcast.}
+\label{func:rbc}
+\end{figure}
+
+\begin{figure}
+\begin{func}[$\Func_{\textsc{mc}}$]
+    $\Func_{\textsc{mc}}$ proceeds as follows, running with parties $P$ and an
+  adversary $S$.
+    \begin{enumerate}
+      \item Upon receiving a message $m$, leak $m$ to $S$. For each party
+        $P_i$, \textbf{eventually} send $m$ to $P_i$.
+    \end{enumerate}
+\end{func}
+\caption{An ideal functionality for multicast.}
+\label{func:mc}
+\end{figure}
+
+\subsection{Responsive Environments}
+\label{subsec:responsive}
+\todo{}
+\textbf{Notes on responsive environments:} In UC frameworks, adversaries
+(or environments) and protocols (or ideal functionalities) often have to
+exchange meta-information on the network interface (e.g., algorithms,
+cryptographic material, corruption-related messages). For these
+modeling-related messages, which do not correspond to any real network messages,
+it would be useful for adversaries (or environments) to provide the requested
+information immediately or give control back to the sending party immediately
+after having received some information.
+
+In the traditional UC model, this non-responsiveness is often ignored, which has
+led to underspecified and flawed specifications. To avoid the non-responsiveness
+problem,~\cite{camenisch2016universal} introduce the concept of \emph{responsive
+  environments} and \emph{responsive adversaries}. When responsive environments
+or adversaries receive a special \emph{restricted message}, they have to respond
+to the message immediately, i.e., without activating other parts of the protocol
+before sending an answer. Furthermore, answers to restricted messages may be
+limited to a specified set of responses. The protocol designer can specify all
+urgent requests by defining a restriction on these messages, but it is crucial
+that restricted messages only be used for exchanging meta-information, not for
+real network messages.
+
+\begin{enumerate}
+  \item Send message $m$ to the adversary.
+  \item Upon receiving a reply $r$ from the adversary, do $C$.
+\end{enumerate}
+
+In specifications containing the above formulation, it is not specified what
+happens if the adversary does not respond immediately, but other parts of the
+network interface can still activate. This means the state and status (e.g.,
+corruption status) of other protocol machines can change while waiting for a
+response.
+
+In UC emulation proofs, underspecifications of this form can be problematic
+since an ideal functionality $\mc{F}$ runs alongside a friendly simulator
+$\mc{S}$, and $\mc{S}$ might provide answers to urgent requests
+immediately. However, if $\mc{F}$ is used in a hybrid protocol, $\mc{F}$ runs
+alongside hostile adversaries and environments, which might not provide answers
+immediately. If nonresponsiveness is ignored or handled incorrectly, it yields
+underspecified protocols that cannot be reused in hybrid protocols, which
+defeats the purpose of universal composability.
+
+Definitions.
+
+\begin{definition}[Restriction]
+  A restriction $R \subseteq \{0, 1\}^{+} \times \{0, 1 \}^{+}$ is a set of pairs of non-empty
+  messages such that given a pair of messages $(m, m')$, it is efficiently
+  decidable whether $R$ allows $m'$ as an answer to $m$. We define $R[0] := \{ m
+  \mid \exists m' \colon (m, m') \in R \}$. A message $m \in R[0]$ is called a restricting
+  message.
+\end{definition}
+
+For example:
+\[ R := \{ (m, m') \mid m = \texttt{AmICorrupted?}, m' = (\texttt{Corruption}, b),
+b \in \{\texttt{true}, \texttt{false}\}\} \]
+
+\begin{definition}[Responsive environments]
+  An environment $\mc{E}$ is called responsive for a system of machines $\mc{Q}$ with
+  respect to a restriction $R$ if in an overwhelming set of runs of $\{\mc{E},
+  \mc{Q}\}$ every restricting message from $\mc{Q}$ on the network is answered
+  correctly. By $\textsf{Env}_{R}(\mc{Q})$ we denote the set of responsive
+  environments for $\mc{Q}$.
+\end{definition}
+
+\begin{definition}[Responsive adversaries]
+  Let $\mc{Q}$ be a system and let $\mc{A}$ be an adversary that controls the
+  network interface of $\mc{Q}$. Then $\mc{A}$ is called a responsive adversary
+  if for all $\mc{E} \in \textsf{Env}_R(\mc{A}, \mc{Q})$ in an overhwhelming set
+  of runs of $\{\mc{E}, \mc{A}, \mc{Q}\}$ every restricting message from
+  $\mc{Q}$ on the network is immediately answered.
+\end{definition}
+
+\todo{How we tackle this problem in ILC.} When an ILC process sends a restricted
+message $m$ to a responsive adversary or environment on channel $c$, all
+external write channels (except the write channel corresponding to $c$, which we
+denote as $c'$) are blacklisted until a correct response is delivered on
+$c'$. Note that this does not suppress channels that are internal to the
+adversary or environment.

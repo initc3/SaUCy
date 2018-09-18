@@ -1,0 +1,18 @@
+let Z = loop _2z ($\lambda$ v . match v with
+                    | () when $\bullet =>$ wr ('Input, $\bullet$) $->$ z2s
+	            | () when $\bullet =>$ wr 'Tick $\quad\;\;\;$ $->$ z2a
+	            | v $\,$when $\bullet =>$ wr ($\bullet$ :: bit) $\;\;\;->$ out)
+
+let A = loop _2a ($\lambda$ v . match v with
+                    | ('Send, Sid, Rid, m) $=>$ if $\bullet$
+		                         $\,$then wr 'Ok $\qquad\qquad\,->$ a2s
+					 $\,$else $\;$wr ('Sent, Sid, m) $->$ a2r
+		    | 'Tick $\qquad\qquad\quad\;\;\:=>$ if $\bullet$
+		                         $\,$then wr () $\qquad\qquad\;\;\;\,->$ a2z
+					 $\,$else $\;$wr ('Sent, Sid, m) $->$ a2r)
+
+let S = loop _2s ($\lambda$ v . match v with
+                    | ('Input, m) $=>$ wr ('Send, Sid, Rid, m) $->$ s2a
+		    | 'Ok $\qquad\;\;\;=>$ wr () $\qquad\qquad\qquad\quad\,->$ s2z)
+
+let R = loop a2r ($\lambda$ v . wr v $->$ r2z)

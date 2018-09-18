@@ -1,0 +1,122 @@
+\appendix
+
+\section{Algorithmic Type Checking}
+\label{sec:algo-type-check}
+
+Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
+
+\begin{figure*}
+\centering
+\judgbox{\Delta_{in} ; \Gamma_{in} |- e : \Delta_{out}; \Gamma_{out}; A}{~~Under $\Delta_{in}$ and
+  $\Gamma_{in}$, expression~$e$ returns $\Delta_{out}$ and $\Gamma_{out}$ and has type $A$.}
+\begin{mathpar}
+\Infer{a-split}
+{\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A_1 \times A_2\\\\
+\Delta_2; \Gamma_2,x_1:A_1, x_2: A_2 |- e : \Delta_3; \Gamma_3; B}
+{\Delta_1; \Gamma_1 |- \Split{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma_3; B}
+%
+\and
+%  
+\Infer{a-case}
+{\Delta_1; \Gamma_1 |- e : \Delta_2; \Gamma_2; A_1 + A_2\\\\
+\Delta_2; \Gamma_2,x_1:A_1 |- e_1 : \Delta_3; \Gamma_3; B\\\\
+\Delta_2; \Gamma_2,x_2:A_2 |- e_2 : \Delta_3; \Gamma_3; B}
+{\Delta_1; \Gamma_1 |- \Case{e}{x_1}{e_1}{x_2}{e_2} : \Delta_3; \Gamma_3 \div (x_i:A_i) ; B}
+%
+\and
+%
+\Infer{a-get}
+{\Delta_1; \Gamma_1 |- e : \Delta_2; \Gamma_2; A\ \textsf{ref}}
+{\Delta_1; \Gamma_1 |- \Get{e} : \Delta_2; \Gamma_2; A}
+%
+\and
+%
+\Infer{a-set}
+{\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A\ \textsf{ref}\\\\
+\Delta_2; \Gamma_2 |- e : \Delta_3; \Gamma_3; A}      
+{\Delta_1; \Gamma_1 |- \Set{e_1}{e_2} : \Delta_3; \Gamma_3; \tyUnit}
+%
+\and
+%
+\Infer{a-force}
+{\Delta_1; \Gamma_1 |- e : \Delta_2; \Gamma_2; \tyUp{A \times m}}
+{\Delta_1; \Gamma_1 |- \eForce{e} : \Delta_2; \Gamma_2; A}
+%
+\and
+%
+\Infer{a-fix}
+{\Delta_1; \Gamma_1 |- e : \Delta_2; \Gamma_2; A -> A}
+{\Delta_1; \Gamma_1 |- \Fix{e} : \Delta_2; \Gamma_2; A}
+%
+\and
+%
+\Infer{a-let}
+{\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A\\\\
+\Delta_2; \Gamma_2, x:S |- e_2 : \Delta_3; \Gamma_3; B}
+{\Delta_1; \Gamma_1 |- \Let{e_1}{x}{e_2} : \Delta_3; \Gamma_3 \div (x:A); B}
+%
+\and
+%
+\Infer{a-let!}
+{\Delta_1; \Gamma_1 |- v : *! \Delta_2; \Gamma_2; A\\\\
+\Delta_2; \Gamma_2, x:A |- e : \Delta_3; \Gamma_3; B}
+{\Delta_1; \Gamma_1 |- \LetBang{v}{x}{e} : \Delta_3; \Gamma_3 \div (x:A); B}
+%
+\and
+%
+\Infer{a-lam}
+{\Delta_1 ; \Gamma_1, x:A |- e : \Delta_2; \Gamma_2; B}
+{\Delta_1 ; \Gamma_1 |- \lam{x} e : \Delta_2; \Gamma_2 \div (x:A); A -> B}
+%
+\and
+%
+\Infer{a-app}
+{\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A\\\\
+\Delta_2; \Gamma_2 |- e_2 : \Delta_3; \Gamma_3; A -> B}
+{\Delta_1; \Gamma_1 |- e_1 e_2 : \Delta_3; \Gamma_3; B}
+%
+\and
+%
+\Infer{a-nu}
+{\Delta_1, x_1: \tyRd A ; \Gamma_1, x_2 : \tyWr A |- e : \Delta_2; \Gamma_2; B}
+{\Delta_1; \Gamma_1 |- \eNu{(x_1, x_2)}{e} : \Delta_2; \Gamma_2; B}
+%
+\and
+%
+\Infer{a-wr}
+{\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A\\\\
+\Delta_2; \Gamma_2 |- e_2 : \Delta_3; \Gamma_3; \tyWr A}
+{\Delta_1; \Gamma_1|- \eWr{e_1}{e_2} : \Delta_3; \Gamma_3; \tyUnit}
+%
+\and
+%
+\Infer{a-rd}
+{\Delta_1; \Gamma_1 |- e : \Delta_2; \Gamma_2; \tyRd A}
+{\Delta_1; \Gamma_1 |- \eRd{e} : \Delta_2; \Gamma_2; (A \times \tyRd A) }
+%
+\and
+%
+\Infer{a-fork}
+{\Delta_1 \setminus \Delta_2 \subseteq \Delta_3\\\\
+\Delta_1 \setminus \Delta_3 \subseteq \Delta_2\\\\
+\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A\\\\
+\Delta_1; \Gamma_1 |- e_2 : \Delta_3; \Gamma_3; B}
+{\Delta_1; \Gamma_1 |- e_1 \xFork e_2 : \Delta_3; \Gamma_3; B}
+%
+\and
+%
+\Infer{a-choice}
+{\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A\\\\
+\Delta_1; \Gamma_1 |- e_2 : \Delta_2; \Gamma_2; A}
+{\Delta_1; \Gamma_1 |- \eChoose{e_1, e_2} : \Delta_2; \Gamma_2; A}
+%
+\and
+%
+\Infer{a-seq}
+{\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A\\\\
+\Delta_2; \Gamma_2 |- e_2 : \Delta_3; \Gamma_3; B}
+{\Delta_1; \Gamma_1 |- \Seq{e_1}{e_2} : \Delta_3; \Gamma_3; B}
+\end{mathpar}
+\caption{Algorithmic type checking rules.}
+\label{fig:alg-type-check}
+\end{figure*}

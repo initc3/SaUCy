@@ -1,0 +1,81 @@
+\section{Verifying Properties Using Session Types}
+\label{sec:session}
+
+\input{figures/session/syntax-types}
+
+\input{figures/session/syntax}
+
+\textbf{Notes on multiparty session types:}
+
+The work by Honda \etal~\cite{honda2008multiparty} introduces multiparty
+asynchronous session types, a typed calculus for mobile processes. Multiparty
+session types extend binary session types, which can be used to represent a
+conversation structure among two-party protocols, to arbitrarily many
+parties. To achieve this, multiparty session types directly abstract a
+conversation structure among $n$-parties as a \emph{global type}, which can be
+mapped, or \emph{projected}, onto each party's local view of the conversation
+structure called its \emph{local type}. Then, the code of each party is checked
+for conformance with its local type by efficient type-checking.
+
+Differences between multiparty session types and our work:
+\begin{enumerate}
+  \item \emph{Preventing race conditions at channels.} Multiparty session types
+    require that when a common channel is used in two communications, the
+    sending actions and the receiving actions should respectively be ordered
+    temporally (through causality), so that no confusion arises. Since the
+    execution of a system of ITMs is essentially single-threaded, we can avoid
+    race conditions by disallowing parallel writes and requiring that read
+    channels are linearly typed.
+  \item \emph{Defining asynchrony.} In their process calculus, a sending action
+    is never blocked (asynchrony), and two messages sent from the same sender to
+    the same channel must arrive in the sending order (order
+    preservation). Arbitrary reordering of messages can be simulated by
+    including an adversary process that permutes messages locally.
+\end{enumerate}
+
+\begingroup
+\setlength\intextsep{0pt}
+\begin{wrapfigure}{r}{0.3\textwidth}
+  \lstinputlisting[style=myilc]{listings/session_counterexample.ilc}
+\end{wrapfigure}
+
+Why we use session types as effects: A common pattern in ideal functionalities
+is to read on some channel, and then write to one of several distinct channels
+based on the read value. Consider the expression to the right, which first reads
+from a channel \textsf{c}, binding the read value to \textsf{v} and rebinding
+the channel to \textsf{a}. Then, depending on the value \textsf{v}, the process
+writes an integer on either channel \textsf{a} or channel \textsf{b}. The
+session type of each match expression branch would be
+$\mathsf{a}!\langle\mathsf{int}\rangle$ and $\mathsf{b}!\langle\mathsf{int}\rangle$, which is not
+typeable. This is a common pattern and it would be useful to be able to express
+this naturally. In ILC, the expression is well-typed: each branch has type
+$\tyUnit |> \Wm$.\mypar \endgroup
+
+\todo{Three types annotations: optionally occur, eventually occur, constrained
+  occur.}
+
+\subsection{Examples}
+\label{subsec:examples}
+
+In certain cases, we may not be able to prove that an event eventually happens
+with absolute certainty, but it suffices to prove that it happens with
+non-negligible probability. In the example below, let \textsf{ed\_loop} be the
+same looping construct defined before, except the function argument has the
+refinement $\lozenge \mathsf{W@a2r}$, i.e., eventually channel \textsf{a2r} is written
+to. Process \textsf{A} runs \textsf{ed\_loop} with read channel \textsf{z2a} and
+the function \textsf{f}, which writes the unit value to \textsf{a2z} if the value read
+on \textsf{z2a} contains a 0 and writes a string to \textsf{a2r} if the value
+read on \textsf{z2a} contains a 1. Process \textsf{Z} begins by writing to
+\textsf{A}, which will send back the unit value. Then, \textsf{Z} either sends
+back $(\mathsf{'Tick}, 0)$ or $(\mathsf{'Tick}, 1)$ depending on the value
+returned by \textsf{rand\_bit}. Although writing $(\mathsf{'Tick}, 1)$ is not
+guaranteed to happen, so it cannot satisfy the refinement, it happens with
+exponentially increasing probability.
+
+\lstinputlisting[style=myilc]{listings/effects.ilc}
+
+%\lstinputlisting[style=myilc]{listings/constraints.ilc}
+
+%\lstinputlisting[style=myilc]{listings/responsive.ilc}
+
+%\lstinputlisting[style=myilc]{listings/sesh_channels.ilc}

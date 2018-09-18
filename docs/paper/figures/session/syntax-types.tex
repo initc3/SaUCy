@@ -1,0 +1,25 @@
+\begin{figure}
+\begin{grammar}
+  Session Channels
+  & $C$
+      &$\bnfas$ & 
+             $\tyRd{A}$ & Session read channel
+      \\ &&& $\bnfaltbrk \tyWr{A}$ & Session write channel
+  \\[1ex]
+  Session Effects
+  & $D, E$
+      &$\bnfas$ & 
+             $\mathsf{R}@C$ & Read effect
+      \\ &&& $\bnfaltbrk \mathsf{W}@C$ & Write effect
+      \\ &&& $\bnfaltbrk D \oplus E$ & Selection effect
+      \\ &&& $\bnfaltbrk D\ \&\ E$ & Branching effect
+      \\ &&& $\bnfaltbrk D || E$ & Parallel effect
+      \\ &&& $\bnfaltbrk \mu(D)$ & Recursive effect
+  \\[1ex]
+  Effect Contexts
+  & $\Pi$
+     &$\bnfas$& $\emptyctxt \bnfalt \Pi,D$
+\end{grammar}
+  \caption{Syntax of session types and effects.}
+  \label{fig:syntax-session-types}
+\end{figure}
