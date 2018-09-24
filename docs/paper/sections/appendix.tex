@@ -7,8 +7,8 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 
 \begin{figure*}
 \centering
-\judgbox{\Delta_{in} ; \Gamma_{in} |- e : \Delta_{out}; \Gamma_{out}; A}{~~Under $\Delta_{in}$ and
-  $\Gamma_{in}$, expression~$e$ returns $\Delta_{out}$ and $\Gamma_{out}$ and has type $A$.}
+\judgbox{\Delta_{in} ; \Gamma_1 |- e : \Delta_{out}; \Gamma_2; A}{~~Under $\Delta_{in}$ and
+  $\Gamma_1$, expression~$e$ results $\Delta_{out}$ and $\Gamma_2$ and has type $A$.}
 \begin{mathpar}
 \Infer{a-split}
 {\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A_1 \times A_2\\\\
@@ -97,10 +97,8 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \and
 %
 \Infer{a-fork}
-{\Delta_1 \setminus \Delta_2 \subseteq \Delta_3\\\\
-\Delta_1 \setminus \Delta_3 \subseteq \Delta_2\\\\
-\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A\\\\
-\Delta_1; \Gamma_1 |- e_2 : \Delta_3; \Gamma_3; B}
+{\Delta_1; \Gamma_1 |- e_1 : \Delta_2; \Gamma_2; A\\\\
+\Delta_2; \Gamma_2 |- e_2 : \Delta_3; \Gamma_3; B}
 {\Delta_1; \Gamma_1 |- e_1 \xFork e_2 : \Delta_3; \Gamma_3; B}
 %
 \and
