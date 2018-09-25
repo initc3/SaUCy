@@ -132,14 +132,14 @@ choiceMode m1 m2 = case (m1, m2) of
 -- Inference
 
 -- | Run the inference monad
-runInfer :: TypeEnv -> Infer (Type, [Constraint], Mode) -> Either TypeError (Type, [Constraint], Mode)
+runInfer :: TypeEnv -> Infer (Type, [Constraint], Mode, TypeEnv) -> Either TypeError (Type, [Constraint], Mode, TypeEnv)
 runInfer env m = runExcept $ evalStateT (runReaderT m env) initInfer
 
 -- | Solve for toplevel type of an expression in a give environment
 inferExpr :: TypeEnv -> Expr -> Either TypeError (Scheme, Mode)
 inferExpr env ex = case runInfer env (infer ex) of
   Left err       -> Left err
-  Right (ty, cs, m) -> case runSolve cs of
+  Right (ty, cs, m, _) -> case runSolve cs of
     Left err    -> Left err
     Right subst -> Right (closeOver $ apply subst ty, m)
 
@@ -147,7 +147,7 @@ inferExpr env ex = case runInfer env (infer ex) of
 constraintsExpr :: TypeEnv -> Expr -> Either TypeError ([Constraint], Subst, Type, Scheme)
 constraintsExpr env ex = case runInfer env (infer ex) of
   Left       err -> Left err
-  Right (ty, cs, _) -> case runSolve cs of
+  Right (ty, cs, _, _) -> case runSolve cs of
     Left err    -> Left err
     Right subst -> Right (cs, subst, ty, sc)
       where sc = closeOver $ apply subst ty
@@ -159,6 +159,11 @@ inEnv :: (Name, (Scheme, Mode)) -> Infer a -> Infer a
 inEnv (x, sc) m = do
   let scope e = removeTyEnv e x `extendTyEnv` (x, sc)
   local scope m
+
+{-removeEnv :: Name -> a -> Infer a -> Infer a
+removeEnv x m = do
+  let scope e = removeTyEnv e x
+  local scope m-}
 
 lookupEnv :: Name -> Infer (Type, Mode)
 lookupEnv x = do
@@ -250,40 +255,40 @@ inferPat :: Pattern
 inferPat pat expr = case (pat, expr) of
   (PVar x, Just e) -> do
     tv <- fresh
-    (te, ce, m) <- infer e
+    (te, ce, m, _) <- infer e
     return (tv, (tv, te) : ce, [(x, (tv, m))])
   (PVar x, Nothing) -> do
     tv <- fresh
     return (tv, [], [(x, (tv, MV))])
 
   (PInt _, Just e) -> do
-    (te, ce, _) <- infer e
+    (te, ce, _, _) <- infer e
     return (tyInt, (te, tyInt) : ce, [])
   (PInt _, Nothing) -> return (tyInt, [], [])
 
   (PBool _, Just e) -> do
-    (te, ce, _) <- infer e
+    (te, ce, _, _) <- infer e
     return (tyBool, (te, tyBool) : ce, [])
   (PBool _, Nothing) -> return (tyBool, [], [])
 
   (PString _, Just e) -> do
-    (te, ce, _) <- infer e
+    (te, ce, _, _) <- infer e
     return (tyString, (te, tyString) : ce, [])
   (PString _, Nothing) -> return (tyString, [], [])
 
   (PTag _, Just e) -> do
-    (te, ce, _) <- infer e
+    (te, ce, _, _) <- infer e
     return (tyTag, (te, tyTag) : ce, [])
   (PTag _, Nothing) -> return (tyTag, [], [])
 
   (PTuple ps, Just (ETuple es)) -> do
     when (length ps /= length es) (error "fail") -- TODO: -- Custom error
-    (tes, ces, _) <- infer $ ETuple es
+    (tes, ces, _, _) <- infer $ ETuple es
     (ts, cs, env) <- inferPatList ps $ map Just es
     return (TProd ts, ces ++ cs ++ [(TProd ts, tes)], env)
   (PTuple ps, Just e) -> do
     (ts, cs, env) <- inferPatList ps $ repeat Nothing
-    (te, ce, _) <- infer e
+    (te, ce, _, _) <- infer e
     return (TProd ts, cs ++ ce ++ [(TProd ts, te)], env)
   (PTuple ps, Nothing) -> do
     (ts, cs, env) <- inferPatList ps $ repeat Nothing
@@ -291,12 +296,12 @@ inferPat pat expr = case (pat, expr) of
 
   (PList ps, Just (EList es)) -> do
     when (length ps /= length es) (error "fail") -- TODO
-    (tes, ces, _) <- infer $ EList es
+    (tes, ces, _, _) <- infer $ EList es
     (ts, cs, env) <- inferPatList ps $ map Just es
     (thd, cs') <- listConstraints ts cs
     return (TList thd, ces ++ cs' ++ [(TList thd, tes)], env)
   (PList ps, Just e) -> do
-    (te, ce, _) <- infer e
+    (te, ce, _, _) <- infer e
     (ts, cs, env) <- inferPatList ps $ repeat Nothing
     (thd, cs') <- listConstraints ts cs
     return (TList thd, ce ++ cs' ++ [(TList thd, te)], env)
@@ -308,12 +313,12 @@ inferPat pat expr = case (pat, expr) of
 
   (PSet ps, Just (ESet es)) -> do
     when (length ps /= length es) (error "fail") -- TODO
-    (tes, ces, _) <- infer $ ESet es
+    (tes, ces, _, _) <- infer $ ESet es
     (ts, cs, env) <- inferPatList ps $ map Just es
     (thd, cs') <- listConstraints ts cs
     return (TSet thd, ces ++ cs' ++ [(TSet thd, tes)], env)
   (PSet ps, Just e) -> do
-    (te, ce, _) <- infer e
+    (te, ce, _, _) <- infer e
     (ts, cs, env) <- inferPatList ps $ repeat Nothing
     (thd, cs') <- listConstraints ts cs
     return (TSet thd, ce ++ cs' ++ [(TSet thd, te)], env)
@@ -324,14 +329,14 @@ inferPat pat expr = case (pat, expr) of
     return (TSet thd, cs', env)
 
   (PCons phd ptl, Just e@(EList (hd:tl))) -> do
-    (te, ce, _) <- infer e
+    (te, ce, _, _) <- infer e
     (thd, chd, ehd) <- inferPat phd $ Just hd
     (ttl, ctl, etl) <- inferPat ptl $ Just $ EList tl
     let cs = ce ++ chd ++ ctl ++ [(te, TList thd), (te, ttl)]
         env = ehd ++ etl
     return (TList thd, cs, env)
   (PCons phd ptl, Just e) -> do
-    (te, ce, _) <- infer e
+    (te, ce, _, _) <- infer e
     (thd, chd, ehd) <- inferPat phd Nothing
     (ttl, ctl, etl) <- inferPat ptl Nothing
     let cs = ce ++ chd ++ ctl ++ [ (te, TList thd)
@@ -347,7 +352,7 @@ inferPat pat expr = case (pat, expr) of
     return (TList thd, cs, env)
 
   (PUnit, Just e) -> do
-    (te, ce, _) <- infer e
+    (te, ce, _, _) <- infer e
     return (tyUnit, ce ++ [(te, tyUnit)], [])
   (PUnit, Nothing) -> return (tyUnit, [], [])
 
@@ -366,10 +371,10 @@ inferBranch expr (pat, guard, branch) = do
     Left err -> throwError err
     Right sub -> do
       let sc t = generalize (apply sub env) (apply sub t)
-      (t2, c2, _) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+      (t2, c2, _, _) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
                            (local (apply sub) (infer guard))
                            env'
-      (t3, c3, m) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+      (t3, c3, m, _) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
                            (local (apply sub) (infer branch))
                            env'
       return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)], m)
@@ -377,12 +382,13 @@ inferBranch expr (pat, guard, branch) = do
 sameModes :: [Mode] -> Either TypeError Mode
 sameModes (m:ms) = if (all ((==)m) ms) then Right m else Left ModeFail
 
-infer :: Expr -> Infer (Type, [Constraint], Mode)
+infer :: Expr -> Infer (Type, [Constraint], Mode, TypeEnv)
 infer expr = case expr of
   EVar x -> do
     (t, m) <- lookupEnv x
-    return (t, [], MV)
-
+    env <- ask
+    return (t, [], MV, emptyTyEnv)
+{-
   EImpVar _ -> $(todo "Infer implicit variables")
 
   ELit (LInt _) -> return (tyInt, [], MV)
@@ -393,9 +399,11 @@ infer expr = case expr of
 
   ETuple es -> do
     tcms <- mapM infer es
-    let (ts, cs, _) = concatTCMs tcms
-    -- TODO: Check all ms
-    return (TProd ts, cs, MV)
+    let (ts, cs, ms) = concatTCMs tcms
+    case sameModes (MV:ms) of
+      Left err -> throwError err
+      Right m -> do
+        return (TProd ts, cs, m)
 
   EList [] -> do
     tv <- fresh
@@ -576,7 +584,7 @@ infer expr = case expr of
   EError e  -> do
    ty <- fresh
    (t, c, _) <- infer e
-   return (ty, c ++ [(t, tyString)], MV)
+   return (ty, c ++ [(t, tyString)], MV)-}
 
 inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
 inferTop env [] = Right env
