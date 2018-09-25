@@ -358,8 +358,8 @@ inferPat pat expr = case (pat, expr) of
     ty <- fresh
     return (ty, [], [])
 
-inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint])
-inferBranch expr (pat, pguard, branch) = do
+inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint], Mode)
+inferBranch expr (pat, guard, branch) = do
   env <- ask
   (_, c1, env') <- inferPat pat $ Just expr
   case runSolve c1 of
@@ -367,18 +367,21 @@ inferBranch expr (pat, pguard, branch) = do
     Right sub -> do
       let sc t = generalize (apply sub env) (apply sub t)
       (t2, c2, _) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
-                           (local (apply sub) (infer pguard))
+                           (local (apply sub) (infer guard))
                            env'
-      (t3, c3, _) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+      (t3, c3, m) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
                            (local (apply sub) (infer branch))
                            env'
-      return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)])
+      return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)], m)
+
+sameModes :: [Mode] -> Either TypeError Mode
+sameModes (m:ms) = if (all ((==)m) ms) then Right m else Left ModeFail
 
 infer :: Expr -> Infer (Type, [Constraint], Mode)
 infer expr = case expr of
   EVar x -> do
     (t, m) <- lookupEnv x
-    return (t, [], m)
+    return (t, [], MV)
 
   EImpVar _ -> $(todo "Infer implicit variables")
 
@@ -466,11 +469,14 @@ infer expr = case expr of
         return (t2, c1 ++ c2, m)
 
   EMatch e bs -> do
-    tcs <- mapM (inferBranch e) bs
-    let (ts, cs) = concatTCs tcs
+    tcms <- mapM (inferBranch e) bs
+    let (ts, cs, ms) = concatTCMs tcms
         ty       = head ts
         cs'      = zip (tail ts) (repeat ty)
-    return (ty, cs ++ cs', MV) -- TODO
+    case sameModes ms of
+      Left err -> throwError err
+      Right m -> do
+        return (ty, cs ++ cs', m)
 
   ELam (PVar x) e -> do
     ty <- fresh
@@ -495,18 +501,18 @@ infer expr = case expr of
 
   EApp e1 e2 -> do
     (t1, c1, m1) <- infer e1
-    (t2, c2, MV) <- infer e2 -- TODO
+    (t2, c2, MV) <- infer e2 -- TODO: Throw error
     tv <- fresh
     return (tv, c1 ++ c2 ++ [(t1, t2 `TArr` tv)], m1)
 
   ERd e -> do
-    (t, c, _) <- infer e -- TODO
+    (t, c, MV) <- infer e -- TODO: Throw error
     tv <- fresh
     return (TProd [tv, TRdChan tv], c ++ [(t, TRdChan tv)], MR)
 
   EWr e1 e2 -> do
-    (t1, c1, _) <- infer e1 -- TODO
-    (t2, c2, _) <- infer e2
+    (t1, c1, MV) <- infer e1 -- TODO
+    (t2, c2, MV) <- infer e2
     return (tyUnit, c1 ++ c2 ++ [(t2, TWrChan t1)], MW)
 
   ENu (rdc, wrc) e -> do
@@ -523,10 +529,10 @@ infer expr = case expr of
   EFork e1 e2 -> do
     (_, c1, m1) <- infer e1
     (t2, c2, m2) <- infer e2
-    m <- parMode m1 m2
-    return (t2, c1 ++ c2, m)
+    m3 <- parMode m1 m2
+    return (t2, c1 ++ c2, m3)
 
-  EChoice e1 e2 -> do
+  EChoice e1 e2 -> do -- TODO: Make test case for this.
     (t1, c1, m1) <- infer e1 -- TODO
     (t2, c2, m2) <- infer e2
     m <- choiceMode m1 m2
@@ -535,8 +541,8 @@ infer expr = case expr of
   ESeq e1 e2 -> do
     (_, c1, m1) <- infer e1
     (t2, c2, m2) <- infer e2
-    m <- seqMode m1 m2
-    return (t2, c1 ++ c2, m)
+    m3 <- seqMode m1 m2
+    return (t2, c1 ++ c2, m3)
 
   ERef e -> do
     (t, c, _) <- infer e
@@ -546,22 +552,22 @@ infer expr = case expr of
   EDeref e -> do
     (t, c, _) <- infer e
     tv <- fresh
-    return (tv, c ++ [(TRef tv, t)], MV) -- TODO
+    return (tv, c ++ [(TRef tv, t)], MV)
 
   EAssign x e -> do
     (t1, _) <- lookupEnv x
     (t2, c2, _) <- infer e
     return (tyUnit, c2 ++ [(t1, TRef t2)], MV)
 
-  EThunk e -> do
-    (t, c, _) <- infer e -- TODO
+  EThunk e -> do  -- TODO
+    (t, c, _) <- infer e
     tv <- fresh
     return (tv, c ++ [(tv, TThunk t)], MV)
 
-  EForce e -> do
+  EForce e -> do  -- TODO
     (t, c, m) <- infer e
     tv <- fresh
-    return (tv, c ++ [(TThunk tv, t)], m) -- TODO
+    return (tv, c ++ [(TThunk tv, t)], m)
 
   EPrint e -> do
    (_, c, _) <- infer e

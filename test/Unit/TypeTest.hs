@@ -49,4 +49,7 @@ examples =
     , ( "sequential write"
       , "let f () = nu (rc, wc) . wr 1 -> wc ; wr 1 -> wc"
       , "ill-typed")
+    , ( "diff branch modes"
+      , "nu (rc, wc) . match 1 with | _ => wr 1 -> wc | _ => ()"
+      , "ill-typed")
     ]

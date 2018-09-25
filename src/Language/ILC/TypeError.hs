@@ -27,6 +27,7 @@ data TypeError = UnificationFail Type Type
                | ParFail Mode Mode
                | SeqFail Mode Mode
                | ChoiceFail Mode Mode
+               | ModeFail
 
 instance Show TypeError where
   show = show . pretty
@@ -76,3 +77,6 @@ instance Pretty TypeError where
          , text "and"
          , pretty m2
          ]
+  pretty ModeFail = text "Branches have different modes."
+    
+    
