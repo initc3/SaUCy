@@ -1,6 +1,29 @@
 \section{Introduction}
 \label{sec:introduction}
 
+Adapting theory from UC into a concrete implementation turns out to be
+difficult. To begin with, the computational model underlying UC, called
+Interacting Turing Machines (ITMs), is not a good fit to existing distributed
+languages. In the ITM model, execution is essentially single threaded, passing
+control from one process to another each time a message is sent, such that
+exactly one process is active at a given time. This is in contrast to the
+standard $\pi$-calculus~\cite{milner1999communicating}, for which there may be
+many possible execution paths that lead to different outcomes.
+
+Therefore, we have developed a core process calculus, called Interactive Lambda
+Calculus (ILC), that adapts ITMs to a subset of the $\pi$-calculus through its
+type system. In particular, the invariants maintained by the type system ensures
+that any non-determinism is due to random coinflips taken by processes, which
+have a well-defined distribution. This is essential to ensure that the
+normalization of an ILC program has a computational interpretation, as is
+necessary in cryptographic reduction proofs.
+
+Using ILC, we will implement the UC network model (asynchronous communication,
+Byzantine corruptions, etc.) and executable UC implementations (ideal
+functionalities and simulators) for various primitives in the distributed
+systems and cryptography literature (e.g., distributed consensus, multiparty
+computation, and zero-knowledge proofs).
+
 \begin{comment}
 The success of blockchains and cryptocurrencies have raised interest in building
 secure software systems that combine consensus protocols~\cite{miller2016honey},
