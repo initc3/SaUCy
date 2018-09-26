@@ -29,6 +29,7 @@ import Data.List (nub)
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Development.Placeholders
+import Debug.Trace
 
 import Language.ILC.Syntax
 import Language.ILC.Type
@@ -75,6 +76,7 @@ instance Substitutable Type where
   apply s (TThunk t) = TThunk (apply s t)
   apply s (TRdChan t) = TRdChan (apply s t)
   apply s (TWrChan t) = TWrChan (apply s t)
+  apply s TUsed = TUsed
 
   ftv (TVar a) = Set.singleton a
   ftv TCon{} = Set.empty
@@ -86,6 +88,7 @@ instance Substitutable Type where
   ftv (TThunk t) = ftv t
   ftv (TRdChan t) = ftv t
   ftv (TWrChan t) = ftv t
+  ftv TUsed = Set.empty
 
 instance Substitutable (Scheme, Mode) where
   apply (Subst s) (Forall as t, m) = (Forall as $ apply s' t, m)
@@ -108,24 +111,34 @@ instance Substitutable TypeEnv where
 -- | Modes
 parMode :: Mode -> Mode -> Infer Mode
 parMode m1 m2 = case (m1, m2) of
-  (MW, MV) -> return MW
-  (MV, MW) -> return MW
-  (MW, MR) -> return MW
-  (MR, MW) -> return MW
-  (MR, MR) -> return MR
-  _        -> throwError $ ParFail m1 m2
+  (W, V) -> return W
+  (V, W) -> return W
+  (W, R) -> return W
+  (R, W) -> return W
+  (R, R) -> return R
+  (V, R) -> return R -- TODO: What mode compositions do we want?
+  (R, V) -> return R
+  (V, V) -> return V
+  _      -> throwError $ ParFail m1 m2
 
 seqMode :: Mode -> Mode -> Infer Mode
 seqMode m1 m2 = case (m1, m2) of
-  (MV, m)  -> return m
-  (MW, MV) -> return MW
-  (MR, _)  -> return MR
-  (MW, MR) -> return MW
-  _        -> throwError $ SeqFail m1 m2
+  (V, m) -> return m
+  (W, V) -> return W
+  (R, _) -> return R
+  (W, R) -> return W
+  _      -> throwError $ SeqFail m1 m2
+
+checkMode :: Eq a => a -> a -> Infer a
+checkMode m1 m2 = if m1 == m2 then return m1 else throwError ModeFail
+
+checkType :: Eq a => a -> a -> String -> Infer a
+checkType ty1 ty2 msg = if ty1 == ty2 then return ty1
+                        else throwError (TypeFail msg)
 
 choiceMode :: Mode -> Mode -> Infer Mode
 choiceMode m1 m2 = case (m1, m2) of
-  (MR, MR) -> return MR
+  (R, R) -> return R
   _        -> throwError $ ChoiceFail m1 m2
 
 -------------------------------------------------------------------------------
@@ -160,18 +173,12 @@ inEnv (x, sc) m = do
   let scope e = removeTyEnv e x `extendTyEnv` (x, sc)
   local scope m
 
-{-removeEnv :: Name -> a -> Infer a -> Infer a
-removeEnv x m = do
-  let scope e = removeTyEnv e x
-  local scope m-}
-
-lookupEnv :: Name -> Infer (Type, Mode)
+lookupEnv :: Name -> Infer Type
 lookupEnv x = do
-  (TypeEnv env) <- ask
+  TypeEnv env <- ask
   case Map.lookup x env of
     Nothing -> throwError $ UnboundVariable x
-    Just (s, m)  -> do s' <- instantiate s
-                       return (s', m)
+    Just (tyA, _)  -> instantiate tyA
 
 letters :: [String]
 letters = [1..] >>= flip replicateM ['a'..'z']
@@ -259,7 +266,7 @@ inferPat pat expr = case (pat, expr) of
     return (tv, (tv, te) : ce, [(x, (tv, m))])
   (PVar x, Nothing) -> do
     tv <- fresh
-    return (tv, [], [(x, (tv, MV))])
+    return (tv, [], [(x, (tv, V))])
 
   (PInt _, Just e) -> do
     (te, ce, _, _) <- infer e
@@ -311,9 +318,9 @@ inferPat pat expr = case (pat, expr) of
     (thd, cs') <- listConstraints ts cs
     return (TList thd, cs', env)
 
-  (PSet ps, Just (ESet es)) -> do
+  (PSet ps, Just (ESett es)) -> do
     when (length ps /= length es) (error "fail") -- TODO
-    (tes, ces, _, _) <- infer $ ESet es
+    (tes, ces, _, _) <- infer $ ESett es
     (ts, cs, env) <- inferPatList ps $ map Just es
     (thd, cs') <- listConstraints ts cs
     return (TSet thd, ces ++ cs' ++ [(TSet thd, tes)], env)
@@ -385,29 +392,46 @@ sameModes (m:ms) = if (all ((==)m) ms) then Right m else Left ModeFail
 infer :: Expr -> Infer (Type, [Constraint], Mode, TypeEnv)
 infer expr = case expr of
   EVar x -> do
-    (t, m) <- lookupEnv x
-    env <- ask
-    return (t, [], MV, emptyTyEnv)
+    tyA <- lookupEnv x
+    _Γ1 <- ask
+    _Γ2 <- case tyA of
+          TRdChan _ -> return $ extendTyEnv _Γ1 (x, (closeOver TUsed, V))
+          TUsed     -> do throwError LinearFail
+          _         -> return _Γ1
+    return (tyA, [], V, _Γ2)
+
+  ELit (LInt _) -> do
+    _Γ <- ask
+    return (tyInt, [], V, _Γ)
+
+  ELit (LBool _) -> do
+    _Γ <- ask
+    return (tyBool, [], V, _Γ)
+    
+  ELit (LString _) -> do
+    _Γ <- ask
+    return (tyString, [], V, _Γ)
+    
+  ELit (LTag _) -> do
+    _Γ <- ask
+    return (tyTag, [], V, _Γ)
+  
+  ELit LUnit -> do
+    _Γ <- ask
+    return (tyUnit, [], V, _Γ)
+    
 {-
-  EImpVar _ -> $(todo "Infer implicit variables")
-
-  ELit (LInt _) -> return (tyInt, [], MV)
-  ELit (LBool _) -> return (tyBool, [], MV)
-  ELit (LString _) -> return (tyString, [], MV)
-  ELit (LTag _) -> return (tyTag, [], MV)
-  ELit LUnit -> return (tyUnit, [], MV)
-
   ETuple es -> do
     tcms <- mapM infer es
     let (ts, cs, ms) = concatTCMs tcms
-    case sameModes (MV:ms) of
+    case sameModes (V:ms) of
       Left err -> throwError err
       Right m -> do
         return (TProd ts, cs, m)
 
   EList [] -> do
     tv <- fresh
-    return (TList tv, [], MV)
+    return (TList tv, [], V)
 
   -- Refactor
   EList es -> do
@@ -415,68 +439,74 @@ infer expr = case expr of
     let tyFst = (\(x, _, _) -> x) $ head tcms
         cs    = concatMap (\(_,x,_) -> x) tcms
         cs'   = map (\(x, _, _) -> (tyFst, x)) tcms
-    return (TList tyFst, cs ++ cs', MV)
+    return (TList tyFst, cs ++ cs', V)
 
-  ESet [] -> do
+  ESett [] -> do
     ty <- fresh
-    return (TSet ty, [], MV)
+    return (TSet ty, [], V)
 
-  ESet es -> do
+  ESett es -> do
     tcms <- mapM infer es
     let tyFst = (\(x, _, _) -> x) $ head tcms
         cs    = concatMap (\(_,x,_) -> x) tcms
         cs'   = map (\(x, _, _) -> (tyFst, x)) tcms
-    return (TSet tyFst, cs ++ cs', MV)
+    return (TSet tyFst, cs ++ cs', V)-}
 
-  -- TODO: Move into EBin?
   EBin Cons e1 e2  -> do
-   (t1, c1, MV) <- infer e1
-   (t2, c2, MV) <- infer e2
-   return (t2, c1 ++ c2 ++ [(TList t1, t2)], MV)
+   (tyA1, c1, m1, _Γ2) <- infer e1
+   (tyA2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
+   _ <- checkMode (m1, m2) (V, V)
+   return (tyA2, c1 ++ c2 ++ [(TList tyA1, tyA2)], V, _Γ3)
 
   EBin Concat e1 e2  -> do
-   (t1, c1, MV) <- infer e1
-   (t2, c2, MV) <- infer e2
-   return (t1, c1 ++ c2 ++ [(t1, t2)], MV)
+   (tyA1, c1, m1, _Γ2) <- infer e1
+   (tyA2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
+   _ <- checkMode (m1, m2) (V, V)
+   return (tyA1, c1 ++ c2 ++ [(tyA1, tyA2)], V, _Γ3)
 
   EBin op e1 e2 -> do
-    (t1, c1, MV) <- infer e1
-    (t2, c2, MV) <- infer e2
-    tv <- fresh
-    let u1 = t1 `TArr` (t2 `TArr` tv)
+    (tyA1, c1, m1, _Γ2) <- infer e1
+    (tyA2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
+    _ <- checkMode (m1, m2) (V, V)
+    tyV <- fresh
+    let u1 = tyA1 `TArr` (tyA2 `TArr` tyV)
     u2 <- binops op
-    return (tv, c1 ++ c2 ++ [(u1, u2), (t1, t2)], MV)
+    return (tyV, c1 ++ c2 ++ [(u1, u2), (tyA1, tyA2)], V, _Γ3)
 
   EUn op e -> do
-    (t, c, MV) <- infer e
-    tv <- fresh
-    let u1 = t `TArr` tv
+    (tyA, c, m, _Γ2) <- infer e
+    _ <- checkMode m V
+    tyV <- fresh
+    let u1 = tyA `TArr` tyV
         u2 = unops op
-    return (tv, c ++ [(u1, u2)], MV)
+    return (tyV, c ++ [(u1, u2)], V, _Γ2)
 
   EIf e1 e2 e3 -> do
-    (t1, c1, m1) <- infer e1
-    (t2, c2, m2) <- infer e2
-    (t3, c3, m3) <- infer e3
-    when (m2 /= m3) (error "modes")
-    m <- seqMode m1 m2
-    return (t2, c1 ++ c2 ++ c3 ++ [(t1, tyBool), (t2, t3)], m)
+    (tyA1, c1, m1, _Γ2) <- infer e1
+    (tyA2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
+    (tyA3, c3, m2', _Γ3') <- local (const _Γ2) (infer e3)
+    _ <- checkMode m1 V
+    _ <- checkType _Γ3 _Γ3' "Branches have different outgoing typing contexts."
+    _ <- checkType m2  m2'  "Branches have different modes."
+    when (m2 /= m2') (error "modes")
+    m3 <- seqMode m1 m2
+    return (tyA2, c1 ++ c2 ++ c3 ++ [(tyA1, tyBool), (tyA2, tyA3)], m3, _Γ3)
 
   ELet p e1 e2 -> do
     env <- ask
-    (_, c1, env') <- inferPat p $ Just e1
-    (_, _, m1) <- infer e1  -- TODO
+    (_, c1, binds) <- inferPat p $ Just e1
+    (_, _, m1, _Γ2) <- infer e1
     case runSolve c1 of
       Left err -> throwError err
       Right sub -> do
         let sc t = generalize (apply sub env) (apply sub t)
-        (t2, c2, m2) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+        (tyB, c2, m2, _Γ3) <- local (const _Γ2) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
                               (local (apply sub) (infer e2))
-                              env'
-        m <-  seqMode m1 m2
-        return (t2, c1 ++ c2, m)
+                              binds)
+        m3 <-  seqMode m1 m2
+        return (tyB, c1 ++ c2, m3, _Γ3)
 
-  EMatch e bs -> do
+{-  EMatch e bs -> do
     tcms <- mapM (inferBranch e) bs
     let (ts, cs, ms) = concatTCMs tcms
         ty       = head ts
@@ -484,107 +514,113 @@ infer expr = case expr of
     case sameModes ms of
       Left err -> throwError err
       Right m -> do
-        return (ty, cs ++ cs', m)
+        return (ty, cs ++ cs', m)-}
 
   ELam (PVar x) e -> do
-    ty <- fresh
-    (t, c, m) <- inEnv (x, (Forall [] ty, MV)) (infer e)
-    return (ty `TArr` t, c, m)
+    tyV <- fresh
+    (tyA, c, m, _Γ2) <- inEnv (x, (Forall [] tyV, V)) (infer e)
+    return (tyV `TArr` tyA, c, m, _Γ2)
 
   ELam PUnit e -> do
-    (t, c, m) <- infer e
-    return (tyUnit `TArr` t, c, m)
+    (tyA, c, m, _Γ2) <- infer e
+    return (tyUnit `TArr` tyA, c, m, _Γ2)
 
   ELam PWildcard e -> do
-    ty <- fresh
-    (t, c, m) <- infer e
-    return (ty `TArr` t, c, m)
+    tyV <- fresh
+    (tyA, c, m, _Γ2) <- infer e
+    return (tyV `TArr` tyA, c, m, _Γ2)
 
-  ELam _ _ -> error "Infer.infer"
+  ELam _ _ -> error "Infer.infer: ELam"
 
   EFix e -> do
-    (t, c, m) <- infer e
-    tv <- fresh
-    return (tv, c ++ [(tv `TArr` tv, t)], m)
+    (tyA, c, m, _Γ2) <- infer e
+    tyV <- fresh
+    return (tyV, c ++ [(tyV `TArr` tyV, tyA)], m, _Γ2)
 
   EApp e1 e2 -> do
-    (t1, c1, m1) <- infer e1
-    (t2, c2, MV) <- infer e2 -- TODO: Throw error
-    tv <- fresh
-    return (tv, c1 ++ c2 ++ [(t1, t2 `TArr` tv)], m1)
+    (tyA, c1, m1, _Γ2) <- infer e2
+    _ <- checkMode m1 V
+    (tyA2B, c2, m2, _Γ3) <- local (const _Γ2) (infer e1)
+    tyV <- fresh
+    return (tyV, c1 ++ c2 ++ [(tyA2B, tyA `TArr` tyV)], m2, _Γ3)
 
   ERd e -> do
-    (t, c, MV) <- infer e -- TODO: Throw error
-    tv <- fresh
-    return (TProd [tv, TRdChan tv], c ++ [(t, TRdChan tv)], MR)
+    (tyA, c, m, _Γ2) <- infer e
+    _ <- checkMode m V
+    tyV <- fresh
+    return (TProd [tyV, TRdChan tyV], c ++ [(tyA, TRdChan tyV)], R, _Γ2)
 
   EWr e1 e2 -> do
-    (t1, c1, MV) <- infer e1 -- TODO
-    (t2, c2, MV) <- infer e2
-    return (tyUnit, c1 ++ c2 ++ [(t2, TWrChan t1)], MW)
+    (tyA1, c1, m1, _Γ2) <- infer e1
+    (tyA2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
+    _ <- checkMode (m1, m2) (V, V)
+    return (tyUnit, c1 ++ c2 ++ [(tyA2, TWrChan tyA1)], W, _Γ3)
 
   ENu (rdc, wrc) e -> do
-    tv <- fresh
-    let newChans = [ (rdc, (Forall [] $ TRdChan tv, MV))
-                   , (wrc, (Forall [] $ TWrChan tv, MV))]
-    (t, c, m) <- foldr inEnv (infer e) newChans
-    return (t, c , m)
-
-  ERepl e -> do
-    (t, c, m) <- infer e
-    return (t, c, m) -- TODO
+    tyV <- fresh
+    let newChans = [ (rdc, (Forall [] $ TRdChan tyV, V))
+                   , (wrc, (Forall [] $ TWrChan tyV, V))]
+    (tyA, c, m, _Γ2) <- foldr inEnv (infer e) newChans
+    return (tyA, c , m, _Γ2)
 
   EFork e1 e2 -> do
-    (_, c1, m1) <- infer e1
-    (t2, c2, m2) <- infer e2
+    (_, c1, m1, _Γ2) <- infer e1
+    (tyA2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
     m3 <- parMode m1 m2
-    return (t2, c1 ++ c2, m3)
+    return (tyA2, c1 ++ c2, m3, _Γ2)
 
-  EChoice e1 e2 -> do -- TODO: Make test case for this.
-    (t1, c1, m1) <- infer e1 -- TODO
-    (t2, c2, m2) <- infer e2
+  EChoice e1 e2 -> do
+    (tyA1, c1, m1, _Γ2) <- infer e1
+    (tyA2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
     m <- choiceMode m1 m2
-    return (t1, c1 ++ c2 ++ [(t1, t2)], m)
+    return (tyA1, c1 ++ c2 ++ [(tyA1, tyA2)], m, _Γ3)
 
   ESeq e1 e2 -> do
-    (_, c1, m1) <- infer e1
-    (t2, c2, m2) <- infer e2
+    (_, c1, m1, _Γ2) <- infer e1
+    (t2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
     m3 <- seqMode m1 m2
-    return (t2, c1 ++ c2, m3)
+    return (t2, c1 ++ c2, m3, _Γ3)
 
   ERef e -> do
-    (t, c, _) <- infer e
-    tv <- fresh
-    return (tv, c ++ [(tv, TRef t)], MV)
+    (tyA, c, m, _Γ2) <- infer e
+    _ <- checkMode m V
+    tyV <- fresh
+    return (tyV, c ++ [(tyV, TRef tyA)], V, _Γ2)
 
-  EDeref e -> do
-    (t, c, _) <- infer e
-    tv <- fresh
-    return (tv, c ++ [(TRef tv, t)], MV)
+  EGet e -> do
+    (tyA, c, m, _Γ2) <- infer e
+    _ <- checkMode m V
+    tyV <- fresh
+    return (tyV, c ++ [(TRef tyV, tyA)], V, _Γ2)
 
-  EAssign x e -> do
-    (t1, _) <- lookupEnv x
-    (t2, c2, _) <- infer e
-    return (tyUnit, c2 ++ [(t1, TRef t2)], MV)
+  ESet x e -> do -- TODO: Change to ESet e1 e2
+    tyA1 <- lookupEnv x
+    (tyA2, c, m, _Γ2) <- infer e
+    _ <- checkMode m V
+    return (tyUnit, c ++ [(tyA1, TRef tyA2)], V, _Γ2)
 
   EThunk e -> do  -- TODO
-    (t, c, _) <- infer e
-    tv <- fresh
-    return (tv, c ++ [(tv, TThunk t)], MV)
+    (tyA, c, m, _Γ2) <- infer e
+    _ <- checkMode m V
+    tyV <- fresh
+    return (tyV, c ++ [(tyV, TThunk tyA)], V, _Γ2)
 
   EForce e -> do  -- TODO
-    (t, c, m) <- infer e
-    tv <- fresh
-    return (tv, c ++ [(TThunk tv, t)], m)
+    (tyA, c, m, _Γ2) <- infer e
+    _ <- checkMode m V
+    tyV <- fresh
+    return (tyV, c ++ [(TThunk tyV, tyA)], m, _Γ2)
 
   EPrint e -> do
-   (_, c, _) <- infer e
-   return (tyUnit, c, MV)
+   (_, c, m, _Γ2) <- infer e
+   _ <- checkMode m V
+   return (tyUnit, c, V, _Γ2)
 
   EError e  -> do
-   ty <- fresh
-   (t, c, _) <- infer e
-   return (ty, c ++ [(t, tyString)], MV)-}
+   tyV <- fresh
+   (tyA, c, m, _Γ2) <- infer e
+   _ <- checkMode m V
+   return (tyV, c ++ [(tyA, tyString)], V, _Γ2)
 
 inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
 inferTop env [] = Right env
@@ -608,6 +644,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fv (TThunk a) = fv a
     fv (TRdChan a) = fv a
     fv (TWrChan a) = fv a
+    fv TUsed = []
     
     normtype (TVar a)   =
         case Prelude.lookup a ord of
@@ -622,6 +659,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     normtype (TThunk a)   = TThunk (normtype a)
     normtype (TRdChan a)   = TRdChan (normtype a)
     normtype (TWrChan a)   = TWrChan (normtype a)
+    normtype TUsed   = TUsed
     
 -------------------------------------------------------------------------------
 -- Constraint Solver

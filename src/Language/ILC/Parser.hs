@@ -30,9 +30,6 @@ import Language.ILC.Syntax
 eVar :: Parser Expr
 eVar = mklexer EVar identifier
 
-eImpVar :: Parser Expr
-eImpVar = mklexer EImpVar $ char '?' >> identifier
-
 -- | Literals
 
 eInt :: Parser Expr
@@ -59,8 +56,8 @@ eTuple = mklexer ETuple $ parens $ commaSep2 expr
 eList :: Parser Expr
 eList = mklexer EList $ brackets $ commaSep expr
 
-eSet :: Parser Expr
-eSet = mklexer ESet $ braces $ commaSep expr
+eSett :: Parser Expr
+eSett = mklexer ESett $ braces $ commaSep expr
 
 eLam :: Parser Expr
 eLam = do
@@ -182,21 +179,18 @@ eChoice = do
     reservedOp "<|>"
     EChoice e <$> expr
 
-eRepl :: Parser Expr
-eRepl = mklexer ERepl $ reservedOp "!" >> atomExpr  
-
 eRef :: Parser Expr
 eRef = mklexer ERef $ reserved "ref" >> atomExpr
 
-eDeref :: Parser Expr
-eDeref = mklexer EDeref $ reservedOp "@" >> atomExpr
+eGet :: Parser Expr
+eGet = mklexer EGet $ reservedOp "@" >> atomExpr
 
-eAssign :: Parser Expr
-eAssign = do
+eSet :: Parser Expr
+eSet = do
     reserved "let"
     x <- identifier
     reservedOp ":="
-    EAssign x <$> expr
+    ESet x <$> expr
 
 eSeq :: Parser Expr
 eSeq = do
@@ -210,7 +204,7 @@ table = [ [ binaryOp "*" (EBin Mul) Ex.AssocLeft
         , [ binaryOp "%" (EBin Mod) Ex.AssocLeft ]
         , [ binaryOp "+" (EBin Add) Ex.AssocLeft
           , binaryOp "-" (EBin Sub) Ex.AssocLeft ]
-        , [ prefixOp "not" (EUn Not) ]
+        , [ prefixOp "!" (EUn Not) ]
         , [ binaryOp ":" (EBin Cons) Ex.AssocRight
           , binaryOp "++" (EBin Concat) Ex.AssocLeft ]
         , [ binaryOp "<" (EBin Lt) Ex.AssocNone
@@ -250,13 +244,12 @@ expr' = Ex.buildExpressionParser table term
 
 atomExpr :: Parser Expr
 atomExpr = eVar
-       <|> eImpVar
        <|> eInt
        <|> eBool
        <|> eString
        <|> eTag
        <|> eList
-       <|> eSet
+       <|> eSett
        <|> try eUnit
        <|> try eTuple
        <|> parens expr
@@ -265,16 +258,15 @@ term :: Parser Expr
 term = try eApp
    <|> atomExpr
    <|> eLam
-   <|> try eAssign
+   <|> try eSet
    <|> eLet
    <|> eIf
    <|> eMatch
    <|> eNu
    <|> eRd
    <|> eWr
-   <|> eRepl
    <|> eRef
-   <|> eDeref
+   <|> eGet
    <|> eUn
 
 -- | Patterns

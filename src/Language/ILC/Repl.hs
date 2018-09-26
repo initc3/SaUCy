@@ -151,7 +151,7 @@ typeof args = do
     st <- get
     let arg = unwords args
     case lookupTyEnv arg (tyenv st) of
-        Just val -> liftIO $ putDoc $ prettySignature (arg, val)
+        Just val -> liftIO $ putDoc $ prettySignature (arg, val) <> linebreak
         Nothing -> execi False arg
 
 -- :quit command

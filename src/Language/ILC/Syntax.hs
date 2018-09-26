@@ -37,11 +37,10 @@ type Name = String
 
 -- | Expressions in ILC.
 data Expr = EVar Name                            -- ^ Variable
-          | EImpVar Name                         -- ^ Implicit variable
           | ELit Lit                             -- ^ Literal
           | ETuple [Expr]                        -- ^ Tuple
           | EList [Expr]                         -- ^ List
-          | ESet [Expr]                          -- ^ Set
+          | ESett [Expr]                         -- ^ Set
           | ELam Pattern Expr                    -- ^ Lambda abstraction
           | EApp Expr Expr                       -- ^ Function application
           | EFix Expr                            -- ^ Fixpoint
@@ -53,10 +52,9 @@ data Expr = EVar Name                            -- ^ Variable
           | EWr Expr Expr                        -- ^ Write to channel
           | EFork Expr Expr                      -- ^ Fork new process
           | EChoice Expr Expr                    -- ^ External choice
-          | ERepl Expr                           -- ^ Replication
           | ERef Expr                            -- ^ Mutable reference
-          | EDeref Expr                          -- ^ Dereference
-          | EAssign Name Expr                    -- ^ Mutable Assignment
+          | EGet Expr                            -- ^ Dereference
+          | ESet Name Expr                       -- ^ Mutable Assignment
           | ESeq Expr Expr                       -- ^ Sequencing
           | EThunk Expr                          -- ^ Thunk expression
           | EForce Expr                          -- ^ Force thunk

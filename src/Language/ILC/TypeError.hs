@@ -28,6 +28,8 @@ data TypeError = UnificationFail Type Type
                | SeqFail Mode Mode
                | ChoiceFail Mode Mode
                | ModeFail
+               | TypeFail String
+               | LinearFail
 
 instance Show TypeError where
   show = show . pretty
@@ -77,6 +79,11 @@ instance Pretty TypeError where
          , text "and"
          , pretty m2
          ]
+    
   pretty ModeFail = text "Branches have different modes."
+  
+  pretty (TypeFail s)  = text s
+  
+  pretty LinearFail  = text "Linear read channel violation."
     
     

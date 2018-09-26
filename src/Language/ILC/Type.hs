@@ -25,6 +25,7 @@ module Language.ILC.Type (
   , removeTyEnv
   , extendTyEnv
   , lookupTyEnv
+  , mergeTyEnv
   , prettySchmode
   , prettySignature
   , prettyTyEnv
@@ -50,12 +51,13 @@ data Type = TVar TVar       -- ^ Type variable
           | TThunk Type     -- ^ Thunk type
           | TRdChan Type    -- ^ Read channel type
           | TWrChan Type    -- ^ Write channel type
+          | TUsed           -- ^ Used linear type
           deriving (Eq, Ord, Show)
 
 -- | Modes
-data Mode = MV  -- ^ Value mode
-          | MW  -- ^ Write mode
-          | MR  -- ^ Read mode
+data Mode = V  -- ^ Value mode
+          | W  -- ^ Write mode
+          | R  -- ^ Read mode
           deriving (Eq, Ord, Show)
 
 infixr `TArr`
@@ -115,11 +117,12 @@ instance Pretty Type where
   pretty (TThunk a)  = text "Thunk" <+> pretty a
   pretty (TRdChan a) = text "Rd" <+> pretty a
   pretty (TWrChan a) = text "Wr" <+> pretty a
+  pretty TUsed = text "Used"
 
 instance Pretty Mode where
-  pretty MV = text "V"
-  pretty MR = text "R"
-  pretty MW = text "W"
+  pretty V = text "V"
+  pretty R = text "R"
+  pretty W = text "W"
 
 instance Pretty Scheme where
   pretty (Forall [] t) = pretty t

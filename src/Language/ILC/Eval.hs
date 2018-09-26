@@ -22,11 +22,9 @@ module Language.ILC.Eval (
 
 import Control.Concurrent
 import Control.Exception
-import Control.Monad
 import Data.IORef
 import qualified Data.Map.Strict as Map
 import Data.Typeable
-import Development.Placeholders
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Language.ILC.Match
@@ -47,7 +45,6 @@ instance Show EvalError where
 evalPut :: TermEnv -> MVar Value -> Expr -> Interpreter ()
 evalPut env m expr = case expr of
   EVar x           -> putMVar m $ env Map.! x
-  EImpVar _        -> $(todo "Eval implicit variables")
   ELit (LInt n)    -> putMVar m $ VInt n
   ELit (LBool b)   -> putMVar m $ VBool b
   ELit (LString s) -> putMVar m $ VString s
@@ -62,7 +59,7 @@ evalPut env m expr = case expr of
     res <- evalList env es
     putMVar m $ VList res
 
-  ESet es -> do
+  ESett es -> do
     res <- evalList env es
     putMVar m $ VSet res
   
@@ -139,29 +136,24 @@ evalPut env m expr = case expr of
     forkIO (evalPut env m' e2)
     res <- takeMVar m'
     putMVar m res
-    
-  ERepl e -> do
-    m' <- newEmptyMVar
-    forkIO (forever $ evalPut env m' e)
-    putMVar m VUnit
 
   ERef e -> do
     v <- eval env e
     ref <- newIORef v
     putMVar m $ VRef ref
 
-  EDeref e -> do
+  EGet e -> do
     v <- eval env e
     let r = case v of
               VRef r' -> r'
-              _       -> error "Eval.evalPut: EDeref"
+              _       -> error "Eval.evalPut: EGet"
     res <- readIORef r
     putMVar m res
 
-  EAssign x e -> do
+  ESet x e -> do
     let r = case env Map.! x of
               VRef r' -> r'
-              _       -> error "Eval.evalPut: EAssign"
+              _       -> error "Eval.evalPut: ESet"
     v <- eval env e
     writeIORef r v
     putMVar m VUnit
