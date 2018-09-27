@@ -1,3 +1,12 @@
+let head lst = match lst with | [] => error "wtf" | x:xs => xs
+ls
+    | (k, v):rest when x == k => v
+    | []                      => error "lookup: not in list"
+    match assoc with
+letrec lookup x assoc =
+letrec map f lst = match lst with | [] => [] | x:xs => (f x) : map f xs
+:load  prelude.ilc 
+:load prelude.ilc 
 GetBit 1
 GetBit 1
 GetBit 1

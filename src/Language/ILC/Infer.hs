@@ -240,6 +240,11 @@ concatTCMs = foldr f ([], [], [])
   where
     f (t, c, m) (t', c', m') = (t : t', c ++ c', m : m')
 
+concatTCMEs :: [(Type, [Constraint], Mode, TypeEnv)] -> ([Type], [Constraint], [Mode], [TypeEnv])
+concatTCMEs = foldr f ([], [], [], [])
+  where
+    f (t, c, m, e) (t', c', m', e') = (t : t', c ++ c', m : m', e : e')
+
 inferPatList :: [Pattern]
              -> [Maybe Expr]
              -> Infer ([Type], [Constraint], [(Name, (Type, Mode))])
@@ -370,24 +375,30 @@ inferPat pat expr = case (pat, expr) of
     ty <- fresh
     return (ty, [], [])
 
-inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint], Mode)
+inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint], Mode, TypeEnv)
 inferBranch expr (pat, guard, branch) = do
   env <- ask
-  (_, c1, env') <- inferPat pat $ Just expr
+  (_, c1, binds) <- inferPat pat $ Just expr
+  (_, _, _, _Γ2) <- infer expr
   case runSolve c1 of
     Left err -> throwError err
     Right sub -> do
       let sc t = generalize (apply sub env) (apply sub t)
-      (t2, c2, _, _) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
-                           (local (apply sub) (infer guard))
-                           env'
-      (t3, c3, m, _) <- foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
-                           (local (apply sub) (infer branch))
-                           env'
-      return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)], m)
+      (t2, c2, m1, _Γ3) <- local (const _Γ2) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+                        (local (apply sub) (infer guard))
+                        binds)
+      _ <- checkMode m1 V
+
+      (t3, c3, m, _Γ4) <- local (const _Γ3) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+                        (local (apply sub) (infer branch))
+                        binds)
+      return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)], m, _Γ4)
 
 sameModes :: [Mode] -> Either TypeError Mode
 sameModes (m:ms) = if (all ((==)m) ms) then Right m else Left ModeFail
+
+sameThings :: Eq a => [a] -> Either TypeError a
+sameThings (m:ms) = if (all ((==)m) ms) then Right m else Left (TypeFail "Not same things.")
 
 infer :: Expr -> Infer (Type, [Constraint], Mode, TypeEnv)
 infer expr = case expr of
@@ -420,37 +431,52 @@ infer expr = case expr of
     _Γ <- ask
     return (tyUnit, [], V, _Γ)
     
-{-
   ETuple es -> do
-    tcms <- mapM infer es
-    let (ts, cs, ms) = concatTCMs tcms
+    _Γ1 <- ask
+    -- TODO: Combine into one pass
+    (_, _, _, _Γn) <- foldM (\(_, _, V, _Γ) e -> local (const _Γ) (infer e))
+                      (tyUnit, [], V, _Γ1)
+                      es
+    tcmes <- mapM infer es
+    let (tys, cs, ms, _) = concatTCMEs tcmes
     case sameModes (V:ms) of
       Left err -> throwError err
       Right m -> do
-        return (TProd ts, cs, m)
+        return (TProd tys, cs, m, _Γn)
 
   EList [] -> do
-    tv <- fresh
-    return (TList tv, [], V)
+    _Γ <- ask
+    tyV <- fresh
+    return (TList tyV, [], V, _Γ)
 
-  -- Refactor
   EList es -> do
-    tcms <- mapM infer es
-    let tyFst = (\(x, _, _) -> x) $ head tcms
-        cs    = concatMap (\(_,x,_) -> x) tcms
-        cs'   = map (\(x, _, _) -> (tyFst, x)) tcms
-    return (TList tyFst, cs ++ cs', V)
+    _Γ1 <- ask
+    -- TODO: Combine into one pass
+    (_, _, _, _Γn) <- foldM (\(_, _, V, _Γ) e -> local (const _Γ) (infer e))
+                      (tyUnit, [], V, _Γ1)
+                      es
+    tcmes <- mapM infer es
+    let tyFst = (\(x, _, _, _) -> x) $ head tcmes
+        cs    = concatMap (\(_,x,_, _) -> x) tcmes
+        cs'   = map (\(x, _, _, _) -> (tyFst, x)) tcmes
+    return (TList tyFst, cs ++ cs', V, _Γ1)
 
   ESett [] -> do
-    ty <- fresh
-    return (TSet ty, [], V)
-
+    _Γ <- ask    
+    tyV <- fresh
+    return (TSet tyV, [], V, _Γ)
+    
   ESett es -> do
-    tcms <- mapM infer es
-    let tyFst = (\(x, _, _) -> x) $ head tcms
-        cs    = concatMap (\(_,x,_) -> x) tcms
-        cs'   = map (\(x, _, _) -> (tyFst, x)) tcms
-    return (TSet tyFst, cs ++ cs', V)-}
+    _Γ1 <- ask
+    -- TODO: Combine into one pass
+    (_, _, _, _Γn) <- foldM (\(_, _, V, _Γ) e -> local (const _Γ) (infer e))
+                      (tyUnit, [], V, _Γ1)
+                      es
+    tcmes <- mapM infer es
+    let tyFst = (\(x, _, _, _) -> x) $ head tcmes
+        cs    = concatMap (\(_,x,_, _) -> x) tcmes
+        cs'   = map (\(x, _, _, _) -> (tyFst, x)) tcmes
+    return (TSet tyFst, cs ++ cs', V, _Γ1)
 
   EBin Cons e1 e2  -> do
    (tyA1, c1, m1, _Γ2) <- infer e1
@@ -506,15 +532,18 @@ infer expr = case expr of
         m3 <-  seqMode m1 m2
         return (tyB, c1 ++ c2, m3, _Γ3)
 
-{-  EMatch e bs -> do
-    tcms <- mapM (inferBranch e) bs
-    let (ts, cs, ms) = concatTCMs tcms
+  EMatch e bs -> do
+    tcmes <- mapM (inferBranch e) bs
+    let (ts, cs, ms, _Γs) = concatTCMEs tcmes
         ty       = head ts
         cs'      = zip (tail ts) (repeat ty)
+    {-_Γ3 <- case sameThings _Γs of
+             Left err -> throwError err
+             Right _Γ  -> return _Γ-}
     case sameModes ms of
       Left err -> throwError err
       Right m -> do
-        return (ty, cs ++ cs', m)-}
+        return (ty, cs ++ cs', m, head _Γs)
 
   ELam (PVar x) e -> do
     tyV <- fresh

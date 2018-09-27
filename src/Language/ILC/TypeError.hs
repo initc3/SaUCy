@@ -85,5 +85,3 @@ instance Pretty TypeError where
   pretty (TypeFail s)  = text s
   
   pretty LinearFail  = text "Linear read channel violation."
-    
-    

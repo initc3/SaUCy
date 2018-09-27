@@ -101,7 +101,7 @@ examples =
       , "let x = 1 ; let y := 1 in x + y"
       , Right [ ("it", ELet (PVar "x")
                             (ESeq (ELit $ LInt 1)
-                                  (EAssign "y"
+                                  (ESet "y"
                                            (ELit $ LInt 1)))
                             (EBin Add (EVar "x")
                                            (EVar "y")))
@@ -110,15 +110,15 @@ examples =
     , ( "ref and deref"
       , "let a = ref 1 ;; let b := @ a"
       , Right [ ("a", ERef (ELit $ LInt 1))
-              , ("it", EAssign "b"
-                               (EDeref (EVar "a")))
+              , ("it", ESet "b"
+                               (EGet (EVar "a")))
               ]
       )
     , ( "let binding w/ sequencing and assign"
       , "let a = 1 ; let b := 1 in b"
       , Right [ ("it", ELet (PVar "a")
                             (ESeq (ELit $ LInt 1)
-                                  (EAssign "b"
+                                  (ESet "b"
                                            (ELit $ LInt 1)))
                             (EVar "b"))
               ]

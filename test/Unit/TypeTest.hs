@@ -52,4 +52,10 @@ examples =
     , ( "diff branch modes"
       , "nu (rc, wc) . match 1 with | _ => wr 1 -> wc | _ => ()"
       , "ill-typed")
+    , ( "match branches good"
+      , "let foo () = nu (r, w) . match 1 with | _ when print r ; true => 0 | _ => r ; 0"
+      , "Unit -> Int @ V")
+    , ( "match branches bad"
+      , "let foo () = nu (r, w) . match 1 with | _ when print r ; true => 0 | _ => 0"
+      , "ill-typed")
     ]
