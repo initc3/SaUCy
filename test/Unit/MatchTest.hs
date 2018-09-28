@@ -10,6 +10,7 @@ import Test.Tasty.HUnit
 import Language.ILC.Eval
 import Language.ILC.Match
 import Language.ILC.Syntax
+import Language.ILC.Value
 
 test_match :: TestTree
 test_match =

@@ -30,11 +30,13 @@ import System.Exit
 import System.IO.Silently (silence)
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
+import Language.ILC.Decl
 import Language.ILC.Eval
 import Language.ILC.Infer
 import Language.ILC.Parser
 import Language.ILC.Syntax
 import Language.ILC.Type
+import Language.ILC.Value
 
 --------------------------------------------------------------------------------
 -- Command line parser

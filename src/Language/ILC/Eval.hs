@@ -27,8 +27,10 @@ import qualified Data.Map.Strict as Map
 import Data.Typeable
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
+import Language.ILC.Decl
 import Language.ILC.Match
 import Language.ILC.Syntax
+import Language.ILC.Value
 
 -- | Set up interpreter in IO monad (for filling and taking from mvars).
 type Interpreter t = IO t

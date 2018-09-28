@@ -18,11 +18,6 @@ module Language.ILC.Syntax (
   , Binop(..)
   , Unop(..)
   , Pattern(..)
-  , Decl
-  , Value(..)
-  , TermEnv
-  , emptyTmEnv
-  , extendTmEnv
   ) where
 
 import Control.Concurrent
@@ -121,59 +116,3 @@ instance Pretty Pattern where
   pretty (PList ps)    = prettyList ps
   pretty (PCons hd tl) = pretty hd <+> text ":" <+> pretty tl
   pretty (PSet ps)     = prettySet $ map pretty ps
-
--- | A toplevel declaration binds an expression to a variable name.
-type Decl = (Name, Expr)
-
--- | A program consists of a list of declarations and a main expression.
-data Program = Program [Decl] Expr  -- TODO: Main
-  deriving (Eq, Show)
-
--- | Values in ILC.
-data Value = VInt Integer                        -- ^ Integer value
-           | VBool Bool                          -- ^ Boolean value
-           | VString String                      -- ^ String value
-           | VTag String                         -- ^ Tag value
-           | VList [Value]                       -- ^ List value
-           | VSet [Value]                        -- ^ Set value
-           | VTuple [Value]                      -- ^ Tuple value
-           | VUnit                               -- ^ Unit value
-           | VClosure (Maybe Name) TermEnv Expr  -- ^ Closure value
-           | VThunk TermEnv Expr                 -- ^ Thunk value
-           | VRdChan Name (Chan Value)           -- ^ Read channel value
-           | VWrChan Name (Chan Value)           -- ^ Write channel value
-           | VRef (IORef Value)                  -- ^ Mutable reference value
-           deriving (Eq, Show)
-
-instance Show (IORef a) where
-  show _ = "IORef"
-
-instance Show (Chan a) where
-  show _ = "Chan"
-
-instance Pretty Value where
-  pretty (VInt n)      = integer n
-  pretty (VBool True)  = text "true"
-  pretty (VBool False) = text "false"
-  pretty (VString s)   = text s
-  pretty (VTag t)      = text t
-  pretty (VList vs)    = prettyList vs
-  pretty (VTuple vs)   = prettyTuple $ map pretty vs
-  pretty (VSet vs)     = prettySet $ map pretty vs
-  pretty VUnit         = text "()"
-  pretty VClosure{}    = text "<closure>"
-  pretty VThunk{}      = text "<thunk>"
-  pretty (VRdChan c _) = text "Rd" <+> text c
-  pretty (VWrChan c _) = text "Wr" <+> text c
-  pretty (VRef _)      = text "<ref>"
-  
--- | A map from names to values.
-type TermEnv = Map.Map Name Value
-
--- | The empty term environment.
-emptyTmEnv :: TermEnv
-emptyTmEnv = Map.empty
-
--- | Extends the term environment with the given binding.
-extendTmEnv :: TermEnv -> Name -> Value -> TermEnv
-extendTmEnv env x v = Map.insert x v env

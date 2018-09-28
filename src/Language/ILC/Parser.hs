@@ -22,6 +22,7 @@ import Text.Parsec
 import qualified Text.Parsec.Expr as Ex
 import Text.Parsec.String (Parser)
 
+import Language.ILC.Decl
 import Language.ILC.Lexer
 import Language.ILC.Syntax
 

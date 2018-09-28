@@ -24,7 +24,9 @@ import Control.Monad.Writer
 import Data.Map.Strict (fromList)
 import Text.PrettyPrint.ANSI.Leijen
 
+import Language.ILC.Decl
 import Language.ILC.Syntax
+import Language.ILC.Value
 
 -- | The @Match@ monad returns either a @MatchFail@ error or a value of the
 -- given type. It uses the @Writer@ monad to keep track of a list of variable
