@@ -539,6 +539,7 @@ infer expr = case expr of
     let (ts, cs, ms, _Γs) = concatTCMEs tcmes
         ty       = head ts
         cs'      = zip (tail ts) (repeat ty)
+    -- TODO: Clean up
     let envs = map (\case {TypeEnv binds -> Map.filter (\x -> fst x == (Forall
     [] TUsed)) binds}) _Γs
     _ <- case sameThings envs  of

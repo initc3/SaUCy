@@ -159,3 +159,6 @@ letrec sort lst =
   | n => getBit () :: getBits (n-1)-}
   
 {- TODO: span, break -}
+
+letrec loop c f =
+  let (v, c) = rd c in f v; loop c f
