@@ -13,6 +13,7 @@
 module Language.ILC.Lexer (
       whitespace
     , identifier
+    , constructor
     , integer
     , stringLit
     , parens
@@ -31,6 +32,7 @@ module Language.ILC.Lexer (
     ) where
 
 import Data.Functor.Identity (Identity)
+import Data.Semigroup ((<>))
 import Text.Parsec
 import qualified Text.Parsec.Expr as Ex
 import Text.Parsec.String (Parser)
@@ -44,7 +46,7 @@ langDef = Tok.LanguageDef
     , Tok.commentEnd   = "-}"
     , Tok.commentLine  = "--"
     , Tok.nestedComments = True
-    , Tok.identStart = letter
+    , Tok.identStart = lower
     , Tok.identLetter = alphaNum <|> oneOf "_'?"
     , Tok.opStart = oneOf ":!#$%&*+.?<=>?@\\^|-~"
     , Tok.opLetter = oneOf ":!#$%&*+.?<=>?@\\^|-~"
@@ -75,6 +77,7 @@ langDef = Tok.LanguageDef
                           , "Chan"
                           , "Rd"
                           , "Wr"
+                          , "data"
                           ]
     , Tok.reservedOpNames = [ "+"
                             , "-"
@@ -111,6 +114,10 @@ whitespace = Tok.whiteSpace lexer
 
 identifier :: Parser Name
 identifier = Tok.identifier lexer
+
+constructor :: Parser Name
+constructor = do
+  whitespace *> (many1 upper) <> (many $ alphaNum <|> oneOf "_'?") <* whitespace
 
 -- TODO: Fix this to parse only negative sign.
 integer :: Parser Integer

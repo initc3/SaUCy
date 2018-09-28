@@ -24,6 +24,7 @@ import Text.Parsec.String (Parser)
 
 import Language.ILC.Decl
 import Language.ILC.Lexer
+import Language.ILC.Type
 import Language.ILC.Syntax
 
 -- | Parse expressions
@@ -331,33 +332,57 @@ pat' = pVar
 
 dExpr :: Parser TopDecl
 dExpr = do
-    e <- expr
-    optional $ reserved ";;"
-    return $ Decl "it" e
+  e <- expr
+  optional $ reserved ";;"
+  return $ Decl "it" e
 
 parseLet :: Parser (Name, [Pattern], Expr)
 parseLet = do
-    x <- identifier
-    ps <- many pat
-    reserved "="
-    e <- expr
-    optional $ reserved ";;"
-    return (x, ps, e)
+  x <- identifier
+  ps <- many pat
+  reserved "="
+  e <- expr
+  optional $ reserved ";;"
+  return (x, ps, e)
 
 dDeclLetRec :: Parser TopDecl
 dDeclLetRec = do
-    reserved "letrec"
-    (x, ps, e) <- parseLet
-    return $ Decl x (EFix $ foldr ELam e (PVar x : ps))
+  reserved "letrec"
+  (x, ps, e) <- parseLet
+  return $ Decl x (EFix $ foldr ELam e (PVar x : ps))
 
 dDeclFun :: Parser TopDecl
 dDeclFun = do
-    reserved "let"
-    (x, ps, e) <- parseLet
-    return $ Decl x (foldr ELam e ps)
+  reserved "let"
+  (x, ps, e) <- parseLet
+  return $ Decl x (foldr ELam e ps)
+
+dDeclCon :: Parser TopDecl
+dDeclCon = do
+  reserved "data"
+  tyCon <- constructor
+  reservedOp "="
+  valCons <- sepBy1 parseValCon (reservedOp "|")
+  return $ TyCon tyCon valCons
+  
+parseValCon :: Parser ValCon
+parseValCon = do
+  valCon <- constructor
+  params <- sepBy parseTy whitespace
+  return (valCon, params)
 
 decl :: Parser TopDecl
-decl = try dExpr <|> try dDeclLetRec <|> dDeclFun
+decl = dDeclCon <|> try dExpr <|> try dDeclLetRec <|> dDeclFun
+
+-- | Parse types
+
+parseTyInt, parseTyBool, parseTyString :: Parser Type  
+parseTyInt = mklexer (const tyInt) $ reserved "Int"
+parseTyBool = mklexer (const tyBool) $ reserved "Bool"
+parseTyString = mklexer (const tyString) $ reserved "String"
+
+parseTy :: Parser Type
+parseTy = parseTyInt <|> parseTyBool <|> parseTyString
 
 -- | Toplevel parser
 
