@@ -1,4 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TupleSections              #-}
@@ -392,7 +393,8 @@ inferBranch expr (pat, guard, branch) = do
       (t3, c3, m, _Γ4) <- local (const _Γ3) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
                         (local (apply sub) (infer branch))
                         binds)
-      return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)], m, _Γ4)
+      let _Γ4' = foldl (\_Γ (x, _) -> removeTyEnv _Γ x) _Γ4 binds
+      return (t3, c1 ++ c2 ++ c3 ++ [(t2, tyBool)], m, _Γ4')
 
 sameModes :: [Mode] -> Either TypeError Mode
 sameModes (m:ms) = if (all ((==)m) ms) then Right m else Left ModeFail
@@ -537,9 +539,11 @@ infer expr = case expr of
     let (ts, cs, ms, _Γs) = concatTCMEs tcmes
         ty       = head ts
         cs'      = zip (tail ts) (repeat ty)
-    {-_Γ3 <- case sameThings _Γs of
+    let envs = map (\case {TypeEnv binds -> Map.filter (\x -> fst x == (Forall
+    [] TUsed)) binds}) _Γs
+    _ <- case sameThings envs  of
              Left err -> throwError err
-             Right _Γ  -> return _Γ-}
+             Right _Γ  -> return _Γ
     case sameModes ms of
       Left err -> throwError err
       Right m -> do
