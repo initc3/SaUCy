@@ -277,11 +277,11 @@ eval env e = do
 
 -- | Evaluates a list of declarations to a value. The return value is the
 -- evaluation of the last declaration in the list (i.e., the main function.)
-exec :: [Decl] -> Interpreter Value
+exec :: [TopDecl] -> Interpreter Value
 exec = go emptyTmEnv
   where
-    go _   []            = error "Eval.exec"
-    go env [(_, e)]      = eval env e
-    go env ((x, e):rest) = do
-      v <- eval env e
-      go (extendTmEnv env x v) rest
+    go _   []                = error "Eval.exec"
+    go env [(Decl _ e)]      = eval env e
+    go env ((Decl x e):rest) = do v <- eval env e
+                                  go (extendTmEnv env x v) rest
+    go _ _                 = error "Eval.exec: Unimplemented"

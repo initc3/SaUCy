@@ -90,16 +90,18 @@ hoistErr (Left err) = do
 --------------------------------------------------------------------------------
 
 -- TODO: Blocks on rd c if not function
-evalDecl :: TermEnv -> Decl -> IO TermEnv
-evalDecl env (x, expr) = silence $ eval env expr >>= return . extendTmEnv env x
+evalDecl :: TermEnv -> TopDecl -> IO TermEnv
+evalDecl env (Decl x expr) = silence $ eval env expr >>= return . extendTmEnv env x
     
 execi :: Bool -> String -> Repl ()
 execi update source = do
     st <- get
     
     mod <- hoistErr $ parser source
+
+    let _mod = declToAssoc mod
     
-    tyenv' <- hoistErr $ inferTop (tyenv st) mod
+    tyenv' <- hoistErr $ inferTop (tyenv st) _mod
 
     tmenv' <- liftIO $ foldM (evalDecl) (tmenv st) mod
     
@@ -109,7 +111,7 @@ execi update source = do
 
     when update (put st')
     
-    case lookup "it" mod of
+    case lookup "it" _mod of
         Nothing -> return ()
         Just ex -> do
             val <- liftIO $ eval (tmenv st') ex

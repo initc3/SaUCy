@@ -6,10 +6,10 @@ import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit
 
+import Language.ILC.Decl
 import Language.ILC.Eval
 import Language.ILC.Infer (inferExpr)
 import Language.ILC.Parser
---import Language.ILC.Pretty
 import Language.ILC.Type (emptyTyEnv, prettySchmode)
 
 test_types = testGroup "Unit.TypeTest" $ map f examples
@@ -17,7 +17,7 @@ test_types = testGroup "Unit.TypeTest" $ map f examples
                            assertEqual "" (infer src) ty
         infer src = case parser src of
             Left err          -> error "bad test"
-            Right [(_, expr)] -> case inferExpr emptyTyEnv expr of
+            Right [Decl _ expr] -> case inferExpr emptyTyEnv expr of
                                      Left err -> "ill-typed"
                                      Right scm -> show $ prettySchmode scm
 

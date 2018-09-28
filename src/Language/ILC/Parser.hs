@@ -329,11 +329,11 @@ pat' = pVar
 
 -- | Parse toplevel declarations
 
-dExpr :: Parser Decl
+dExpr :: Parser TopDecl
 dExpr = do
     e <- expr
     optional $ reserved ";;"
-    return ("it", e)
+    return $ Decl "it" e
 
 parseLet :: Parser (Name, [Pattern], Expr)
 parseLet = do
@@ -344,19 +344,19 @@ parseLet = do
     optional $ reserved ";;"
     return (x, ps, e)
 
-dDeclLetRec :: Parser Decl
+dDeclLetRec :: Parser TopDecl
 dDeclLetRec = do
     reserved "letrec"
     (x, ps, e) <- parseLet
-    return (x, EFix $ foldr ELam e (PVar x : ps))
+    return $ Decl x (EFix $ foldr ELam e (PVar x : ps))
 
-dDeclFun :: Parser Decl
+dDeclFun :: Parser TopDecl
 dDeclFun = do
     reserved "let"
     (x, ps, e) <- parseLet
-    return (x, foldr ELam e ps)
+    return $ Decl x (foldr ELam e ps)
 
-decl :: Parser Decl
+decl :: Parser TopDecl
 decl = try dExpr <|> try dDeclLetRec <|> dDeclFun
 
 -- | Toplevel parser
@@ -364,8 +364,8 @@ decl = try dExpr <|> try dDeclLetRec <|> dDeclFun
 contents :: Parser a -> Parser a
 contents p = mklexer id $ whitespace *> p <* eof
 
-toplevel :: Parser [Decl]
+toplevel :: Parser [TopDecl]
 toplevel = many1 decl
 
-parser :: String -> Either ParseError [Decl]
+parser :: String -> Either ParseError [TopDecl]
 parser = parse (contents toplevel) "<stdin>"
