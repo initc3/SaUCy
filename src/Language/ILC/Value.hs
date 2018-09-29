@@ -39,6 +39,7 @@ data Value = VInt Integer                        -- ^ Integer value
            | VRdChan Name (Chan Value)           -- ^ Read channel value
            | VWrChan Name (Chan Value)           -- ^ Write channel value
            | VRef (IORef Value)                  -- ^ Mutable reference value
+           | VCust Name [Value]                  -- ^ Mutable reference value
            deriving (Eq, Show)
 
 instance Show (IORef a) where
@@ -62,6 +63,7 @@ instance Pretty Value where
   pretty (VRdChan c _) = text "Rd" <+> text c
   pretty (VWrChan c _) = text "Wr" <+> text c
   pretty (VRef _)      = text "<ref>"
+  pretty (VCust x vs)  = text x <+> prettySpace (map pretty vs)
   
 -- | A map from names to values.
 type TermEnv = Map.Map Name Value
@@ -73,4 +75,3 @@ emptyTmEnv = Map.empty
 -- | Extends the term environment with the given binding.
 extendTmEnv :: TermEnv -> Name -> Value -> TermEnv
 extendTmEnv env x v = Map.insert x v env
-

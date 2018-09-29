@@ -376,6 +376,20 @@ inferPat pat expr = case (pat, expr) of
     ty <- fresh
     return (ty, [], [])
 
+  (PCust x ps, Just (ECustom x' es)) -> do
+    when (length ps /= length es) (error "fail1") -- TODO
+    when (x /= x') (error "fail2") -- TODO
+    (ts, cs, env) <- inferPatList ps $ map Just es
+    return (tyMsg, cs, env)
+  (PCust x ps, Just e) -> do
+    (te, ce, _, _) <- infer e
+    (ts, cs, env) <- inferPatList ps $ repeat Nothing
+    return (tyMsg, ce ++ cs ++ [(tyMsg, te)], env)
+  (PCust x ps, Nothing) -> do
+    tces <- zipWithM inferPat ps $ repeat Nothing
+    let (ts, cs, env) = concatTCEs tces
+    return (tyMsg, cs, env)
+
 inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint], Mode, TypeEnv)
 inferBranch expr (pat, guard, branch) = do
   env <- ask
@@ -646,15 +660,19 @@ infer expr = case expr of
     return (tyV, c ++ [(TThunk tyV, tyA)], m, _Γ2)
 
   EPrint e -> do
-   (_, c, m, _Γ2) <- infer e
-   _ <- checkMode m V
-   return (tyUnit, c, V, _Γ2)
+    (_, c, m, _Γ2) <- infer e
+    _ <- checkMode m V
+    return (tyUnit, c, V, _Γ2)
 
   EError e  -> do
-   tyV <- fresh
-   (tyA, c, m, _Γ2) <- infer e
-   _ <- checkMode m V
-   return (tyV, c ++ [(tyA, tyString)], V, _Γ2)
+    tyV <- fresh
+    (tyA, c, m, _Γ2) <- infer e
+    _ <- checkMode m V
+    return (tyV, c ++ [(tyA, tyString)], V, _Γ2)
+
+  ECustom x es -> do
+    _Γ <- ask
+    return (tyMsg, [], V, _Γ)
 
 inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
 inferTop env [] = Right env

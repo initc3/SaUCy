@@ -57,6 +57,7 @@ data Expr = EVar Name                            -- ^ Variable
           | EError Expr                          -- ^ Throw error
           | EBin Binop Expr Expr                 -- ^ Binary expression
           | EUn Unop Expr                        -- ^ Unary expression
+          | ECustom Name [Expr]                  -- ^ Custom data literal
           deriving (Eq, Show)
 
 -- | Literals in ILC.
@@ -101,6 +102,7 @@ data Pattern = PVar Name              -- ^ Variable pattern
              | PList [Pattern]        -- ^ List pattern
              | PCons Pattern Pattern  -- ^ Cons pattern
              | PSet [Pattern]         -- ^ Set pattern
+             | PCust Name [Pattern]   -- ^ Custom data type pattern
              deriving (Eq, Show)
 
 instance Pretty Pattern where
@@ -116,3 +118,4 @@ instance Pretty Pattern where
   pretty (PList ps)    = prettyList ps
   pretty (PCons hd tl) = pretty hd <+> text ":" <+> pretty tl
   pretty (PSet ps)     = prettySet $ map pretty ps
+  pretty (PCust x ps)  = text x <+> prettySpace (map pretty ps)

@@ -238,6 +238,13 @@ eUn = eThunk
    <|> ePrint
    <|> eError
 
+
+eCustom :: Parser Expr
+eCustom = do
+  con <- constructor
+  exprs <- many atomExpr
+  return $ ECustom con exprs
+
 expr :: Parser Expr
 expr = try eSeq <|> try eChoice <|> try eFork <|> expr'
 
@@ -270,6 +277,7 @@ term = try eApp
    <|> eRef
    <|> eGet
    <|> eUn
+   <|> eCustom
 
 -- | Patterns
 
@@ -312,6 +320,15 @@ pCons = do
 pSet :: Parser Pattern
 pSet = mklexer PSet $ braces $ commaSep pat
 
+-- TODO: Fix parens parsing
+pCust :: Parser Pattern
+pCust = do
+  optional $ whitespace *> char '('
+  con <- constructor
+  ps <- many pat
+  optional $ char ')' <* whitespace
+  return $ PCust con ps
+  
 -- TODO: Use chainl1?
 pat :: Parser Pattern
 pat = try pCons <|> pat'
@@ -324,9 +341,10 @@ pat' = pVar
   <|> pTag
   <|> try pUnit
   <|> pWildcard
-  <|> pTuple
+  <|> try pTuple
   <|> pList
   <|> pSet
+  <|> pCust
 
 -- | Parse toplevel declarations
 

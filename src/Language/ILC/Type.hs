@@ -20,6 +20,7 @@ module Language.ILC.Type (
   , tyString
   , tyTag
   , tyUnit
+  , tyMsg
   , TypeEnv(..)
   , emptyTyEnv
   , removeTyEnv
@@ -66,12 +67,13 @@ infixr `TArr`
 data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)
 
 -- | Primitive types
-tyInt, tyBool, tyString, tyTag, tyUnit :: Type
+tyInt, tyBool, tyString, tyTag, tyUnit, tyMsg :: Type
 tyInt    = TCon "Int"
 tyBool   = TCon "Bool"
 tyString = TCon "String"
 tyTag    = TCon "Tag"
 tyUnit   = TCon "Unit"
+tyMsg    = TCon "Msg"
 
 -- | Type environment
 newtype TypeEnv = TypeEnv { types :: Map.Map Name (Scheme, Mode) }

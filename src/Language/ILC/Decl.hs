@@ -32,6 +32,6 @@ data Program = Program [TopDecl] Expr
              deriving (Eq, Show)
 
 declToAssoc :: [TopDecl] -> [(Name, Expr)]
-declToAssoc ds = foldl f [] ds
+declToAssoc ds = reverse $ foldl f [] ds
   where f acc (Decl x e) = (x, e) : acc
         f acc _          = acc

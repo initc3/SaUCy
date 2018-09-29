@@ -46,7 +46,12 @@ instance Show EvalError where
 -- | Evaluates an expression to a value and puts it into the given MVar.
 evalPut :: TermEnv -> MVar Value -> Expr -> Interpreter ()
 evalPut env m expr = case expr of
-  EVar x           -> putMVar m $ env Map.! x
+  EVar x -> do
+    let v = case Map.lookup x env of
+              Just val -> val
+              Nothing  -> error $ "evalPut: EVar: Unbound variable " ++ x
+    putMVar m v
+    
   ELit (LInt n)    -> putMVar m $ VInt n
   ELit (LBool b)   -> putMVar m $ VBool b
   ELit (LString s) -> putMVar m $ VString s
@@ -194,6 +199,11 @@ evalPut env m expr = case expr of
     case v of
       VString s -> throwIO $ EvalError s
       _         -> error "Eval.evalPut: EError"
+
+  ECustom x es -> do
+    res <- evalList env es
+    putMVar m $ VCust x res
+
 
 -- | Evaluate two subexpressions                
 evalSubs :: TermEnv -> Expr -> Expr -> Interpreter (Value, Value)

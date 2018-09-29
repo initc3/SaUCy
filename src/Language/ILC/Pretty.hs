@@ -14,6 +14,7 @@ module Language.ILC.Pretty (
     prettyTuple
   , _prettyTuple
   , prettySet
+  , prettySpace
   , maybeParens
   ) where
 

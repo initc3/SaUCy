@@ -24,6 +24,7 @@ import Control.Monad.State.Strict
 import Data.List (isPrefixOf)
 import qualified Data.Map as Map
 import Data.Monoid
+import Debug.Trace
 import Options.Applicative
 import System.Console.Repline hiding (Options)
 import System.Exit
@@ -89,9 +90,9 @@ hoistErr (Left err) = do
 -- Execution
 --------------------------------------------------------------------------------
 
--- TODO: Blocks on rd c if not function
 evalDecl :: TermEnv -> TopDecl -> IO TermEnv
 evalDecl env (Decl x expr) = silence $ eval env expr >>= return . extendTmEnv env x
+--evalDecl env _             = return env
     
 execi :: Bool -> String -> Repl ()
 execi update source = do
@@ -131,7 +132,7 @@ process src = do
     let cmds = parser src
     case cmds of
         Left err -> print err
-        Right cmds -> Language.ILC.Eval.exec cmds >>= putDoc . pretty
+        Right cmds -> exec cmds >>= putDoc . pretty
 
 --------------------------------------------------------------------------------
 -- Commands
