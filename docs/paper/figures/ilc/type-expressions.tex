@@ -3,13 +3,13 @@
 \judgbox{\Delta ; \Gamma |- e : A |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has type $A$ and mode $m$.}
 \begin{mathpar}
 \Infer{var}
-{\Delta; \Gamma(x) = A}
+{\Gamma(x) = A}
 {\Delta; \Gamma |- x: A}
 %
 \and
 %
 \Infer{lvar}
-{\Delta(x) = A; \Gamma}
+{\Delta(x) = A}
 {\Delta; \Gamma |- x: A}
 %
 \and
