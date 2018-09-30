@@ -2,21 +2,27 @@
 \label{sec:background}
 
 \begin{figure*}
+\begin{subfigure}{.6\textwidth}
 \begin{func}[$\Func_{\textsc{com}}$]
     $\Func_{\textsc{com}}$ proceeds as follows, running with parties $A$ and
-  $B$, and an adversary $S$.
+  $B$.
     \begin{enumerate}
         \item Upon receiving a message $(\mathsf{Commit}, b)$ from $A$, where $b
           \in \{ 0, 1 \}$, record the value $b$ and send the message
-          $(\mathsf{Receipt})$ to $B$ and $S$. Ignore any subsequent
-          \textsf{Commit} messages.
+          $(\mathsf{Receipt})$ to $B$. Ignore any subsequent \textsf{Commit}
+          messages.
         \item Upon receiving a message $(\mathsf{Open})$ from $A$, proceed as
           follows: If some value $b$ was previously recorded, then send the
-          message $(\mathsf{Open}, b)$ to $B$ and $S$ and halt. Otherwise, halt.
+          message $(\mathsf{Open}, b)$ to $B$ and halt. Otherwise, halt.
     \end{enumerate}
 \end{func}
-\caption{An ideal functionality for a one-time commitment scheme.}
+%\caption{An ideal functionality for a one-time commitment scheme.}
 \label{func:com}
+\end{subfigure}\hspace{.04\textwidth}%
+\begin{subfigure}{.35\textwidth}
+  \lstinputlisting[style=myilc]{listings/Fcom.ilc}
+\end{subfigure}
+\caption{An ideal functionality for a one-time commitment scheme.}
 \end{figure*}
 
 \subsection{Ideal Functionalities}
