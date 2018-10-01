@@ -1,0 +1,102 @@
+{-let partyWrapper = lam sid, crupt, p, params .
+  (* Maps pids to assoc list of channels *)
+  let partyMap = ref [] in
+  let newParty = lam pid .
+    nu f2pp, pp2f,
+      z2pp, pp2z .
+      let partyMap := (pid, [("f2p", f2pp), ("z2p", z2pp)]) :: @partyMap ;
+      |> (!(let m = rd pp2f in
+              wr (pid, m) -> ?p2f)) ;
+      |> (!(let m = rd pp2z in
+              wr (pid, m) -> ?p2z)) ;
+      |> (p pid params)
+  in
+  let getParty = lam pid .
+    if (~(mem pid @partyMap)) then newParty pid ; 
+    @partyMap.pid 
+  in
+  (* Route messages from env to honest parties *)
+  |> (!(let (pid, m) = rd ?z2p in
+         if (mem pid crupt)
+         then wr (pid, m) -> ?p2a
+         else wr m -> (getParty pid)."z2p")) ;
+  (* Route messages from func to honest parties *)
+  |> (!(let (pid, m) = rd ?f2p in
+         if (mem pid crupt)
+         then wr (pid, m) -> ?p2a
+         else wr m -> (getParty pid)."f2p")) ;
+  (* Forward messages to corrupt parties to func *)
+  |> (!(let (pid, m) = rd ?a2p in
+         if (mem pid crupt)
+         then wr (pid, m) -> ?p2f)) ;
+  (* Forward messages to corrupt parties to env *)
+  |> (!(let (pid, m) = rd ?a2p in
+         if (mem pid crupt)
+         then wr (pid, m) -> ?p2z))
+	 
+let execUC = lam z, p, f, a, params .
+  nu z2p, p2z,
+    p2f, f2p,
+    f2a, a2f,
+    a2z, z2a,
+    a2p, p2a,
+    z2f, f2z,
+    z2exec, dump,
+    pump, outp .
+    |> (let (sid, crupt) = rd z2exec in
+         print (show sid) ;
+         |> (f sid crupt params) ;
+         |> (a sid crupt) ;
+         |> (partyWrapper sid crupt p params)) ;
+    z params
+
+let dummyAdversary = lam sid, crupt .
+  |> (!(match (rd ?z2a) with
+       | b        => wr b -> ?a2f
+       | (pid, m) => wr (pid, m) -> ?a2p
+       end)) ;
+  |> (!(let m = rd ?f2a in
+         wr m -> ?a2z)) ;
+  |> (!(let m = rd ?p2a in
+         wr m -> ?a2z))
+-}
+
+{- UC communication layout
+   Z --- P,Q
+   |  X  |
+   A --- F
+ -}
+
+data Crupt = CruptP | CruptQ | CruptNone
+
+let advWrapper () = ()
+
+let execUC z p q f a =
+  nu (rZ2P, wZ2P), (rP2Z, wP2Z)
+  , (rZ2Q, wZ2Q), (rQ2Z, wQ2Z)
+  , (rP2F, wP2F), (rF2P, wF2P)
+  , (rQ2F, wQ2F), (rF2Q, wF2Q)
+  , (rF2A, wF2A), (rA2F, wA2F)
+  , (rA2Z, wA2Z), (rZ2A, wZ2A)
+  , (rZ2E, wZ2E)
+  . let (crupt, _) = rd rZ2E in
+        (f crupt)
+      |> (a crupt)
+      |> (if crupt == CruptP then advWrapper () else p ())
+      |> (if crupt == CruptQ then advWrapper () else q ())
+      |> (z ())
+
+{-  nu z2p, p2z,
+    p2f, f2p,
+    f2a, a2f,
+    a2z, z2a,
+    a2p, p2a,
+    z2f, f2z,
+    z2exec, dump,
+    pump, outp .
+    |> (let (sid, crupt) = rd z2exec in
+         print (show sid) ;
+         |> (f sid crupt params) ;
+         |> (a sid crupt) ;
+         |> (partyWrapper sid crupt p params)) ;
+    z params-}

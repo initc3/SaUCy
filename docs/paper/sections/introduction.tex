@@ -1,6 +1,23 @@
 \section{Introduction}
 \label{sec:introduction}
 
+The universal composability (UC) framework provides a method for analyzing the
+security of cryptographic tasks, while ensuring that security is maintained
+under concurrent general composition. More specifically, the security
+requirements of a task can be expressed as a self-contained specification called
+an \emph{ideal functionality}. If a protocol $\pi$ realizes some ideal
+functionality $\mc{F}$ in the UC framework, then $\pi$ will ``behave just like
+$\mc{F}$'' in arbitrary contexts.
+
+In addition to strong composition guarantees, another strength of the UC
+framework is its generality. Practically any cryptographic task can be expressed
+as an ideal functionality, and practically any network model (e.g.,
+authenticated vs. unauthenticated channels, synchronous vs. asynchronous
+messaging) can be expressed in the UC framework. However, this generality comes
+at the cost of UC formalization being quite complicated.
+
+In this paper, \ldots
+
 Adapting theory from UC into a concrete implementation turns out to be
 difficult. To begin with, the computational model underlying UC, called
 Interacting Turing Machines (ITMs), is not a good fit to existing distributed
@@ -18,11 +35,11 @@ have a well-defined distribution. This is essential to ensure that the
 normalization of an ILC program has a computational interpretation, as is
 necessary in cryptographic reduction proofs.
 
-Using ILC, we will implement the UC network model (asynchronous communication,
-Byzantine corruptions, etc.) and executable UC implementations (ideal
-functionalities and simulators) for various primitives in the distributed
-systems and cryptography literature (e.g., distributed consensus, multiparty
-computation, and zero-knowledge proofs).
+%Using ILC, we will implement the UC network model (asynchronous communication,
+%Byzantine corruptions, etc.) and executable UC implementations (ideal
+%functionalities and simulators) for various primitives in the distributed
+%systems and cryptography literature (e.g., distributed consensus, multiparty
+%computation, and zero-knowledge proofs).
 
 \begin{comment}
 The success of blockchains and cryptocurrencies have raised interest in building

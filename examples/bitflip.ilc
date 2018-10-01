@@ -1,7 +1,7 @@
-{- TODO: Unit and wildcard formal and actual parameters -}
-let GetBit x = 
+{- Does not type check -}
+let getBit x = 
   nu c . wr 0 -> c'
         |> wr 1 -> c'
         |> rd c
 
-let main () = GetBit 1
+let main () = getBit 1

@@ -1,11 +1,15 @@
+data Msg = Commit Int
+         | Open
+	 | Opened Int
+
 let fCom frA toB =
   let (Commit b, frA) = rd frA in
     wr Receipt -> toB ;
     let (Open, frA) = rd frA in
-      wr (Open b) -> toB
+      wr (Opened b) -> toB
 
 let pA frZ toF =
-  let (_, frZ) = rd frZ in
+  let ((), frZ) = rd frZ in
     wr (Commit 0) -> toF ;
     let _ = rd frZ in
       wr Open -> toF

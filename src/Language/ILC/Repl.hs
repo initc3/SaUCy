@@ -92,7 +92,7 @@ hoistErr (Left err) = do
 
 evalDecl :: TermEnv -> TopDecl -> IO TermEnv
 evalDecl env (Decl x expr) = silence $ eval env expr >>= return . extendTmEnv env x
---evalDecl env _             = return env
+evalDecl env _             = return env
     
 execi :: Bool -> String -> Repl ()
 execi update source = do

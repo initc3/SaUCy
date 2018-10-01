@@ -22,23 +22,24 @@
 \begin{subfigure}{.35\textwidth}
   \lstinputlisting[style=myilc]{listings/Fcom.ilc}
 \end{subfigure}
-\caption{An ideal functionality for a one-time commitment scheme.}
+\caption{An ideal functionality for a one-time commitment scheme in prose (left)
+  and in ILC (right).}
+\label{func:com}
 \end{figure*}
 
 \subsection{Ideal Functionalities}
 \label{subsec:functionalities}
 
-Security in the UC framework is based on the real world/ideal world paradigm,
-also known as simulation-based security. To carry out some cryptographic task in
-the real world, a set of parties executes a protocol for the task among
-themselves in a distributed fashion. In the ideal world, however, the parties
-securely access an \emph{ideal functionality} $\mc{F}$, which is imagined as an
-incorruptible trusted third party that securely (by definition) carries out the
-task to be achieved by the protocol. The idea is that $\mc{F}$ obtains inputs
-from the parties, runs the program that carries out the task, and returns
-outputs back to the parties. Roughly speaking, the ideal functionality can be
-thought of as a self-contained specification for the desired security
-properties.
+Security in the UC framework is based on the real world/ideal world paradigm. To
+carry out some cryptographic task in the real world, a set of parties must
+execute a protocol for the task among themselves in a distributed fashion. In
+the ideal world, however, the parties securely access an \emph{ideal
+  functionality} $\mc{F}$, which is imagined as an incorruptible trusted third
+party that securely (by definition) carries out the task to be achieved by the
+protocol. The idea is that $\mc{F}$ obtains inputs from the parties, carries out
+the task locally, and returns outputs back to the parties. Roughly speaking, the
+ideal functionality can be thought of as a self-contained specification for the
+task's security requirements.
 
 As an example, suppose Alice and Bob wish to securely flip a coin---Alice calls
 the coin flip (by publishing $b \in \{ 0, 1\}$), and Bob flips the coin (by

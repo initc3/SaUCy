@@ -23,13 +23,13 @@ composition ($e_1 ; e_2$).
 
 \begingroup
 \setlength\intextsep{0pt}
-\begin{wrapfigure}{r}{0.35\textwidth}
+\begin{wrapfigure}{r}{0.275\textwidth}
   \lstinputlisting[style=myilc]{listings/loop.ilc}
 \end{wrapfigure}
 Note that replication ($!e$ in the $\pi$-calculus), which allows a process to
 spawn repeatedly, is not included for reasons we discuss in
 Section~\ref{subsec:types}. Instead, replication can be achieved through
-recursive definitions. For example, the recursive function \textsf{loop} (right)
+recursive definitions. For example, the recursive function \textsf{loop} (above)
 takes as arguments a read channel \textsf{c} and a function \textsf{f}. In the
 definition of \textsf{loop}, the let expression binds the value read from
 \textsf{c} to the variable \textsf{v} and rebinds the read channel to

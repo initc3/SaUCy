@@ -191,7 +191,7 @@ evalPut env m expr = case expr of
       
   EPrint e -> do
     v <- eval env e
-    putDoc $ pretty v
+    putDoc $ pretty v <> linebreak
     putMVar m VUnit
   
   EError e -> do
