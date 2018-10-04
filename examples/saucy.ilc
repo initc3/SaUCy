@@ -58,45 +58,4 @@ let dummyAdversary = lam sid, crupt .
   |> (!(let m = rd ?f2a in
          wr m -> ?a2z)) ;
   |> (!(let m = rd ?p2a in
-         wr m -> ?a2z))
--}
-
-{- UC communication layout
-   Z --- P,Q
-   |  X  |
-   A --- F
- -}
-
-data Crupt = CruptP | CruptQ | CruptNone
-
-let advWrapper () = ()
-
-let execUC z p q f a =
-  nu (rZ2P, wZ2P), (rP2Z, wP2Z)
-  , (rZ2Q, wZ2Q), (rQ2Z, wQ2Z)
-  , (rP2F, wP2F), (rF2P, wF2P)
-  , (rQ2F, wQ2F), (rF2Q, wF2Q)
-  , (rF2A, wF2A), (rA2F, wA2F)
-  , (rA2Z, wA2Z), (rZ2A, wZ2A)
-  , (rZ2E, wZ2E)
-  . let (crupt, _) = rd rZ2E in
-        (f crupt)
-      |> (a crupt)
-      |> (if crupt == CruptP then advWrapper () else p ())
-      |> (if crupt == CruptQ then advWrapper () else q ())
-      |> (z ())
-
-{-  nu z2p, p2z,
-    p2f, f2p,
-    f2a, a2f,
-    a2z, z2a,
-    a2p, p2a,
-    z2f, f2z,
-    z2exec, dump,
-    pump, outp .
-    |> (let (sid, crupt) = rd z2exec in
-         print (show sid) ;
-         |> (f sid crupt params) ;
-         |> (a sid crupt) ;
-         |> (partyWrapper sid crupt p params)) ;
-    z params-}
+         wr m -> ?a2z))-}

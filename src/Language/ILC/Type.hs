@@ -42,26 +42,33 @@ import Language.ILC.Syntax
 newtype TVar = TV String deriving (Eq, Ord, Show)
 
 -- | Types
-data Type = TVar TVar       -- ^ Type variable
-          | TCon String     -- ^ Type constructor
-          | TArr Type Type  -- ^ Arrow type
-          | TList Type      -- ^ List type
-          | TProd [Type]    -- ^ Product type
-          | TSet Type       -- ^ Set type
-          | TRef Type       -- ^ Reference type
-          | TThunk Type     -- ^ Thunk type
-          | TRdChan Type    -- ^ Read channel type
-          | TWrChan Type    -- ^ Write channel type
-          | TUsed           -- ^ Used linear type
+data Type = TVar TVar            -- ^ Type variable
+          | TCon String          -- ^ Type constructor
+          | TArr Type Type Mode  -- ^ Arrow type
+          | TList Type           -- ^ List type
+          | TProd [Type]         -- ^ Product type
+          | TSet Type            -- ^ Set type
+          | TRef Type            -- ^ Reference type
+          | TThunk Type          -- ^ Thunk type
+          | TRdChan Type         -- ^ Read channel type
+          | TWrChan Type         -- ^ Write channel type
+          | TUsed                -- ^ Used linear type
           deriving (Eq, Ord, Show)
 
 -- | Modes
 data Mode = V  -- ^ Value mode
           | W  -- ^ Write mode
           | R  -- ^ Read mode
-          deriving (Eq, Ord, Show)
+          | MVar String
+          deriving (Ord, Show)
 
-infixr `TArr`
+instance Eq Mode where
+  (==) (MVar _) _        = True
+  (==) _        (MVar _) = True
+  (==) V        V        = True
+  (==) W        W        = True
+  (==) R        R        = True
+  (==) _        _        = False
 
 -- | Type scheme
 data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)
@@ -107,8 +114,9 @@ instance Pretty TVar where
 instance Pretty Type where
   pretty (TVar a)    = pretty a
   pretty (TCon a)    = pretty a
-  pretty (TArr a b)  = maybeParens (isArrow a) (pretty a) <+> text "->"
-                                                          <+> pretty b
+  pretty (TArr a b m)  = maybeParens (isArrow a) (pretty a) <+> text "->@"
+                                                            <>  pretty m
+                                                            <+> pretty b
       where
         isArrow TArr {} = True
         isArrow _       = False
@@ -125,6 +133,7 @@ instance Pretty Mode where
   pretty V = text "V"
   pretty R = text "R"
   pretty W = text "W"
+  pretty (MVar x) = text x
 
 instance Pretty Scheme where
   pretty (Forall [] t) = pretty t

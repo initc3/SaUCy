@@ -1,0 +1,69 @@
+data Crupt = CruptP | CruptQ | CruptNone
+
+data SttCruptZ2A a b
+  = SttCruptZ2A_A2P a
+  | SttCruptZ2A_A2Q a
+  | SttCruptZ2A_A2F b
+
+data SttCruptA2Z a b
+  = SttCruptA2Z_P2A a
+  | SttCruptA2Z_Q2A a
+  | SttCruptA2Z_F2A b
+
+let advWrapper () = ()
+
+{-let dummyAdversary = lam sid, crupt .
+  |> (!(match (rd ?z2a) with
+       | b        => wr b -> ?a2f
+       | (pid, m) => wr (pid, m) -> ?a2p
+       end)) ;
+  |> (!(let m = rd ?f2a in
+         wr m -> ?a2z)) ;
+  |> (!(let m = rd ?p2a in
+         wr m -> ?a2z))-}
+
+let dummyAdversary crupt frZ toZ frF toF asP asQ =
+    loop frZ (lam x . match x with
+		    | SttCruptZ2A_A2P m => wr m -> asP
+		    | SttCruptZ2A_A2Q m => wr m -> toQ
+		    | SttCruptZ2A_A2F b => wr b -> toF)
+  |> loop frF (lam x . wr x -> toZ)
+  |> loop frP (lam x . wr x -> toZ)
+
+{-
+idealProtocol pid (z2p, p2z) (f2p, p2f) = do
+  fork $ forever $ do
+    m <- readChan z2p
+    --liftIO $ putStrLn $ "idealProtocol received from z2p " ++ pid
+    writeChan p2f m
+  fork $ forever $ do
+    m <- readChan f2p
+    --liftIO $ putStrLn $ "idealProtocol received from f2p " ++ pid
+    writeChan p2z m
+  return ()
+-}
+
+let idealProtocol frZ frF =
+    loop frZ (lam x . x)
+  |> loop frF (lam x . x)
+
+{- UC communication layout
+   Z --- P,Q
+   |  X  |
+   A --- F
+ -}
+
+let execUC z p q f a =
+  nu (rZ2P, wZ2P), (rP2Z, wP2Z)
+  , (rZ2Q, wZ2Q), (rQ2Z, wQ2Z)
+  , (rP2F, wP2F), (rF2P, wF2P)
+  , (rQ2F, wQ2F), (rF2Q, wF2Q)
+  , (rF2A, wF2A), (rA2F, wA2F)
+  , (rA2Z, wA2Z), (rZ2A, wZ2A)
+  , (rZ2E, wZ2E)
+  . let (crupt, _) = rd rZ2E in
+        f crupt
+      |> a crupt rZ2A wA2Z rF2A wA2F wP2F wQ2F
+      |> if crupt == CruptP then advWrapper () else p ()
+      |> if crupt == CruptQ then advWrapper () else q ()
+      |> z ()

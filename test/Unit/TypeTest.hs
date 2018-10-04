@@ -24,22 +24,22 @@ test_types = testGroup "Unit.TypeTest" $ map f examples
 examples =
     [ ( "compose"
       , "let compose f g = lam x . f (g x)"
-      , "∀ a b c . (a -> b) -> (c -> a) -> c -> b @ V")
+      , "∀ a b c . (a ->@g b) ->@V (c ->@e a) ->@V c ->@g b @ V")
     , ( "map"
       , "letrec map f lst = match lst with | [] => [] | x:xs => (f x) : (map f xs)"
-      , "∀ a b . (a -> b) -> [a] -> [b] @ V")
+      , "∀ a b . (a ->@i b) ->@k [a] ->@m [b] @ o")
     , ( "assoclist"
       , "let f x = match x with | (a,b):[] => a"
-      , "∀ a b . [(a,b)] -> a @ V")
+      , "∀ a b . [(a,b)] ->@V a @ V")
     , ( "typed chan"
       , "let f () = nu (rc, wc) . wr 1 -> wc |> let (_, rc) = rd rc in rc"
-      , "Unit -> Rd Int @ W")
+      , "Unit ->@W Rd Int @ V")
     , ( "simple read"
       , "let f () = nu c . rd c"
-      , "∀ a . Unit -> (a,Rd a) @ R")
+      , "∀ a . Unit ->@R (a,Rd a) @ V")
     , ( "simple write"
       , "let f () = nu c . wr 1 -> c'"
-      , "Unit -> Unit @ W")
+      , "Unit ->@W Unit @ V")
     , ( "ill-typed chan"
       , "let f () = nu (rc, wc) . wr 1 -> wc |> wr () -> wc |> rc"
       , "ill-typed")
@@ -54,7 +54,7 @@ examples =
       , "ill-typed")
     , ( "match branches good"
       , "let foo () = nu (r, w) . match 1 with | _ when print r ; true => 0 | _ => r ; 0"
-      , "Unit -> Int @ V")
+      , "Unit ->@V Int @ V")
     , ( "match branches bad"
       , "let foo () = nu (r, w) . match 1 with | _ when print r ; true => 0 | _ => 0"
       , "ill-typed")
