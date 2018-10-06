@@ -30,6 +30,7 @@ module Language.ILC.Type (
   , prettySchmode
   , prettySignature
   , prettyTyEnv
+  , TM(..)
   ) where
 
 import qualified Data.Map as Map
@@ -59,16 +60,10 @@ data Type = TVar TVar            -- ^ Type variable
 data Mode = V  -- ^ Value mode
           | W  -- ^ Write mode
           | R  -- ^ Read mode
-          | MVar String
-          deriving (Ord, Show)
-
-instance Eq Mode where
-  (==) (MVar _) _        = True
-  (==) _        (MVar _) = True
-  (==) V        V        = True
-  (==) W        W        = True
-  (==) R        R        = True
-  (==) _        _        = False
+          | MVar TVar
+          | MSeq Mode Mode
+          | MPar Mode Mode
+          deriving (Eq, Ord, Show)
 
 -- | Type scheme
 data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)
@@ -133,7 +128,9 @@ instance Pretty Mode where
   pretty V = text "V"
   pretty R = text "R"
   pretty W = text "W"
-  pretty (MVar x) = text x
+  pretty (MVar a) = pretty a
+  pretty (MSeq a b) = text "(" <> pretty a <> text ";" <> pretty b <> text ")"
+  pretty (MPar a b) = text "(" <> pretty a <> text "|" <> pretty b <> text ")"
 
 instance Pretty Scheme where
   pretty (Forall [] t) = pretty t
@@ -149,3 +146,11 @@ prettySignature (a, schmode) = text a <+> text "::"
 
 prettyTyEnv :: TypeEnv -> [String]
 prettyTyEnv (TypeEnv env) = map (show . prettySignature) $ Map.toList env
+
+data TM = T Type
+        | M Mode
+        deriving (Eq, Ord, Show)
+
+instance Pretty TM where
+  pretty (T t) = pretty t
+  pretty (M m) = pretty m

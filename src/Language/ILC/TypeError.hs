@@ -19,11 +19,11 @@ import Text.PrettyPrint.ANSI.Leijen
 import Language.ILC.Syntax
 import Language.ILC.Type
 
-data TypeError = UnificationFail Type Type
+data TypeError = UnificationFail TM TM
                | InfiniteType TVar Type
                | UnboundVariable Name
                | Ambiguous [(Type, Type)]
-               | UnificationMismatch [Type] [Type]
+               | UnificationMismatch [TM] [TM]
                | ParFail Mode Mode
                | SeqFail Mode Mode
                | ChoiceFail Mode Mode

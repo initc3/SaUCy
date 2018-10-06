@@ -1,0 +1,4 @@
+let foo () = nu (r1, w1), (r2, w2) .
+  (loop r1 (lam x . print x ; wr x -> w2))
+  |> (loop r2 (lam x . print x ; wr x -> w1))
+  |> (wr 1 -> w1)

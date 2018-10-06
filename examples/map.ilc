@@ -1,0 +1,4 @@
+letrec map f xs =
+  match xs with
+  | []   => []
+  | x:xs => (f x) : (map f xs)
