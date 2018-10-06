@@ -104,13 +104,13 @@
 %
 \Infer{lam}
 {\Delta ; \Gamma, x:A |- e : B |> m}
-{\Delta ; \Gamma |- \lam{x} e : A -> B |> m}
+{\Delta ; \Gamma |- \lam{x} e : A \xrightarrow{m} B}
 %
 \and
 %
 \Infer{app}
 {\Delta_1 ; \Gamma |- e_2 : A\\\\
-\Delta_2 ; \Gamma |- e_1 : A -> B |> m}
+\Delta_2 ; \Gamma |- e_1 : A \xrightarrow{m} B}
 {\Delta_1, \Delta_2 ; \Gamma |- e_1 e_2 : B |> m}
 %
 \and
