@@ -31,6 +31,7 @@ module Language.ILC.Type (
   , prettySignature
   , prettyTyEnv
   , TM(..)
+  , msimplify
   ) where
 
 import qualified Data.Map as Map
@@ -61,9 +62,34 @@ data Mode = V  -- ^ Value mode
           | W  -- ^ Write mode
           | R  -- ^ Read mode
           | MVar TVar
+          | MVarVR TVar
           | MSeq Mode Mode
           | MPar Mode Mode
           deriving (Eq, Ord, Show)
+
+msimplify :: Mode -> Maybe Mode
+msimplify (MSeq V m)   = msimplify m
+msimplify (MSeq W V)   = Just W
+msimplify (MSeq R m)   = Just R <* msimplify m
+msimplify (MSeq W R)   = Just W
+msimplify (MSeq W W)   = Nothing
+--msimplify (MSeq (MVar a) (MVar b)) = Just $ MSeq (MVarVR a) (MVarVR b)
+msimplify (MSeq m1 m2) = MSeq <$> msimplify m1 <*> msimplify m2
+msimplify (MPar W V)   = Just W
+msimplify (MPar V W)   = Just W
+msimplify (MPar W R)   = Just W
+msimplify (MPar R W)   = Just W
+msimplify (MPar R R)   = Just R
+msimplify (MPar V R)   = Just R
+msimplify (MPar R V)   = Just V
+msimplify (MPar W W)   = Nothing
+--msimplify (MPar (MVar a) (MVar b)) = Just $ MPar (MVarVR a) (MVarVR b)
+msimplify (MPar m1 m2) = MPar <$> msimplify m1 <*> msimplify m2
+msimplify V            = Just V
+msimplify W            = Just W
+msimplify R            = Just R
+msimplify m@(MVar a)   = Just m
+msimplify m@(MVarVR a) = Just m
 
 -- | Type scheme
 data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)
@@ -109,6 +135,11 @@ instance Pretty TVar where
 instance Pretty Type where
   pretty (TVar a)    = pretty a
   pretty (TCon a)    = pretty a
+  pretty (TArr a b V)  = maybeParens (isArrow a) (pretty a) <+> text "->"
+                                                            <+> pretty b
+      where
+        isArrow TArr {} = True
+        isArrow _       = False
   pretty (TArr a b m)  = maybeParens (isArrow a) (pretty a) <+> text "->@"
                                                             <>  pretty m
                                                             <+> pretty b
@@ -129,6 +160,7 @@ instance Pretty Mode where
   pretty R = text "R"
   pretty W = text "W"
   pretty (MVar a) = pretty a
+  pretty (MVarVR a) = pretty a <> text "∈{V,R}"
   pretty (MSeq a b) = text "(" <> pretty a <> text ";" <> pretty b <> text ")"
   pretty (MPar a b) = text "(" <> pretty a <> text "|" <> pretty b <> text ")"
 

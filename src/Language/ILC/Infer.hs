@@ -58,6 +58,20 @@ data Constraint = TypeConstraint Type Type
 
 type Unifier = (Subst, [Constraint])
 
+simplify :: [Constraint] -> [Constraint]
+simplify cs = ts ++ ms'
+  where
+    (ts, ms) = partition (\case {TypeConstraint{} -> True ; _ -> False}) cs
+    ms'      = simpfull ms
+    
+simpall :: [Constraint] -> Maybe [Constraint]
+simpall ms = sequence $ map (\(ModeConstraint m1 m2) -> ModeConstraint <$> msimplify m1 <*> msimplify m2) ms
+
+simpfull ms = if ms == ms' then ms else simpfull ms'
+  where ms' = case simpall ms of
+                Nothing -> error "mode error"
+                Just x  -> x
+      
 -- | Constraint solver monad
 type Solve a = ExceptT TypeError Identity a
 
@@ -72,7 +86,7 @@ instance Substitutable Type where
   apply _ (TCon a) = TCon a
   apply (Subst s) t@(TVar a) = case Map.findWithDefault (T t) a s of
     T ty -> ty
-    M _ -> error "Expected type"
+    M _ -> t
   apply s (TArr t1 t2 m) = TArr (apply s t1) (apply s t2) (apply s m)
   apply s (TList t) = TList (apply s t)
   apply s (TProd ts) = TProd (apply s ts)
@@ -98,11 +112,15 @@ instance Substitutable Type where
 instance Substitutable Mode where
   apply (Subst s) m@(MVar a) = case Map.findWithDefault (M m) a s of
     M mo -> mo
-    T _  -> error "Expected mode"
+    T _  -> m
+  apply (Subst s) m@(MVarVR a) = case Map.findWithDefault (M m) a s of
+    M mo -> mo
+    T _  -> m
   apply s (MSeq m1 m2) = MSeq (apply s m1) (apply s m2)
   apply _         m          = m
 
   ftv (MVar a) = Set.singleton a
+  ftv (MVarVR a) = Set.singleton a
   ftv (MSeq m1 m2) = ftv m1 `Set.union` ftv m2
   ftv m        = Set.empty
 
@@ -850,15 +868,7 @@ compose :: Subst -> Subst -> Subst
 
 runSolve :: [Constraint] -> Either TypeError Subst
 runSolve cs = runIdentity $ runExceptT $ solver st
-  where st = (emptySubst, cs)
-
-{-unifyMany :: [Type] -> [Type] -> Solve Subst
-unifyMany [] []  = return emptySubst
-unifyMany (t1 : ts1) (t2 : ts2) =
-  do su1 <- unifies t1 t2
-     su2 <- unifyMany (apply su1 ts1) (apply su1 ts2)
-     return (su2 `compose` su1)
-unifyMany t1 t2 = throwError $ UnificationMismatch t1 t2-}
+  where st = (emptySubst, simplify cs)
 
 unifyMany :: [TM] -> [TM] -> Solve Subst
 unifyMany [] []  = return emptySubst
@@ -883,7 +893,10 @@ unifies (T (TWrChan t1)) (T (TWrChan t2)) = unifies (T t1) (T t2)
 
 unifies (M (MVar v)) (M t) = v `bind` (M t)
 unifies (M t) (M (MVar v)) = v `bind` (M t)
+unifies (M (MVarVR v)) (M t) = v `bind` (M t)
+unifies (M t) (M (MVarVR v)) = v `bind` (M t)
 unifies (M (MSeq m1 m2)) (M (MSeq m3 m4)) = unifyMany [M m1, M m2] [M m3, M m4]
+unifies (M (MPar m1 m2)) (M (MPar m3 m4)) = unifyMany [M m1, M m2] [M m3, M m4]
 unifies t1 t2 = throwError $ UnificationFail t1 t2
 
 solver :: Unifier -> Solve Subst
@@ -896,18 +909,13 @@ solver (su, cs) =
     (ModeConstraint m1 m2 : cs') -> do
       su1 <- unifies (M m1) (M m2)
       solver (su1 `compose` su, apply su1 cs')
-
-{-bind :: TVar -> TM -> Solve Subst
-bind a t | t == (T (TVar a))    = return emptySubst
-         | occursCheck a (T t) = throwError $ InfiniteType a t
-         | t == (M (MVar a)) = return emptySubst
-         | otherwise       = return (Subst $ Map.singleton a t)-}
          
 bind :: TVar -> TM -> Solve Subst
 bind a (T t) | t == TVar a     = return emptySubst
              | occursCheck a t = throwError $ InfiniteType a t
              | otherwise       = return (Subst $ Map.singleton a (T t))
 bind a (M t) | t == MVar a     = return emptySubst
+             | t == MVarVR a   = return emptySubst
              | otherwise       = return (Subst $ Map.singleton a (M t))
 
 occursCheck :: Substitutable a => TVar -> a -> Bool

@@ -1,1 +1,3 @@
-let seq f x = f x ; f x
+let seqsame f x = f x ; f x
+
+let seqdiff f g x = f x ; g x
