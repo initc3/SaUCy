@@ -477,10 +477,9 @@ infer expr = case expr of
                       es
     tcmes <- mapM infer es
     let (tys, cs, ms, _) = concatTCMEs tcmes
-    case sameModes (V:ms) "tuple" of
-      Left err -> throwError err
-      Right m -> do
-        return (TProd tys, cs, m, _Γn)
+        moConstraints = map (ModeConstraint V) ms
+        constraints = cs ++ moConstraints
+    return (TProd tys, constraints, V, _Γn)
 
   EList [] -> do
     _Γ <- ask
@@ -558,14 +557,14 @@ infer expr = case expr of
     (tyA1, c1, m1, _Γ2) <- infer e1
     (tyA2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
     (tyA3, c3, m2', _Γ3') <- local (const _Γ2) (infer e3)
-    -- TODO: Mode constraints
+    -- TODO
     _ <- checkType _Γ3 _Γ3' "Branches have different outgoing typing contexts."
-    _ <- checkType m2  m2'  "Branches have different modes."
-    when (m2 /= m2') (error "modes")
     m3 <- fresh (MVar . TV)
     let tyConstraints = c1 ++ c2 ++ c3 ++ [ TypeConstraint tyA1 tyBool
                                         , TypeConstraint tyA2 tyA3 ]
-        moConstraints = [ModeConstraint m1 V, ModeConstraint (MSeq m1 m2) m3]
+        moConstraints = [ ModeConstraint m1 V
+                        , ModeConstraint (MSeq m1 m2) m3
+                        , ModeConstraint m2 m2' ]
         constraints = tyConstraints ++ moConstraints
     return (tyA2, constraints, m3, _Γ3)
 
@@ -597,10 +596,10 @@ infer expr = case expr of
     _ <- case sameThings envs  of
              Left err -> throwError err
              Right _Γ  -> return _Γ
-    case sameModes ms "match" of
-      Left err -> throwError err
-      Right m -> do
-        return (ty, cs ++ cs', m, head _Γs)
+    let tyConstraints = cs ++ cs'
+        moConstraints = map (ModeConstraint V) ms
+        constraints = tyConstraints ++ moConstraints
+    return (ty, constraints, V, head _Γs)
 
   ELam (PVar x) e -> do
     tyV <- fresh (TVar . TV)

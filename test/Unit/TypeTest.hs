@@ -21,22 +21,20 @@ test_types = testGroup "Unit.TypeTest" $ map f examples
                                      Left err -> "ill-typed"
                                      Right scm -> show $ prettySchmode scm
 
--- TODO: Fix tests later
 examples :: [(String, String, String)]
-examples = []
-{-examples =
+examples =
     [ ( "compose"
       , "let compose f g = lam x . f (g x)"
-      , "∀ a b c . (a ->@g b) ->@V (c ->@e a) ->@V c ->@g b @ V")
+      , "∀ a b c d . (a ->@c b) -> (d -> a) -> d ->@c b @ V")
     , ( "map"
       , "letrec map f lst = match lst with | [] => [] | x:xs => (f x) : (map f xs)"
-      , "∀ a b . (a ->@i b) ->@k [a] ->@m [b] @ o")
+      , "∀ a b . (a -> b) -> [a] -> [b] @ V")
     , ( "assoclist"
       , "let f x = match x with | (a,b):[] => a"
-      , "∀ a b . [(a,b)] ->@V a @ V")
-    , ( "typed chan"
+      , "∀ a b . [(a,b)] -> a @ V")
+    {-, ( "typed chan"
       , "let f () = nu (rc, wc) . wr 1 -> wc |> let (_, rc) = rd rc in rc"
-      , "Unit ->@W Rd Int @ V")
+      , "Unit ->@W Rd Int @ V")-}
     , ( "simple read"
       , "let f () = nu c . rd c"
       , "∀ a . Unit ->@R (a,Rd a) @ V")
@@ -46,19 +44,19 @@ examples = []
     , ( "ill-typed chan"
       , "let f () = nu (rc, wc) . wr 1 -> wc |> wr () -> wc |> rc"
       , "ill-typed")
-    , ( "parallel write"
+    {-, ( "parallel write"
       , "let f () = nu (rc, wc) . wr 1 -> wc |> wr 1 -> wc"
       , "ill-typed")
     , ( "sequential write"
       , "let f () = nu (rc, wc) . wr 1 -> wc ; wr 1 -> wc"
-      , "ill-typed")
+      , "ill-typed")-}
     , ( "diff branch modes"
       , "nu (rc, wc) . match 1 with | _ => wr 1 -> wc | _ => ()"
       , "ill-typed")
     , ( "match branches good"
       , "let foo () = nu (r, w) . match 1 with | _ when print r ; true => 0 | _ => r ; 0"
-      , "Unit ->@V Int @ V")
+      , "Unit -> Int @ V")
     , ( "match branches bad"
       , "let foo () = nu (r, w) . match 1 with | _ when print r ; true => 0 | _ => 0"
       , "ill-typed")
-    ]-}
+    ]

@@ -1,5 +1,4 @@
 {-# LANGUAGE TemplateHaskell #-}
-
 ------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Parser
