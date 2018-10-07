@@ -16,6 +16,7 @@ module Language.ILC.TypeError (
 
 import Text.PrettyPrint.ANSI.Leijen
 
+import Language.ILC.Mode
 import Language.ILC.Syntax
 import Language.ILC.Type
 

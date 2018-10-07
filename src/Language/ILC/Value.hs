@@ -29,7 +29,6 @@ import Language.ILC.Syntax
 data Value = VInt Integer                        -- ^ Integer value
            | VBool Bool                          -- ^ Boolean value
            | VString String                      -- ^ String value
-           | VTag String                         -- ^ Tag value
            | VList [Value]                       -- ^ List value
            | VSet [Value]                        -- ^ Set value
            | VTuple [Value]                      -- ^ Tuple value
@@ -53,7 +52,6 @@ instance Pretty Value where
   pretty (VBool True)  = text "true"
   pretty (VBool False) = text "false"
   pretty (VString s)   = text s
-  pretty (VTag t)      = text t
   pretty (VList vs)    = prettyList vs
   pretty (VTuple vs)   = prettyTuple $ map pretty vs
   pretty (VSet vs)     = prettySet $ map pretty vs

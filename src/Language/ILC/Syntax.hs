@@ -64,7 +64,6 @@ data Expr = EVar Name                            -- ^ Variable
 data Lit = LInt Integer    -- ^ Integer literal
          | LBool Bool      -- ^ Boolean literal
          | LString String  -- ^ String literal
-         | LTag String     -- ^ Message tag literal
          | LUnit           -- ^ Unit literal
          deriving (Eq, Show)
 
@@ -95,7 +94,6 @@ data Pattern = PVar Name              -- ^ Variable pattern
              | PInt Integer           -- ^ Integer literal pattern
              | PBool Bool             -- ^ Boolean literal pattern
              | PString String         -- ^ String literal pattern
-             | PTag String            -- ^ Tag literal pattern
              | PUnit                  -- ^ Unit literal pattern
              | PWildcard              -- ^ Wildcard pattern
              | PTuple [Pattern]       -- ^ Tuple pattern
@@ -111,7 +109,6 @@ instance Pretty Pattern where
   pretty (PBool True)  = text "true"
   pretty (PBool False) = text "false"
   pretty (PString s)   = text s
-  pretty (PTag t)      = text t
   pretty PUnit         = text "()"
   pretty PWildcard     = text "_"
   pretty (PTuple ps)   = prettyTuple $ map pretty ps

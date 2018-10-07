@@ -55,7 +55,6 @@ match (PVar x)     v                          = tell $ fromList [(x, v)]
 match (PInt n)     (VInt n')    | n == n'     = return ()
 match (PBool b)    (VBool b')   | b == b'     = return ()
 match (PString s)  (VString s') | s == s'     = return ()
-match (PTag t)     (VTag t')    | t == t'     = return ()
 match (PTuple ps)  (VTuple vs)  | eqlen ps vs = zipWithM_ match ps vs
 match (PList ps)   (VList vs)   | eqlen ps vs = zipWithM_ match ps vs
 match (PCons p ps) (VList (v:vs))             = match p v >> match ps (VList vs)

@@ -46,9 +46,6 @@ eBool = eTrue <|> eFalse
 eString :: Parser Expr
 eString = mklexer (ELit . LString) stringLit  
 
-eTag :: Parser Expr
-eTag = mklexer (ELit . LTag) $ char '\'' >> identifier
-
 eUnit :: Parser Expr
 eUnit = reserved "()" >> return (ELit LUnit)
 
@@ -256,7 +253,6 @@ atomExpr = eVar
        <|> eInt
        <|> eBool
        <|> eString
-       <|> eTag
        <|> eList
        <|> eSett
        <|> try eUnit
@@ -295,9 +291,6 @@ pBool = pTrue <|> pFalse
 
 pString :: Parser Pattern
 pString = mklexer PString stringLit
-
-pTag :: Parser Pattern
-pTag = mklexer PTag $ char '\'' >> identifier
 
 pUnit :: Parser Pattern
 pUnit = reserved "()" >> return PUnit
@@ -338,7 +331,6 @@ pat' = pVar
   <|> pInt
   <|> pBool
   <|> pString
-  <|> pTag
   <|> try pUnit
   <|> pWildcard
   <|> try pTuple

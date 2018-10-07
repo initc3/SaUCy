@@ -6,19 +6,16 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Types and modes.
+-- Syntax of types.
 --
 --------------------------------------------------------------------------------
 
 module Language.ILC.Type (
-    TVar(..)
-  , Type(..)
-  , Mode(..)
+    Type(..)
   , Scheme(..)
   , tyInt
   , tyBool
   , tyString
-  , tyTag
   , tyUnit
   , tyMsg
   , TypeEnv(..)
@@ -31,17 +28,14 @@ module Language.ILC.Type (
   , prettySignature
   , prettyTyEnv
   , TM(..)
-  , msimplify
   ) where
 
 import qualified Data.Map as Map
-import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))    
+import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
+import Language.ILC.Mode
 import Language.ILC.Pretty
 import Language.ILC.Syntax
-
--- | Type variable
-newtype TVar = TV String deriving (Eq, Ord, Show)
 
 -- | Types
 data Type = TVar TVar            -- ^ Type variable
@@ -57,49 +51,14 @@ data Type = TVar TVar            -- ^ Type variable
           | TUsed                -- ^ Used linear type
           deriving (Eq, Ord, Show)
 
--- | Modes
-data Mode = V  -- ^ Value mode
-          | W  -- ^ Write mode
-          | R  -- ^ Read mode
-          | MVar TVar
-          | MVarVR TVar
-          | MSeq Mode Mode
-          | MPar Mode Mode
-          deriving (Eq, Ord, Show)
-
-msimplify :: Mode -> Maybe Mode
-msimplify (MSeq V m)   = msimplify m
-msimplify (MSeq W V)   = Just W
-msimplify (MSeq R m)   = Just R <* msimplify m
-msimplify (MSeq W R)   = Just W
-msimplify (MSeq W W)   = Nothing
---msimplify (MSeq (MVar a) (MVar b)) = Just $ MSeq (MVarVR a) (MVarVR b)
-msimplify (MSeq m1 m2) = MSeq <$> msimplify m1 <*> msimplify m2
-msimplify (MPar W V)   = Just W
-msimplify (MPar V W)   = Just W
-msimplify (MPar W R)   = Just W
-msimplify (MPar R W)   = Just W
-msimplify (MPar R R)   = Just R
-msimplify (MPar V R)   = Just R
-msimplify (MPar R V)   = Just V
-msimplify (MPar W W)   = Nothing
---msimplify (MPar (MVar a) (MVar b)) = Just $ MPar (MVarVR a) (MVarVR b)
-msimplify (MPar m1 m2) = MPar <$> msimplify m1 <*> msimplify m2
-msimplify V            = Just V
-msimplify W            = Just W
-msimplify R            = Just R
-msimplify m@(MVar a)   = Just m
-msimplify m@(MVarVR a) = Just m
-
 -- | Type scheme
 data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)
 
 -- | Primitive types
-tyInt, tyBool, tyString, tyTag, tyUnit, tyMsg :: Type
+tyInt, tyBool, tyString, tyUnit, tyMsg :: Type
 tyInt    = TCon "Int"
 tyBool   = TCon "Bool"
 tyString = TCon "String"
-tyTag    = TCon "Tag"
 tyUnit   = TCon "Unit"
 tyMsg    = TCon "Msg"
 
@@ -127,10 +86,8 @@ instance Monoid TypeEnv where
   mappend = mergeTyEnv
     
 --------------------------------------------------------------------------------
--- Pretty printing
-
-instance Pretty TVar where
-  pretty (TV x) = text x
+-- | Pretty printing
+--------------------------------------------------------------------------------
 
 instance Pretty Type where
   pretty (TVar a)    = pretty a
@@ -154,15 +111,6 @@ instance Pretty Type where
   pretty (TRdChan a) = text "Rd" <+> pretty a
   pretty (TWrChan a) = text "Wr" <+> pretty a
   pretty TUsed = text "Used"
-
-instance Pretty Mode where
-  pretty V = text "V"
-  pretty R = text "R"
-  pretty W = text "W"
-  pretty (MVar a) = pretty a
-  pretty (MVarVR a) = pretty a <> text "∈{V,R}"
-  pretty (MSeq a b) = text "(" <> pretty a <> text ";" <> pretty b <> text ")"
-  pretty (MPar a b) = text "(" <> pretty a <> text "|" <> pretty b <> text ")"
 
 instance Pretty Scheme where
   pretty (Forall [] t) = pretty t

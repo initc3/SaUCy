@@ -55,7 +55,6 @@ evalPut env m expr = case expr of
   ELit (LInt n)    -> putMVar m $ VInt n
   ELit (LBool b)   -> putMVar m $ VBool b
   ELit (LString s) -> putMVar m $ VString s
-  ELit (LTag t)    -> putMVar m $ VTag t
   ELit LUnit       -> putMVar m VUnit
   
   ETuple es -> do
