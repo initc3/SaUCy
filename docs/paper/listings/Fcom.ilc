@@ -1,4 +1,4 @@
-fCom :: Rd Msg $->$ Wr Msg $->$ Unit @ R
+fCom :: Rd Msg $->$ Wr Msg $\yrightarrow{\textsf{R}}$ Unit
 let fCom frA toB =
   let (Commit b, frA) = rd frA in
     wr Receipt $->$ toB ;

@@ -6,18 +6,18 @@
 
   \judgbox{m || n => p}{~~The parallel composition of modes $m$ and $n$ is mode~$p$.}
   \begin{mathpar}
-  \Infer{sym}{m || n => p}{n || m => p}
-  \and \Infer{wv}{ }{\Wm || \Vm => \Wm}
+  \Infer{wv}{ }{\Wm || \Vm => \Wm}
   \and \Infer{wr}{ }{\Wm || \Rm => \Wm}
-  \and \Infer{rr}{ }{\Rm || \Rm => \Rm}
+  \and \Infer{r$*$}{ }{\Rm || n => n}
+  \and \Infer{v$*$}{ }{\Vm || n => n}
   \end{mathpar}
   \\[2mm]
   \judgbox{m ;; n => p}{~~The sequential composition of modes $m$ and $n$ is mode~$p$.}
   \begin{mathpar}
-  \and \Infer{v$\ast$}{ }{\Vm ;; n => n}
-  \and \Infer{wv}{ }{\Wm ;; \Vm => \Wm}
-  \and \Infer{r$\ast$}{ }{\Rm ;; n => \Rm}
+  \Infer{wv}{ }{\Wm ;; \Vm => \Wm}
   \and \Infer{wr}{ }{\Wm ;; \Rm => \Wm}
+  \and \Infer{r$\ast$}{ }{\Rm ;; n => \Rm}
+  \and \Infer{v$\ast$}{ }{\Vm ;; n => n}
   \end{mathpar}
   \\[2mm]
   \raggedright
