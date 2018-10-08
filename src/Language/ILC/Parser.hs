@@ -22,6 +22,7 @@ import qualified Text.Parsec.Expr as Ex
 import Text.Parsec.String (Parser)
 
 import Language.ILC.Decl
+import Language.ILC.Mode
 import Language.ILC.Lexer
 import Language.ILC.Type
 import Language.ILC.Syntax
@@ -370,6 +371,7 @@ dDeclCon :: Parser TopDecl
 dDeclCon = do
   reserved "data"
   tyCon <- constructor
+  _ <- many identifier
   reservedOp "="
   valCons <- sepBy1 parseValCon (reservedOp "|")
   return $ TyCon tyCon valCons
@@ -377,21 +379,58 @@ dDeclCon = do
 parseValCon :: Parser ValCon
 parseValCon = do
   valCon <- constructor
-  params <- sepBy parseTy whitespace
+  params <- sepBy ty whitespace
   return (valCon, params)
 
 decl :: Parser TopDecl
 decl = dDeclCon <|> try dExpr <|> try dDeclLetRec <|> dDeclFun
 
 -- | Parse types
+tInt, tBool, tString, tUnit, tMsg :: Parser Type  
+tInt = mklexer (const tyInt) $ reserved "Int"
+tBool = mklexer (const tyBool) $ reserved "Bool"
+tString = mklexer (const tyString) $ reserved "String"
+tUnit = mklexer (const tyUnit) $ reserved "Unit"
+tMsg = mklexer (const tyMsg) $ reserved "Msg"
 
-parseTyInt, parseTyBool, parseTyString :: Parser Type  
-parseTyInt = mklexer (const tyInt) $ reserved "Int"
-parseTyBool = mklexer (const tyBool) $ reserved "Bool"
-parseTyString = mklexer (const tyString) $ reserved "String"
+tPrim :: Parser Type
+tPrim = tInt <|> tBool <|> tString <|> tUnit <|> tMsg
 
-parseTy :: Parser Type
-parseTy = parseTyInt <|> parseTyBool <|> parseTyString
+tVar = mklexer (TVar . TV) identifier
+tList = mklexer TList $ brackets $ ty
+tProd = mklexer TProd $ parens $ commaSep2 ty
+tSet = mklexer TSet $ braces $ ty
+tRef = mklexer TRef $ reserved "Ref" >> ty'
+tRd = mklexer TRdChan $ reserved "Rd" >> ty'
+tWr = mklexer TWrChan $ reserved "Wr" >> ty'
+
+tArrow = do
+  t1 <- ty'
+  reserved "->"
+  t2 <- ty
+  m <- option V $ reservedOp "@" >> mode
+  return $ TArr t1 t2 m
+  
+ty = try tArrow <|> ty'
+
+ty' = tPrim
+  <|> tVar
+  <|> tList
+  <|> try tProd
+  <|> tSet
+  <|> tRef
+  <|> tRd
+  <|> tWr
+  <|> parens tArrow
+
+-- | Parse modes
+mV, mW, mR :: Parser Mode
+mV = mklexer (const V) (reserved "V")
+mW = mklexer (const W) (reserved "W")
+mR = mklexer (const R) (reserved "R")
+
+mode :: Parser Mode
+mode = mV <|> mW <|> mR
 
 -- | Toplevel parser
 

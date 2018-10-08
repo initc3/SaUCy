@@ -13,7 +13,7 @@
 module Language.ILC.Mode (
     TVar(..)
   , Mode(..)
-  , msimplify
+  , simpmo
   ) where
 
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
@@ -34,27 +34,27 @@ data Mode = V  -- ^ Value mode
           deriving (Eq, Ord, Show)
 
 -- | Mode composition
-msimplify :: Mode -> Maybe Mode
-msimplify V            = Just V
-msimplify W            = Just W
-msimplify R            = Just R
-msimplify m@(MVar a)   = Just m
-msimplify m@(MVarVR a) = Just m
-msimplify (MSeq V  m ) = msimplify m
-msimplify (MSeq W  V ) = Just W
-msimplify (MSeq R  m ) = Just R <* msimplify m
-msimplify (MSeq W  R ) = Just W
-msimplify (MSeq W  W ) = Nothing
-msimplify (MSeq m1 m2) = MSeq <$> msimplify m1 <*> msimplify m2
-msimplify (MPar W  V ) = Just W
-msimplify (MPar V  W ) = Just W
-msimplify (MPar W  R ) = Just W
-msimplify (MPar R  W ) = Just W
-msimplify (MPar R  R ) = Just R
-msimplify (MPar V  R ) = Just R
-msimplify (MPar R  V ) = Just V
-msimplify (MPar W  W ) = Nothing
-msimplify (MPar m1 m2) = MPar <$> msimplify m1 <*> msimplify m2
+simpmo :: Mode -> Maybe Mode
+simpmo V            = Just V
+simpmo W            = Just W
+simpmo R            = Just R
+simpmo m@(MVar a)   = Just m
+simpmo m@(MVarVR a) = Just m
+simpmo (MSeq V  m ) = simpmo m
+simpmo (MSeq W  V ) = Just W
+simpmo (MSeq R  m ) = Just R <* simpmo m
+simpmo (MSeq W  R ) = Just W
+simpmo (MSeq W  W ) = Nothing
+simpmo (MSeq m1 m2) = MSeq <$> simpmo m1 <*> simpmo m2
+simpmo (MPar W  V ) = Just W
+simpmo (MPar V  W ) = Just W
+simpmo (MPar W  R ) = Just W
+simpmo (MPar R  W ) = Just W
+simpmo (MPar R  R ) = Just R
+simpmo (MPar V  R ) = Just R
+simpmo (MPar R  V ) = Just V
+simpmo (MPar W  W ) = Nothing
+simpmo (MPar m1 m2) = MPar <$> simpmo m1 <*> simpmo m2
 
 --------------------------------------------------------------------------------
 -- | Pretty printing

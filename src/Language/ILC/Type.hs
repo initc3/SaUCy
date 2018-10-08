@@ -12,6 +12,8 @@
 
 module Language.ILC.Type (
     Type(..)
+  , simpty
+  , simptyfull
   , Scheme(..)
   , tyInt
   , tyBool
@@ -50,6 +52,24 @@ data Type = TVar TVar            -- ^ Type variable
           | TWrChan Type         -- ^ Write channel type
           | TUsed                -- ^ Used linear type
           deriving (Eq, Ord, Show)
+
+simpty :: Type -> Maybe Type
+simpty t@(TVar _) = Just t
+simpty t@(TCon _) = Just t
+simpty (TArr t1 t2 m) = TArr <$> simpty t1 <*> simpty t2 <*> simpmo m
+simpty (TList t) = TList <$> simpty t
+simpty (TProd ts) = TProd <$> sequence (map simpty ts)
+simpty (TSet t) = TSet <$> simpty t
+simpty (TRef t) = TRef <$> simpty t
+simpty (TThunk t) = TThunk <$> simpty t
+simpty (TRdChan t) = TRdChan <$> simpty t
+simpty (TWrChan t) = TWrChan <$> simpty t
+simpty TUsed = Just TUsed
+
+simptyfull ty = if ty == ty' then ty else simptyfull ty'
+  where ty' = case simpty ty of
+                Nothing -> error "mode error"
+                Just x -> x
 
 -- | Type scheme
 data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)

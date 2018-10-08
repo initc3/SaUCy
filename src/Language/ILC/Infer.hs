@@ -1,5 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TupleSections              #-}
@@ -58,20 +58,6 @@ data Constraint = TypeConstraint Type Type
                 deriving (Eq, Show)
 
 type Unifier = (Subst, [Constraint])
-
-simplify :: [Constraint] -> [Constraint]
-simplify cs = ts ++ ms'
-  where
-    (ts, ms) = partition (\case {TypeConstraint{} -> True ; _ -> False}) cs
-    ms'      = simpfull ms
-    
-simpall :: [Constraint] -> Maybe [Constraint]
-simpall ms = sequence $ map (\(ModeConstraint m1 m2) -> ModeConstraint <$> msimplify m1 <*> msimplify m2) ms
-
-simpfull ms = if ms == ms' then ms else simpfull ms'
-  where ms' = case simpall ms of
-                Nothing -> error "mode error"
-                Just x  -> x
       
 -- | Constraint solver monad
 type Solve a = ExceptT TypeError Identity a
@@ -118,11 +104,13 @@ instance Substitutable Mode where
     M mo -> mo
     T _  -> m
   apply s (MSeq m1 m2) = MSeq (apply s m1) (apply s m2)
+  apply s (MPar m1 m2) = MPar (apply s m1) (apply s m2)
   apply _         m          = m
 
   ftv (MVar a) = Set.singleton a
   ftv (MVarVR a) = Set.singleton a
   ftv (MSeq m1 m2) = ftv m1 `Set.union` ftv m2
+  ftv (MPar m1 m2) = ftv m1 `Set.union` ftv m2
   ftv m        = Set.empty
 
 instance Substitutable TM where
@@ -170,7 +158,7 @@ inferExpr env ex = case runInfer env (infer ex) of
   Left err       -> Left err
   Right (ty, cs, m, _) -> case runSolve cs of
     Left err    -> Left err
-    Right subst -> Right (closeOver $ apply subst ty, m)
+    Right subst -> Right (closeOver $ simptyfull $ apply subst ty, m)
 
 -- | Return internal constraints used in solving for type of expression
 constraintsExpr :: TypeEnv -> Expr -> Either TypeError ([Constraint], Subst, Type, Scheme)
@@ -434,9 +422,6 @@ inferBranch expr (pat, guard, branch) = do
           tyConstraints = TypeConstraint t2 tyBool :c1 ++ c2 ++ c3
           constraints = moConstraints : tyConstraints
       return (t3, constraints, m, _Γ4')
-
-sameModes :: [Mode] -> String -> Either TypeError Mode
-sameModes (m:ms) s = if (all ((==)m) ms) then Right m else Left $ ModeFail s
 
 sameThings :: Eq a => [a] -> Either TypeError a
 sameThings (m:ms) = if (all ((==)m) ms) then Right m else Left (TypeFail "Not same things.")
@@ -766,6 +751,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
 
     fvm (MVar a) = [a]
     fvm (MSeq m1 m2) = fvm m1 ++ fvm m2
+    fvm (MPar m1 m2) = fvm m1 ++ fvm m2
     fvm m        = []
     
     normtype (TVar a)   =
@@ -789,6 +775,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
             Just x -> MVar x
             Nothing -> error "mode variable not in signature"
     normmode (MSeq m1 m2) = MSeq (normmode m1) (normmode m2)
+    normmode (MPar m1 m2) = MPar (normmode m1) (normmode m2)
     normmode m        = m
     
 -------------------------------------------------------------------------------
@@ -803,7 +790,7 @@ compose :: Subst -> Subst -> Subst
 
 runSolve :: [Constraint] -> Either TypeError Subst
 runSolve cs = runIdentity $ runExceptT $ solver st
-  where st = (emptySubst, simplify cs)
+  where st = (emptySubst, cs)
 
 unifyMany :: [TM] -> [TM] -> Solve Subst
 unifyMany [] []  = return emptySubst
@@ -826,13 +813,6 @@ unifies (T (TThunk t1)) (T (TThunk t2)) = unifies (T t1) (T t2)
 unifies (T (TRdChan t1)) (T (TRdChan t2)) = unifies (T t1) (T t2)
 unifies (T (TWrChan t1)) (T (TWrChan t2)) = unifies (T t1) (T t2)
 
-{-unifies (M (MVar v)) (M (MVar v')) | v == v' = return emptySubst
-unifies (M (MVar v)) (M (MVarVR v')) | v == v' = return emptySubst
-unifies (M (MVarVR v)) (M (MVar v')) | v == v' = return emptySubst
-unifies (M (MVar v)) (M t) = return (Subst $ Map.singleton v (M t))
-unifies (M t) (M (MVar v)) = return (Subst $ Map.singleton v (M t))
-unifies (M (MVarVR v)) (M t) = return (Subst $ Map.singleton v (M t))
-unifies (M t) (M (MVarVR v)) = return (Subst $ Map.singleton v (M t))-}
 unifies (M (MVar v)) (M t) = v `bind` (M t)
 unifies (M t) (M (MVar v)) = v `bind` (M t)
 unifies (M (MVarVR v)) (M t) = v `bind` (M t)
