@@ -57,7 +57,6 @@ letrec foldr1 f lst =
   | [] => error "empty list"
   | x:xs => foldr f xs x
   
-{- TODO: scanr, scanr1 -}
 
 letrec all f lst =
     match lst with
@@ -83,14 +82,14 @@ letrec take n lst =
     | x:xs when n == 1 => [x]
     | x:xs             => x : take (n-1) xs
 
-{-letrec drop n lst =
+letrec drop n lst =
     match lst with
     | []               => []
     | x:xs when n <= 0 => x:xs
-    | x:xs when        => drop (n-1) xs-}
+    | x:xs             => drop (n-1) xs
 
-{-let splitAt n lst =
-    (take n lst, drop n lst)-}
+let splitAt n lst =
+    (take n lst, drop n lst)
 
 letrec takeWhile f lst =
     match lst with
@@ -153,12 +152,5 @@ letrec sort lst =
     | []   => []
     | x:xs => insert x (sort xs)
     
-{-letrec getBits = lam n .
-  match n with
-  | 0 => []
-  | n => getBit () :: getBits (n-1)-}
-  
-{- TODO: span, break -}
-
 letrec loop c f =
   let (v, c) = rd c in f v; loop c f

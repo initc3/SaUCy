@@ -457,7 +457,8 @@ infer expr = case expr of
   ETuple es -> do
     _Γ1 <- ask
     -- TODO: Combine into one pass
-    (_, _, _, _Γn) <- foldM (\(_, _, V, _Γ) e -> local (const _Γ) (infer e))
+    -- TODO: Elements should be value mode
+    (_, _, _, _Γn) <- foldM (\(_, _, _, _Γ) e -> local (const _Γ) (infer e))
                       (tyUnit, [], V, _Γ1)
                       es
     tcmes <- mapM infer es
@@ -548,7 +549,7 @@ infer expr = case expr of
     let tyConstraints = c1 ++ c2 ++ c3 ++ [ TypeConstraint tyA1 tyBool
                                         , TypeConstraint tyA2 tyA3 ]
         moConstraints = [ ModeConstraint m1 V
-                        , ModeConstraint (MSeq m1 m2) m3
+                        , ModeConstraint m2 m3
                         , ModeConstraint m2 m2' ]
         constraints = tyConstraints ++ moConstraints
     return (tyA2, constraints, m3, _Γ3)
@@ -826,10 +827,18 @@ solver (su, cs) =
   case cs of
     [] -> return $ su
     (TypeConstraint t1 t2 : cs') -> do
-      su1 <- unifies (T t1) (T t2)
+      let (t1',t2') = case (simpty t1, simpty t2) of
+                        (Nothing, _) -> error "type error"
+                        (_, Nothing) -> error "type error"
+                        (Just a, Just b) -> (a,b)
+      su1 <- unifies (T t1') (T t2')
       solver (su1 `compose` su, apply su1 cs')
     (ModeConstraint m1 m2 : cs') -> do
-      su1 <- unifies (M m1) (M m2)
+      let (m1',m2') = case (simpmo m1, simpmo m2) of
+                        (Nothing, _) -> error "mode error"
+                        (_, Nothing) -> error "mode error"
+                        (Just a, Just b) -> (a,b)
+      su1 <- unifies (M m1') (M m2')
       solver (su1 `compose` su, apply su1 cs')
          
 bind :: TVar -> TM -> Solve Subst

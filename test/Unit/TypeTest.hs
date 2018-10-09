@@ -32,9 +32,9 @@ examples =
     , ( "assoclist"
       , "let f x = match x with | (a,b):[] => a"
       , "∀ a b . [(a,b)] -> a @ V")
-    {-, ( "typed chan"
+    , ( "typed chan"
       , "let f () = nu (rc, wc) . wr 1 -> wc |> let (_, rc) = rd rc in rc"
-      , "Unit ->@W Rd Int @ V")-}
+      , "Unit ->@W Rd Int @ V")
     , ( "simple read"
       , "let f () = nu c . rd c"
       , "∀ a . Unit ->@R (a,Rd a) @ V")
