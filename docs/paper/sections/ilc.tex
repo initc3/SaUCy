@@ -76,11 +76,11 @@ $m$ is one of three modes: value (\Vm), read (\Rm), and write
   \Wm$). This ensures that no confusion (non-determinism) arises at the sending
   end of a communication.
 
-\item \emph{No sequential composition of write mode processes.} The typing rules
-  do not allow sequential composition of two write mode processes ($\Wm ;;
-  \Wm$). This prevents the programmer from writing a process that gets ``stuck''
-  trying to perform writes in sequence---a writing process becomes inactive after
-  writing and can only reactivate when written to.
+%\item \emph{No sequential composition of write mode processes.} The typing rules
+%  do not allow sequential composition of two write mode processes ($\Wm ;;
+%  \Wm$). This prevents the programmer from writing a process that gets ``stuck''
+%  trying to perform writes in sequence---a writing process becomes inactive after
+%  writing and can only reactivate when written to.
 \end{enumerate}
 
 \noindent Figure~\ref{fig:syntax--types} gives the syntax of types,

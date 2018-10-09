@@ -26,7 +26,7 @@ import Control.Monad.Except
 import Control.Monad.Identity
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.List (nub, partition)
+import Data.List (nub, partition, reverse)
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Development.Placeholders
@@ -100,15 +100,11 @@ instance Substitutable Mode where
   apply (Subst s) m@(MVar a) = case Map.findWithDefault (M m) a s of
     M mo -> mo
     T _  -> m
-  apply (Subst s) m@(MVarVR a) = case Map.findWithDefault (M m) a s of
-    M mo -> mo
-    T _  -> m
   apply s (MSeq m1 m2) = MSeq (apply s m1) (apply s m2)
   apply s (MPar m1 m2) = MPar (apply s m1) (apply s m2)
   apply _         m          = m
 
   ftv (MVar a) = Set.singleton a
-  ftv (MVarVR a) = Set.singleton a
   ftv (MSeq m1 m2) = ftv m1 `Set.union` ftv m2
   ftv (MPar m1 m2) = ftv m1 `Set.union` ftv m2
   ftv m        = Set.empty
@@ -194,11 +190,63 @@ fresh f = do
   put s{count = count s + 1}
   return $ f (letters !! count s)
 
+freshifym :: Map.Map TVar TVar -> Mode -> Infer (Mode, Map.Map TVar TVar)
+freshifym env V = return (V, env)
+freshifym env R = return (R, env)
+freshifym env W = return (W, env)
+freshifym env (MVar a) = case Map.lookup a env of
+  Nothing -> do
+    b <- fresh TV
+    return (MVar b, Map.insert a b env)
+  Just b -> return (MVar b, env)
+freshifym env (MSeq m1 m2) = do
+  (m1', env1) <- freshifym env m1
+  (m2', env2) <- freshifym env m2
+  return (MSeq m1' m2', env2)
+freshifym env (MPar m1 m2) = do
+  (m1', env1) <- freshifym env m1
+  (m2', env2) <- freshifym env m2
+  return (MPar m1' m2', env2)
+
+freshifyt :: Map.Map TVar TVar -> Type -> Infer (Type, Map.Map TVar TVar)
+freshifyt env t@(TVar _) = return (t, env)
+freshifyt env t@(TCon _) = return (t, env)
+freshifyt env (TArr t1 t2 m) = do
+  (t1', env1) <- freshifyt env t1
+  (t2', env2) <- freshifyt env1 t2
+  (m', env3)  <- freshifym env2 m
+  return (TArr t1' t2' m', env3)
+freshifyt env (TList t) = do
+  (t', env') <- freshifyt env t
+  return (TList t', env')
+freshifyt env (TProd ts) = do
+  (TProd ts', env') <- foldM (\(TProd acc, e) t -> (freshifyt e t) >>=
+                       \(t', e') -> return (TProd (t':acc), e)) (TProd [], env) ts
+  return (TProd (reverse ts'), env')
+freshifyt env (TSet t) = do
+  (t', env') <- freshifyt env t
+  return (TSet t', env')
+freshifyt env (TRef t) = do
+  (t', env') <- freshifyt env t
+  return (TRef t', env')
+freshifyt env (TThunk t) = do
+  (t', env') <- freshifyt env t
+  return (TThunk t', env')
+freshifyt env (TRdChan t) = do
+  (t', env') <- freshifyt env t
+  return (TRdChan t', env')
+freshifyt env (TWrChan t) = do
+  (t', env') <- freshifyt env t
+  return (TWrChan t', env')
+freshifyt _ _ = error "Infer.freshifyt"
+
 instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
   as' <- mapM (const (fresh (TVar . TV))) as
   let s = Subst $ Map.fromList $ zip as (map T as')
-  return $ apply s t
+      s' = apply s t
+  (s'', _) <- freshifyt Map.empty s'
+  return s''
 
 generalize :: TypeEnv -> Type-> Scheme -- ^ T-Gen
 generalize env t = Forall as t
@@ -816,8 +864,6 @@ unifies (T (TWrChan t1)) (T (TWrChan t2)) = unifies (T t1) (T t2)
 
 unifies (M (MVar v)) (M t) = v `bind` (M t)
 unifies (M t) (M (MVar v)) = v `bind` (M t)
-unifies (M (MVarVR v)) (M t) = v `bind` (M t)
-unifies (M t) (M (MVarVR v)) = v `bind` (M t)
 unifies (M (MSeq m1 m2)) (M (MSeq m3 m4)) = unifyMany [M m1, M m2] [M m3, M m4]
 unifies (M (MPar m1 m2)) (M (MPar m3 m4)) = unifyMany [M m1, M m2] [M m3, M m4]
 unifies t1 t2 = throwError $ UnificationFail t1 t2
@@ -846,7 +892,6 @@ bind a (T t) | t == TVar a     = return emptySubst
              | occursCheck a t = throwError $ InfiniteType a t
              | otherwise       = return (Subst $ Map.singleton a (T t))
 bind a (M t) | t == MVar a     = return emptySubst
-             | t == MVarVR a   = return emptySubst
              | otherwise       = return (Subst $ Map.singleton a (M t))
 
 occursCheck :: Substitutable a => TVar -> a -> Bool

@@ -28,7 +28,6 @@ data Mode = V  -- ^ Value mode
           | W  -- ^ Write mode
           | R  -- ^ Read mode
           | MVar TVar
-          | MVarVR TVar
           | MSeq Mode Mode
           | MPar Mode Mode
           deriving (Eq, Ord, Show)
@@ -39,7 +38,6 @@ simpmo V            = Just V
 simpmo W            = Just W
 simpmo R            = Just R
 simpmo m@(MVar a)   = Just m
-simpmo m@(MVarVR a) = Just m
 simpmo (MSeq W  V ) = Just W
 simpmo (MSeq W  R ) = Just W
 simpmo (MSeq R  m ) = Just R <* simpmo m
@@ -65,6 +63,5 @@ instance Pretty Mode where
   pretty R = text "R"
   pretty W = text "W"
   pretty (MVar a) = pretty a
-  pretty (MVarVR a) = pretty a <> text "∈{V,R}"
   pretty (MSeq a b) = text "(" <> pretty a <> text ";" <> pretty b <> text ")"
   pretty (MPar a b) = text "(" <> pretty a <> text "|" <> pretty b <> text ")"  
