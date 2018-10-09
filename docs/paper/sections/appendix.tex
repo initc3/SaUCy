@@ -24,140 +24,128 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 %
 \Infer{unit}
 { }
-{\Delta ; \Gamma |- \vUnit : \Delta; \Gamma; \tyUnit}
+{\Delta ; \Gamma |- \eUnit : \Delta; \Gamma; \tyUnit}
 %
 \and
 %
 \Infer{pair}
 {\Delta_1; \Gamma |- \Delta_2; \Gamma; A_1\\\\
 \Delta_2; \Gamma |- \Delta_3; \Gamma; A_2}
-{\Delta_1; \Gamma |- (e_1, e_2) : \Delta_3; \Gamma;  A_1 \times A_2}
+{\Delta_1; \Gamma |- \ePair{e_1}{e_2} : \Delta_3; \Gamma;  \tyProd{A_1}{A_2}}
 %
 \and
 %
 \Infer{inj}
 {i \in \{1, 2\}\\\\
 \Delta_1; \Gamma |- e : \Delta_2; \Gamma; A_i}
-{\Delta_1 ; \Gamma |- \vInj{i}{e} : \Delta_2; \Gamma; A_1 + A_2}
+{\Delta_1 ; \Gamma |- \eInj{i}{e} : \Delta_2; \Gamma; \tySum{A_1}{A_2}}
 %
 \and
 %
 \Infer{ref}
 {\Delta_1; \Gamma |- e : \Delta_2; \Gamma; A}
-{\Delta_1; \Gamma |- \Ref{e} : \Delta_2; \Gamma; A\ \textsf{ref}}
-%
-\and
-%
-\Infer{thunk}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; A}
-{\Delta_1; \Gamma |- \thunk{e} : \Delta_2; \Gamma; \tyUp{A ** m}}
+{\Delta_1; \Gamma |- \eRef{e} : \Delta_2; \Gamma; \tyRef{A}}
 %
 \and
 %
 \Infer{a-split}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A_1 \times A_2\\\\
+{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyProd{A_1}{A_2}\\\\
 \Delta_2; \Gamma,x_1:A_1, x_2: A_2 |- e : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \Split{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
 %
 \and
 %  
 \Infer{a-case}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; A_1 + A_2\\\\
+{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; \tySum{A_1}{A_2}\\\\
 \Delta_2; \Gamma,x_1:A_1 |- e_1 : \Delta_3; \Gamma; B\\\\
 \Delta_2; \Gamma,x_2:A_2 |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \Case{e}{x_1}{e_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- \eCase{e}{x_1}{e_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
 %
 \and
 %
 \Infer{a-get}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; A\ \textsf{ref}}
-{\Delta_1; \Gamma |- \Get{e} : \Delta_2; \Gamma; A}
+{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; \tyRef{A}}
+{\Delta_1; \Gamma |- \eGet{e} : \Delta_2; \Gamma; A}
 %
 \and
 %
 \Infer{a-set}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\ \textsf{ref}\\\\
+{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyRef{A}\\\\
 \Delta_2; \Gamma |- e : \Delta_3; \Gamma; A}      
-{\Delta_1; \Gamma |- \Set{e_1}{e_2} : \Delta_3; \Gamma; \tyUnit}
-%
-\and
-%
-\Infer{a-force}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; \tyUp{A \times m}}
-{\Delta_1; \Gamma |- \eForce{e} : \Delta_2; \Gamma; A}
+{\Delta_1; \Gamma |- \eSet{e_1}{e_2} : \Delta_3; \Gamma; \tyUnit}
 %
 \and
 %
 \Infer{a-fix}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; A -> A}
-{\Delta_1; \Gamma |- \Fix{e} : \Delta_2; \Gamma; A}
+{\Delta_1; \Gamma,x : \tyArr{A}{\footnotesize m}{A} |- e : \Delta_2; \Gamma; A}
+{\Delta_1; \Gamma |- \eFix{x}{e} : \Delta_2; \Gamma; A}
 %
 \and
 %
 \Infer{a-let}
 {\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
 \Delta_2; \Gamma, x:A |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \Let{e_1}{x}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- \eLet{x}{e_1}{e_2} : \Delta_3; \Gamma; B}
 %
 \and
 %
-\Infer{a-let!}
-{\Delta_1; \Gamma |- v : \Delta_2; \Gamma; *! A\\\\
-\Delta_2; \Gamma, x:A |- e : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \LetBang{v}{x}{e} : \Delta_3; \Gamma; B}
+\Infer{a-letrd}
+{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyRd{A}\\\\
+\Delta_2, x_2 : \tyRd{A} ; \Gamma, x_1 : A |- e_2 : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : \Delta_3; \Gamma; B}
 %
 \and
 %
 \Infer{a-lam}
 {\Delta_1 ; \Gamma, x:A |- e : \Delta_2; \Gamma; B}
-{\Delta_1 ; \Gamma |- \lam{x} e : \Delta_2; \Gamma; A -> B}
+{\Delta_1 ; \Gamma |- \eLam{x}{e} : \Delta_2; \Gamma; \tyArr{A}{\footnotesize m}{B}}
 %
 \and
 %
 \Infer{a-app}
 {\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma |- e_1 : \Delta_3; \Gamma; A -> B}
-{\Delta_1; \Gamma |- e_1 e_2 : \Delta_3; \Gamma; B}
+\Delta_2; \Gamma |- e_1 : \Delta_3; \Gamma; \tyArr{A}{\footnotesize m}{B}}
+{\Delta_1; \Gamma |- \eApp{e_1}{e_2} : \Delta_3; \Gamma; B}
 %
 \and
 %
 \Infer{a-nu}
-{\Delta_1, x_1: \tyRd A ; \Gamma, x_2 : \tyWr A |- e : \Delta_2; \Gamma; B}
+{\Delta_1, x_1: \tyRd{A} ; \Gamma, x_2 : \tyWr{A} |- e : \Delta_2; \Gamma; B}
 {\Delta_1; \Gamma |- \eNu{(x_1, x_2)}{e} : \Delta_2; \Gamma; B}
 %
 \and
 %
 \Infer{a-wr}
 {\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; \tyWr A}
+\Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; \tyWr{A}}
 {\Delta_1; \Gamma|- \eWr{e_1}{e_2} : \Delta_3; \Gamma; \tyUnit}
 %
 \and
 %
 \Infer{a-rd}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; \tyRd A}
-{\Delta_1; \Gamma |- \eRd{e} : \Delta_2; \Gamma; (A \times \tyRd A) }
+{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; \tyRd{A}}
+{\Delta_1; \Gamma |- \eRd{e} : \Delta_2; \Gamma; \tyProd{A}{\tyRd A}}
 %
 \and
 %
 \Infer{a-fork}
 {\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
 \Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- e_1 \xFork e_2 : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : \Delta_3; \Gamma; B}
 %
 \and
 %
 \Infer{a-choice}
 {\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
 \Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; A}
-{\Delta_1; \Gamma |- \eChoose{e_1, e_2} : \Delta_2; \Gamma; A}
+{\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : \Delta_2; \Gamma; A}
 %
 \and
 %
 \Infer{a-seq}
 {\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
 \Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \Seq{e_1}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- \eSeq{e_1}{e_2} : \Delta_3; \Gamma; B}
 \end{mathpar}
 \caption{Algorithmic type checking rules.}
 \label{fig:alg-type-check}

@@ -16,40 +16,34 @@
 %
 \Infer{unit}
 { }
-{\Delta ; \Gamma |- \vUnit : \tyUnit}
+{\Delta ; \Gamma |- \eUnit : \tyUnit}
 %
 \and
 %
 \Infer{pair}
 {\Delta_1; \Gamma |- e_1 : A_1\\\\
 \Delta_2; \Gamma |- e_2 : A_2}
-{\Delta_1, \Delta_2; \Gamma |- (e_1, e_2) : A_1 \times A_2}
+{\Delta_1, \Delta_2; \Gamma |- \ePair{e_1}{e_2} : \tyProd{A_1}{A_2}}
 %
 \and
 %
 \Infer{inj}
 {i \in \{1, 2\}\\\\
 \Delta; \Gamma |- e : A_i}
-{\Delta ; \Gamma |- \vInj{i}{e}  : A_1 + A_2}
+{\Delta ; \Gamma |- \eInj{i}{e}  : \tySum{A_1}{A_2}}
 %
 \and
 %
 \Infer{ref}
 {\Delta; \Gamma |- e : A}
-{\Delta; \Gamma |- \Ref{e} : A\ \textsf{ref}}
-%
-\and
-%
-\Infer{thunk}
-{\Delta; \Gamma |- e : A |> m}
-{\Delta; \Gamma |- \thunk{e} : \tyUp{A ** m}}
+{\Delta; \Gamma |- \eRef{e} : \tyRef{A}}
 %
 \and
 %
 \Infer{split}
 {\Delta_1; \Gamma |- e_1 : A_1 \times A_2\\\\
 \Delta_2; \Gamma,x_1:A_1, x_2:A_2 |- e_2 : B |> m}
-{\Delta_1, \Delta_2; \Gamma |- \Split{e_1}{x_1}{x_2}{e_2} : B |> m}
+{\Delta_1, \Delta_2; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : B |> m}
 %
 \and
 %
@@ -57,32 +51,25 @@
 {\Delta_1; \Gamma |- e : A_1 + A_2\\\\
 \Delta_2; \Gamma,x_1:A_1 |- e_1 : B |> m\\\\
 \Delta_2; \Gamma,x_2:A_2 |- e_2 : B |> m}
-{\Delta_1, \Delta_2; \Gamma |- \Case{e}{x_1}{e_1}{x_2}{e_2} : B |> m}
+{\Delta_1, \Delta_2; \Gamma |- \eCase{e}{x_1}{e_1}{x_2}{e_2} : B |> m}
 %
 \and
 %
 \Infer{get}
-{\Delta; \Gamma |- e : A\ \textsf{ref}}
-{\Delta; \Gamma |- \Get{e} : A}
+{\Delta; \Gamma |- e : \tyRef{A}}
+{\Delta; \Gamma |- \eGet{e} : A}
 %
 \and
 %
 \Infer{set}
-{\Delta_1, \Gamma |- e_1 : A\ \textsf{ref} \\ \Delta_2, \Gamma |- e_2 : A }
-{\Delta_1, \Delta_2; \Gamma |- \Set{e_1}{e_2} : \tyUnit}
-%
-\and
-%
-\Infer{force}
-{\Delta; \Gamma |- e : \tyUp{A, m}}
-{\Delta; \Gamma |- \eForce{e} : A |> m}
+{\Delta_1, \Gamma |- e_1 : \tyRef{A} \\ \Delta_2, \Gamma |- e_2 : A }
+{\Delta_1, \Delta_2; \Gamma |- \eSet{e_1}{e_2} : \tyUnit}
 %
 \and
 %
 \Infer{fix}
-{\Delta; \Gamma |- e : A -> A |> m}
-{\Delta; \Gamma |- \eFix{e} : A |> m}
-
+{\Delta; \Gamma, x : \tyArr{A}{\footnotesize m}{A} |- e : A}
+{\Delta; \Gamma |- \eFix{x}{e} : A}
 %
 \and
 %
@@ -91,32 +78,34 @@
 \Delta_1 ; \Gamma |- e_1 : A |> m_1 \\
 \Delta_2 ; \Gamma, x:A |- e_2 : B |> m_2
 }
-{\Delta_1, \Delta_2 ; \Gamma |- \Let{e_1}{x}{e_2} : B |> m_3}
+{\Delta_1, \Delta_2 ; \Gamma |- \eLet{x}{e_1}{e_2} : B |> m_3}
 %
 \and
 %
-\Infer{let!}
-{\Delta_1 ; \Gamma |- v : *! A\\\\
-\Delta_2 ; \Gamma, x:A |- e : B |> m}
-{\Delta_1, \Delta_2 ; \Gamma |- \LetBang{v}{x}{e} : B |> m}
+\Infer{letrd}
+{m_1 ;; m_2 => m_3\\\\
+\Delta_1 ; \Gamma |- e_1 : \tyRd{A} |> m_1 \\
+\Delta_2,x_2:\tyRd{A} ; \Gamma, x_1:A |- e_2 : B |> m_2
+}
+{\Delta_1, \Delta_2 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : B |> m_3}
 %
 \and
 %
 \Infer{lam}
 {\Delta ; \Gamma, x:A |- e : B |> m}
-{\Delta ; \Gamma |- \lam{x} e : A \xrightarrow{m} B}
+{\Delta ; \Gamma |- \eLam{x}{e} : \tyArr{A}{\footnotesize m}{B}}
 %
 \and
 %
 \Infer{app}
 {\Delta_1 ; \Gamma |- e_2 : A\\\\
-\Delta_2 ; \Gamma |- e_1 : A \xrightarrow{m} B}
-{\Delta_1, \Delta_2 ; \Gamma |- e_1 e_2 : B |> m}
+\Delta_2 ; \Gamma |- e_1 : \tyArr{A}{\footnotesize m}{B}}
+{\Delta_1, \Delta_2 ; \Gamma |- \eApp{e_1}{e_2} : B |> m}
 %
 \and
 %
 \Infer{nu}
-{\Delta, x_1:\tyRd A; \Gamma, x_2:\tyWr A |- e : B |> m}
+{\Delta, x_1:\tyRd{A}; \Gamma, x_2:\tyWr{A} |- e : B |> m}
 {\Delta ; \Gamma |- \eNu{(x_1, x_2)}{e} : B |> m}
 %
 \and
@@ -129,8 +118,8 @@
 \and
 %
 \Infer{rd}
-{\Delta; \Gamma |- e : \tyRd A}
-{\Delta; \Gamma |- \eRd{e} : (A \times \tyRd A) |> \Rm}
+{\Delta; \Gamma |- e : \tyRd{A}}
+{\Delta; \Gamma |- \eRd{e} : \tyProd{A}{\tyRd{A}} |> \Rm}
 %
 \and
 %
@@ -138,7 +127,7 @@
 {m_1 || m_2 => m_3\\\\
 \Delta_1; \Gamma |- e_1 : A |> m_1\\
 \Delta_2; \Gamma |- e_2 : B |> m_2}
-{\Delta_1, \Delta_2; \Gamma |- e_1 \xFork e_2 : B |> m_3}
+{\Delta_1, \Delta_2; \Gamma |- \eFork{e_1}{e_2} : B |> m_3}
 %
 \and
 %
@@ -146,7 +135,7 @@
 {\Delta_1; \Gamma |- e_1 : A |> \Rm\\\\
 \Delta_2; \Gamma |- e_2 : A |> \Rm
 }
-{\Delta_1, \Delta_2; \Gamma |- e_1 *|| e_2 : A |> \Rm}
+{\Delta_1, \Delta_2; \Gamma |- \eChoice{e_1}{e_2} : A |> \Rm}
 %
 \and
 %
@@ -154,7 +143,7 @@
 {m_1 ;; m_2 => m_3\\\\
 \Delta_1; \Gamma |- e_1 : A |> m_1\\
 \Delta_2; \Gamma |- e_2 : B |> m_2}
-{\Delta_1, \Delta_2; \Gamma |- e_1 ; e_2 : B |> m_3}
+{\Delta_1, \Delta_2; \Gamma |- \eSeq{e_1}{e_2} : B |> m_3}
 \end{mathpar}
 \caption{Expression typing.}
 \label{fig:type-expressions}

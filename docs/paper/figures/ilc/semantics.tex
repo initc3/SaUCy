@@ -7,21 +7,22 @@
     \\[2mm]
   Process pool
   & $\Procs$ 
-    & $\bnfas$ & $\emptyProcs ~|~ \Procs, \proc{\sigma}{e}$
+    & $\bnfas$ & $\emptyProcs ~|~ \Procs, \proc{e}$
     \\[2mm]
   Configurations
   & $C$
-     & $\bnfas$ & $\Config{\Chans}{\Procs} $
+     & $\bnfas$ & $\Config{\Chans}{\Store}{\Procs} $
      \\[2mm]
  Evaluation contexts
   & $E$
-     & $\bnfas$ & $\bullet \bnfalt \Let{E}{x}{e} \bnfalt \App{E}{e} \bnfalt \App{v}{E}
- \bnfalt \Ref{E} \bnfalt \Get{E} \bnfalt \Set{E}{e}$
-     \\ &&& $\bnfaltbrk \Set{\ell}{E} \bnfalt E ; e \bnfalt \Split{E}{x_1}{x_2}{e} \bnfalt \Case{E}{x_1}{e_1}{x_2}{e_2}$
+     & $\bnfas$ & $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eApp{E}{e} \bnfalt
+ \eApp{v}{E} \bnfalt \eRef{E} \bnfalt \eGet{E} \bnfalt \eSet{E}{e}$
+     \\ &&& $\bnfaltbrk \eSet{\ell}{E} \bnfalt \eSeq{E}{e} \bnfalt
+     \eSplit{E}{x_1}{x_2}{e} \bnfalt \eCase{E}{x_1}{e_1}{x_2}{e_2}$
 \\[2mm]
  Read contexts
   & $R$
-     & $\bnfas$ & $\bullet \bnfalt \eRd{\vChan{c}} \oplus R \bnfalt R \oplus \eRd{\vChan{c}}$
+     & $\bnfas$ & $\bullet \bnfalt \eRd{\eChan{c}} \oplus R \bnfalt R \oplus \eRd{\eChan{c}}$
 \end{grammar}
 \caption{Evaluation configurations and contexts.}
 \label{fig:configs}
@@ -33,7 +34,7 @@
 \begin{mathpar}
 \Infer{permProcs}
 {  \Procs_1 \equiv_\textsf{perm} \Procs_2 }
-{ \Config{\Chans}{\Procs_1} \equiv \Config{\Chans}{\Procs_2} }
+{ \Config{\Chans}{\Store}{\Procs_1} \equiv \Config{\Chans}{\Store}{\Procs_2} }
 \end{mathpar}
 \caption{Structural congruence.}
 \label{fig:structural-congruence}
@@ -42,13 +43,13 @@
 \begin{figure*}
 \judgbox{C_1 ---> C_2}{~~Configuration~$C_1$ reduces to $C_2$.}
 \begin{mathpar}
-\Infer{local}{ \sigma_1 ; e_1 ---> \sigma_2 ; e_2 }
-{ \Config{\Chans}{\Procs, \proc{\sigma_1}{E[e_1]}} --->
-  \Config{\Chans}{\Procs, \proc{\sigma_2}{E[e_2]}} }
+\Infer{local}{ \Store_1 ; e_1 ---> \Store_2 ; e_2 }
+{ \Config{\Chans}{\Store_1}{\Procs, \proc{E[e_1]}} --->
+  \Config{\Chans}{\Store_2}{\Procs, \proc{E[e_2]}} }
 \and
 \Infer{fork}{ ~ }
-{ \Config{\Chans}{\Procs, \proc{\sigma}{E[ e_1 \xFork e_2 }] } --->
-  \Config{\Chans}{\Procs, \proc{\sigma}{e_1}, \proc{\sigma}{E[ e_2 ]}}}
+{ \Config{\Chans}{\Store}{\Procs, \proc{E[ \eFork{e_1}{e_2} }] } --->
+  \Config{\Chans}{\Store}{\Procs, \proc{e_1}, \proc{E[ e_2 ]}}}
 \and
 \Infer{congr}{
 C_1 \equiv C_1' 
@@ -60,58 +61,54 @@ C_2' \equiv C_2
 { C_1 ---> C_2 }
 \and
 \Infer{nu}{ c_1, c_2 \notin \Chans }
-{ \Config{\Chans}{\Procs, \proc{\sigma}{E[ \eNu{(x_1, x_2)}{e} ]}} --->
-  \Config{\Chans, c_1, c_2}{\Procs, \proc{\sigma}{E[ [\vChan{c_1}/x_1][\vChan{c_2}/x_2]e ]}}}
+{ \Config{\Chans}{\Store}{\Procs, \proc{E[ \eNu{(x_1, x_2)}{e} ]}} --->
+  \Config{\Chans, c_1, c_2}{\Store}{\Procs, \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}}}
 \and
 \Infer{rw}
 { c_2 \leadsto c_1 }
-{ \Config{\Chans}{\Procs, \sigma_1 ; E_1[R[ \eRd{\vChan{c_1}}] ], \sigma_2 ; E_2[ \eWr{\vChan{c_2}}{v}]} --->
-  \Config{\Chans}{\Procs, \sigma_1 ; E_1[ (v, \vChan{c_1})], \sigma_2 ; E_2[ \vUnit]} }
+{ \Config{\Chans}{\Store}{\Procs, E_1[R[ \eRd{\eChan{c_1}}] ], E_2[ \eWr{\eChan{c_2}}{v}]} --->
+  \Config{\Chans}{\Store}{\Procs, E_1[ (v, \eChan{c_1})], E_2[ \e]} }
 \\
 \end{mathpar}
 
-\judgbox{\sigma_1 ; e_1 ---> \sigma_2 ; e_2}{~~Under store $\sigma_1$,
-  expression~$e_1$ reduces to~$\sigma_2 ; e_2$.}
+\judgbox{\Store_1 ; e_1 ---> \Store_2 ; e_2}{~~Under store $\Store_1$,
+  expression~$e_1$ reduces to~$\Store_2 ; e_2$.}
 \begin{mathpar}
 \Infer{let}
 {}
-{ \sigma ; \Let{v}{x}{e} ---> \sigma ; [v/x]e }
+{ \Store ; \eLet{x}{v}{e} ---> \Store ; [v/x]e }
 \and
 \Infer{app}
 {}
-{ \sigma ; \eApp{(\lam{x} e)}{v} ---> \sigma ; [v/x]e }
-\and
-\Infer{force}
-{ }
-{ \sigma ; \eForce{\vThunk{e}} ---> \sigma ; e }
+{ \Store ; \eApp{(\eLam{x}{e})}{v} ---> \Store ; [v/x]e }
 \and
 \Infer{split}
 { }
-{ \sigma ; \Split{\vPair{v_1}{v_2}}{x_1}{x_2}{e} ---> \sigma ; [v_1/x_1][v_2/x_2]e }
+{ \Store ; \eSplit{\ePair{v_1}{v_2}}{x_1}{x_2}{e} ---> \Store ; [v_1/x_1][v_2/x_2]e }
 \and
 \Infer{case}
 { }
-{ \sigma ; \Case{\vInj{i}{v}}{x_1}{e_1}{x_2}{e_2} ---> \sigma ; [v/x_i]e_i }
+{ \Store ; \eCase{\eInj{i}{v}}{x_1}{e_1}{x_2}{e_2} ---> \Store ; [v/x_i]e_i }
 \and
 \Infer{fix}
 { }
-{ \sigma ; \eFix{e} -> \sigma ; e\ \eFix{e} }
+{ \Store ; \eFix{x}{e} -> \Store ; e\ \eFix{x}{e} }
 \and
 \Infer{seq}
 { }
-{ \sigma ; (v; e) ---> \sigma ; e }
+{ \Store ; (\eSeq{v}{e}) ---> \Store ; e }
 \and
 \Infer{ref}
-{ \ell \not \in dom(\sigma) }
-{ \sigma ; \Ref{v} -> \sigma, \ell : v ; \ell }
+{ \ell \not \in dom(\Store) }
+{ \Store ; \eRef{v} -> \Store, \ell : v ; \ell }
 \and
 \Infer{get}
-{ \sigma(\ell) = v }
-{ \sigma ; \Get{\ell} -> \sigma; v }
+{ \Store(\ell) = v }
+{ \Store ; \eGet{\ell} -> \Store; v }
 \and
 \Infer{set}
 { }
-{ \sigma ; \Set{\ell}{v} -> [\ell \mapsto v]\sigma; \vUnit }
+{ \Store ; \eSet{\ell}{v} -> [\ell \mapsto v]\Store; \eUnit }
 \end{mathpar}
 \caption{Reduction semantics.}
 \label{fig:semantics}

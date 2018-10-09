@@ -2,9 +2,8 @@
   \begin{grammar}
     Types
     & $A,B$
-    &$\bnfas$& $\vUnit \bnfalt A ** B \bnfalt A + B \bnfalt *! A \bnfalt
-    \tyRd{A} \bnfalt \tyWr{A}$
-    \\ &&& $\bnfaltbrk A\ \keyword{ref} \bnfalt \tyU{(A ** m)} \bnfalt A -> B$
+    &$\bnfas$& $\tyUnit \bnfalt \tyProd{A}{B} \bnfalt \tySum{A}{B} \bnfalt \tyRd{A} \bnfalt
+    \tyWr{A} \bnfalt \tyRef{A} \bnfalt \tyArr{A}{\footnotesize $m$}{B}$
     \\
     Linear Typing Contexts
     & $\Delta$

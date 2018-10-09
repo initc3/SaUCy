@@ -3,14 +3,14 @@
     Expressions
     & $e$
         &$\bnfas$&
-        $x \bnfalt \vChan{c} \bnfalt \vUnit \bnfalt \vPair{e_1}{e_2} \bnfalt
-    \vInj{i}{e} \bnfalt \Ref{e} \bnfalt \vThunk{e} \bnfalt
-    \Split{e_1}{x_1}{x_2}{e_2}$
-    \\ &&& $\bnfaltbrk \Case{e}{x_1}{e_1}{x_2}{e_2} \bnfalt \Get{e} \bnfalt
-    \Set{e_1}{e_2} \bnfalt \eForce{e} \bnfalt \eFix{e} \bnfalt \Let{e_1}{x}{e_2} $
-    \\ &&& $\bnfaltbrk \lam{x} e \bnfalt \eApp{e_1}{e_2} \bnfalt \eNu{(x_1, x_2)}{e}
-    \bnfalt \eWr{e_1}{e_2} \bnfalt \eRd{e} \bnfalt e_1 *&& e_2 \bnfalt e_1 *||
-    e_2 \bnfalt e_1 ; e_2$
+        $\eVar{x} \bnfalt \eChan{c} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2}
+    \bnfalt \eInj{i}{e} \bnfalt \eRef{e} \bnfalt \eSplit{e_1}{x_1}{x_2}{e_2}
+    \bnfalt \eCase{e}{x_1}{e_1}{x_2}{e_2}$
+    \\ &&& $\bnfaltbrk \eGet{e} \bnfalt \eSet{e_1}{e_2} \bnfalt \eFix{x}{e} \bnfalt
+    \eLet{x}{e_1}{e_2} \bnfalt \eLetRd{x_1}{x_2}{e_1}{e_2}$
+    \\ &&& $\bnfaltbrk \eLam{x}{e} \bnfalt \eApp{e_1}{e_2} \bnfalt \eNu{(x_1,
+      x_2)}{e} \bnfalt \eWr{e_1}{e_2} \bnfalt \eRd{e} \bnfalt \eFork{e_1}{e_2}
+    \bnfalt \eChoice{e_1}{e_2} \bnfalt \eSeq{e_1}{e_2}$
   \end{grammar}
   \caption{Syntax of expressions.}
   \label{fig:ilc-syntax}

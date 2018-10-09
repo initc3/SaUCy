@@ -15,11 +15,10 @@ binds a a read channel $x_1$ and write channel $x_2$ in $e$; send
 ($\eWr{e_1}{e_2}$), which writes the result of evaluating $e_1$ on the channel
 result of evaluating $e_2$; receive ($\eRd{e}$), which reads from the channel
 result of evaluating $e$ and returns a pair consisting of the read value and the
-read channel itself (see Section~\ref{subsec:types} for details); fork ($e_1 *&&
-e_2$), which creates a separate process $e_1$ and continues as $e_2$; external
-choice ($e_1 *|| e_2$), which allows a process to evolve as either $e_1$ or
+read channel itself (see Section~\ref{subsec:types} for details); fork ($\eFork{e_1}{e_2}$), which creates a separate process $e_1$ and continues as $e_2$; external
+choice ($\eChoice{e_1}{e_2}$), which allows a process to evolve as either $e_1$ or
 $e_2$ (based on some initial event in each of the processes); and sequential
-composition ($e_1 ; e_2$).
+composition ($\eSeq{e_1}{e_2}$).
 
 \begingroup
 \setlength\intextsep{0pt}
@@ -67,10 +66,10 @@ $m$ is one of three modes: value (\Vm), read (\Rm), and write
 \begin{enumerate}
 \item \emph{No duplication of read channel ends.} In ILC, each channel (or
   ``tape'' in ITM parlance) has a read end and a write end. The read end of the
-  channel is protected against duplication by binding it in the linear
-  context $\Delta$. The notation $\Delta_1, \Delta_2$ denotes a partitioning of the read
-  channels in $\Delta$. This ensures that no confusion (non-determinism) arises at the receiving end of
-  a communication.
+  channel is protected against duplication by binding it in the linear context
+  $\Delta$. The notation $\Delta_1, \Delta_2$ denotes a partitioning of the read channels in
+  $\Delta$. This ensures that no confusion (non-determinism) arises at the receiving
+  end of a communication.
 
 \item \emph{No parallel composition of write mode processes.} The typing rules
   do not allow parallel composition of two write mode processes ($\Wm ||
@@ -97,7 +96,7 @@ context. The rule wr types a write expression as $\tyUnit |> \Wm$ provided that
 the value being sent is compatible with the type of the write channel being sent
 on. Additionally, the linear context $\Delta$ must be partitioned into contexts $\Delta_1$
 and $\Delta_2$, which are used to type the subexpressions $e_1$ and $e_2$
-respectively. The same pattern holds for the other typing rules as well. The rule rd types a read expression as $(A ** \tyRd{A}) |> \Rm$, since it
+respectively. The same pattern holds for the other typing rules as well. The rule rd types a read expression as $\tyProd{A}{\tyRd{A}} |> \Rm$, since it
 returns a pair containing the value from the channel and the channel itself, so
 that it can be rebound. Since read channels are typed linearly, returning and
 rebinding read channels allows them to be used more than once. The rule fork is
@@ -111,21 +110,17 @@ composition of the modes of its sub-expressions.
 
 The rule var looks up the binding of $x$ in the non-linear typing context $\Gamma$,
 and the rule lvar looks up the binding of $x$ in the linear typing context
-$\Delta$. The rules unit, pair, inj, and ref, get, and set are standard. The rule
-thunk captures both the type and mode of the suspended expression, which is
-typed as $\tyUp{A ** m}$, and the rule force forces the evaluation of the thunk,
-which is typed as $A |> m$. The rules split and case are standard, except for
-the fact that the body of a \textsf{split} expression ($e_2$) and the branches
-of a \textsf{case} expression ($e_1$ and $e_2$) need not be value mode
-expressions (i.e., they can include communication). Similarly, the rule fix
-allows fixed point expressions to include communication. The rule let is the
-standard rule for typing let bindings, except its mode is derived as $m1 ;; m2
-=> m3$, which is the sequential composition of the mode of the bound expression
-($e_1$) with the mode of the body expression ($e_2$). The rule lam and app are
-standard, except a function can include communication and arguments to a
-function must be value mode expressions.
-
-\todo{How do you type let (v, c) = rd c?, Why replication violates invariants.}
+$\Delta$. The rules unit, pair, inj, and ref, get, and set are standard. The rules
+split and case are standard, except for the fact that the body of a
+\textsf{split} expression ($e_2$) and the branches of a \textsf{case} expression
+($e_1$ and $e_2$) need not be value mode expressions (i.e., they can include
+communication). Similarly, the rule fix allows fixed point expressions to
+include communication. The rule let is the standard rule for typing let
+bindings, except its mode is derived as $m1 ;; m2 => m3$, which is the
+sequential composition of the mode of the bound expression ($e_1$) with the mode
+of the body expression ($e_2$). The rule lam and app are standard, except a
+function can include communication and arguments to a function must be value
+mode expressions.
 
 \lstinputlisting[style=myilc]{listings/repl.ilc}
 
@@ -144,14 +139,14 @@ judgement $\sigma_1; \e_1 \longrightarrow \sigma_2; \e_2$ can be read as ``under
 expression $e_1$ reduces to $\sigma_{2}; e_2$. A store $\sigma$ consists of a finite map
 from locations $\ell$ to to values. These rules are standard.
 
-In the fork rule, a process with store $\sigma$ and redex $e_1 \xFork e_2$ in
+In the fork rule, a process with store $\sigma$ and redex $\eFork{e_1}{e_2}$ in
 evaluation context $E$ spawns a new process $\sigma; e_1$ and reduces to $E[e_2]$. In
 the nu rule, the term $E[ \eNu{(x_1, x_2)}{e} ]$ reduces to $E[
-  [\vChan{c_1}/x_1][\vChan{c_2}/x_2]e ]$, where $c_1$ and $c_2$ are fresh
+  [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]$, where $c_1$ and $c_2$ are fresh
 channels added to $\Sigma$. In the rw rule, given that $c_2$ is the corresponding
 write channel of $c_1$, denoted $c_2 \leadsto c_1$, the processes $\sigma_1 ; E_1[R[
-    \eRd{\vChan{c_1}}] ]$ and $\sigma_2 ; E_2[ \eWr{\vChan{c_2}}{v}]$ reduce to the
-terms $\sigma_1 ; E_1[ (v, \vChan{c_1})]$ and $\sigma_2 ; E_2[ \vUnit]$, respectively.
+    \eRd{\eChan{c_1}}] ]$ and $\sigma_2 ; E_2[ \eWr{\eChan{c_2}}{v}]$ reduce to the
+terms $\sigma_1 ; E_1[ (v, \eChan{c_1})]$ and $\sigma_2 ; E_2[ \eUnit]$, respectively.
 
 \begin{comment}
 \lstinputlisting[style=myilc]{listings/loop_seq_rd.ilc}
