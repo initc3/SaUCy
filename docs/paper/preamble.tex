@@ -21,6 +21,13 @@
 \usepackage{wrapfig}
 \usepackage{xspace}
 
+\makeatletter
+\newcommand{\oset}[3][0ex]{%
+  \mathrel{\mathop{#3}\limits^{
+    \vbox to#1{\kern-0.75\ex@
+    \hbox{$\scriptstyle#2$}\vss}}}}
+\makeatother
+
 \newcommand{\mc}[1]{\mathcal{{#1}}}
 \newcommand{\todo}[1]{\emph{\hl{TODO:} {#1}}}
 \newcommand{\saucy}{SaUCy\xspace}
@@ -29,6 +36,10 @@
 \newcommand{\mypar}{\par}
 \newcommand\doubleplus{+\kern-1.3ex+\kern0.8ex}
 \newcommand{\yrightarrow}[1]{\xrightarrow{\raisebox{-2.5pt}[0pt][0pt]{#1}}}
+\newcommand{\lollipop}[1]{\oset{{\rule{0ex}{0ex}\mkern-3mu{#1}}}{\lolli}}
+\newcommand*{\lolli}{%
+  {\text{--}\mkern-2.4mu\text{---}\mkern-2.5mu\circ}% subformula acts as \mathord
+}
 
 % Functionality and ILC boxes
 \newcommand{\Func}{\mc{F}}
@@ -82,7 +93,7 @@
 % ILC Types
 \newcommand{\tyNat}{\tyname{nat}}
 \newcommand{\tyBool}{\tyname{bool}}
-\newcommand{\tyUnit}{\Lparen\hspace{1px}\Rparen}
+\newcommand{\tyUnit}{\keyword{Unit}}
 \newcommand{\tyProd}[2]{{#1} ** {#2}}
 \newcommand{\tySum}[2]{{#1} + {#2}}
 \newcommand{\tyRd}[1]{\keyword{Rd}\,#1}

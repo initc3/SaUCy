@@ -1,17 +1,22 @@
 \begin{figure*}
   \begin{grammar}
-    Types
+    Intuitionistic Types
     & $A,B$
-    &$\bnfas$& $\tyUnit \bnfalt \tyProd{A}{B} \bnfalt \tySum{A}{B} \bnfalt \tyRd{A} \bnfalt
+    &$\bnfas$& $\tyUnit \bnfalt \tyProd{A}{B} \bnfalt \tySum{A}{B} \bnfalt
     \tyWr{A} \bnfalt \tyRef{A} \bnfalt \tyArr{A}{\footnotesize $m$}{B}$
     \\
-    Linear Typing Contexts
-    & $\Delta$
-    &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:A$
+    Linear Types
+    & $X,Y$
+    &$\bnfas$& $\tyRd{A} \bnfalt !\,A \bnfalt X \otimes Y \bnfalt X
+    \lollipop{\footnotesize m} Y$
     \\
     Intuitionistic Typing Contexts
     & $\Gamma$
     &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
+    \\
+    Linear Typing Contexts
+    & $\Delta$
+    &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:A$
   \end{grammar}
 \caption{Syntax of types.}
 \label{fig:syntax--types}
