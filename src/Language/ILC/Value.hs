@@ -34,7 +34,6 @@ data Value = VInt Integer                        -- ^ Integer value
            | VTuple [Value]                      -- ^ Tuple value
            | VUnit                               -- ^ Unit value
            | VClosure (Maybe Name) TermEnv Expr  -- ^ Closure value
-           | VThunk TermEnv Expr                 -- ^ Thunk value
            | VRdChan Name (Chan Value)           -- ^ Read channel value
            | VWrChan Name (Chan Value)           -- ^ Write channel value
            | VRef (IORef Value)                  -- ^ Mutable reference value
@@ -57,7 +56,6 @@ instance Pretty Value where
   pretty (VSet vs)     = prettySet $ map pretty vs
   pretty VUnit         = text "()"
   pretty VClosure{}    = text "<closure>"
-  pretty VThunk{}      = text "<thunk>"
   pretty (VRdChan c _) = text "Rd" <+> text c
   pretty (VWrChan c _) = text "Wr" <+> text c
   pretty (VRef _)      = text "<ref>"

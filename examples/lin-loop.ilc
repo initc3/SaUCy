@@ -1,0 +1,4 @@
+letrec loop ch fun =
+  let (v, ch) = rd ch in
+  let! f = fun in
+    f v; loop ch fun

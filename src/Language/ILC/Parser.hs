@@ -97,6 +97,16 @@ recursiveLet = do
 eLet :: Parser Expr
 eLet = try recursiveLet <|> normalLet
 
+eLetBang :: Parser Expr
+eLetBang = do
+    reserved "let!"
+    ps <- commaSep1 pat
+    reservedOp "="
+    e1 <- expr
+    reserved "in"
+    e2 <- expr
+    return $ foldr (`ELetBang` e1) e2 ps
+
 eIf :: Parser Expr
 eIf = do
     reserved "if"
@@ -217,12 +227,6 @@ table = [ [ binaryOp "*" (EBin Mul) Ex.AssocLeft
         , [ binaryOp "||" (EBin Or) Ex.AssocLeft ]
         ]
 
-eThunk :: Parser Expr
-eThunk = mklexer EThunk $ reserved "thunk" >> atomExpr
-
-eForce :: Parser Expr
-eForce = mklexer EForce $ reserved "force" >> atomExpr
-
 ePrint :: Parser Expr
 ePrint = mklexer EPrint $ reserved "print" >> atomExpr
 
@@ -230,10 +234,8 @@ eError :: Parser Expr
 eError = mklexer EError $ reserved "error" >> atomExpr
 
 eUn :: Parser Expr
-eUn = eThunk
-   <|> eForce
-   <|> ePrint
-   <|> eError
+eUn = ePrint
+  <|> eError
 
 
 eCustom :: Parser Expr
@@ -264,7 +266,8 @@ term = try eApp
    <|> atomExpr
    <|> eLam
    <|> try eSet
-   <|> eLet
+   <|> try eLet
+   <|> eLetBang
    <|> eIf
    <|> eMatch
    <|> eNu

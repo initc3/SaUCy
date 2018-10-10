@@ -91,6 +91,14 @@ evalPut env m expr = case expr of
     let !binds = letBinds p v1
     res <- eval (Map.union env binds) e2
     putMVar m res
+
+  ELetBang p e1 e2 -> do
+    v1 <- eval env e1
+    -- If binds is not strict, this can miss invalid (but unused)
+    -- pattern matches (e.g., let 1 = 2 in ...).
+    let !binds = letBinds p v1
+    res <- eval (Map.union env binds) e2
+    putMVar m res
                   
   EIf e1 e2 e3 -> do
     v1 <- eval env e1
@@ -177,15 +185,6 @@ evalPut env m expr = case expr of
     let res = case v of
                 VBool b -> VBool $ not b
                 _       -> error "Eval.evalPut: Not"
-    putMVar m res
-      
-  EThunk e -> putMVar m $ VThunk env e
-  
-  EForce e -> do
-    v <- eval env e
-    res <- case v of
-             VThunk env' e' -> eval env' e'
-             _              -> error "Eval.evalPut: EForce"
     putMVar m res
       
   EPrint e -> do

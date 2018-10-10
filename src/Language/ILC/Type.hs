@@ -48,7 +48,6 @@ data Type = TVar TVar            -- ^ Type variable
           | TProd [Type]         -- ^ Product type
           | TSet Type            -- ^ Set type
           | TRef Type            -- ^ Reference type
-          | TThunk Type          -- ^ Thunk type
           | TWrChan Type         -- ^ Write channel type
           | TLin LType           -- ^ Linear type
           | TUsed                -- ^ Used linear type
@@ -67,10 +66,14 @@ simpty (TList t) = TList <$> simpty t
 simpty (TProd ts) = TProd <$> sequence (map simpty ts)
 simpty (TSet t) = TSet <$> simpty t
 simpty (TRef t) = TRef <$> simpty t
-simpty (TThunk t) = TThunk <$> simpty t
 simpty (TWrChan t) = TWrChan <$> simpty t
-simpty (TLin (LRdChan t)) = TLin . LRdChan <$> simpty t
+simpty (TLin l) = TLin <$> simplty l
 simpty TUsed = Just TUsed
+
+simplty :: LType -> Maybe LType
+simplty (LRdChan t) = LRdChan <$> simpty t
+simplty (LArr l1 l2 m) = LArr <$> simplty l1 <*> simplty l2 <*> simpmo m
+simplty (LBang t) = LBang <$> simpty t
 
 simptyfull ty = if ty == ty' then ty else simptyfull ty'
   where ty' = case simpty ty of
@@ -133,9 +136,8 @@ instance Pretty Type where
   pretty (TProd as)  = _prettyTuple as
   pretty (TSet a)    = pretty a
   pretty (TRef a)    = text "Ref" <+> pretty a
-  pretty (TThunk a)  = text "Thunk" <+> pretty a
   pretty (TWrChan a) = text "Wr" <+> pretty a
-  pretty (TLin (LRdChan a)) = text "Rd" <+> pretty a
+  pretty (TLin l) = pretty l
   pretty TUsed = text "Used"
 
 instance Pretty LType where

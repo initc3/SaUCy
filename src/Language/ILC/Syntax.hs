@@ -40,6 +40,7 @@ data Expr = EVar Name                            -- ^ Variable
           | EApp Expr Expr                       -- ^ Function application
           | EFix Expr                            -- ^ Fixpoint
           | ELet Pattern Expr Expr               -- ^ Let binding
+          | ELetBang Pattern Expr Expr           -- ^ Let binding
           | EIf Expr Expr Expr                   -- ^ Conditional
           | EMatch Expr [(Pattern, Expr, Expr)]  -- ^ Pattern match 
           | ENu (Name, Name) Expr                -- ^ Channel allocation
@@ -51,8 +52,6 @@ data Expr = EVar Name                            -- ^ Variable
           | EGet Expr                            -- ^ Dereference
           | ESet Name Expr                       -- ^ Mutable Assignment
           | ESeq Expr Expr                       -- ^ Sequencing
-          | EThunk Expr                          -- ^ Thunk expression
-          | EForce Expr                          -- ^ Force thunk
           | EPrint Expr                          -- ^ Print string
           | EError Expr                          -- ^ Throw error
           | EBin Binop Expr Expr                 -- ^ Binary expression

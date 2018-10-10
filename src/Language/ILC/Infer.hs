@@ -79,7 +79,6 @@ instance Substitutable Type where
   apply s (TProd ts) = TProd (apply s ts)
   apply s (TSet t) = TSet (apply s t)
   apply s (TRef t) = TRef (apply s t)
-  apply s (TThunk t) = TThunk (apply s t)
   apply s (TWrChan t) = TWrChan (apply s t)
   apply s (TLin l) = TLin (apply s l)
   apply s TUsed = TUsed
@@ -91,7 +90,6 @@ instance Substitutable Type where
   ftv (TProd ts) = ftv ts
   ftv (TSet t) = ftv t
   ftv (TRef t) = ftv t
-  ftv (TThunk t) = ftv t
   ftv (TWrChan t) = ftv t
   ftv (TLin l) = ftv l
   ftv TUsed = Set.empty
@@ -155,6 +153,16 @@ checkType ty1 ty2 msg = if ty1 == ty2 then return ty1
 -------------------------------------------------------------------------------
 -- Inference
 
+findLin :: [Constraint] -> [Constraint]
+findLin []                          = []
+--findLin (TypeConstraint c1 c2 : cs) = TypeConstraint (findLolli c1) (findLolli c2) : findLin cs
+findLin (TypeConstraint c1 c2 : cs) = TypeConstraint c1 c2 : findLin cs
+findLin (c:cs)                      = c : findLin cs
+
+{-findLolli :: Type -> Type
+findLolli (TArr (TLin l) t m) = traceShow (TLin (LArr l (findLolli t) m)) (TLin (LArr l (findLolli t) m))
+findLolli t                   = TLin (LBang t)-}
+
 -- | Run the inference monad
 runInfer :: TypeEnv -> Infer (Type, [Constraint], Mode, TypeEnv) -> Either TypeError (Type, [Constraint], Mode, TypeEnv)
 runInfer env m = runExcept $ evalStateT (runReaderT m env) initInfer
@@ -163,6 +171,7 @@ runInfer env m = runExcept $ evalStateT (runReaderT m env) initInfer
 inferExpr :: TypeEnv -> Expr -> Either TypeError (Scheme, Mode)
 inferExpr env ex = case runInfer env (infer ex) of
   Left err       -> Left err
+--  Right (ty, cs, m, _) -> case runSolve (findLin cs) of
   Right (ty, cs, m, _) -> case runSolve cs of
     Left err    -> Left err
     Right subst -> Right (closeOver $ simptyfull $ apply subst ty, m)
@@ -240,9 +249,6 @@ freshifyt env (TSet t) = do
 freshifyt env (TRef t) = do
   (t', env') <- freshifyt env t
   return (TRef t', env')
-freshifyt env (TThunk t) = do
-  (t', env') <- freshifyt env t
-  return (TThunk t', env')
 freshifyt env (TWrChan t) = do
   (t', env') <- freshifyt env t
   return (TWrChan t', env')
@@ -474,6 +480,18 @@ inferPat pat expr = case (pat, expr) of
     let (ts, cs, env) = concatTCEs tces
     return (tyMsg, cs, env)
 
+inferPatLin :: Pattern
+         -> Maybe Expr
+         -> Infer (Type, [Constraint], [(Name, (Type, Mode))])
+inferPatLin pat expr = case (pat, expr) of
+  (PVar x, Just (EVar y)) -> do
+    (tyy, m) <- lookupEnv y
+    tyV <- fresh (TVar . TV)
+    let tyBang = TLin (LBang tyV)
+    return (tyy, [TypeConstraint tyy tyBang], [(x, (tyV, m)), (y, (tyBang, m))])
+    
+  _ -> error "Infer:inferPatLin"
+
 inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint], Mode, TypeEnv)
 inferBranch expr (pat, guard, branch) = do
   env <- ask
@@ -643,6 +661,25 @@ infer expr = case expr of
             constraints = tyConstraints ++ moConstraints
         return (tyB, constraints, m3, _Γ3)
 
+  ELetBang p e1 e2 -> do
+    env <- ask
+    (_, c1, binds) <- inferPatLin p $ Just e1
+    (_, _, m1, _Γ2) <- infer e1
+    case runSolve (traceShow c1 c1) of
+      Left err -> throwError err
+      Right sub -> do
+        let sc t = generalize (apply sub env) (apply sub t)
+        (tyB, c2, m2, _Γ3) <- local (const _Γ2) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+                              (local (apply sub) (infer e2))
+                              binds)
+        m3 <- fresh (MVar . TV)
+        tyV <- fresh (TVar . TV)
+        --let tyConstraints = TypeConstraint tye1 (TLin (LBang tyV)) : c1 ++ c2
+        let tyConstraints = c1 ++ c2
+            moConstraints = [ModeConstraint (MSeq m1 m2) m3]
+            constraints = tyConstraints ++ moConstraints
+        return (tyB, constraints, m3, _Γ3)
+
   EMatch e bs -> do
     tcmes <- mapM (inferBranch e) bs
     let (ts, cs, ms, _Γs) = concatTCMEs tcmes
@@ -767,22 +804,6 @@ infer expr = case expr of
         constraints = tyConstraints ++ moConstraints
     return (tyUnit, constraints, V, _Γ2)
 
-  EThunk e -> do  -- TODO
-    (tyA, c, m, _Γ2) <- infer e
-    tyV <- fresh (TVar . TV)
-    let tyConstraints = TypeConstraint tyV (TThunk tyA) : c
-        moConstraints = [ModeConstraint m V]
-        constraints = tyConstraints ++ moConstraints
-    return (tyV, constraints, V, _Γ2)
-
-  EForce e -> do  -- TODO
-    (tyA, c, m, _Γ2) <- infer e
-    tyV <- fresh (TVar . TV)
-    let tyConstraints = TypeConstraint (TThunk tyV) tyA : c
-        moConstraints = [ModeConstraint m V]
-        constraints = tyConstraints ++ moConstraints
-    return (tyV, constraints, m, _Γ2)
-
   EPrint e -> do
     (_, c, m, _Γ2) <- infer e
     return (tyUnit, ModeConstraint m V : c, V, _Γ2)
@@ -817,7 +838,6 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fv (TProd as) = concatMap fv as
     fv (TSet a) = fv a
     fv (TRef a) = fv a
-    fv (TThunk a) = fv a
     fv (TWrChan a) = fv a
     fv (TLin l) = fvl l
     fv TUsed = []
@@ -841,7 +861,6 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     normtype (TProd as)   = TProd (map normtype as)
     normtype (TSet a)   = TSet (normtype a)
     normtype (TRef a)   = TRef (normtype a)
-    normtype (TThunk a)   = TThunk (normtype a)
     normtype (TWrChan a)   = TWrChan (normtype a)
     normtype (TLin l)   = TLin (normlin l)
     normtype TUsed   = TUsed
@@ -889,7 +908,6 @@ unifies (T (TList t1)) (T (TList t2)) = unifies (T t1) (T t2)
 unifies (T (TProd ts1)) (T (TProd ts2)) = unifyMany (map T ts1) (map T ts2)
 unifies (T (TSet t1)) (T (TSet t2)) = unifies (T t1) (T t2)
 unifies (T (TRef t1)) (T (TRef t2)) = unifies (T t1) (T t2)
-unifies (T (TThunk t1)) (T (TThunk t2)) = unifies (T t1) (T t2)
 unifies (T (TWrChan t1)) (T (TWrChan t2)) = unifies (T t1) (T t2)
 unifies (T (TLin l1)) (T (TLin l2)) = unifies (L l1) (L l2)
 
