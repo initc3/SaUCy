@@ -401,7 +401,7 @@ tList = mklexer TList $ brackets $ ty
 tProd = mklexer TProd $ parens $ commaSep2 ty
 tSet = mklexer TSet $ braces $ ty
 tRef = mklexer TRef $ reserved "Ref" >> ty'
-tRd = mklexer TRdChan $ reserved "Rd" >> ty'
+tRd = mklexer (TLin . LRdChan) $ reserved "Rd" >> ty'
 tWr = mklexer TWrChan $ reserved "Wr" >> ty'
 
 tArrow = do

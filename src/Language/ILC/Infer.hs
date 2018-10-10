@@ -73,15 +73,15 @@ instance Substitutable Type where
   apply _ (TCon a) = TCon a
   apply (Subst s) t@(TVar a) = case Map.findWithDefault (T t) a s of
     T ty -> ty
-    M _ -> t
+    _    -> t
   apply s (TArr t1 t2 m) = TArr (apply s t1) (apply s t2) (apply s m)
   apply s (TList t) = TList (apply s t)
   apply s (TProd ts) = TProd (apply s ts)
   apply s (TSet t) = TSet (apply s t)
   apply s (TRef t) = TRef (apply s t)
   apply s (TThunk t) = TThunk (apply s t)
-  apply s (TRdChan t) = TRdChan (apply s t)
   apply s (TWrChan t) = TWrChan (apply s t)
+  apply s (TLin l) = TLin (apply s l)
   apply s TUsed = TUsed
 
   ftv (TVar a) = Set.singleton a
@@ -92,14 +92,23 @@ instance Substitutable Type where
   ftv (TSet t) = ftv t
   ftv (TRef t) = ftv t
   ftv (TThunk t) = ftv t
-  ftv (TRdChan t) = ftv t
   ftv (TWrChan t) = ftv t
+  ftv (TLin l) = ftv l
   ftv TUsed = Set.empty
+
+instance Substitutable LType where
+  apply s (LRdChan t) = LRdChan (apply s t)
+  apply s (LArr t1 t2 m) = LArr (apply s t1) (apply s t2) (apply s m)
+  apply s (LBang t) = LBang (apply s t)
+  
+  ftv (LRdChan t) = ftv t
+  ftv (LArr t1 t2 m) = ftv t1 `Set.union` ftv t2 `Set.union` ftv m
+  ftv (LBang t) = ftv t
 
 instance Substitutable Mode where
   apply (Subst s) m@(MVar a) = case Map.findWithDefault (M m) a s of
     M mo -> mo
-    T _  -> m
+    _    -> m
   apply s (MSeq m1 m2) = MSeq (apply s m1) (apply s m2)
   apply s (MPar m1 m2) = MPar (apply s m1) (apply s m2)
   apply _         m          = m
@@ -112,9 +121,11 @@ instance Substitutable Mode where
 instance Substitutable TM where
   apply s (T t) = T $ apply s t
   apply s (M m) = M $ apply s m
+  apply s (L l) = L $ apply s l
 
   ftv (T t) = ftv t
   ftv (M m) = ftv m
+  ftv (L l) = ftv l
 
 instance Substitutable (Scheme, Mode) where
   apply (Subst s) (Forall as t, m) = (Forall as $ apply s' t, m)
@@ -232,13 +243,26 @@ freshifyt env (TRef t) = do
 freshifyt env (TThunk t) = do
   (t', env') <- freshifyt env t
   return (TThunk t', env')
-freshifyt env (TRdChan t) = do
-  (t', env') <- freshifyt env t
-  return (TRdChan t', env')
 freshifyt env (TWrChan t) = do
   (t', env') <- freshifyt env t
   return (TWrChan t', env')
+freshifyt env (TLin l) = do
+  (l', env') <- freshifyl env l
+  return (TLin l', env')
 freshifyt _ _ = error "Infer.freshifyt"
+
+freshifyl :: Map.Map TVar TVar -> LType -> Infer (LType, Map.Map TVar TVar)
+freshifyl env (LRdChan t) = do
+  (t', env') <- freshifyt env t
+  return (LRdChan t', env')
+freshifyl env (LArr l1 l2 m) = do
+  (l1', env1) <- freshifyl env l1
+  (l2', env2) <- freshifyl env1 l2
+  (m' , env3) <- freshifym env2 m
+  return (LArr l1' l2' m', env3)
+freshifyl env (LBang t) = do
+  (t', env') <- freshifyt env t
+  return (LBang t', env')
 
 instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
@@ -480,7 +504,7 @@ infer expr = case expr of
     (tyA, m) <- lookupEnv x
     _Γ1 <- ask
     _Γ2 <- case tyA of
-          TRdChan _ -> return $ extendTyEnv _Γ1 (x, (closeOver TUsed, V))
+          TLin (LRdChan _) -> return $ extendTyEnv _Γ1 (x, (closeOver TUsed, V))
           TUsed     -> do throwError LinearFail
           _         -> return _Γ1
     let constraints = [ModeConstraint m V]
@@ -673,10 +697,10 @@ infer expr = case expr of
   ERd e -> do
     (tyA, c, m, _Γ2) <- infer e
     tyV <- fresh (TVar . TV)
-    let tyConstraints = TypeConstraint tyA (TRdChan tyV) : c
+    let tyConstraints = TypeConstraint tyA (TLin (LRdChan tyV)) : c
         moConstraints = [ModeConstraint m V]
         constraints = tyConstraints ++ moConstraints
-    return (TProd [tyV, TRdChan tyV], constraints, R, _Γ2)
+    return (TProd [tyV, (TLin (LRdChan tyV))], constraints, R, _Γ2)
 
   EWr e1 e2 -> do
     (tyA1, c1, m1, _Γ2) <- infer e1
@@ -688,7 +712,7 @@ infer expr = case expr of
 
   ENu (rdc, wrc) e -> do
     tyV <- fresh (TVar . TV)
-    let newChans = [ (rdc, (Forall [] $ TRdChan tyV, V))
+    let newChans = [ (rdc, (Forall [] $ (TLin (LRdChan tyV)), V))
                    , (wrc, (Forall [] $ TWrChan tyV, V))]
     (tyA, c, m, _Γ2) <- foldr inEnv (infer e) newChans
     return (tyA, c , m, _Γ2)
@@ -794,8 +818,8 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fv (TSet a) = fv a
     fv (TRef a) = fv a
     fv (TThunk a) = fv a
-    fv (TRdChan a) = fv a
     fv (TWrChan a) = fv a
+    fv (TLin l) = fvl l
     fv TUsed = []
 
     fvm (MVar a) = [a]
@@ -803,20 +827,23 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fvm (MPar m1 m2) = fvm m1 ++ fvm m2
     fvm m        = []
     
+    fvl (LRdChan a) = fv a
+    fvl (LArr a b m) = fvl a ++ fvl b ++ fvm m
+    fvl (LBang a) = fv a
+    
     normtype (TVar a)   =
         case Prelude.lookup a ord of
             Just x -> TVar x
             Nothing -> error "type variable not in signature"
     normtype (TCon a)   = TCon a
-    -- TODO: normalize modes
     normtype (TArr a b m) = TArr (normtype a) (normtype b) (normmode m)
     normtype (TList a)   = TList (normtype a)
     normtype (TProd as)   = TProd (map normtype as)
     normtype (TSet a)   = TSet (normtype a)
     normtype (TRef a)   = TRef (normtype a)
     normtype (TThunk a)   = TThunk (normtype a)
-    normtype (TRdChan a)   = TRdChan (normtype a)
     normtype (TWrChan a)   = TWrChan (normtype a)
+    normtype (TLin l)   = TLin (normlin l)
     normtype TUsed   = TUsed
 
     normmode (MVar a) =
@@ -826,6 +853,10 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     normmode (MSeq m1 m2) = MSeq (normmode m1) (normmode m2)
     normmode (MPar m1 m2) = MPar (normmode m1) (normmode m2)
     normmode m        = m
+
+    normlin (LRdChan a)  = LRdChan (normtype a)
+    normlin (LArr a b m) = LArr (normlin a) (normlin b) (normmode m)
+    normlin (LBang a)    = LBang (normtype a)
     
 -------------------------------------------------------------------------------
 -- Constraint Solver
@@ -859,13 +890,18 @@ unifies (T (TProd ts1)) (T (TProd ts2)) = unifyMany (map T ts1) (map T ts2)
 unifies (T (TSet t1)) (T (TSet t2)) = unifies (T t1) (T t2)
 unifies (T (TRef t1)) (T (TRef t2)) = unifies (T t1) (T t2)
 unifies (T (TThunk t1)) (T (TThunk t2)) = unifies (T t1) (T t2)
-unifies (T (TRdChan t1)) (T (TRdChan t2)) = unifies (T t1) (T t2)
 unifies (T (TWrChan t1)) (T (TWrChan t2)) = unifies (T t1) (T t2)
+unifies (T (TLin l1)) (T (TLin l2)) = unifies (L l1) (L l2)
+
+unifies (L (LRdChan t1)) (L (LRdChan t2)) = unifies (T t1) (T t2)
+unifies (L (LArr l1 l2 m1)) (L (LArr l3 l4 m2)) = unifyMany [L l1, L l2, M m1] [L l3, L l4, M m2]
+unifies (L (LBang t1)) (L (LBang t2)) = unifies (T t1) (T t2)
 
 unifies (M (MVar v)) (M t) = v `bind` (M t)
 unifies (M t) (M (MVar v)) = v `bind` (M t)
 unifies (M (MSeq m1 m2)) (M (MSeq m3 m4)) = unifyMany [M m1, M m2] [M m3, M m4]
 unifies (M (MPar m1 m2)) (M (MPar m3 m4)) = unifyMany [M m1, M m2] [M m3, M m4]
+
 unifies t1 t2 = throwError $ UnificationFail t1 t2
 
 solver :: Unifier -> Solve Subst

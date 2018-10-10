@@ -12,6 +12,7 @@
 
 module Language.ILC.Type (
     Type(..)
+  , LType(..)
   , simpty
   , simptyfull
   , Scheme(..)
@@ -48,10 +49,15 @@ data Type = TVar TVar            -- ^ Type variable
           | TSet Type            -- ^ Set type
           | TRef Type            -- ^ Reference type
           | TThunk Type          -- ^ Thunk type
-          | TRdChan Type         -- ^ Read channel type
           | TWrChan Type         -- ^ Write channel type
+          | TLin LType           -- ^ Linear type
           | TUsed                -- ^ Used linear type
           deriving (Eq, Ord, Show)
+
+data LType = LRdChan Type
+           | LArr LType LType Mode
+           | LBang Type
+           deriving (Eq, Ord, Show)
 
 simpty :: Type -> Maybe Type
 simpty t@(TVar _) = Just t
@@ -62,8 +68,8 @@ simpty (TProd ts) = TProd <$> sequence (map simpty ts)
 simpty (TSet t) = TSet <$> simpty t
 simpty (TRef t) = TRef <$> simpty t
 simpty (TThunk t) = TThunk <$> simpty t
-simpty (TRdChan t) = TRdChan <$> simpty t
 simpty (TWrChan t) = TWrChan <$> simpty t
+simpty (TLin (LRdChan t)) = TLin . LRdChan <$> simpty t
 simpty TUsed = Just TUsed
 
 simptyfull ty = if ty == ty' then ty else simptyfull ty'
@@ -128,9 +134,24 @@ instance Pretty Type where
   pretty (TSet a)    = pretty a
   pretty (TRef a)    = text "Ref" <+> pretty a
   pretty (TThunk a)  = text "Thunk" <+> pretty a
-  pretty (TRdChan a) = text "Rd" <+> pretty a
   pretty (TWrChan a) = text "Wr" <+> pretty a
+  pretty (TLin (LRdChan a)) = text "Rd" <+> pretty a
   pretty TUsed = text "Used"
+
+instance Pretty LType where
+  pretty (LRdChan a) = text "Rd" <+> pretty a
+  pretty (LArr a b V)  = maybeParens (isArrow a) (pretty a) <+> text "-o"
+                                                            <+> pretty b
+      where
+        isArrow LArr {} = True
+        isArrow _       = False
+  pretty (LArr a b m)  = maybeParens (isArrow a) (pretty a) <+> text "-o@"
+                                                            <>  pretty m
+                                                            <+> pretty b
+      where
+        isArrow LArr {} = True
+        isArrow _       = False
+  pretty (LBang a)    = text "!(" <> pretty a <> text ")"
 
 instance Pretty Scheme where
   pretty (Forall [] t) = pretty t
@@ -149,8 +170,10 @@ prettyTyEnv (TypeEnv env) = map (show . prettySignature) $ Map.toList env
 
 data TM = T Type
         | M Mode
+        | L LType
         deriving (Eq, Ord, Show)
 
 instance Pretty TM where
   pretty (T t) = pretty t
   pretty (M m) = pretty m
+  pretty (L l) = pretty l
