@@ -151,6 +151,3 @@ letrec sort lst =
     match lst with
     | []   => []
     | x:xs => insert x (sort xs)
-    
-letrec loop c f =
-  let (v, c) = rd c in f v; loop c f

@@ -155,13 +155,35 @@ checkType ty1 ty2 msg = if ty1 == ty2 then return ty1
 
 findLin :: [Constraint] -> [Constraint]
 findLin []                          = []
---findLin (TypeConstraint c1 c2 : cs) = TypeConstraint (findLolli c1) (findLolli c2) : findLin cs
 findLin (TypeConstraint c1 c2 : cs) = TypeConstraint c1 c2 : findLin cs
 findLin (c:cs)                      = c : findLin cs
 
-{-findLolli :: Type -> Type
-findLolli (TArr (TLin l) t m) = traceShow (TLin (LArr l (findLolli t) m)) (TLin (LArr l (findLolli t) m))
-findLolli t                   = TLin (LBang t)-}
+findLolli :: Type -> Type
+findLolli (TArr (TLin l) t m) = TArr (TLin l) t m
+findLolli t                   = t
+
+getLollis :: Map.Map Type Type -> [Constraint] -> Map.Map Type Type
+getLollis env [] = env
+getLollis env ((TypeConstraint ty1 ty2@(TArr (TLin l) t m)):cs) =
+  getLollis (Map.insert ty1 ty2 env) cs
+getLollis env (_:cs) = getLollis env cs
+
+partConstraints cs = ts ++ holy
+  where
+    (ts, ms) = partition (\case {TypeConstraint{} -> True ; _ -> False}) cs
+    cmap = foldl (\env (TypeConstraint t1 t2) -> Map.insert t1 t2 env) Map.empty ts
+    lollis = Map.assocs $ getLollis Map.empty ts
+    wtf = foldl (\map pair -> linearize map pair) cmap lollis
+    holy = Map.foldrWithKey (\k a acc -> TypeConstraint k a : acc) [] wtf
+
+linearize :: Map.Map Type Type -> (Type, Type) -> Map.Map Type Type
+linearize env (tv, TArr (TLin l) t m) = case Map.lookup t env' of
+  Nothing -> Map.insert tv (TLin (LArr l (LBang t) m)) env'
+  Just (TLin l') -> Map.insert tv (TLin (LArr l l' m)) env'
+  where
+    env' = case Map.lookup t env of
+             Nothing -> env
+             Just t' -> linearize env (t, t')
 
 -- | Run the inference monad
 runInfer :: TypeEnv -> Infer (Type, [Constraint], Mode, TypeEnv) -> Either TypeError (Type, [Constraint], Mode, TypeEnv)
@@ -171,8 +193,8 @@ runInfer env m = runExcept $ evalStateT (runReaderT m env) initInfer
 inferExpr :: TypeEnv -> Expr -> Either TypeError (Scheme, Mode)
 inferExpr env ex = case runInfer env (infer ex) of
   Left err       -> Left err
---  Right (ty, cs, m, _) -> case runSolve (findLin cs) of
   Right (ty, cs, m, _) -> case runSolve cs of
+--  Right (ty, cs, m, _) -> case runSolve (partConstraints cs) of
     Left err    -> Left err
     Right subst -> Right (closeOver $ simptyfull $ apply subst ty, m)
 
@@ -488,7 +510,7 @@ inferPatLin pat expr = case (pat, expr) of
     (tyy, m) <- lookupEnv y
     tyV <- fresh (TVar . TV)
     let tyBang = TLin (LBang tyV)
-    return (tyy, [TypeConstraint tyy tyBang], [(x, (tyV, m)), (y, (tyBang, m))])
+    return (tyy, [TypeConstraint tyy tyBang], [(x, (tyV, m))])
     
   _ -> error "Infer:inferPatLin"
 
@@ -665,7 +687,7 @@ infer expr = case expr of
     env <- ask
     (_, c1, binds) <- inferPatLin p $ Just e1
     (_, _, m1, _Γ2) <- infer e1
-    case runSolve (traceShow c1 c1) of
+    case runSolve c1 of
       Left err -> throwError err
       Right sub -> do
         let sc t = generalize (apply sub env) (apply sub t)
@@ -699,7 +721,11 @@ infer expr = case expr of
   ELam (PVar x) e -> do
     tyV <- fresh (TVar . TV)
     (tyA, c, m, _Γ2) <- inEnv (x, (Forall [] tyV, V)) (infer e)
-    return (TArr tyV tyA m, c, V, _Γ2)
+    (tyA', tyV') <- case runSolve c of
+             Left err -> throwError err
+             Right sub -> return $ (apply sub tyA, apply sub tyV)
+    --return $ traceShow (tyA', tyV') (TArr tyV' tyA' m, c, V, _Γ2)
+    return (TArr tyV' tyA' m, c, V, _Γ2)
 
   ELam PUnit e -> do
     (tyA, c, m, _Γ2) <- infer e
@@ -719,6 +745,7 @@ infer expr = case expr of
     let tyConstraints = TypeConstraint tyA2A (TArr tyV tyV mV) : c
         moConstraints  = [ModeConstraint m V]
         constraints = tyConstraints ++ moConstraints
+    --return (traceShow constraints (tyV, constraints, V, _Γ2))
     return (tyV, constraints, V, _Γ2)
 
   EApp e1 e2 -> do
