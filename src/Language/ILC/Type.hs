@@ -53,8 +53,10 @@ data Type = TVar TVar            -- ^ Type variable
           | TUsed                -- ^ Used linear type
           deriving (Eq, Ord, Show)
 
-data LType = LRdChan Type
+data LType = LVar TVar
+           | LRdChan Type
            | LArr LType LType Mode
+           | LTensor LType LType
            | LBang Type
            deriving (Eq, Ord, Show)
 
@@ -71,8 +73,10 @@ simpty (TLin l) = TLin <$> simplty l
 simpty TUsed = Just TUsed
 
 simplty :: LType -> Maybe LType
+simplty l@(LVar _) = Just l
 simplty (LRdChan t) = LRdChan <$> simpty t
 simplty (LArr l1 l2 m) = LArr <$> simplty l1 <*> simplty l2 <*> simpmo m
+simplty (LTensor l1 l2) = LTensor <$> simplty l1 <*> simplty l2
 simplty (LBang t) = LBang <$> simpty t
 
 simptyfull ty = if ty == ty' then ty else simptyfull ty'
@@ -141,6 +145,7 @@ instance Pretty Type where
   pretty TUsed = text "Used"
 
 instance Pretty LType where
+  pretty (LVar a) = pretty a
   pretty (LRdChan a) = text "Rd" <+> pretty a
   pretty (LArr a b V)  = maybeParens (isArrow a) (pretty a) <+> text "-o"
                                                             <+> pretty b
@@ -153,6 +158,7 @@ instance Pretty LType where
       where
         isArrow LArr {} = True
         isArrow _       = False
+  pretty (LTensor a b)  = pretty a <> text "⊗" <> pretty b
   pretty (LBang a)    = text "!(" <> pretty a <> text ")"
 
 instance Pretty Scheme where

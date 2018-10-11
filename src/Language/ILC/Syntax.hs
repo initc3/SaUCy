@@ -40,6 +40,7 @@ data Expr = EVar Name                            -- ^ Variable
           | EApp Expr Expr                       -- ^ Function application
           | EFix Expr                            -- ^ Fixpoint
           | ELet Pattern Expr Expr               -- ^ Let binding
+          | ELetRd Pattern Expr Expr        -- ^ Let binding
           | ELetBang Pattern Expr Expr           -- ^ Let binding
           | EIf Expr Expr Expr                   -- ^ Conditional
           | EMatch Expr [(Pattern, Expr, Expr)]  -- ^ Pattern match 

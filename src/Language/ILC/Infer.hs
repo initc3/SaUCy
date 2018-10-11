@@ -95,12 +95,18 @@ instance Substitutable Type where
   ftv TUsed = Set.empty
 
 instance Substitutable LType where
+  apply (Subst s) t@(LVar a) = case Map.findWithDefault (L t) a s of
+    L ty -> ty
+    _    -> t
   apply s (LRdChan t) = LRdChan (apply s t)
   apply s (LArr t1 t2 m) = LArr (apply s t1) (apply s t2) (apply s m)
+  apply s (LTensor t1 t2) = LTensor (apply s t1) (apply s t2)
   apply s (LBang t) = LBang (apply s t)
   
+  ftv (LVar a) = Set.singleton a
   ftv (LRdChan t) = ftv t
   ftv (LArr t1 t2 m) = ftv t1 `Set.union` ftv t2 `Set.union` ftv m
+  ftv (LTensor t1 t2) = ftv t1 `Set.union` ftv t2
   ftv (LBang t) = ftv t
 
 instance Substitutable Mode where
@@ -220,6 +226,8 @@ lookupEnv x = do
   TypeEnv env <- ask
   case Map.lookup x env of
     Nothing -> throwError $ UnboundVariable x
+    -- TODO: Fix
+    --Just (Forall _ t@(TLin _), m) -> return (t, m)
     Just (tyA, m)  -> do ty <- instantiate tyA
                          return (ty, m)
 
@@ -280,6 +288,7 @@ freshifyt env (TLin l) = do
 freshifyt _ _ = error "Infer.freshifyt"
 
 freshifyl :: Map.Map TVar TVar -> LType -> Infer (LType, Map.Map TVar TVar)
+-- TODO: LVar
 freshifyl env (LRdChan t) = do
   (t', env') <- freshifyt env t
   return (LRdChan t', env')
@@ -288,6 +297,10 @@ freshifyl env (LArr l1 l2 m) = do
   (l2', env2) <- freshifyl env1 l2
   (m' , env3) <- freshifym env2 m
   return (LArr l1' l2' m', env3)
+freshifyl env (LTensor l1 l2) = do
+  (l1', env1) <- freshifyl env l1
+  (l2', env2) <- freshifyl env1 l2
+  return (LTensor l1' l2', env2)
 freshifyl env (LBang t) = do
   (t', env') <- freshifyt env t
   return (LBang t', env')
@@ -296,9 +309,7 @@ instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
   as' <- mapM (const (fresh (TVar . TV))) as
   let s = Subst $ Map.fromList $ zip as (map T as')
-      s' = apply s t
-  (s'', _) <- freshifyt Map.empty s'
-  return s''
+  return $ apply s t
 
 generalize :: TypeEnv -> Type-> Scheme -- ^ T-Gen
 generalize env t = Forall as t
@@ -685,9 +696,11 @@ infer expr = case expr of
 
   ELetBang p e1 e2 -> do
     env <- ask
+    tyV <- fresh (TVar . TV)
     (_, c1, binds) <- inferPatLin p $ Just e1
-    (_, _, m1, _Γ2) <- infer e1
-    case runSolve c1 of
+    (tye1, _, m1, _Γ2) <- infer e1
+    let c1' = TypeConstraint tye1 (TLin (LBang tyV)) : c1
+    case runSolve c1' of
       Left err -> throwError err
       Right sub -> do
         let sc t = generalize (apply sub env) (apply sub t)
@@ -695,9 +708,26 @@ infer expr = case expr of
                               (local (apply sub) (infer e2))
                               binds)
         m3 <- fresh (MVar . TV)
-        tyV <- fresh (TVar . TV)
-        --let tyConstraints = TypeConstraint tye1 (TLin (LBang tyV)) : c1 ++ c2
-        let tyConstraints = c1 ++ c2
+        let tyConstraints = c1' ++ c2
+            moConstraints = [ModeConstraint (MSeq m1 m2) m3]
+            constraints = tyConstraints ++ moConstraints
+        return (tyB, constraints, m3, _Γ3)
+
+  ELetRd (PTuple [PVar v, PVar c]) (ERd e1) e2 -> do
+    env <- ask
+    tyV <- fresh (TVar . TV)
+    let binds = [(v, (TLin (LBang tyV), V)), (c, (TLin (LRdChan tyV), V))]
+    (tye1, c1, m1, _Γ2) <- infer (ERd e1)
+    let c1' = TypeConstraint (TLin (LTensor (LBang tyV) (LRdChan tyV))) tye1 : c1
+    case runSolve c1' of
+      Left err -> throwError err
+      Right sub -> do
+        let sc t = generalize (apply sub env) (apply sub t)
+        (tyB, c2, m2, _Γ3) <- (local (const _Γ2) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+                              (local (apply sub) (infer e2))
+                              binds))
+        m3 <- fresh (MVar . TV)
+        let tyConstraints = c1' ++ c2
             moConstraints = [ModeConstraint (MSeq m1 m2) m3]
             constraints = tyConstraints ++ moConstraints
         return (tyB, constraints, m3, _Γ3)
@@ -721,11 +751,14 @@ infer expr = case expr of
   ELam (PVar x) e -> do
     tyV <- fresh (TVar . TV)
     (tyA, c, m, _Γ2) <- inEnv (x, (Forall [] tyV, V)) (infer e)
-    (tyA', tyV') <- case runSolve c of
+    (tyV', tyA') <- case runSolve c of
              Left err -> throwError err
-             Right sub -> return $ (apply sub tyA, apply sub tyV)
-    --return $ traceShow (tyA', tyV') (TArr tyV' tyA' m, c, V, _Γ2)
-    return (TArr tyV' tyA' m, c, V, _Γ2)
+             Right sub -> return $ (apply sub tyV, apply sub tyA)
+    case (tyV', tyA') of
+      (TLin lV', TLin lA') -> do
+        return (TLin (LArr lV' lA' m), c, V, _Γ2)
+      _                    -> do
+        return (TArr tyV' tyA' m, c, V, _Γ2)
 
   ELam PUnit e -> do
     (tyA, c, m, _Γ2) <- infer e
@@ -740,23 +773,39 @@ infer expr = case expr of
 
   EFix e -> do
     (tyA2A, c, m, _Γ2) <- infer e
-    tyV <- fresh (TVar . TV)
+    tyA2A' <- case runSolve c of
+             Left err -> throwError err
+             Right sub -> return $ apply sub tyA2A
     mV <- fresh (MVar . TV)
-    let tyConstraints = TypeConstraint tyA2A (TArr tyV tyV mV) : c
-        moConstraints  = [ModeConstraint m V]
+    (tyRes, tyConstraints) <- case tyA2A' of
+      TLin l -> do
+        tyV <- fresh (LVar . TV)
+        return (TLin tyV, TypeConstraint tyA2A (TLin (LArr tyV tyV mV )) : c)
+      _      -> do
+        tyV <- fresh (TVar . TV)
+        return (tyV, TypeConstraint tyA2A (TArr tyV tyV mV) : c)
+    let moConstraints  = [ModeConstraint m V]
         constraints = tyConstraints ++ moConstraints
-    --return (traceShow constraints (tyV, constraints, V, _Γ2))
-    return (tyV, constraints, V, _Γ2)
-
+    return (tyRes, constraints, V, _Γ2)
+    
   EApp e1 e2 -> do
     (tyA, c1, m1, _Γ2) <- infer e2
     (tyA2B, c2, m2, _Γ3) <- local (const _Γ2) (infer e1)
-    tyV <- fresh (TVar . TV)
+    (tyA2B', tyA') <- case runSolve (c1 ++ c2) of
+             Left err -> throwError err
+             Right sub -> return $ (apply sub tyA2B, apply sub tyA)
     mV <- fresh (MVar . TV)
-    let tyConstraints = TypeConstraint tyA2B (TArr tyA tyV mV) : c1 ++ c2
-        moConstraints = [ModeConstraint  m1 V, ModeConstraint m2 V]
+    (tyRet, tyConstraints) <- case (tyA2B', tyA') of
+          (t, TLin l) -> do
+            tyV <- fresh (LVar . TV)
+            tyA' <- fresh (LVar . TV)
+            return (TLin tyV, TypeConstraint tyA2B (TLin (LArr tyA' tyV mV)) : TypeConstraint (TLin tyA') tyA : c1 ++ c2)
+          (t1, t2)    -> do
+            tyV <- fresh (TVar . TV)
+            return  (tyV, TypeConstraint tyA2B (TArr tyA tyV mV) : c1 ++ c2)
+    let moConstraints = [ModeConstraint  m1 V, ModeConstraint m2 V]
         constraints = tyConstraints ++ moConstraints
-    return (tyV, constraints, mV, _Γ3)
+    return (tyRet, constraints, mV, _Γ3)
 
   ERd e -> do
     (tyA, c, m, _Γ2) <- infer e
@@ -764,7 +813,7 @@ infer expr = case expr of
     let tyConstraints = TypeConstraint tyA (TLin (LRdChan tyV)) : c
         moConstraints = [ModeConstraint m V]
         constraints = tyConstraints ++ moConstraints
-    return (TProd [tyV, (TLin (LRdChan tyV))], constraints, R, _Γ2)
+    return (TLin (LTensor (LBang tyV) (LRdChan tyV)), constraints, R, _Γ2)
 
   EWr e1 e2 -> do
     (tyA1, c1, m1, _Γ2) <- infer e1
@@ -874,8 +923,10 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fvm (MPar m1 m2) = fvm m1 ++ fvm m2
     fvm m        = []
     
+    fvl (LVar a) = [a]
     fvl (LRdChan a) = fv a
     fvl (LArr a b m) = fvl a ++ fvl b ++ fvm m
+    fvl (LTensor a b) = fvl a ++ fvl b
     fvl (LBang a) = fv a
     
     normtype (TVar a)   =
@@ -900,8 +951,13 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     normmode (MPar m1 m2) = MPar (normmode m1) (normmode m2)
     normmode m        = m
 
+    normlin (LVar a)   =
+        case Prelude.lookup a ord of
+            Just x -> LVar x
+            Nothing -> error "ltype variable not in signature"
     normlin (LRdChan a)  = LRdChan (normtype a)
     normlin (LArr a b m) = LArr (normlin a) (normlin b) (normmode m)
+    normlin (LTensor a b) = LTensor (normlin a) (normlin b)
     normlin (LBang a)    = LBang (normtype a)
     
 -------------------------------------------------------------------------------
@@ -938,8 +994,11 @@ unifies (T (TRef t1)) (T (TRef t2)) = unifies (T t1) (T t2)
 unifies (T (TWrChan t1)) (T (TWrChan t2)) = unifies (T t1) (T t2)
 unifies (T (TLin l1)) (T (TLin l2)) = unifies (L l1) (L l2)
 
+unifies (L (LVar v)) (L t) = v `bind` (L t)
+unifies (L t) (L (LVar v)) = v `bind` (L t)
 unifies (L (LRdChan t1)) (L (LRdChan t2)) = unifies (T t1) (T t2)
 unifies (L (LArr l1 l2 m1)) (L (LArr l3 l4 m2)) = unifyMany [L l1, L l2, M m1] [L l3, L l4, M m2]
+unifies (L (LTensor l1 l2)) (L (LTensor l3 l4)) = unifyMany [L l1, L l2] [L l3, L l4]
 unifies (L (LBang t1)) (L (LBang t2)) = unifies (T t1) (T t2)
 
 unifies (M (MVar v)) (M t) = v `bind` (M t)
@@ -974,6 +1033,8 @@ bind a (T t) | t == TVar a     = return emptySubst
              | otherwise       = return (Subst $ Map.singleton a (T t))
 bind a (M t) | t == MVar a     = return emptySubst
              | otherwise       = return (Subst $ Map.singleton a (M t))
+bind a (L t) | t == LVar a     = return emptySubst
+             | otherwise       = return (Subst $ Map.singleton a (L t))
 
 occursCheck :: Substitutable a => TVar -> a -> Bool
 occursCheck a t = a `Set.member` ftv t

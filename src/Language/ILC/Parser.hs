@@ -107,6 +107,17 @@ eLetBang = do
     e2 <- expr
     return $ foldr (`ELetBang` e1) e2 ps
 
+eLetRd :: Parser Expr
+eLetRd = do
+    reserved "let"
+    p <- pat
+    reservedOp "="
+    reservedOp "rd"
+    e1 <- expr
+    reserved "in"
+    e2 <- expr
+    return $ ELetRd p (ERd e1) e2
+
 eIf :: Parser Expr
 eIf = do
     reserved "if"
@@ -166,8 +177,8 @@ eNu = do
     e <- expr
     return $ foldr ENu e cs
 
-eRd :: Parser Expr
-eRd = mklexer ERd $ reserved "rd" >> atomExpr
+{-eRd :: Parser Expr
+eRd = mklexer ERd $ reserved "rd" >> atomExpr-}
 
 eWr :: Parser Expr
 eWr = do
@@ -268,10 +279,11 @@ term = try eApp
    <|> try eSet
    <|> try eLet
    <|> eLetBang
+   <|> eLetRd
    <|> eIf
    <|> eMatch
    <|> eNu
-   <|> eRd
+   -- <|> eRd
    <|> eWr
    <|> eRef
    <|> eGet

@@ -99,6 +99,14 @@ evalPut env m expr = case expr of
     let !binds = letBinds p v1
     res <- eval (Map.union env binds) e2
     putMVar m res
+
+  ELetRd p e1 e2 -> do
+    v1 <- eval env e1
+    -- If binds is not strict, this can miss invalid (but unused)
+    -- pattern matches (e.g., let 1 = 2 in ...).
+    let !binds = letBinds p v1
+    res <- eval (Map.union env binds) e2
+    putMVar m res
                   
   EIf e1 e2 e3 -> do
     v1 <- eval env e1
