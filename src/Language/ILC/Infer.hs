@@ -165,7 +165,7 @@ runInfer env m = runExcept $ evalStateT (runReaderT m env) initInfer
 
 -- | Solve for toplevel type of an expression in a give environment
 inferExpr :: TypeEnv -> Expr -> Either TypeError (Scheme, Mode)
-inferExpr env ex = case runInfer env (infer ex) of
+inferExpr env ex = case runInfer env (infer (traceShow ex ex)) of
   Left err       -> Left err
   Right (ty, cs, m, _) -> case runSolve cs of
     Left err    -> Left err
@@ -612,6 +612,14 @@ infer expr = case expr of
             moConstraints = [ModeConstraint (MSeq m1 m2) m3]
             constraints = tyConstraints ++ moConstraints
         return (tyB, constraints, m3, _Γ3)
+
+  EBang e -> do
+    (tyA, c, m, _Γ2) <- infer e
+    tyV <- fresh (TVar . TV)
+    let tyConstraints = TypeConstraint tyV (TLin (LBang tyA)) : c
+        moConstraints = [ModeConstraint m V]
+        constraints = tyConstraints ++ moConstraints
+    return (tyV, constraints, V, _Γ2)
 
   ELetRd (PTuple [PVar v, PVar c]) (ERd e1) e2 -> do
     env <- ask

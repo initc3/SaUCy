@@ -1,0 +1,2 @@
+letrec loop c f =
+  let (v, c) = rd c in f v; loop c f

@@ -91,7 +91,7 @@ langDef = Tok.LanguageDef
                             , ">="
                             , "=="
                             , "<>"
-                            , "!"
+                            , "~"
                             , "|>"
                             , "<|>"
                             , ";"
@@ -101,6 +101,7 @@ langDef = Tok.LanguageDef
                             , "::"
                             , ":="
                             , "@"
+                            , "!"
                             ]
     , Tok.caseSensitive = True
     }

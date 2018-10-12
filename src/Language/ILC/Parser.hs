@@ -224,7 +224,7 @@ table = [ [ binaryOp "*" (EBin Mul) Ex.AssocLeft
         , [ binaryOp "%" (EBin Mod) Ex.AssocLeft ]
         , [ binaryOp "+" (EBin Add) Ex.AssocLeft
           , binaryOp "-" (EBin Sub) Ex.AssocLeft ]
-        , [ prefixOp "!" (EUn Not) ]
+        , [ prefixOp "~" (EUn Not) ]
         , [ binaryOp ":" (EBin Cons) Ex.AssocRight
           , binaryOp "++" (EBin Concat) Ex.AssocLeft ]
         , [ binaryOp "<" (EBin Lt) Ex.AssocNone
@@ -244,10 +244,13 @@ ePrint = mklexer EPrint $ reserved "print" >> atomExpr
 eError :: Parser Expr
 eError = mklexer EError $ reserved "error" >> atomExpr
 
+eBang :: Parser Expr
+eBang = mklexer EBang $ reserved "!" >> atomExpr
+
 eUn :: Parser Expr
 eUn = ePrint
   <|> eError
-
+  <|> eBang
 
 eCustom :: Parser Expr
 eCustom = do

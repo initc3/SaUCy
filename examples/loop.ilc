@@ -1,2 +1,5 @@
 letrec loop c f =
-  let (v, c) = rd c in f v; loop c f
+  let (v, c) = rd c in
+  let! v' = v in
+  let! f' = f in
+    f' v'; loop c f

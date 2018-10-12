@@ -100,6 +100,10 @@ evalPut env m expr = case expr of
     res <- eval (Map.union env binds) e2
     putMVar m res
 
+  EBang e -> do
+    res <- eval env e
+    putMVar m res
+
   ELetRd p e1 e2 -> do
     v1 <- eval env e1
     -- If binds is not strict, this can miss invalid (but unused)
