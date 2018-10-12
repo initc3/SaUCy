@@ -14,8 +14,11 @@ module Language.ILC.Decl (
     TopDecl(..)
   , ValCon
   , declToAssoc
+  , getCustomData
   ) where
 
+import Language.ILC.Infer
+import Language.ILC.Mode
 import Language.ILC.Pretty
 import Language.ILC.Syntax
 import Language.ILC.Type
@@ -25,7 +28,7 @@ data TopDecl = Decl Name Expr
              | TyCon Name [ValCon]
              deriving (Eq, Show)
 
-type ValCon = (Name, [Type])
+type ValCon = (Name, Type)
 
 -- | A program consists of a list of declarations and a main expression.
 data Program = Program [TopDecl] Expr
@@ -35,3 +38,9 @@ declToAssoc :: [TopDecl] -> [(Name, Expr)]
 declToAssoc ds = reverse $ foldl f [] ds
   where f acc (Decl x e) = (x, e) : acc
         f acc _          = acc
+
+getCustomData :: [TopDecl] -> [(Name, Scheme)]
+getCustomData ds = reverse $ foldl f [] ds
+  where f acc (TyCon dc vcs) = (map (\(vc,ty) -> (vc, closeOver ty)) vcs) ++ acc
+        f acc _             = acc
+

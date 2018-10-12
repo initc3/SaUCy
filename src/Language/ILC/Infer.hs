@@ -20,6 +20,7 @@
 module Language.ILC.Infer (
     inferExpr
   , inferTop
+  , closeOver
   ) where
 
 import Control.Monad.Except
@@ -81,6 +82,7 @@ instance Substitutable Type where
   apply s (TRef t) = TRef (apply s t)
   apply s (TWrChan t) = TWrChan (apply s t)
   apply s (TLin l) = TLin (apply s l)
+  apply s (TCust t) = TCust (apply s t)
   apply s TUsed = TUsed
 
   ftv (TVar a) = Set.singleton a
@@ -92,6 +94,7 @@ instance Substitutable Type where
   ftv (TRef t) = ftv t
   ftv (TWrChan t) = ftv t
   ftv (TLin l) = ftv l
+  ftv (TCust t) = ftv t
   ftv TUsed = Set.empty
 
 instance Substitutable LType where
@@ -131,10 +134,10 @@ instance Substitutable TM where
   ftv (M m) = ftv m
   ftv (L l) = ftv l
 
-instance Substitutable (Scheme, Mode) where
-  apply (Subst s) (Forall as t, m) = (Forall as $ apply s' t, m)
+instance Substitutable Scheme where
+  apply (Subst s) (Forall as t) = (Forall as $ apply s' t)
                           where s' = Subst $ foldr Map.delete s as
-  ftv (Forall as t, _) = ftv t `Set.difference` Set.fromList as
+  ftv (Forall as t) = ftv t `Set.difference` Set.fromList as
 
 instance Substitutable Constraint where
   apply s (TypeConstraint t1 t2) = TypeConstraint (apply s t1) (apply s t2)
@@ -164,12 +167,12 @@ runInfer :: TypeEnv -> Infer (Type, [Constraint], Mode, TypeEnv) -> Either TypeE
 runInfer env m = runExcept $ evalStateT (runReaderT m env) initInfer
 
 -- | Solve for toplevel type of an expression in a give environment
-inferExpr :: TypeEnv -> Expr -> Either TypeError (Scheme, Mode)
-inferExpr env ex = case runInfer env (infer (traceShow ex ex)) of
+inferExpr :: TypeEnv -> Expr -> Either TypeError Scheme
+inferExpr env ex = case runInfer env (infer ex) of
   Left err       -> Left err
   Right (ty, cs, m, _) -> case runSolve cs of
     Left err    -> Left err
-    Right subst -> Right (closeOver $ simptyfull $ apply subst ty, m)
+    Right subst -> Right (closeOver $ simptyfull $ apply subst ty)
 
 -- | Return internal constraints used in solving for type of expression
 constraintsExpr :: TypeEnv -> Expr -> Either TypeError ([Constraint], Subst, Type, Scheme)
@@ -183,18 +186,17 @@ constraintsExpr env ex = case runInfer env (infer ex) of
 closeOver :: Type-> Scheme
 closeOver = normalize . generalize emptyTyEnv
 
-inEnv :: (Name, (Scheme, Mode)) -> Infer a -> Infer a
+inEnv :: (Name, Scheme) -> Infer a -> Infer a
 inEnv (x, sc) m = do
   let scope e = removeTyEnv e x `extendTyEnv` (x, sc)
   local scope m
 
-lookupEnv :: Name -> Infer (Type, Mode)
+lookupEnv :: Name -> Infer Type
 lookupEnv x = do
   TypeEnv env <- ask
   case Map.lookup x env of
     Nothing -> throwError $ UnboundVariable x
-    Just (tyA, m)  -> do ty <- instantiate tyA
-                         return (ty, m)
+    Just tyA  -> instantiate tyA
 
 letters :: [String]
 letters = [1..] >>= flip replicateM ['a'..'z']
@@ -240,8 +242,8 @@ eqbinop = do
 unops :: Unop -> Type
 unops Not = TArr tyBool tyBool V
 
-concatTCEs :: [(Type, [Constraint], [(Name, (Type, Mode))])]
-           -> ([Type], [Constraint], [(Name, (Type, Mode))])
+concatTCEs :: [(Type, [Constraint], [(Name, Type)])]
+           -> ([Type], [Constraint], [(Name, Type)])
 concatTCEs = foldr f ([], [], [])
   where
     f (t, c, e) (t', c', e') = (t : t', c ++ c', e ++ e')
@@ -263,7 +265,7 @@ concatTCMEs = foldr f ([], [], [], [])
 
 inferPatList :: [Pattern]
              -> [Maybe Expr]
-             -> Infer ([Type], [Constraint], [(Name, (Type, Mode))])
+             -> Infer ([Type], [Constraint], [(Name, Type)])
 inferPatList pats exprs = do
   tces <- zipWithM inferPat pats exprs
   return $ concatTCEs tces
@@ -279,16 +281,16 @@ listConstraints ts cs = do
         
 inferPat :: Pattern
          -> Maybe Expr
-         -> Infer (Type, [Constraint], [(Name, (Type, Mode))])
+         -> Infer (Type, [Constraint], [(Name, Type)])
 inferPat pat expr = case (pat, expr) of
   (PVar x, Just e) -> do
     tv <- fresh (TVar . TV)
     (te, ce, m, _) <- infer e
     let constraints = (TypeConstraint tv te) : ce
-    return (tv, constraints, [(x, (tv, m))])
+    return (tv, constraints, [(x, tv)])
   (PVar x, Nothing) -> do
     tv <- fresh (TVar . TV)
-    return (tv, [], [(x, (tv, V))])
+    return (tv, [], [(x, tv)])
 
   (PInt _, Just e) -> do
     (te, ce, _, _) <- infer e
@@ -415,13 +417,13 @@ inferPat pat expr = case (pat, expr) of
 
 inferPatLin :: Pattern
          -> Maybe Expr
-         -> Infer (Type, [Constraint], [(Name, (Type, Mode))])
+         -> Infer (Type, [Constraint], [(Name, Type)])
 inferPatLin pat expr = case (pat, expr) of
   (PVar x, Just (EVar y)) -> do
-    (tyy, m) <- lookupEnv y
+    tyy <- lookupEnv y
     tyV <- fresh (TVar . TV)
     let tyBang = TLin (LBang tyV)
-    return (tyy, [TypeConstraint tyy tyBang], [(x, (tyV, m))])
+    return (tyy, [TypeConstraint tyy tyBang], [(x, tyV)])
     
   _ -> error "Infer:inferPatLin"
 
@@ -434,11 +436,11 @@ inferBranch expr (pat, guard, branch) = do
     Left err -> throwError err
     Right sub -> do
       let sc t = generalize (apply sub env) (apply sub t)
-      (t2, c2, m1, _Γ3) <- local (const _Γ2) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+      (t2, c2, m1, _Γ3) <- local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
                         (local (apply sub) (infer guard))
                         binds)
       let moConstraints = ModeConstraint m1 V
-      (t3, c3, m, _Γ4) <- local (const _Γ3) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+      (t3, c3, m, _Γ4) <- local (const _Γ3) (foldr (\(x, t) -> inEnv (x, sc t))
                         (local (apply sub) (infer branch))
                         binds)
       let _Γ4' = foldl (\_Γ (x, _) -> removeTyEnv _Γ x) _Γ4 binds
@@ -452,14 +454,13 @@ sameThings (m:ms) = if (all ((==)m) ms) then Right m else Left (TypeFail "Not sa
 infer :: Expr -> Infer (Type, [Constraint], Mode, TypeEnv)
 infer expr = case expr of
   EVar x -> do
-    (tyA, m) <- lookupEnv x
+    tyA <- lookupEnv x
     _Γ1 <- ask
     _Γ2 <- case tyA of
-          TLin (LRdChan _) -> return $ extendTyEnv _Γ1 (x, (closeOver TUsed, V))
+          TLin (LRdChan _) -> return $ extendTyEnv _Γ1 (x, closeOver TUsed)
           TUsed     -> do throwError LinearFail
           _         -> return _Γ1
-    let constraints = [ModeConstraint m V]
-    return (tyA, constraints, V, _Γ2)
+    return (tyA, [], V, _Γ2)
 
   ELit (LInt _) -> do
     _Γ <- ask
@@ -585,7 +586,7 @@ infer expr = case expr of
       Left err -> throwError err
       Right sub -> do
         let sc t = generalize (apply sub env) (apply sub t)
-        (tyB, c2, m2, _Γ3) <- local (const _Γ2) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+        (tyB, c2, m2, _Γ3) <- local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
                               (local (apply sub) (infer e2))
                               binds)
         m3 <- fresh (MVar . TV)
@@ -604,7 +605,7 @@ infer expr = case expr of
       Left err -> throwError err
       Right sub -> do
         let sc t = generalize (apply sub env) (apply sub t)
-        (tyB, c2, m2, _Γ3) <- local (const _Γ2) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+        (tyB, c2, m2, _Γ3) <- local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
                               (local (apply sub) (infer e2))
                               binds)
         m3 <- fresh (MVar . TV)
@@ -624,14 +625,14 @@ infer expr = case expr of
   ELetRd (PTuple [PVar v, PVar c]) (ERd e1) e2 -> do
     env <- ask
     tyV <- fresh (TVar . TV)
-    let binds = [(v, (TLin (LBang tyV), V)), (c, (TLin (LRdChan tyV), V))]
+    let binds = [(v, TLin (LBang tyV)), (c, TLin (LRdChan tyV))]
     (tye1, c1, m1, _Γ2) <- infer (ERd e1)
     let c1' = TypeConstraint (TLin (LTensor (LBang tyV) (LRdChan tyV))) tye1 : c1
     case runSolve c1' of
       Left err -> throwError err
       Right sub -> do
         let sc t = generalize (apply sub env) (apply sub t)
-        (tyB, c2, m2, _Γ3) <- (local (const _Γ2) (foldr (\(x, (t, m)) -> inEnv (x, (sc t, m)))
+        (tyB, c2, m2, _Γ3) <- (local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
                               (local (apply sub) (infer e2))
                               binds))
         m3 <- fresh (MVar . TV)
@@ -646,7 +647,7 @@ infer expr = case expr of
         ty       = head ts
         cs'      = map (\(t1,t2) -> TypeConstraint t1 t2) $ zip (tail ts) (repeat ty)
     -- TODO: Clean up
-    let envs = map (\case {TypeEnv binds -> Map.filter (\x -> fst x == (Forall
+    let envs = map (\case {TypeEnv binds -> Map.filter (\x -> x == (Forall
     [] TUsed)) binds}) _Γs
     _ <- case sameThings envs  of
              Left err -> throwError err
@@ -658,7 +659,7 @@ infer expr = case expr of
 
   ELam (PVar x) e -> do
     tyV <- fresh (TVar . TV)
-    (tyA, c, m, _Γ2) <- inEnv (x, (Forall [] tyV, V)) (infer e)
+    (tyA, c, m, _Γ2) <- inEnv (x, Forall [] tyV) (infer e)
     (tyV', tyA') <- case runSolve c of
              Left err -> throwError err
              Right sub -> return $ (apply sub tyV, apply sub tyA)
@@ -733,8 +734,8 @@ infer expr = case expr of
 
   ENu (rdc, wrc) e -> do
     tyV <- fresh (TVar . TV)
-    let newChans = [ (rdc, (Forall [] $ (TLin (LRdChan tyV)), V))
-                   , (wrc, (Forall [] $ TWrChan tyV, V))]
+    let newChans = [ (rdc, Forall [] $ (TLin (LRdChan tyV)))
+                   , (wrc, Forall [] $ TWrChan tyV)]
     (tyA, c, m, _Γ2) <- foldr inEnv (infer e) newChans
     return (tyA, c , m, _Γ2)
 
@@ -781,7 +782,7 @@ infer expr = case expr of
     return (tyV, constraints, V, _Γ2)
 
   ESet x e -> do -- TODO: Change to ESet e1 e2
-    (tyA1, mx) <- lookupEnv x
+    tyA1 <- lookupEnv x
     (tyA2, c, m, _Γ2) <- infer e
     let tyConstraints = TypeConstraint tyA1 (TRef tyA2) : c
         moConstraints = [ModeConstraint m V]
@@ -808,7 +809,7 @@ inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
 inferTop env [] = Right env
 inferTop env ((name, ex):xs) = case inferExpr env ex of
   Left err -> Left err
-  Right (ty, m) -> inferTop (extendTyEnv env (name, (ty, m))) xs
+  Right ty -> inferTop (extendTyEnv env (name, ty)) xs
 
 normalize :: Scheme -> Scheme
 normalize (Forall _ body) = Forall (map snd ord) (normtype body)
@@ -824,6 +825,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fv (TRef a) = fv a
     fv (TWrChan a) = fv a
     fv (TLin l) = fvl l
+    fv (TCust a) = fv a
     fv TUsed = []
 
     fvm (MVar a) = [a]
@@ -849,6 +851,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     normtype (TRef a)   = TRef (normtype a)
     normtype (TWrChan a)   = TWrChan (normtype a)
     normtype (TLin l)   = TLin (normlin l)
+    normtype (TCust a)   = TCust (normtype a)
     normtype TUsed   = TUsed
 
     normmode (MVar a) =
@@ -901,6 +904,7 @@ unifies (T (TSet t1)) (T (TSet t2)) = unifies (T t1) (T t2)
 unifies (T (TRef t1)) (T (TRef t2)) = unifies (T t1) (T t2)
 unifies (T (TWrChan t1)) (T (TWrChan t2)) = unifies (T t1) (T t2)
 unifies (T (TLin l1)) (T (TLin l2)) = unifies (L l1) (L l2)
+unifies (T (TCust t1)) (T (TCust t2)) = unifies (T t1) (T t2)
 
 unifies (L (LVar v)) (L t) = v `bind` (L t)
 unifies (L t) (L (LVar v)) = v `bind` (L t)

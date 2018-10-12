@@ -17,8 +17,8 @@
 --------------------------------------------------------------------------------
 
 module Language.ILC.Repl (
-      main
-    ) where
+    main
+  ) where
 
 import Control.Monad.State.Strict
 import Data.List (isPrefixOf)
@@ -44,37 +44,37 @@ import Language.ILC.Value
 --------------------------------------------------------------------------------
 
 data Options = Options
-    { optSrcFile :: Maybe FilePath
-    , optAst     :: Bool
-    }
+  { optSrcFile :: Maybe FilePath
+  , optAst     :: Bool
+  }
 
 inputFile :: Parser (Maybe FilePath)
 inputFile = optional $ argument str
-    (  metavar "FILENAME"
-    <> help "Source file" )
+  (  metavar "FILENAME"
+  <> help "Source file" )
 
 ast :: Parser Bool
 ast = switch
-    (  long "ast"
-    <> help "Print abstract syntax tree" )
+  (  long "ast"
+  <> help "Print abstract syntax tree" )
 
 optParser :: Parser Options
 optParser = Options <$> inputFile <*> ast
 
 opts :: ParserInfo Options
 opts = info (optParser <**> helper)
-    ( fullDesc
-    <> progDesc "Interactive Lambda Calculus (ILC) interpreter"
-    <> header "ILC" )
+  (  fullDesc
+  <> progDesc "Interactive Lambda Calculus (ILC) interpreter"
+  <> header "ILC" )
 
 --------------------------------------------------------------------------------
 -- Environments
 --------------------------------------------------------------------------------
 
 data IState = IState
-    { tyenv :: TypeEnv
-    , tmenv :: TermEnv
-    }
+  { tyenv :: TypeEnv
+  , tmenv :: TermEnv
+  }
 
 initState :: IState
 initState = IState emptyTyEnv emptyTmEnv
@@ -83,8 +83,8 @@ type Repl a = HaskelineT (StateT IState IO) a
 hoistErr :: Show e => Either e a -> Repl a
 hoistErr (Right val) = return val
 hoistErr (Left err) = do
-    liftIO $ print err
-    abort
+  liftIO $ print err
+  abort
 
 --------------------------------------------------------------------------------
 -- Execution
@@ -96,43 +96,37 @@ evalDecl env _             = return env
     
 execi :: Bool -> String -> Repl ()
 execi update source = do
-    st <- get
-    
-    mod <- hoistErr $ parser source
-
-    let _mod = declToAssoc mod
-    
-    tyenv' <- hoistErr $ inferTop (tyenv st) _mod
-
-    tmenv' <- liftIO $ foldM (evalDecl) (tmenv st) mod
-    
-    let st' = st { tmenv = tmenv'
-                 , tyenv = tyenv' <> (tyenv st)
-                 }
-
-    when update (put st')
-    
-    case lookup "it" _mod of
-        Nothing -> return ()
-        Just ex -> do
-            val <- liftIO $ eval (tmenv st') ex
-            showOutput (show $ pretty val) st'
+  st <- get
+  mod <- hoistErr $ parser source
+  let _mod = declToAssoc mod
+      custTys = TypeEnv (Map.fromList (getCustomData mod))
+  tyenv' <- hoistErr $ inferTop (mergeTyEnv (tyenv st) custTys) _mod
+  tmenv' <- liftIO $ foldM (evalDecl) (tmenv st) mod
+  let st' = st { tmenv = tmenv'
+               , tyenv = tyenv' <> (tyenv st)
+               }
+  when update (put st')
+  case lookup "it" _mod of
+    Nothing -> return ()
+    Just ex -> do
+      val <- liftIO $ eval (tmenv st') ex
+      showOutput (show $ pretty val) st'
 
 showOutput :: String -> IState -> Repl ()
 showOutput arg st = do
-    case lookupTyEnv "it" (tyenv st) of
-        Just val -> liftIO $ putDoc (prettySignature (arg, val) <> linebreak)
-        Nothing -> return ()
+  case lookupTyEnv "it" (tyenv st) of
+    Just val -> liftIO $ putDoc (prettySignature (arg, val) <> linebreak)
+    Nothing -> return ()
     
 cmd :: String -> Repl ()
 cmd source = execi True source
 
 process :: String -> IO ()
 process src = do
-    let cmds = parser src
-    case cmds of
-        Left err -> print err
-        Right cmds -> exec cmds >>= putDoc . pretty
+  let cmds = parser src
+  case cmds of
+    Left err -> print err
+    Right cmds -> exec cmds >>= putDoc . pretty
 
 --------------------------------------------------------------------------------
 -- Commands
@@ -141,23 +135,23 @@ process src = do
 -- :browse command
 browse :: [String] -> Repl ()
 browse _ = do
-    st <- get
-    liftIO $ mapM_ putStrLn $ prettyTyEnv (tyenv st)
+  st <- get
+  liftIO $ mapM_ putStrLn $ prettyTyEnv (tyenv st)
 
 -- :load command
 load :: [String] -> Repl ()
 load args = do
-    contents <- liftIO $ readFile (unwords args)
-    execi True contents
+  contents <- liftIO $ readFile (unwords args)
+  execi True contents
 
 -- :type command
 typeof :: [String] -> Repl ()
 typeof args = do
-    st <- get
-    let arg = unwords args
-    case lookupTyEnv arg (tyenv st) of
-        Just val -> liftIO $ putDoc $ prettySignature (arg, val) <> linebreak
-        Nothing -> execi False arg
+  st <- get
+  let arg = unwords args
+  case lookupTyEnv arg (tyenv st) of
+    Just val -> liftIO $ putDoc $ prettySignature (arg, val) <> linebreak
+    Nothing -> execi False arg
 
 -- :quit command
 quit :: a -> Repl ()
@@ -174,29 +168,29 @@ defaultMatcher = [(":load"  , fileCompleter)]
 -- Default tab completer
 comp :: (Monad m, MonadState IState m) => WordCompleter m
 comp n = do
-    let cmds = [":load", ":type", ":browse", ":quit"]
-    TypeEnv ctx <- gets tyenv
-    let defs = Map.keys ctx
-    return $ filter (isPrefixOf n) (cmds ++ defs)
+  let cmds = [":load", ":type", ":browse", ":quit"]
+  TypeEnv ctx <- gets tyenv
+  let defs = Map.keys ctx
+  return $ filter (isPrefixOf n) (cmds ++ defs)
 
 options :: [(String, [String] -> Repl ())]
 options =
-    [ ("load"   , load)
-    , ("browse" , browse)
-    , ("quit"   , quit)
-    , ("type"   , typeof)
-    ]
+  [ ("load"   , load)
+  , ("browse" , browse)
+  , ("quit"   , quit)
+  , ("type"   , typeof)
+  ]
 
 completer :: CompleterStyle (StateT IState IO)
 completer = Prefix (wordCompleter comp) defaultMatcher
 
 shell :: Repl a -> IO ()
 shell pre = flip evalStateT initState 
-    $ evalRepl "λ: " cmd options Language.ILC.Repl.completer pre
+  $ evalRepl "λ: " cmd options Language.ILC.Repl.completer pre
 
 main :: IO ()
 main = do
-    options <- execParser opts
-    case (optSrcFile options) of
-        Just file -> readFile file >>= process
-        Nothing   -> shell (return ())
+  options <- execParser opts
+  case (optSrcFile options) of
+    Just file -> readFile file >>= process
+    Nothing   -> shell (return ())

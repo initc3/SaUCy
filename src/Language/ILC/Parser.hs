@@ -398,7 +398,8 @@ parseValCon :: Parser ValCon
 parseValCon = do
   valCon <- constructor
   params <- sepBy ty whitespace
-  return (valCon, params)
+  let ps = params ++ [TCon valCon]
+  return $ (valCon, TCust (foldr (\a b -> TArr a b V) (TCon valCon) params))
 
 decl :: Parser TopDecl
 decl = dDeclCon <|> try dExpr <|> try dDeclLetRec <|> dDeclFun

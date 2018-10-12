@@ -27,7 +27,6 @@ module Language.ILC.Type (
   , extendTyEnv
   , lookupTyEnv
   , mergeTyEnv
-  , prettySchmode
   , prettySignature
   , prettyTyEnv
   , TM(..)
@@ -50,6 +49,7 @@ data Type = TVar TVar            -- ^ Type variable
           | TRef Type            -- ^ Reference type
           | TWrChan Type         -- ^ Write channel type
           | TLin LType           -- ^ Linear type
+          | TCust Type  -- ^ Product type
           | TUsed                -- ^ Used linear type
           deriving (Eq, Ord, Show)
 
@@ -69,6 +69,7 @@ simpty (TProd ts) = TProd <$> sequence (map simpty ts)
 simpty (TSet t) = TSet <$> simpty t
 simpty (TRef t) = TRef <$> simpty t
 simpty (TWrChan t) = TWrChan <$> simpty t
+simpty (TCust t) = TCust <$> simpty t
 simpty (TLin l) = TLin <$> simplty l
 simpty TUsed = Just TUsed
 
@@ -96,7 +97,7 @@ tyUnit   = TCon "Unit"
 tyMsg    = TCon "Msg"
 
 -- | Type environment
-newtype TypeEnv = TypeEnv { types :: Map.Map Name (Scheme, Mode) }
+newtype TypeEnv = TypeEnv { types :: Map.Map Name Scheme }
   deriving (Eq, Show)
 
 emptyTyEnv :: TypeEnv
@@ -105,10 +106,10 @@ emptyTyEnv = TypeEnv Map.empty
 removeTyEnv :: TypeEnv -> Name -> TypeEnv
 removeTyEnv (TypeEnv env) var = TypeEnv (Map.delete var env)
 
-extendTyEnv :: TypeEnv -> (Name, (Scheme, Mode)) -> TypeEnv
+extendTyEnv :: TypeEnv -> (Name, Scheme) -> TypeEnv
 extendTyEnv env (x, s) = env { types = Map.insert x s (types env) }
 
-lookupTyEnv :: Name -> TypeEnv -> Maybe (Scheme, Mode)
+lookupTyEnv :: Name -> TypeEnv -> Maybe Scheme
 lookupTyEnv key (TypeEnv tys) = Map.lookup key tys
 
 mergeTyEnv :: TypeEnv -> TypeEnv -> TypeEnv
@@ -142,6 +143,7 @@ instance Pretty Type where
   pretty (TRef a)    = text "Ref" <+> pretty a
   pretty (TWrChan a) = text "Wr" <+> pretty a
   pretty (TLin l) = pretty l
+  pretty (TCust a)  = pretty a
   pretty TUsed = text "Used"
 
 instance Pretty LType where
@@ -166,12 +168,9 @@ instance Pretty Scheme where
   pretty (Forall ts t) = text "∀" <+> hsep (map pretty ts)
                                   <+> text "." <+> pretty t
 
-prettySchmode :: (Scheme, Mode) -> Doc
-prettySchmode (sc, m) = pretty sc <+> text "@" <+> pretty m
-
-prettySignature :: (String, (Scheme, Mode)) -> Doc
-prettySignature (a, schmode) = text a <+> text "::"
-                                      <+> prettySchmode schmode
+prettySignature :: (String, Scheme) -> Doc
+prettySignature (a, sc) = text a <+> text "::"
+                                      <+> pretty sc
 
 prettyTyEnv :: TypeEnv -> [String]
 prettyTyEnv (TypeEnv env) = map (show . prettySignature) $ Map.toList env
