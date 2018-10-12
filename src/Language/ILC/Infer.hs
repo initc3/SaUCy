@@ -26,7 +26,7 @@ import Control.Monad.Except
 import Control.Monad.Identity
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.List (nub, partition, reverse)
+import Data.List (nub)
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Development.Placeholders
@@ -159,38 +159,6 @@ checkType ty1 ty2 msg = if ty1 == ty2 then return ty1
 -------------------------------------------------------------------------------
 -- Inference
 
-findLin :: [Constraint] -> [Constraint]
-findLin []                          = []
-findLin (TypeConstraint c1 c2 : cs) = TypeConstraint c1 c2 : findLin cs
-findLin (c:cs)                      = c : findLin cs
-
-findLolli :: Type -> Type
-findLolli (TArr (TLin l) t m) = TArr (TLin l) t m
-findLolli t                   = t
-
-getLollis :: Map.Map Type Type -> [Constraint] -> Map.Map Type Type
-getLollis env [] = env
-getLollis env ((TypeConstraint ty1 ty2@(TArr (TLin l) t m)):cs) =
-  getLollis (Map.insert ty1 ty2 env) cs
-getLollis env (_:cs) = getLollis env cs
-
-partConstraints cs = ts ++ holy
-  where
-    (ts, ms) = partition (\case {TypeConstraint{} -> True ; _ -> False}) cs
-    cmap = foldl (\env (TypeConstraint t1 t2) -> Map.insert t1 t2 env) Map.empty ts
-    lollis = Map.assocs $ getLollis Map.empty ts
-    wtf = foldl (\map pair -> linearize map pair) cmap lollis
-    holy = Map.foldrWithKey (\k a acc -> TypeConstraint k a : acc) [] wtf
-
-linearize :: Map.Map Type Type -> (Type, Type) -> Map.Map Type Type
-linearize env (tv, TArr (TLin l) t m) = case Map.lookup t env' of
-  Nothing -> Map.insert tv (TLin (LArr l (LBang t) m)) env'
-  Just (TLin l') -> Map.insert tv (TLin (LArr l l' m)) env'
-  where
-    env' = case Map.lookup t env of
-             Nothing -> env
-             Just t' -> linearize env (t, t')
-
 -- | Run the inference monad
 runInfer :: TypeEnv -> Infer (Type, [Constraint], Mode, TypeEnv) -> Either TypeError (Type, [Constraint], Mode, TypeEnv)
 runInfer env m = runExcept $ evalStateT (runReaderT m env) initInfer
@@ -200,7 +168,6 @@ inferExpr :: TypeEnv -> Expr -> Either TypeError (Scheme, Mode)
 inferExpr env ex = case runInfer env (infer ex) of
   Left err       -> Left err
   Right (ty, cs, m, _) -> case runSolve cs of
---  Right (ty, cs, m, _) -> case runSolve (partConstraints cs) of
     Left err    -> Left err
     Right subst -> Right (closeOver $ simptyfull $ apply subst ty, m)
 
@@ -226,8 +193,6 @@ lookupEnv x = do
   TypeEnv env <- ask
   case Map.lookup x env of
     Nothing -> throwError $ UnboundVariable x
-    -- TODO: Fix
-    --Just (Forall _ t@(TLin _), m) -> return (t, m)
     Just (tyA, m)  -> do ty <- instantiate tyA
                          return (ty, m)
 
@@ -239,71 +204,6 @@ fresh f = do
   s <- get
   put s{count = count s + 1}
   return $ f (letters !! count s)
-
-freshifym :: Map.Map TVar TVar -> Mode -> Infer (Mode, Map.Map TVar TVar)
-freshifym env V = return (V, env)
-freshifym env R = return (R, env)
-freshifym env W = return (W, env)
-freshifym env (MVar a) = case Map.lookup a env of
-  Nothing -> do
-    b <- fresh TV
-    return (MVar b, Map.insert a b env)
-  Just b -> return (MVar b, env)
-freshifym env (MSeq m1 m2) = do
-  (m1', env1) <- freshifym env m1
-  (m2', env2) <- freshifym env m2
-  return (MSeq m1' m2', env2)
-freshifym env (MPar m1 m2) = do
-  (m1', env1) <- freshifym env m1
-  (m2', env2) <- freshifym env m2
-  return (MPar m1' m2', env2)
-
-freshifyt :: Map.Map TVar TVar -> Type -> Infer (Type, Map.Map TVar TVar)
-freshifyt env t@(TVar _) = return (t, env)
-freshifyt env t@(TCon _) = return (t, env)
-freshifyt env (TArr t1 t2 m) = do
-  (t1', env1) <- freshifyt env t1
-  (t2', env2) <- freshifyt env1 t2
-  (m', env3)  <- freshifym env2 m
-  return (TArr t1' t2' m', env3)
-freshifyt env (TList t) = do
-  (t', env') <- freshifyt env t
-  return (TList t', env')
-freshifyt env (TProd ts) = do
-  (TProd ts', env') <- foldM (\(TProd acc, e) t -> (freshifyt e t) >>=
-                       \(t', e') -> return (TProd (t':acc), e)) (TProd [], env) ts
-  return (TProd (reverse ts'), env')
-freshifyt env (TSet t) = do
-  (t', env') <- freshifyt env t
-  return (TSet t', env')
-freshifyt env (TRef t) = do
-  (t', env') <- freshifyt env t
-  return (TRef t', env')
-freshifyt env (TWrChan t) = do
-  (t', env') <- freshifyt env t
-  return (TWrChan t', env')
-freshifyt env (TLin l) = do
-  (l', env') <- freshifyl env l
-  return (TLin l', env')
-freshifyt _ _ = error "Infer.freshifyt"
-
-freshifyl :: Map.Map TVar TVar -> LType -> Infer (LType, Map.Map TVar TVar)
--- TODO: LVar
-freshifyl env (LRdChan t) = do
-  (t', env') <- freshifyt env t
-  return (LRdChan t', env')
-freshifyl env (LArr l1 l2 m) = do
-  (l1', env1) <- freshifyl env l1
-  (l2', env2) <- freshifyl env1 l2
-  (m' , env3) <- freshifym env2 m
-  return (LArr l1' l2' m', env3)
-freshifyl env (LTensor l1 l2) = do
-  (l1', env1) <- freshifyl env l1
-  (l2', env2) <- freshifyl env1 l2
-  return (LTensor l1' l2', env2)
-freshifyl env (LBang t) = do
-  (t', env') <- freshifyt env t
-  return (LBang t', env')
 
 instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
