@@ -5,18 +5,18 @@
     &$\bnfas$& $\tyUnit \bnfalt \tyProd{A}{B} \bnfalt \tySum{A}{B} \bnfalt
     \tyWr{A} \bnfalt \tyRef{A} \bnfalt \tyArr{A}{\footnotesize $m$}{B}$
     \\
-    Linear Types
-    & $X,Y$
-    &$\bnfas$& $\tyRd{A} \bnfalt !\,A \bnfalt X \otimes Y \bnfalt X
-    \lollipop{\footnotesize m} Y$
-    \\
     Intuitionistic Typing Contexts
     & $\Gamma$
     &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
     \\
+    Linear Types
+    & $X,Y$
+    &$\bnfas$& $\tyRd{A} \bnfalt \tyBang{A} \bnfalt \tyTensor{X}{Y} \bnfalt
+    \tyLolli{X}{\footnotesize m}{Y}$
+    \\
     Linear Typing Contexts
     & $\Delta$
-    &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:A$
+    &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:X$
   \end{grammar}
 \caption{Syntax of types.}
 \label{fig:syntax--types}

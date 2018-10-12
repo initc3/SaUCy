@@ -81,6 +81,8 @@
 \newcommand{\eFix}[2]{\keyword{fix}\Lparen{#1}.{#2}\Rparen}
 \newcommand{\eLet}[3]{\keyword{let}\ {#1} = {#2}\ \keyword{in}\ {#3}}
 \newcommand{\eLetRd}[4]{\eLet{\ePair{#1}{#2}}{\eRd{#3}}{{#4}}}
+\newcommand{\eLetBang}[3]{\keyword{let!}\ {#1} = {#2}\ \keyword{in}\ {#3}}
+\newcommand{\eBang}[1]{{!}\,{#1}}
 \newcommand{\eLam}[2]{\lambda{#1}.\,{#2}}
 \newcommand{\eApp}[2]{#1\,#2}
 \newcommand{\eNu}[2]{\nu#1.\,#2}
@@ -101,6 +103,9 @@
 \newcommand{\tyRef}[1]{\keyword{Ref}\,#1}
 \newcommand{\tyArr}[3]{{#1}\yrightarrow{{#2}}{#3}}
 \newcommand{\emptyctxt}{\cdot}
+\newcommand{\tyBang}[1]{{!}\,{#1}}
+\newcommand{\tyTensor}[2]{{#1}\otimes{#2}}
+\newcommand{\tyLolli}[3]{{#1}\lollipop{#2}{#3}}
 
 % ILC Modes
 \newcommand{\Rm}{\textsf{R}}
