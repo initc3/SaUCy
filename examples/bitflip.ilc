@@ -1,7 +1,0 @@
-{- Does not type check -}
-let getBit x = 
-  nu c . wr 0 -> c'
-        |> wr 1 -> c'
-        |> rd c
-
-let main () = getBit 1

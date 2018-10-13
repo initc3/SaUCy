@@ -24,15 +24,16 @@ import Language.ILC.Pretty
 newtype TVar = TV String deriving (Eq, Ord, Show)
 
 -- | Modes
-data Mode = V  -- ^ Value mode
-          | W  -- ^ Write mode
-          | R  -- ^ Read mode
-          | MVar TVar
-          | MSeq Mode Mode
-          | MPar Mode Mode
+data Mode = V               -- ^ Value mode
+          | W               -- ^ Write mode
+          | R               -- ^ Read mode
+          | MVar TVar       -- ^ Mode variable
+          | MSeq Mode Mode  -- ^ Sequential mode composition
+          | MPar Mode Mode  -- ^ Parallel mode composition
           deriving (Eq, Ord, Show)
 
--- | Mode composition
+-- | Simplifies mode compositions. The following mode compositions are not
+-- derivable, so Nothing is returned: @m ; n => p@ and @m | n => p@.
 simpmo :: Mode -> Maybe Mode
 simpmo V            = Just V
 simpmo W            = Just W
@@ -52,16 +53,16 @@ simpmo (MPar W  W ) = Nothing
 simpmo (MPar m1 m2) = MPar <$> simpmo m1 <*> simpmo m2
 
 --------------------------------------------------------------------------------
--- | Pretty printing
+-- Pretty printing
 --------------------------------------------------------------------------------
 
 instance Pretty TVar where
   pretty (TV x) = text x
 
 instance Pretty Mode where
-  pretty V = text "V"
-  pretty R = text "R"
-  pretty W = text "W"
-  pretty (MVar a) = pretty a
+  pretty V          = text "V"
+  pretty R          = text "R"
+  pretty W          = text "W"
+  pretty (MVar a)   = pretty a
   pretty (MSeq a b) = text "(" <> pretty a <> text ";" <> pretty b <> text ")"
   pretty (MPar a b) = text "(" <> pretty a <> text "|" <> pretty b <> text ")"  

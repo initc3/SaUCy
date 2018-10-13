@@ -1,8 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE FlexibleInstances          #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TupleSections              #-}
 {-# LANGUAGE TypeSynonymInstances       #-}
 
 --------------------------------------------------------------------------------
@@ -135,8 +133,8 @@ instance Substitutable TM where
   ftv (L l) = ftv l
 
 instance Substitutable Scheme where
-  apply (Subst s) (Forall as t) = (Forall as $ apply s' t)
-                          where s' = Subst $ foldr Map.delete s as
+  apply (Subst s) (Forall as t) = Forall as $ apply s' t
+    where s' = Subst $ foldr Map.delete s as
   ftv (Forall as t) = ftv t `Set.difference` Set.fromList as
 
 instance Substitutable Constraint where
@@ -161,21 +159,26 @@ checkType ty1 ty2 msg = if ty1 == ty2 then return ty1
 
 -------------------------------------------------------------------------------
 -- Inference
+-------------------------------------------------------------------------------
 
 -- | Run the inference monad
-runInfer :: TypeEnv -> Infer (Type, [Constraint], Mode, TypeEnv) -> Either TypeError (Type, [Constraint], Mode, TypeEnv)
+runInfer :: TypeEnv
+         -> Infer (Type, [Constraint], Mode, TypeEnv)
+         -> Either TypeError (Type, [Constraint], Mode, TypeEnv)
 runInfer env m = runExcept $ evalStateT (runReaderT m env) initInfer
 
--- | Solve for toplevel type of an expression in a give environment
+-- | Solve for type of top-level expression in a given environment
 inferExpr :: TypeEnv -> Expr -> Either TypeError Scheme
 inferExpr env ex = case runInfer env (infer ex) of
   Left err       -> Left err
   Right (ty, cs, m, _) -> case runSolve cs of
     Left err    -> Left err
-    Right subst -> Right (closeOver $ simptyfull $ apply subst ty)
+    Right subst -> Right (closeOver $ simp $ apply subst ty)
 
 -- | Return internal constraints used in solving for type of expression
-constraintsExpr :: TypeEnv -> Expr -> Either TypeError ([Constraint], Subst, Type, Scheme)
+constraintsExpr :: TypeEnv
+                -> Expr
+                -> Either TypeError ([Constraint], Subst, Type, Scheme)
 constraintsExpr env ex = case runInfer env (infer ex) of
   Left       err -> Left err
   Right (ty, cs, _, _) -> case runSolve cs of
@@ -183,7 +186,7 @@ constraintsExpr env ex = case runInfer env (infer ex) of
     Right subst -> Right (cs, subst, ty, sc)
       where sc = closeOver $ apply subst ty
 
-closeOver :: Type-> Scheme
+closeOver :: Type -> Scheme
 closeOver = normalize . generalize emptyTyEnv
 
 inEnv :: (Name, Scheme) -> Infer a -> Infer a
@@ -258,7 +261,8 @@ concatTCMs = foldr f ([], [], [])
   where
     f (t, c, m) (t', c', m') = (t : t', c ++ c', m : m')
 
-concatTCMEs :: [(Type, [Constraint], Mode, TypeEnv)] -> ([Type], [Constraint], [Mode], [TypeEnv])
+concatTCMEs :: [(Type, [Constraint], Mode, TypeEnv)]
+            -> ([Type], [Constraint], [Mode], [TypeEnv])
 concatTCMEs = foldr f ([], [], [], [])
   where
     f (t, c, m, e) (t', c', m', e') = (t : t', c ++ c', m : m', e : e')
@@ -286,7 +290,7 @@ inferPat pat expr = case (pat, expr) of
   (PVar x, Just e) -> do
     tv <- fresh (TVar . TV)
     (te, ce, m, _) <- infer e
-    let constraints = (TypeConstraint tv te) : ce
+    let constraints = TypeConstraint tv te : ce
     return (tv, constraints, [(x, tv)])
   (PVar x, Nothing) -> do
     tv <- fresh (TVar . TV)
@@ -294,19 +298,19 @@ inferPat pat expr = case (pat, expr) of
 
   (PInt _, Just e) -> do
     (te, ce, _, _) <- infer e
-    let constraints = (TypeConstraint te tyInt) : ce
+    let constraints = TypeConstraint te tyInt : ce
     return (tyInt, constraints, [])
   (PInt _, Nothing) -> return (tyInt, [], [])
 
   (PBool _, Just e) -> do
     (te, ce, _, _) <- infer e
-    let constraints = (TypeConstraint te tyBool) : ce
+    let constraints = TypeConstraint te tyBool : ce
     return (tyBool, constraints, [])
   (PBool _, Nothing) -> return (tyBool, [], [])
 
   (PString _, Just e) -> do
     (te, ce, _, _) <- infer e
-    let constraints = (TypeConstraint te tyString) : ce
+    let constraints = TypeConstraint te tyString : ce
     return (tyString, constraints, [])
   (PString _, Nothing) -> return (tyString, [], [])
 
@@ -402,29 +406,34 @@ inferPat pat expr = case (pat, expr) of
 
   (PCust x ps, Just (ECustom x' es)) -> do
     tyx <- lookupEnv x
-    let tyx' = sumMatchType tyx ps
+    let tyx' = typeSumDeconstruction tyx ps
     when (length ps /= length es) (error "fail1") -- TODO
     when (x /= x') (error "fail2") -- TODO
     (ts, cs, env) <- inferPatList ps $ map Just es
     return (tyx', cs, env)
   (PCust x ps, Just e) -> do
     tyx <- lookupEnv x
-    let tyx' = sumMatchType tyx ps
+    let tyx' = typeSumDeconstruction tyx ps
     (te, ce, _, _) <- infer e
     (ts, cs, env) <- inferPatList ps $ repeat Nothing
     let constraints = TypeConstraint tyx' te : ce ++ cs
     return (tyx', constraints, env)
   (PCust x ps, Nothing) -> do
     tyx <- lookupEnv x
-    let tyx' = sumMatchType tyx ps
+    let tyx' = typeSumDeconstruction tyx ps
     tces <- zipWithM inferPat ps $ repeat Nothing
     let (ts, cs, env) = concatTCEs tces
     return (tyx', cs, env)
 
-sumMatchType :: Type -> [Pattern] -> Type
-sumMatchType (TArr _ t _) (p:ps) = sumMatchType t ps
-sumMatchType t            []     = t
-sumMatchType _            _      = error "Infer:sumMatchType"
+-- | This function computes the type of a deconstructed sum type. The type of a
+-- value constructor should either be an arrow type leading to a custom type
+-- constructor (in the non-nullary case) or simply the custom type constructor
+-- itself (in the nullary case).
+-- TODO: Error handling.
+typeSumDeconstruction :: Type -> [Pattern] -> Type
+typeSumDeconstruction (TArr _ t _) (p:ps) = typeSumDeconstruction t ps
+typeSumDeconstruction t            []     = t
+typeSumDeconstruction _            _      = error "Infer:typeSumDeconstruction"
 
 inferPatLin :: Pattern
          -> Maybe Expr
@@ -438,7 +447,9 @@ inferPatLin pat expr = case (pat, expr) of
     
   _ -> error "Infer:inferPatLin"
 
-inferBranch :: Expr -> (Pattern, Expr, Expr) -> Infer (Type, [Constraint], Mode, TypeEnv)
+inferBranch :: Expr
+            -> (Pattern, Expr, Expr)
+            -> Infer (Type, [Constraint], Mode, TypeEnv)
 inferBranch expr (pat, guard, branch) = do
   env <- ask
   (_, c1, binds) <- inferPat pat $ Just expr
@@ -460,7 +471,7 @@ inferBranch expr (pat, guard, branch) = do
       return (t3, constraints, m, _Γ4')
 
 sameThings :: Eq a => [a] -> Either TypeError a
-sameThings (m:ms) = if (all ((==)m) ms) then Right m else Left (TypeFail "Not same things.")
+sameThings (m:ms) = if (all (m ==) ms) then Right m else Left (TypeFail "Not same things.")
 
 infer :: Expr -> Infer (Type, [Constraint], Mode, TypeEnv)
 infer expr = case expr of
@@ -469,7 +480,7 @@ infer expr = case expr of
     _Γ1 <- ask
     _Γ2 <- case tyA of
           TLin (LRdChan _) -> return $ extendTyEnv _Γ1 (x, closeOver TUsed)
-          TUsed     -> do throwError LinearFail
+          TUsed     -> throwError LinearFail
           _         -> return _Γ1
     return (tyA, [], V, _Γ2)
 
@@ -656,10 +667,10 @@ infer expr = case expr of
     tcmes <- mapM (inferBranch e) bs
     let (ts, cs, ms, _Γs) = concatTCMEs tcmes
         ty       = head ts
-        cs'      = map (\(t1,t2) -> TypeConstraint t1 t2) $ zip (tail ts) (repeat ty)
+        cs'      = map (`TypeConstraint` ty) (tail ts)
     -- TODO: Clean up
-    let envs = map (\case {TypeEnv binds -> Map.filter (\x -> x == (Forall
-    [] TUsed)) binds}) _Γs
+    let envs = map (\case {TypeEnv binds -> Map.filter (\x -> x == Forall []
+    TUsed) binds}) _Γs
     _ <- case sameThings envs  of
              Left err -> throwError err
              Right _Γ  -> return _Γ
@@ -673,11 +684,11 @@ infer expr = case expr of
     (tyA, c, m, _Γ2) <- inEnv (x, Forall [] tyV) (infer e)
     (tyV', tyA') <- case runSolve c of
              Left err -> throwError err
-             Right sub -> return $ (apply sub tyV, apply sub tyA)
+             Right sub -> return (apply sub tyV, apply sub tyA)
     case (tyV', tyA') of
-      (TLin lV', TLin lA') -> do
+      (TLin lV', TLin lA') ->
         return (TLin (LArr lV' lA' m), c, V, _Γ2)
-      _                    -> do
+      _                    ->
         return (TArr tyV' tyA' m, c, V, _Γ2)
 
   ELam PUnit e -> do
@@ -713,7 +724,7 @@ infer expr = case expr of
     (tyA2B, c2, m2, _Γ3) <- local (const _Γ2) (infer e1)
     (tyA2B', tyA') <- case runSolve (c1 ++ c2) of
              Left err -> throwError err
-             Right sub -> return $ (apply sub tyA2B, apply sub tyA)
+             Right sub -> return (apply sub tyA2B, apply sub tyA)
     mV <- fresh (MVar . TV)
     (tyRet, tyConstraints) <- case (tyA2B', tyA') of
           (t, TLin l) -> do
@@ -745,7 +756,7 @@ infer expr = case expr of
 
   ENu (rdc, wrc) e -> do
     tyV <- fresh (TVar . TV)
-    let newChans = [ (rdc, Forall [] $ (TLin (LRdChan tyV)))
+    let newChans = [ (rdc, Forall [] $ TLin (LRdChan tyV))
                    , (wrc, Forall [] $ TWrChan tyV)]
     (tyA, c, m, _Γ2) <- foldr inEnv (infer e) newChans
     return (tyA, c , m, _Γ2)
@@ -914,8 +925,8 @@ unifyMany t1 t2 = throwError $ UnificationMismatch t1 t2
 
 unifies :: TM -> TM -> Solve Subst
 unifies t1 t2 | t1 == t2 = return emptySubst
-unifies (T (TVar v)) (T t) = v `bind` (T t)
-unifies (T t) (T (TVar v)) = v `bind` (T t)
+unifies (T (TVar v)) (T t) = v `bind` T t
+unifies (T t) (T (TVar v)) = v `bind` T t
 unifies (T (TArr t1 t2 m1)) (T (TArr t3 t4 m2)) = unifyMany [T t1, T t2, M m1] [T t3, T t4, M m2]
 unifies (T (TList t1)) (T (TList t2)) = unifies (T t1) (T t2)
 unifies (T (TProd ts1)) (T (TProd ts2)) = unifyMany (map T ts1) (map T ts2)
@@ -925,15 +936,15 @@ unifies (T (TWrChan t1)) (T (TWrChan t2)) = unifies (T t1) (T t2)
 unifies (T (TLin l1)) (T (TLin l2)) = unifies (L l1) (L l2)
 unifies (T (TCust t1)) (T (TCust t2)) = unifies (T t1) (T t2)
 
-unifies (L (LVar v)) (L t) = v `bind` (L t)
-unifies (L t) (L (LVar v)) = v `bind` (L t)
+unifies (L (LVar v)) (L t) = v `bind` L t
+unifies (L t) (L (LVar v)) = v `bind` L t
 unifies (L (LRdChan t1)) (L (LRdChan t2)) = unifies (T t1) (T t2)
 unifies (L (LArr l1 l2 m1)) (L (LArr l3 l4 m2)) = unifyMany [L l1, L l2, M m1] [L l3, L l4, M m2]
 unifies (L (LTensor l1 l2)) (L (LTensor l3 l4)) = unifyMany [L l1, L l2] [L l3, L l4]
 unifies (L (LBang t1)) (L (LBang t2)) = unifies (T t1) (T t2)
 
-unifies (M (MVar v)) (M t) = v `bind` (M t)
-unifies (M t) (M (MVar v)) = v `bind` (M t)
+unifies (M (MVar v)) (M t) = v `bind` M t
+unifies (M t) (M (MVar v)) = v `bind` M t
 unifies (M (MSeq m1 m2)) (M (MSeq m3 m4)) = unifyMany [M m1, M m2] [M m3, M m4]
 unifies (M (MPar m1 m2)) (M (MPar m3 m4)) = unifyMany [M m1, M m2] [M m3, M m4]
 
@@ -942,7 +953,7 @@ unifies t1 t2 = throwError $ UnificationFail t1 t2
 solver :: Unifier -> Solve Subst
 solver (su, cs) =
   case cs of
-    [] -> return $ su
+    [] -> return su
     (TypeConstraint t1 t2 : cs') -> do
       let (t1',t2') = case (simpty t1, simpty t2) of
                         (Nothing, _) -> error "type error"

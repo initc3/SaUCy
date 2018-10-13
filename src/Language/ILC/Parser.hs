@@ -398,15 +398,14 @@ decl :: Parser TopDecl
 decl = dDeclCon <|> try dExpr <|> try dDeclLetRec <|> dDeclFun
 
 -- | Parse types
-tInt, tBool, tString, tUnit, tMsg :: Parser Type  
+tInt, tBool, tString, tUnit :: Parser Type  
 tInt = mklexer (const tyInt) $ reserved "Int"
 tBool = mklexer (const tyBool) $ reserved "Bool"
 tString = mklexer (const tyString) $ reserved "String"
 tUnit = mklexer (const tyUnit) $ reserved "Unit"
-tMsg = mklexer (const tyMsg) $ reserved "Msg"
 
 tPrim :: Parser Type
-tPrim = tInt <|> tBool <|> tString <|> tUnit <|> tMsg
+tPrim = tInt <|> tBool <|> tString <|> tUnit
 
 tVar = mklexer (TVar . TV) identifier
 tList = mklexer TList $ brackets $ ty

@@ -1,5 +1,9 @@
 {- ILC Standard Prelude -}
 
+data Maybe a = Just a | Nothing
+
+data Either a b = Left a | Right b
+
 letrec lookup x assoc =
     match assoc with
     | []                      => error "lookup: not in list"

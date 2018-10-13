@@ -1,2 +1,0 @@
-nu (rc, wc) .
-  (rd rc) |> (wr 1 -> wc)

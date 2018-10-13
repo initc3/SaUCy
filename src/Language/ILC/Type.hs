@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall  #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Type
@@ -6,7 +7,7 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Syntax of types.
+-- Defines the syntax and contexts for both intuitionistic and linear types.
 --
 --------------------------------------------------------------------------------
 
@@ -14,13 +15,12 @@ module Language.ILC.Type (
     Type(..)
   , LType(..)
   , simpty
-  , simptyfull
+  , simp
   , Scheme(..)
   , tyInt
   , tyBool
   , tyString
   , tyUnit
-  , tyMsg
   , TypeEnv(..)
   , emptyTyEnv
   , removeTyEnv
@@ -39,62 +39,73 @@ import Language.ILC.Mode
 import Language.ILC.Pretty
 import Language.ILC.Syntax
 
--- | Types
+-- | Intuitionistic types.
+-- TODO: Fully separate intuitionistic and linear types.
 data Type = TVar TVar            -- ^ Type variable
           | TCon String          -- ^ Type constructor
+          | TProd [Type]         -- ^ Product type
           | TArr Type Type Mode  -- ^ Arrow type
           | TList Type           -- ^ List type
-          | TProd [Type]         -- ^ Product type
           | TSet Type            -- ^ Set type
           | TRef Type            -- ^ Reference type
           | TWrChan Type         -- ^ Write channel type
+          | TCust Type           -- ^ Custom data type
           | TLin LType           -- ^ Linear type
-          | TCust Type  -- ^ Product type
           | TUsed                -- ^ Used linear type
           deriving (Eq, Ord, Show)
 
-data LType = LVar TVar
-           | LRdChan Type
-           | LArr LType LType Mode
-           | LTensor LType LType
-           | LBang Type
+-- | Linear types.
+data LType = LVar TVar              -- ^ Linear type variable
+           | LRdChan Type           -- ^ Read channel type
+           | LArr LType LType Mode  -- ^ Lollipop type (linear arrows)
+           | LTensor LType LType    -- ^ Tensor type (linear pairs)
+           | LBang Type             -- ^ Intuitionistic type
            deriving (Eq, Ord, Show)
 
+-- | Simplifies intuitionistic types.
+-- TODO: Why does this return a Maybe?
 simpty :: Type -> Maybe Type
-simpty t@(TVar _) = Just t
-simpty t@(TCon _) = Just t
+simpty t@(TVar _)     = Just t
+simpty t@(TCon _)     = Just t
 simpty (TArr t1 t2 m) = TArr <$> simpty t1 <*> simpty t2 <*> simpmo m
-simpty (TList t) = TList <$> simpty t
-simpty (TProd ts) = TProd <$> sequence (map simpty ts)
-simpty (TSet t) = TSet <$> simpty t
-simpty (TRef t) = TRef <$> simpty t
-simpty (TWrChan t) = TWrChan <$> simpty t
-simpty (TCust t) = TCust <$> simpty t
-simpty (TLin l) = TLin <$> simplty l
-simpty TUsed = Just TUsed
+simpty (TList t)      = TList <$> simpty t
+simpty (TProd ts)     = TProd <$> sequence (map simpty ts)
+simpty (TSet t)       = TSet <$> simpty t
+simpty (TRef t)       = TRef <$> simpty t
+simpty (TWrChan t)    = TWrChan <$> simpty t
+simpty (TCust t)      = TCust <$> simpty t
+simpty (TLin l)       = TLin <$> simplty l
+simpty TUsed          = Just TUsed
 
+-- | Simplifies linear types.
+-- TODO: Not sure why this returns a Maybe.
 simplty :: LType -> Maybe LType
-simplty l@(LVar _) = Just l
-simplty (LRdChan t) = LRdChan <$> simpty t
-simplty (LArr l1 l2 m) = LArr <$> simplty l1 <*> simplty l2 <*> simpmo m
+simplty l@(LVar _)      = Just l
+simplty (LRdChan t)     = LRdChan <$> simpty t
+simplty (LArr l1 l2 m)  = LArr <$> simplty l1 <*> simplty l2 <*> simpmo m
 simplty (LTensor l1 l2) = LTensor <$> simplty l1 <*> simplty l2
-simplty (LBang t) = LBang <$> simpty t
+simplty (LBang t)       = LBang <$> simpty t
 
-simptyfull ty = if ty == ty' then ty else simptyfull ty'
+simp :: Type -> Type
+simp ty = if ty == ty' then ty else simp ty'
   where ty' = case simpty ty of
                 Nothing -> error "mode error"
                 Just x -> x
+
+data TM = T Type
+        | M Mode
+        | L LType
+        deriving (Eq, Ord, Show)
 
 -- | Type scheme
 data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)
 
 -- | Primitive types
-tyInt, tyBool, tyString, tyUnit, tyMsg :: Type
+tyInt, tyBool, tyString, tyUnit :: Type
 tyInt    = TCon "Int"
 tyBool   = TCon "Bool"
 tyString = TCon "String"
 tyUnit   = TCon "Unit"
-tyMsg    = TCon "Msg"
 
 -- | Type environment
 newtype TypeEnv = TypeEnv { types :: Map.Map Name Scheme }
@@ -120,7 +131,7 @@ instance Monoid TypeEnv where
   mappend = mergeTyEnv
     
 --------------------------------------------------------------------------------
--- | Pretty printing
+-- Pretty printing
 --------------------------------------------------------------------------------
 
 instance Pretty Type where
@@ -174,11 +185,6 @@ prettySignature (a, sc) = text a <+> text "::"
 
 prettyTyEnv :: TypeEnv -> [String]
 prettyTyEnv (TypeEnv env) = map (show . prettySignature) $ Map.toList env
-
-data TM = T Type
-        | M Mode
-        | L LType
-        deriving (Eq, Ord, Show)
 
 instance Pretty TM where
   pretty (T t) = pretty t

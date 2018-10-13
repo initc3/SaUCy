@@ -6,7 +6,7 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Pretty printing functions.
+-- Pretty printing utility functions.
 --
 --------------------------------------------------------------------------------
 

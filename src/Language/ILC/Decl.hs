@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Decl
@@ -6,7 +7,7 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Defines top level declarations.
+-- Defines top-level variable declarations and type declarations.
 --
 --------------------------------------------------------------------------------
 
@@ -15,44 +16,46 @@ module Language.ILC.Decl (
   , ValCon
   , declToAssoc
   , getCustomData
-  , buildCustExpr
   , custTyToExpr
   ) where
 
 import Language.ILC.Infer
-import Language.ILC.Mode
-import Language.ILC.Pretty
 import Language.ILC.Syntax
 import Language.ILC.Type
 
--- | A toplevel declaration binds an expression to a variable name.
+-- | A top-level declaration either binds an expression to a name or defines a
+-- new data type.
 data TopDecl = Decl Name Expr
              | TyCon Name [ValCon]
              deriving (Eq, Show)
 
+-- | A value or data constructor consists of a constructor name and its type.
 type ValCon = (Name, Type)
 
 -- | A program consists of a list of declarations and a main expression.
 data Program = Program [TopDecl] Expr
              deriving (Eq, Show)
 
+-- | Converts a variable declaration into an association list of names to
+-- expressions.
 declToAssoc :: [TopDecl] -> [(Name, Expr)]
-declToAssoc ds = reverse $ foldl f [] ds
-  where f acc (Decl x e) = (x, e) : acc
-        f acc _          = acc
+declToAssoc ds = foldr f [] ds
+  where f (Decl x e) acc = (x, e) : acc
+        f _          acc = acc
 
+-- | Converts a type declaration into an association list of names to type
+-- schemes for custom data types.
 getCustomData :: [TopDecl] -> [(Name, Scheme)]
-getCustomData ds = reverse $ foldl f [] ds
-  where f acc (TyCon dc vcs) = (map (\(vc,ty) -> (vc, closeOver ty)) vcs) ++ acc
-        f acc _             = acc
-
-buildCustExpr :: [TopDecl] -> [(Name, Expr)]
-buildCustExpr ds = reverse $ foldl f [] ds
-  where f acc (TyCon dc vcs) = map (\(x,t) -> (x, custTyToExpr (x,t) 1)) vcs ++ acc
-        f acc _              = acc
-
+getCustomData ds = foldr f [] ds
+  where f (TyCon _ vcs) acc = map (\(vc,ty) -> (vc, closeOver ty)) vcs ++ acc
+        f _             acc = acc
+        
+-- | Converts a value constructor into an expression for computing a custom data
+-- type.
+-- TODO: Generate fresh variables.
 custTyToExpr :: ValCon -> Int -> Expr
-custTyToExpr (x,t) i = case t of
-  TArr _ t'@(TArr{}) _ -> ELam (PVar (show i)) (custTyToExpr (x, t') (i + 1))
-  TArr{}               -> ELam (PVar (show i)) (ECustom x (map (EVar . show) [1..i]))
-  _                    -> ECustom x []
+custTyToExpr (x, TArr _ t@TArr{} _) i =
+  ELam (PVar (show i)) (custTyToExpr (x, t) (i + 1))
+custTyToExpr (x, TArr{}) i =
+  ELam (PVar (show i)) (ECustom x (map (EVar . show) [1..i]))
+custTyToExpr (x,_) _ = ECustom x []

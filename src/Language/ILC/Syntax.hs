@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Syntax
@@ -6,8 +7,7 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Defines the ILC abstract syntax tree (expressions), values, the term
--- environment, and environment functions.
+-- Defines the ILC abstract syntax tree.
 --
 --------------------------------------------------------------------------------
 
@@ -20,14 +20,15 @@ module Language.ILC.Syntax (
   , Pattern(..)
   ) where
 
-import Control.Concurrent
-import Data.IORef
-import qualified Data.Map.Strict as Map
 import Text.PrettyPrint.ANSI.Leijen
 
 import Language.ILC.Pretty
 
--- | A renaming of strings to variable names.
+--------------------------------------------------------------------------------
+-- ILC Syntax
+--------------------------------------------------------------------------------
+
+-- | Names in ILC.
 type Name = String
 
 -- | Expressions in ILC.
@@ -40,9 +41,9 @@ data Expr = EVar Name                            -- ^ Variable
           | EApp Expr Expr                       -- ^ Function application
           | EFix Expr                            -- ^ Fixpoint
           | ELet Pattern Expr Expr               -- ^ Let binding
-          | ELetRd Pattern Expr Expr             -- ^ Let binding
-          | ELetBang Pattern Expr Expr           -- ^ Let binding
-          | EBang Expr                           -- ^ Let binding
+          | ELetRd Pattern Expr Expr             -- ^ Rd binding
+          | ELetBang Pattern Expr Expr           -- ^ Unpack linear binding
+          | EBang Expr                           -- ^ Linearize
           | EIf Expr Expr Expr                   -- ^ Conditional
           | EMatch Expr [(Pattern, Expr, Expr)]  -- ^ Pattern match 
           | ENu (Name, Name) Expr                -- ^ Channel allocation
@@ -54,11 +55,11 @@ data Expr = EVar Name                            -- ^ Variable
           | EGet Expr                            -- ^ Dereference
           | ESet Name Expr                       -- ^ Mutable Assignment
           | ESeq Expr Expr                       -- ^ Sequencing
-          | EPrint Expr                          -- ^ Print string
+          | EPrint Expr                          -- ^ Print
           | EError Expr                          -- ^ Throw error
           | EBin Binop Expr Expr                 -- ^ Binary expression
           | EUn Unop Expr                        -- ^ Unary expression
-          | ECustom Name [Expr]                  -- ^ Custom data literal
+          | ECustom Name [Expr]                  -- ^ Custom data type
           deriving (Eq, Show)
 
 -- | Literals in ILC.
@@ -68,7 +69,7 @@ data Lit = LInt Integer    -- ^ Integer literal
          | LUnit           -- ^ Unit literal
          deriving (Eq, Show)
 
--- | Binary operators in ILC.
+-- | Built-in binary operators in ILC.
 data Binop = Add     -- ^ Addition
            | Sub     -- ^ Subtraction
            | Mul     -- ^ Multiplication
@@ -86,7 +87,7 @@ data Binop = Add     -- ^ Addition
            | Concat  -- ^ List concatenation
            deriving (Eq, Show)
 
--- | Unary operator in ILC.
+-- | Built-in unary operator in ILC.
 data Unop = Not  -- ^ Logical not
   deriving (Eq, Show)
 
@@ -103,6 +104,10 @@ data Pattern = PVar Name              -- ^ Variable pattern
              | PSet [Pattern]         -- ^ Set pattern
              | PCust Name [Pattern]   -- ^ Custom data type pattern
              deriving (Eq, Show)
+
+--------------------------------------------------------------------------------
+-- Pretty printing
+--------------------------------------------------------------------------------
 
 instance Pretty Pattern where
   pretty (PVar x)      = text x

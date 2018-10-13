@@ -1,15 +1,6 @@
-data Maybe a = Just a | Nothing
-
 data Crupt = CruptP | CruptQ | CruptNone
 
 data SttCruptZ2A a b
   = SttCruptZ2A_A2P a
   | SttCruptZ2A_A2Q a
   | SttCruptZ2A_A2F b
-
-data Foo a b = Bar a b
-             | Baz Int a b
-
-let test x = match x with
-  | Just a => a
-  | Nothing => 0
