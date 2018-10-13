@@ -15,6 +15,7 @@ module Language.ILC.Value (
   , TermEnv
   , emptyTmEnv
   , extendTmEnv
+  , mergeTmEnv
   ) where
 
 import Control.Concurrent
@@ -71,3 +72,7 @@ emptyTmEnv = Map.empty
 -- | Extends the term environment with the given binding.
 extendTmEnv :: TermEnv -> Name -> Value -> TermEnv
 extendTmEnv env x v = Map.insert x v env
+
+-- | Extends the term environment with the given binding.
+mergeTmEnv :: TermEnv -> TermEnv -> TermEnv
+mergeTmEnv env1 env2 = Map.union env1 env2

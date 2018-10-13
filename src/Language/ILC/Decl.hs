@@ -15,6 +15,8 @@ module Language.ILC.Decl (
   , ValCon
   , declToAssoc
   , getCustomData
+  , buildCustExpr
+  , custTyToExpr
   ) where
 
 import Language.ILC.Infer
@@ -44,3 +46,13 @@ getCustomData ds = reverse $ foldl f [] ds
   where f acc (TyCon dc vcs) = (map (\(vc,ty) -> (vc, closeOver ty)) vcs) ++ acc
         f acc _             = acc
 
+buildCustExpr :: [TopDecl] -> [(Name, Expr)]
+buildCustExpr ds = reverse $ foldl f [] ds
+  where f acc (TyCon dc vcs) = map (\(x,t) -> (x, custTyToExpr (x,t) 1)) vcs ++ acc
+        f acc _              = acc
+
+custTyToExpr :: ValCon -> Int -> Expr
+custTyToExpr (x,t) i = case t of
+  TArr _ t'@(TArr{}) _ -> ELam (PVar (show i)) (custTyToExpr (x, t') (i + 1))
+  TArr{}               -> ELam (PVar (show i)) (ECustom x (map (EVar . show) [1..i]))
+  _                    -> ECustom x []

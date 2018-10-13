@@ -401,19 +401,30 @@ inferPat pat expr = case (pat, expr) of
     return (ty, [], [])
 
   (PCust x ps, Just (ECustom x' es)) -> do
+    tyx <- lookupEnv x
+    let tyx' = sumMatchType tyx ps
     when (length ps /= length es) (error "fail1") -- TODO
     when (x /= x') (error "fail2") -- TODO
     (ts, cs, env) <- inferPatList ps $ map Just es
-    return (tyMsg, cs, env)
+    return (tyx', cs, env)
   (PCust x ps, Just e) -> do
+    tyx <- lookupEnv x
+    let tyx' = sumMatchType tyx ps
     (te, ce, _, _) <- infer e
     (ts, cs, env) <- inferPatList ps $ repeat Nothing
-    let constraints = TypeConstraint tyMsg te : ce ++ cs
-    return (tyMsg, constraints, env)
+    let constraints = TypeConstraint tyx' te : ce ++ cs
+    return (tyx', constraints, env)
   (PCust x ps, Nothing) -> do
+    tyx <- lookupEnv x
+    let tyx' = sumMatchType tyx ps
     tces <- zipWithM inferPat ps $ repeat Nothing
     let (ts, cs, env) = concatTCEs tces
-    return (tyMsg, cs, env)
+    return (tyx', cs, env)
+
+sumMatchType :: Type -> [Pattern] -> Type
+sumMatchType (TArr _ t _) (p:ps) = sumMatchType t ps
+sumMatchType t            []     = t
+sumMatchType _            _      = error "Infer:sumMatchType"
 
 inferPatLin :: Pattern
          -> Maybe Expr
@@ -802,8 +813,16 @@ infer expr = case expr of
     return (tyV, constraints, V, _Γ2)
 
   ECustom x es -> do
-    _Γ <- ask
-    return (tyMsg, [], V, _Γ)
+    _Γ1 <- ask
+    tyx <- lookupEnv x
+    (_, _, _, _Γn) <- foldM (\(_, _, _, _Γ) e -> local (const _Γ) (infer e))
+                      (tyUnit, [], V, _Γ1)
+                      es
+    tcmes <- mapM infer es
+    let (tys, cs, ms, _) = concatTCMEs tcmes
+        moConstraints = map (ModeConstraint V) ms
+        constraints = moConstraints
+    return (tyx, [], V, _Γn)
 
 inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
 inferTop env [] = Right env

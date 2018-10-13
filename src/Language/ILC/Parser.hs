@@ -32,6 +32,9 @@ import Language.ILC.Syntax
 eVar :: Parser Expr
 eVar = mklexer EVar identifier
 
+eCon :: Parser Expr
+eCon = mklexer EVar constructor
+
 -- | Literals
 
 eInt :: Parser Expr
@@ -177,9 +180,6 @@ eNu = do
     e <- expr
     return $ foldr ENu e cs
 
-{-eRd :: Parser Expr
-eRd = mklexer ERd $ reserved "rd" >> atomExpr-}
-
 eWr :: Parser Expr
 eWr = do
     reserved "wr"
@@ -252,12 +252,6 @@ eUn = ePrint
   <|> eError
   <|> eBang
 
-eCustom :: Parser Expr
-eCustom = do
-  con <- constructor
-  exprs <- many atomExpr
-  return $ ECustom con exprs
-
 expr :: Parser Expr
 expr = try eSeq <|> try eChoice <|> try eFork <|> expr'
 
@@ -266,6 +260,7 @@ expr' = Ex.buildExpressionParser table term
 
 atomExpr :: Parser Expr
 atomExpr = eVar
+       <|> eCon
        <|> eInt
        <|> eBool
        <|> eString
@@ -286,12 +281,10 @@ term = try eApp
    <|> eIf
    <|> eMatch
    <|> eNu
-   -- <|> eRd
    <|> eWr
    <|> eRef
    <|> eGet
    <|> eUn
-   <|> eCustom
 
 -- | Patterns
 
@@ -391,15 +384,15 @@ dDeclCon = do
   tyCon <- constructor
   _ <- many identifier
   reservedOp "="
-  valCons <- sepBy1 parseValCon (reservedOp "|")
+  valCons <- sepBy1 (parseValCon tyCon) (reservedOp "|")
   return $ TyCon tyCon valCons
   
-parseValCon :: Parser ValCon
-parseValCon = do
+parseValCon :: Name -> Parser ValCon
+parseValCon tyCon = do
   valCon <- constructor
   params <- sepBy ty whitespace
   let ps = params ++ [TCon valCon]
-  return $ (valCon, TCust (foldr (\a b -> TArr a b V) (TCon valCon) params))
+  return $ (valCon, foldr (\a b -> TArr a b V) (TCon tyCon) params)
 
 decl :: Parser TopDecl
 decl = dDeclCon <|> try dExpr <|> try dDeclLetRec <|> dDeclFun

@@ -92,7 +92,15 @@ hoistErr (Left err) = do
 
 evalDecl :: TermEnv -> TopDecl -> IO TermEnv
 evalDecl env (Decl x expr) = silence $ eval env expr >>= return . extendTmEnv env x
-evalDecl env _             = return env
+evalDecl env (TyCon dc vcs) = do
+  env'' <- env'
+  return $ mergeTmEnv env (Map.fromList env'')
+  where
+    env' = do
+      vs <- vals
+      return $ zip (map fst vcs) vs
+    vals = silence (mapM (eval env) toEvals)
+    toEvals = map (\(x,t) -> custTyToExpr (x,t) 1) vcs
     
 execi :: Bool -> String -> Repl ()
 execi update source = do
