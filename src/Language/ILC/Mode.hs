@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall  #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Mode
@@ -13,12 +14,10 @@
 module Language.ILC.Mode (
     TVar(..)
   , Mode(..)
-  , simpmo
+  , mcompose
   ) where
 
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
-
-import Language.ILC.Pretty
 
 -- | Type and mode variable
 newtype TVar = TV String deriving (Eq, Ord, Show)
@@ -32,25 +31,29 @@ data Mode = V               -- ^ Value mode
           | MPar Mode Mode  -- ^ Parallel mode composition
           deriving (Eq, Ord, Show)
 
--- | Simplifies mode compositions. The following mode compositions are not
--- derivable, so Nothing is returned: @m ; n => p@ and @m | n => p@.
-simpmo :: Mode -> Maybe Mode
-simpmo V            = Just V
-simpmo W            = Just W
-simpmo R            = Just R
-simpmo m@(MVar a)   = Just m
-simpmo (MSeq W  V ) = Just W
-simpmo (MSeq W  R ) = Just W
-simpmo (MSeq R  m ) = Just R <* simpmo m
-simpmo (MSeq V  m ) = simpmo m
-simpmo (MSeq W  W ) = Nothing
-simpmo (MSeq m1 m2) = MSeq <$> simpmo m1 <*> simpmo m2
-simpmo (MPar W  V ) = Just W
-simpmo (MPar W  R ) = Just W
-simpmo (MPar R  m ) = simpmo m
-simpmo (MPar V  m ) = simpmo m
-simpmo (MPar W  W ) = Nothing
-simpmo (MPar m1 m2) = MPar <$> simpmo m1 <*> simpmo m2
+-- | Mode compositions. The following mode compositions are not derivable, so
+-- Nothing is returned: @m ; n => p@ and @m | n => p@.
+mcompose :: Mode -> Maybe Mode
+mcompose V            = Just V
+mcompose W            = Just W
+mcompose R            = Just R
+mcompose m@MVar{}     = Just m
+mcompose (MSeq W  V ) = Just W
+mcompose (MSeq W  R ) = Just W
+mcompose (MSeq R  m ) = Just R <* mcompose m
+mcompose (MSeq V  m ) = mcompose m
+mcompose (MSeq W  W ) = Nothing
+mcompose (MSeq m1 m2) = MSeq <$> mcompose m1 <*> mcompose m2
+mcompose (MPar W  V ) = Just W
+mcompose (MPar V  W ) = Just W
+mcompose (MPar W  R ) = Just W
+mcompose (MPar R  W ) = Just W
+mcompose (MPar R  V ) = Just R
+mcompose (MPar V  R ) = Just R
+mcompose (MPar R  R ) = Just R
+mcompose (MPar V  V ) = Just V
+mcompose (MPar W  W ) = Nothing
+mcompose (MPar m1 m2) = MPar <$> mcompose m1 <*> mcompose m2
 
 --------------------------------------------------------------------------------
 -- Pretty printing
@@ -61,8 +64,8 @@ instance Pretty TVar where
 
 instance Pretty Mode where
   pretty V          = text "V"
-  pretty R          = text "R"
   pretty W          = text "W"
+  pretty R          = text "R"
   pretty (MVar a)   = pretty a
   pretty (MSeq a b) = text "(" <> pretty a <> text ";" <> pretty b <> text ")"
   pretty (MPar a b) = text "(" <> pretty a <> text "|" <> pretty b <> text ")"  

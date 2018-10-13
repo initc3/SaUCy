@@ -61,7 +61,7 @@ type Unifier = (Subst, [Constraint])
 -- | Constraint solver monad
 type Solve a = ExceptT TypeError Identity a
 
-newtype Subst = Subst (Map.Map TVar TM)
+newtype Subst = Subst (Map.Map TVar TML)
   deriving (Eq, Ord, Show, Monoid)
 
 class Substitutable a where
@@ -123,7 +123,7 @@ instance Substitutable Mode where
   ftv (MPar m1 m2) = ftv m1 `Set.union` ftv m2
   ftv m        = Set.empty
 
-instance Substitutable TM where
+instance Substitutable TML where
   apply s (T t) = T $ apply s t
   apply s (M m) = M $ apply s m
   apply s (L l) = L $ apply s l
@@ -173,7 +173,7 @@ inferExpr env ex = case runInfer env (infer ex) of
   Left err       -> Left err
   Right (ty, cs, m, _) -> case runSolve cs of
     Left err    -> Left err
-    Right subst -> Right (closeOver $ simp $ apply subst ty)
+    Right subst -> Right (closeOver $ simpFully $ apply subst ty)
 
 -- | Return internal constraints used in solving for type of expression
 constraintsExpr :: TypeEnv
@@ -210,11 +210,74 @@ fresh f = do
   put s{count = count s + 1}
   return $ f (letters !! count s)
 
+freshifym :: Map.Map TVar TVar -> Mode -> Infer (Mode, Map.Map TVar TVar)
+freshifym env V = return (V, env)
+freshifym env R = return (R, env)
+freshifym env W = return (W, env)
+freshifym env (MVar a) = case Map.lookup a env of
+  Nothing -> do
+    b <- fresh TV
+    return (MVar b, Map.insert a b env)
+  Just b -> return (MVar b, env)
+freshifym env (MSeq m1 m2) = do
+  (m1', env1) <- freshifym env m1
+  (m2', env2) <- freshifym env m2
+  return (MSeq m1' m2', env2)
+freshifym env (MPar m1 m2) = do
+  (m1', env1) <- freshifym env m1
+  (m2', env2) <- freshifym env m2
+  return (MPar m1' m2', env2)
+
+freshifyt :: Map.Map TVar TVar -> Type -> Infer (Type, Map.Map TVar TVar)
+freshifyt env t@(TVar _) = return (t, env)
+freshifyt env t@(TCon _) = return (t, env)
+freshifyt env (TArr t1 t2 m) = do
+  (t1', env1) <- freshifyt env t1
+  (t2', env2) <- freshifyt env1 t2
+  (m', env3)  <- freshifym env2 m
+  return (TArr t1' t2' m', env3)
+freshifyt env (TList t) = do
+  (t', env') <- freshifyt env t
+  return (TList t', env')
+freshifyt env (TProd ts) = do
+  (TProd ts', env') <- foldM (\(TProd acc, e) t -> (freshifyt e t) >>=
+                       \(t', e') -> return (TProd (t':acc), e)) (TProd [], env) ts
+  return (TProd (reverse ts'), env')
+freshifyt env (TSet t) = do
+  (t', env') <- freshifyt env t
+  return (TSet t', env')
+freshifyt env (TRef t) = do
+  (t', env') <- freshifyt env t
+  return (TRef t', env')
+freshifyt env (TWrChan t) = do
+  (t', env') <- freshifyt env t
+  return (TWrChan t', env')
+freshifyt env (TLin l) = do
+  (l', env') <- freshifyl env l
+  return (TLin l', env')
+freshifyt _ _ = error "Infer.freshifyt"
+
+freshifyl :: Map.Map TVar TVar -> LType -> Infer (LType, Map.Map TVar TVar)
+freshifyl env t@(LVar _) = return (t, env)
+freshifyl env (LRdChan t) = do
+  (t', env') <- freshifyt env t
+  return (LRdChan t', env')
+freshifyl env (LArr l1 l2 m) = do
+  (l1', env1) <- freshifyl env l1
+  (l2', env2) <- freshifyl env1 l2
+  (m' , env3) <- freshifym env2 m
+  return (LArr l1' l2' m', env3)
+freshifyl env (LBang t) = do
+  (t', env') <- freshifyt env t
+  return (LBang t', env')
+
 instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
   as' <- mapM (const (fresh (TVar . TV))) as
   let s = Subst $ Map.fromList $ zip as (map T as')
-  return $ apply s t
+      s' = apply s t
+  (s'', _) <- freshifyt Map.empty s'
+  return s''
 
 generalize :: TypeEnv -> Type-> Scheme -- ^ T-Gen
 generalize env t = Forall as t
@@ -915,7 +978,7 @@ runSolve :: [Constraint] -> Either TypeError Subst
 runSolve cs = runIdentity $ runExceptT $ solver st
   where st = (emptySubst, cs)
 
-unifyMany :: [TM] -> [TM] -> Solve Subst
+unifyMany :: [TML] -> [TML] -> Solve Subst
 unifyMany [] []  = return emptySubst
 unifyMany (t1 : ts1) (t2 : ts2) =
   do su1 <- unifies t1 t2
@@ -923,7 +986,7 @@ unifyMany (t1 : ts1) (t2 : ts2) =
      return (su2 `compose` su1)
 unifyMany t1 t2 = throwError $ UnificationMismatch t1 t2
 
-unifies :: TM -> TM -> Solve Subst
+unifies :: TML -> TML -> Solve Subst
 unifies t1 t2 | t1 == t2 = return emptySubst
 unifies (T (TVar v)) (T t) = v `bind` T t
 unifies (T t) (T (TVar v)) = v `bind` T t
@@ -962,14 +1025,14 @@ solver (su, cs) =
       su1 <- unifies (T t1') (T t2')
       solver (su1 `compose` su, apply su1 cs')
     (ModeConstraint m1 m2 : cs') -> do
-      let (m1',m2') = case (simpmo m1, simpmo m2) of
+      let (m1',m2') = case (mcompose m1, mcompose m2) of
                         (Nothing, _) -> error "mode error"
                         (_, Nothing) -> error "mode error"
                         (Just a, Just b) -> (a,b)
       su1 <- unifies (M m1') (M m2')
       solver (su1 `compose` su, apply su1 cs')
          
-bind :: TVar -> TM -> Solve Subst
+bind :: TVar -> TML -> Solve Subst
 bind a (T t) | t == TVar a     = return emptySubst
              | occursCheck a t = throwError $ InfiniteType a t
              | otherwise       = return (Subst $ Map.singleton a (T t))

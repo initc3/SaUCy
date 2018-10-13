@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall  #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.TypeError
@@ -20,11 +21,11 @@ import Language.ILC.Mode
 import Language.ILC.Syntax
 import Language.ILC.Type
 
-data TypeError = UnificationFail TM TM
+data TypeError = UnificationFail TML TML
                | InfiniteType TVar Type
                | UnboundVariable Name
                | Ambiguous [(Type, Type)]
-               | UnificationMismatch [TM] [TM]
+               | UnificationMismatch [TML] [TML]
                | ParFail Mode Mode
                | SeqFail Mode Mode
                | ChoiceFail Mode Mode
@@ -86,3 +87,5 @@ instance Pretty TypeError where
   pretty (TypeFail s)  = text s
   
   pretty LinearFail  = text "Linear read channel violation."
+
+  pretty _           = text "Unimplemented error message"

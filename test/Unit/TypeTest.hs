@@ -60,4 +60,13 @@ examples =
     , ( "match branches bad"
       , "let foo () = nu (r, w) . match 1 with | _ when print r ; true => 0 | _ => 0"
       , "ill-typed")
+    , ( "seqsame"
+      , "let seqsame f x = f x ; f x"
+      , "∀ a b c . (a ->@c b) -> a ->@(c;c) b")
+    , ( "seqdiff"
+      , "let seqdiff f g x = f x ; g x"
+      , "∀ a b c d e . (a ->@c b) -> (a ->@e d) -> a ->@(c;e) d")
+    , ( "loop"
+      , "letrec loop c f = let (v, c) = rd c in let! v' = v in let! f' = f in f' v'; loop c f"
+      , "∀ a b c d . Rd a -o !(a ->@c b) -o@R d")
     ]

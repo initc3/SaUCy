@@ -15,7 +15,7 @@ module Language.ILC.Type (
     Type(..)
   , LType(..)
   , simpty
-  , simp
+  , simpFully
   , Scheme(..)
   , tyInt
   , tyBool
@@ -29,7 +29,7 @@ module Language.ILC.Type (
   , mergeTyEnv
   , prettySignature
   , prettyTyEnv
-  , TM(..)
+  , TML(..)
   ) where
 
 import qualified Data.Map as Map
@@ -62,40 +62,40 @@ data LType = LVar TVar              -- ^ Linear type variable
            | LBang Type             -- ^ Intuitionistic type
            deriving (Eq, Ord, Show)
 
--- | Simplifies intuitionistic types.
--- TODO: Why does this return a Maybe?
-simpty :: Type -> Maybe Type
-simpty t@(TVar _)     = Just t
-simpty t@(TCon _)     = Just t
-simpty (TArr t1 t2 m) = TArr <$> simpty t1 <*> simpty t2 <*> simpmo m
-simpty (TList t)      = TList <$> simpty t
-simpty (TProd ts)     = TProd <$> sequence (map simpty ts)
-simpty (TSet t)       = TSet <$> simpty t
-simpty (TRef t)       = TRef <$> simpty t
-simpty (TWrChan t)    = TWrChan <$> simpty t
-simpty (TCust t)      = TCust <$> simpty t
-simpty (TLin l)       = TLin <$> simplty l
-simpty TUsed          = Just TUsed
-
--- | Simplifies linear types.
--- TODO: Not sure why this returns a Maybe.
-simplty :: LType -> Maybe LType
-simplty l@(LVar _)      = Just l
-simplty (LRdChan t)     = LRdChan <$> simpty t
-simplty (LArr l1 l2 m)  = LArr <$> simplty l1 <*> simplty l2 <*> simpmo m
-simplty (LTensor l1 l2) = LTensor <$> simplty l1 <*> simplty l2
-simplty (LBang t)       = LBang <$> simpty t
-
-simp :: Type -> Type
-simp ty = if ty == ty' then ty else simp ty'
+-- | Iteratively simplifies the modes in a type until it reaches a fixed point.
+simpFully :: Type -> Type
+simpFully ty = if ty == ty' then ty else simpFully ty'
   where ty' = case simpty ty of
                 Nothing -> error "mode error"
                 Just x -> x
 
-data TM = T Type
-        | M Mode
-        | L LType
-        deriving (Eq, Ord, Show)
+-- | Simplifies modes in intuitionistic types.
+simpty :: Type -> Maybe Type
+simpty t@TVar{}       = Just t
+simpty t@TCon{}       = Just t
+simpty t@TUsed        = Just t
+simpty (TArr t1 t2 m) = TArr    <$> simpty  t1 <*> simpty t2 <*> mcompose m
+simpty (TList t)      = TList   <$> simpty  t
+simpty (TProd ts)     = TProd   <$> sequence (map simpty ts)
+simpty (TSet t)       = TSet    <$> simpty  t
+simpty (TRef t)       = TRef    <$> simpty  t
+simpty (TWrChan t)    = TWrChan <$> simpty  t
+simpty (TCust t)      = TCust   <$> simpty  t
+simpty (TLin l)       = TLin    <$> simplty l
+
+-- | Simplifies modes in linear types.
+simplty :: LType -> Maybe LType
+simplty l@(LVar _)      = Just l
+simplty (LRdChan t)     = LRdChan <$> simpty  t
+simplty (LArr l1 l2 m)  = LArr    <$> simplty l1 <*> simplty l2 <*> mcompose m
+simplty (LTensor l1 l2) = LTensor <$> simplty l1 <*> simplty l2
+simplty (LBang t)       = LBang   <$> simpty  t
+
+-- | Wraps intuitionistic types, linear types, and modes.
+data TML = T Type
+         | L LType
+         | M Mode
+         deriving (Eq, Ord, Show)
 
 -- | Type scheme
 data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)
@@ -186,7 +186,7 @@ prettySignature (a, sc) = text a <+> text "::"
 prettyTyEnv :: TypeEnv -> [String]
 prettyTyEnv (TypeEnv env) = map (show . prettySignature) $ Map.toList env
 
-instance Pretty TM where
+instance Pretty TML where
   pretty (T t) = pretty t
-  pretty (M m) = pretty m
   pretty (L l) = pretty l
+  pretty (M m) = pretty m
