@@ -255,6 +255,7 @@ freshifyt env (TWrChan t) = do
 freshifyt env (TLin l) = do
   (l', env') <- freshifyl env l
   return (TLin l', env')
+freshifyt env TUsed = return (TUsed, env)
 freshifyt _ _ = error "Infer.freshifyt"
 
 freshifyl :: Map.Map TVar TVar -> LType -> Infer (LType, Map.Map TVar TVar)
@@ -543,7 +544,7 @@ infer expr = case expr of
     _Γ1 <- ask
     _Γ2 <- case tyA of
           TLin (LRdChan _) -> return $ extendTyEnv _Γ1 (x, closeOver TUsed)
-          TUsed     -> throwError LinearFail
+          TUsed     -> throwError $ LinearFail x
           _         -> return _Γ1
     return (tyA, [], V, _Γ2)
 
@@ -1018,17 +1019,17 @@ solver (su, cs) =
   case cs of
     [] -> return su
     (TypeConstraint t1 t2 : cs') -> do
-      let (t1',t2') = case (simpty t1, simpty t2) of
-                        (Nothing, _) -> error "type error"
-                        (_, Nothing) -> error "type error"
-                        (Just a, Just b) -> (a,b)
+      (t1',t2') <- case (simpty t1, simpty t2) of
+                     (Nothing, _) -> throwError $ TypeFail "type"
+                     (_, Nothing) -> throwError $ TypeFail "type"
+                     (Just a, Just b) -> return (a,b)
       su1 <- unifies (T t1') (T t2')
       solver (su1 `compose` su, apply su1 cs')
     (ModeConstraint m1 m2 : cs') -> do
-      let (m1',m2') = case (mcompose m1, mcompose m2) of
-                        (Nothing, _) -> error "mode error"
-                        (_, Nothing) -> error "mode error"
-                        (Just a, Just b) -> (a,b)
+      (m1',m2') <- case (mcompose m1, mcompose m2) of
+                     (Nothing, _) -> throwError $ ModeFail m1 m2
+                     (_, Nothing) -> throwError $ ModeFail m1 m2
+                     (Just a, Just b) -> return (a,b)
       su1 <- unifies (M m1') (M m2')
       solver (su1 `compose` su, apply su1 cs')
          

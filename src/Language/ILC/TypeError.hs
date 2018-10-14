@@ -29,9 +29,9 @@ data TypeError = UnificationFail TML TML
                | ParFail Mode Mode
                | SeqFail Mode Mode
                | ChoiceFail Mode Mode
-               | ModeFail String
+               | ModeFail Mode Mode
                | TypeFail String
-               | LinearFail
+               | LinearFail Name
 
 instance Show TypeError where
   show = show . pretty
@@ -82,10 +82,15 @@ instance Pretty TypeError where
          , pretty m2
          ]
     
-  pretty (ModeFail s) = text s
+  pretty (ModeFail a b) =
+    hsep [ text "Cannot unify types:\n\t"
+         , pretty a
+         , text "\nwith\n\t"
+         , pretty b
+         ]
   
   pretty (TypeFail s)  = text s
   
-  pretty LinearFail  = text "Linear read channel violation."
+  pretty (LinearFail x)  = text "Linear read channel violation on variable" <+> text x
 
   pretty _           = text "Unimplemented error message"

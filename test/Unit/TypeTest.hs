@@ -33,24 +33,25 @@ examples =
     , ( "assoclist"
       , "let f x = match x with | (a,b):[] => a"
       , "∀ a b . [(a,b)] -> a")
-    {-, ( "typed chan"
-      , "let f () = nu (rc, wc) . wr 1 -> wc |> let (_, rc) = rd rc in rc"
-      , "Unit ->@W Rd Int")
-    , ( "simple read"
-      , "let f () = nu c . rd c"
-      , "∀ a . Unit ->@R (a,Rd a)")-}
+    -- TODO: Simple reads should yield lollipops
+    , ( "simple read 1"
+      , "let f () = nu (r, w) . let (v, r) = rd r in v"
+      , "∀ a . Unit ->@R !(a)")
+    , ( "simple read 2"
+      , "let f () = nu (r, w) . let (v, r) = rd r in r"
+      , "∀ a . Unit ->@R Rd a")
     , ( "simple write"
       , "let f () = nu c . wr 1 -> c'"
       , "Unit ->@W Unit")
     , ( "ill-typed chan"
       , "let f () = nu (rc, wc) . wr 1 -> wc |> wr () -> wc |> rc"
       , "ill-typed")
-    {-, ( "parallel write"
+    , ( "parallel write"
       , "let f () = nu (rc, wc) . wr 1 -> wc |> wr 1 -> wc"
       , "ill-typed")
     , ( "sequential write"
       , "let f () = nu (rc, wc) . wr 1 -> wc ; wr 1 -> wc"
-      , "ill-typed")-}
+      , "ill-typed")
     , ( "diff branch modes"
       , "nu (rc, wc) . match 1 with | _ => wr 1 -> wc | _ => ()"
       , "ill-typed")
@@ -69,4 +70,7 @@ examples =
     , ( "loop"
       , "letrec loop c f = let (v, c) = rd c in let! v' = v in let! f' = f in f' v'; loop c f"
       , "∀ a b c d . Rd a -o !(a ->@c b) -o@R d")
+    , ("linear read channel violation"
+      , "let foo () = nu (r, w) . let (v, x) = rd r in r"
+      , "ill-typed")
     ]
