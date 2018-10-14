@@ -16,6 +16,7 @@ module Language.ILC.Type (
   , LType(..)
   , simpty
   , simpFully
+  , linearize
   , Scheme(..)
   , tyInt
   , tyBool
@@ -90,6 +91,13 @@ simplty (LRdChan t)     = LRdChan <$> simpty  t
 simplty (LArr l1 l2 m)  = LArr    <$> simplty l1 <*> simplty l2 <*> mcompose m
 simplty (LTensor l1 l2) = LTensor <$> simplty l1 <*> simplty l2
 simplty (LBang t)       = LBang   <$> simpty  t
+
+-- | Transforms an intuitionistic type into a linear type.
+linearize :: Type -> LType
+linearize (TVar a) = LVar a
+linearize (TArr t1 t2 m) = LArr (linearize t1) (linearize t2) m
+linearize (TLin l) = l
+linearize t = LBang t
 
 -- | Wraps intuitionistic types, linear types, and modes.
 data TML = T Type

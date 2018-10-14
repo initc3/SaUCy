@@ -499,6 +499,11 @@ typeSumDeconstruction (TArr _ t _) (p:ps) = typeSumDeconstruction t ps
 typeSumDeconstruction t            []     = t
 typeSumDeconstruction _            _      = error "Infer:typeSumDeconstruction"
 
+sumTypeBinds :: [Pattern] -> Type -> [(Name, Type)] -> [(Name, Type)]
+sumTypeBinds (PVar x:ps) (TArr t t'@TArr{} _) env = sumTypeBinds ps t' ((x, t) : env)
+sumTypeBinds (PVar x:ps) (TArr t _ _)         env = (x, t) : env
+sumTypeBinds _           _                    env = env
+
 inferPatLin :: Pattern
          -> Maybe Expr
          -> Infer (Type, [Constraint], [(Name, Type)])
@@ -508,6 +513,14 @@ inferPatLin pat expr = case (pat, expr) of
     tyV <- fresh (TVar . TV)
     let tyBang = TLin (LBang tyV)
     return (tyy, [TypeConstraint tyy tyBang], [(x, tyV)])
+
+  (PCust x ps, Just (EVar y)) -> do
+    tyy <- lookupEnv y
+    tyx <- lookupEnv x
+    let tyx' = typeSumDeconstruction tyx ps
+        constraints = [TypeConstraint tyy (TLin (LBang tyx'))]
+        binds = sumTypeBinds ps tyx []
+    return (tyx', constraints, binds)
     
   _ -> error "Infer:inferPatLin"
 
@@ -707,11 +720,50 @@ infer expr = case expr of
         moConstraints = [ModeConstraint m V]
         constraints = tyConstraints ++ moConstraints
     return (tyV, constraints, V, _Γ2)
-
+        
   ELetRd (PTuple [PVar v, PVar c]) (ERd e1) e2 -> do
     env <- ask
     tyV <- fresh (TVar . TV)
     let binds = [(v, TLin (LBang tyV)), (c, TLin (LRdChan tyV))]
+    (tye1, c1, m1, _Γ2) <- infer (ERd e1)
+    let c1' = TypeConstraint (TLin (LTensor (LBang tyV) (LRdChan tyV))) tye1 : c1
+    case runSolve c1' of
+      Left err -> throwError err
+      Right sub -> do
+        let sc t = generalize (apply sub env) (apply sub t)
+        (tyB, c2, m2, _Γ3) <- (local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
+                              (local (apply sub) (infer e2))
+                              binds))
+        m3 <- fresh (MVar . TV)
+        let tyConstraints = c1' ++ c2
+            moConstraints = [ModeConstraint (MSeq m1 m2) m3]
+            constraints = tyConstraints ++ moConstraints
+        return (tyB, constraints, m3, _Γ3)
+
+  -- TODO: Reduce duplication
+  ELetRd (PTuple [PWildcard, PVar c]) (ERd e1) e2 -> do
+    env <- ask
+    tyV <- fresh (TVar . TV)
+    let binds = [(c, TLin (LRdChan tyV))]
+    (tye1, c1, m1, _Γ2) <- infer (ERd e1)
+    let c1' = TypeConstraint (TLin (LTensor (LBang tyV) (LRdChan tyV))) tye1 : c1
+    case runSolve c1' of
+      Left err -> throwError err
+      Right sub -> do
+        let sc t = generalize (apply sub env) (apply sub t)
+        (tyB, c2, m2, _Γ3) <- (local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
+                              (local (apply sub) (infer e2))
+                              binds))
+        m3 <- fresh (MVar . TV)
+        let tyConstraints = c1' ++ c2
+            moConstraints = [ModeConstraint (MSeq m1 m2) m3]
+            constraints = tyConstraints ++ moConstraints
+        return (tyB, constraints, m3, _Γ3)
+
+  ELetRd PWildcard (ERd e1) e2 -> do
+    env <- ask
+    tyV <- fresh (TVar . TV)
+    let binds = []
     (tye1, c1, m1, _Γ2) <- infer (ERd e1)
     let c1' = TypeConstraint (TLin (LTensor (LBang tyV) (LRdChan tyV))) tye1 : c1
     case runSolve c1' of
@@ -750,10 +802,9 @@ infer expr = case expr of
              Left err -> throwError err
              Right sub -> return (apply sub tyV, apply sub tyA)
     case (tyV', tyA') of
-      (TLin lV', TLin lA') ->
-        return (TLin (LArr lV' lA' m), c, V, _Γ2)
-      _                    ->
-        return (TArr tyV' tyA' m, c, V, _Γ2)
+      (TLin lV', TLin lA') -> return (TLin (LArr lV' lA' m), c, V, _Γ2)
+      (TLin lV', t)        -> return (TLin (LArr lV' (linearize t) m), c, V, _Γ2)
+      _                    -> return (TArr tyV' tyA' m, c, V, _Γ2)
 
   ELam PUnit e -> do
     (tyA, c, m, _Γ2) <- infer e
