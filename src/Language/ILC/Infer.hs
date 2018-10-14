@@ -757,7 +757,18 @@ infer expr = case expr of
 
   ELam PUnit e -> do
     (tyA, c, m, _Γ2) <- infer e
-    return (TArr tyUnit tyA m, c, V, _Γ2)
+    tyA' <- case runSolve c of
+              Left err -> throwError err
+              Right sub -> return $ apply sub tyA
+    case tyA' of
+      TLin lA' ->
+        return (TLin (LArr (LBang tyUnit) lA' m), c, V, _Γ2)
+      _                    ->
+        return (TArr tyUnit tyA' m, c, V, _Γ2)
+
+  {-ELam PUnit e -> do
+    (tyA, c, m, _Γ2) <- infer e
+    return (TArr tyUnit tyA m, c, V, _Γ2)-}
 
   ELam PWildcard e -> do
     tyV <- fresh (TVar . TV)

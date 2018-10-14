@@ -33,13 +33,12 @@ examples =
     , ( "assoclist"
       , "let f x = match x with | (a,b):[] => a"
       , "∀ a b . [(a,b)] -> a")
-    -- TODO: Simple reads should yield lollipops
     , ( "simple read 1"
       , "let f () = nu (r, w) . let (v, r) = rd r in v"
-      , "∀ a . Unit ->@R !(a)")
+      , "∀ a . !(Unit) -o@R !(a)")
     , ( "simple read 2"
       , "let f () = nu (r, w) . let (v, r) = rd r in r"
-      , "∀ a . Unit ->@R Rd a")
+      , "∀ a . !(Unit) -o@R Rd a")
     , ( "simple write"
       , "let f () = nu c . wr 1 -> c'"
       , "Unit ->@W Unit")
