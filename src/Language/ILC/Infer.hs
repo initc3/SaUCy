@@ -790,10 +790,11 @@ infer expr = case expr of
     _ <- case sameThings envs  of
              Left err -> throwError err
              Right _Γ  -> return _Γ
+    mV <- fresh (MVar . TV)
     let tyConstraints = cs ++ cs'
-        moConstraints = map (ModeConstraint V) ms
+        moConstraints = map (ModeConstraint mV) ms
         constraints = tyConstraints ++ moConstraints
-    return (ty, constraints, V, head _Γs)
+    return (ty, constraints, mV, head _Γs)
 
   ELam (PVar x) e -> do
     tyV <- fresh (TVar . TV)
@@ -855,6 +856,10 @@ infer expr = case expr of
     (tyRet, tyConstraints) <- case (tyA2B', tyA') of
           (t, TLin l) -> do
             tyV <- fresh (LVar . TV)
+            tyA' <- fresh (LVar . TV)
+            return (TLin tyV, TypeConstraint tyA2B (TLin (LArr tyA' tyV mV)) : TypeConstraint (TLin tyA') tyA : c1 ++ c2)
+          (TLin l, t) -> do
+            tyV  <- fresh (LVar . TV)
             tyA' <- fresh (LVar . TV)
             return (TLin tyV, TypeConstraint tyA2B (TLin (LArr tyA' tyV mV)) : TypeConstraint (TLin tyA') tyA : c1 ++ c2)
           (t1, t2)    -> do

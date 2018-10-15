@@ -22,13 +22,15 @@ let advWrapper () = ()
   |> (!(let m = rd ?p2a in
          wr m -> ?a2z))-}
 
-let dummyAdversary crupt frZ toZ frF toF asP asQ =
-    loop frZ (lam x . match x with
+let dummyAdversary crupt frZ toZ frF toF asP asQ frP =
+  {- Forward messages from Z to F as P or Q if corrupted. -}
+    loop frZ !(lam x . match x with
 		    | SttCruptZ2A_A2P m => wr m -> asP
-		    | SttCruptZ2A_A2Q m => wr m -> toQ
+		    | SttCruptZ2A_A2Q m => wr m -> asQ
 		    | SttCruptZ2A_A2F b => wr b -> toF)
-  |> loop frF (lam x . wr x -> toZ)
-  |> loop frP (lam x . wr x -> toZ)
+  {- Forward messages from F to Z. -}
+  |> loop frF !(lam x . wr x -> toZ)
+  |> loop frP !(lam x . wr x -> toZ)
 
 {-
 idealProtocol pid (z2p, p2z) (f2p, p2f) = do
@@ -43,9 +45,9 @@ idealProtocol pid (z2p, p2z) (f2p, p2f) = do
   return ()
 -}
 
-let idealProtocol frZ frF =
+{-let idealProtocol frZ frF =
     loop frZ (lam x . x)
-  |> loop frF (lam x . x)
+  |> loop frF (lam x . x)-}
 
 {- UC communication layout
    Z --- P,Q
@@ -53,7 +55,7 @@ let idealProtocol frZ frF =
    A --- F
  -}
 
-let execUC z p q f a =
+{-let execUC z p q f a =
   nu (rZ2P, wZ2P), (rP2Z, wP2Z)
   , (rZ2Q, wZ2Q), (rQ2Z, wQ2Z)
   , (rP2F, wP2F), (rF2P, wF2P)
@@ -66,4 +68,4 @@ let execUC z p q f a =
       |> a crupt rZ2A wA2Z rF2A wA2F wP2F wQ2F
       |> if crupt == CruptP then advWrapper () else p ()
       |> if crupt == CruptQ then advWrapper () else q ()
-      |> z ()
+      |> z ()-}
