@@ -11,6 +11,14 @@ let fCom frA toB =
     let! Open = msg' in
       wr (Opened b) -> toB
 
+{-let fCom frA toB =
+  let (msg, frA) = rd frA in
+  let! (Commit b) = msg in
+    wr Receipt -> toB ;
+    let (msg', frA) = rd frA in
+    let! Open = msg' in
+      wr (Opened b) -> toB-}
+
 let pA frZ toF =
   let (_, frZ) = rd frZ in
     wr (Commit 0) -> toF ;
@@ -32,7 +40,7 @@ let execUC () =
   , (rF2S, wF2S)
   , (rZ2A, wZ2A)
   , (rB2Z, wB2Z)
-  . (fCom rA2F (!(wF2B)))
-  |> (pA rZ2A (!(wA2F)))
-  |> (pB rF2B (!(wB2Z)))
-  |> (pZ rB2Z (!(wZ2A)))
+  . (fCom rA2F !wF2B)
+  |> (pA rZ2A !wA2F)
+  |> (pB rF2B !wB2Z)
+  |> (pZ rB2Z !wZ2A)

@@ -245,12 +245,11 @@ eError :: Parser Expr
 eError = mklexer EError $ reserved "error" >> atomExpr
 
 eBang :: Parser Expr
-eBang = mklexer EBang $ reserved "!" >> atomExpr
+eBang = mklexer EBang $ reservedOp "!" >> atomExpr
 
 eUn :: Parser Expr
 eUn = ePrint
   <|> eError
-  <|> eBang
 
 expr :: Parser Expr
 expr = try eSeq <|> try eChoice <|> try eFork <|> expr'
@@ -266,6 +265,7 @@ atomExpr = eVar
        <|> eString
        <|> eList
        <|> eSett
+       <|> eBang
        <|> try eUnit
        <|> try eTuple
        <|> parens expr
