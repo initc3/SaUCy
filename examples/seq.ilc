@@ -1,5 +1,0 @@
-let seqsame f x = f x ; f x
-
-let seqdiff f g x = f x ; g x
-
-let dubseqdiff f g x = seqdiff f g x ; seqdiff f g x

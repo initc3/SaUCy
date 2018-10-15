@@ -1,3 +1,0 @@
-let dummyAdversary frZ asP =
-    loop frZ !(lam x . match x with
-		    | SttCruptZ2A_A2P m => wr m -> asP)

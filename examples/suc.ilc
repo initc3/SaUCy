@@ -1,61 +1,35 @@
+{- Static corruptions: Either P is corrupted, Q is corrupted, or neither are
+   corrupted. -}
 data Crupt = CruptP | CruptQ | CruptNone
 
-data SttCruptZ2A a b
-  = SttCruptZ2A_A2P a
-  | SttCruptZ2A_A2Q a
-  | SttCruptZ2A_A2F b
+let advWrapper p = error "todo"
 
-data SttCruptA2Z a b
-  = SttCruptA2Z_P2A a
-  | SttCruptA2Z_Q2A a
-  | SttCruptA2Z_F2A b
-
-let advWrapper () = ()
-
-{-let dummyAdversary = lam sid, crupt .
-  |> (!(match (rd ?z2a) with
-       | b        => wr b -> ?a2f
-       | (pid, m) => wr (pid, m) -> ?a2p
-       end)) ;
-  |> (!(let m = rd ?f2a in
-         wr m -> ?a2z)) ;
-  |> (!(let m = rd ?p2a in
-         wr m -> ?a2z))-}
-
-let dummyAdversary crupt frZ toZ frF toF asP asQ frP =
-  {- Forward messages from Z to F as P or Q if corrupted. -}
-    loop frZ !(lam x . match x with
-		    | SttCruptZ2A_A2P m => wr m -> asP
-		    | SttCruptZ2A_A2Q m => wr m -> asQ
-		    | SttCruptZ2A_A2F b => wr b -> toF)
-  {- Forward messages from F to Z. -}
+{- The dummy adversary forwards messages between Z and F (and vice versa). -}
+let dummyAdversary crupt frZ toZ frF toF =
+    loop frZ !(lam x . wr x -> toF)
   |> loop frF !(lam x . wr x -> toZ)
-  |> loop frP !(lam x . wr x -> toZ)
 
-{-
-idealProtocol pid (z2p, p2z) (f2p, p2f) = do
-  fork $ forever $ do
-    m <- readChan z2p
-    --liftIO $ putStrLn $ "idealProtocol received from z2p " ++ pid
-    writeChan p2f m
-  fork $ forever $ do
-    m <- readChan f2p
-    --liftIO $ putStrLn $ "idealProtocol received from f2p " ++ pid
-    writeChan p2z m
-  return ()
--}
+{- The ideal protocol forwards messages between Z and F (and vice versa). -}
+let idealProtocol rZ2P wP2F rZ2Q wQ2F rF2P wP2Z rF2Q wQ2Z =
+    loop rZ2P !(lam x . wr x -> wP2F)
+  |> loop rZ2Q !(lam x . wr x -> wQ2F)
+  |> loop rF2P !(lam x . wr x -> wP2Z)
+  |> loop rF2Q !(lam x . wr x -> wQ2Z)
 
-{-let idealProtocol frZ frF =
-    loop frZ (lam x . x)
-  |> loop frF (lam x . x)-}
+let testEnv toExec' frP frQ frA =
+  let! toExec = toExec' in
+    wr CruptP -> toExec
+    |> loop frP !(lam x . print x)
+    |> loop frQ !(lam x . print x)
+    |> loop frA !(lam x . print x)    
 
 {- UC communication layout
-   Z --- P,Q
+   Z --- P/Q
    |  X  |
    A --- F
  -}
 
-{-let execUC z p q f a =
+let execUC z p q f a =
   nu (rZ2P, wZ2P), (rP2Z, wP2Z)
   , (rZ2Q, wZ2Q), (rQ2Z, wQ2Z)
   , (rP2F, wP2F), (rF2P, wF2P)
@@ -63,9 +37,10 @@ idealProtocol pid (z2p, p2z) (f2p, p2f) = do
   , (rF2A, wF2A), (rA2F, wA2F)
   , (rA2Z, wA2Z), (rZ2A, wZ2A)
   , (rZ2E, wZ2E)
-  . let (crupt, _) = rd rZ2E in
+  . let (crupt', rZ2E) = rd rZ2E in
+    let! crupt = crupt' in
         f crupt
-      |> a crupt rZ2A wA2Z rF2A wA2F wP2F wQ2F
-      |> if crupt == CruptP then advWrapper () else p ()
-      |> if crupt == CruptQ then advWrapper () else q ()
-      |> z ()-}
+      |> a crupt rZ2A !wA2Z rF2A
+      {-|> if crupt == CruptP then advWrapper p else p ()
+      |> if crupt == CruptQ then advWrapper q else q ()-}
+      |> z !wZ2E

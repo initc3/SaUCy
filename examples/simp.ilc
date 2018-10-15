@@ -1,1 +1,0 @@
-let f () = nu (r, w) . let (v, r) = rd r in v
