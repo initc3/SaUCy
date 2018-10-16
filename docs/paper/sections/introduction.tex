@@ -1,13 +1,35 @@
 \section{Introduction}
 \label{sec:introduction}
 
-The universal composability (UC) framework provides a method for analyzing the
-security of cryptographic tasks, while ensuring that security is maintained
-under concurrent general composition. More specifically, the security
-requirements of a task can be expressed as a self-contained specification called
-an \emph{ideal functionality}. If a protocol $\pi$ realizes some ideal
-functionality $\mc{F}$ in the UC framework, then $\pi$ will ``behave just like
-$\mc{F}$'' in arbitrary contexts.
+In cryptography, a proof of security in the universal composability (UC) model
+is the gold standard for demonstrating that a protocol carries out a
+cryptographic task securely~\cite{canetti2001universally}. In particular, a
+protocol that is UC-secure enjoys the strongest notion of compositionality---it
+maintains its security properties when run concurrently with arbitrary other
+protocols.
+
+In a nutshell, security in the UC framework follows the real/ideal paradigm.
+The security requirements of a given task are defined as a program for a
+\emph{single trusted process} called an \emph{ideal functionality}, which acts
+as a specification for a distributed protocol across \emph{many unstrusted
+  processes}, and we say that a protocol $\pi$ \emph{emulates} the ideal
+functionality $\mc{F}$ if every adversarial behavior in the real world (running
+with $\pi$) can also be exhibited in the ideal world (running with $\mc{F}$).
+
+However, because the UC framework only exists on paper, protocol descriptions,
+ideal functionalities, and other proof artifacts for proving emulation are
+traditionally written in a combination of prose and pseudocode, which makes them
+error-prone and difficult to verify. Moreover, due to the lack of mechanization,
+the modularity benefits of UC have not been enjoyed in actual protocol
+implementations.
+
+
+%However, this power and generality comes at the cost of UC
+%formalization being quite complicated. On top of this, the UC framework exists
+%primarily on paper, which makes proofs error-prone and verifying security claims
+%difficult. In a nutshell, a UC proof involves showing that a protocol $\pi$
+%securely realizes an ideal functionality $\mc{F}$.
+
 
 In addition to strong composition guarantees, another strength of the UC
 framework is its generality. Practically any cryptographic task can be expressed
