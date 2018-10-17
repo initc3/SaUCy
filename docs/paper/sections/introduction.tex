@@ -10,48 +10,55 @@ protocols.
 
 In a nutshell, security proofs in UC follow the real/ideal paradigm. The
 security requirements of a given task are defined as a program for a
-\emph{single trusted process} called an \emph{ideal functionality}, which
-receives inputs from parties, locally computes the outputs, and hands them to
-the prescribed parties. This serves as a specification of the desired security
-properties for a distributed protocol that achieves the task across \emph{many
-  unstrusted processes}. We say that a protocol $\pi$ \emph{emulates} an ideal
-functionality $\mc{F}$ if every adversarial behavior in the real world (running
-with $\pi$) can also be exhibited in the ideal world (running with $\mc{F}$).
+\emph{single trusted process} called an \emph{ideal functionality}, which runs
+in an imagined ideal world. This serves as a specification of the desired
+security properties for a distributed protocol achieving the task across
+\emph{many unstrusted processes}, which runs in the real world. Roughly
+speaking, we say that a protocol $\pi$ \emph{emulates} an ideal functionality
+$\mc{F}$ (i.e., it meets its specification) if every adversarial behavior in the
+real world can also be exhibited in the ideal world.
 
-However, because the UC framework only exists on paper, protocol descriptions,
-ideal functionalities, and other proof artifacts for proving emulation are
-traditionally written in a combination of prose and pseudocode, which makes them
-error-prone and difficult to verify. Moreover, due to the lack of mechanization,
-the modularity benefits of UC have not been enjoyed in protocol implementations.
+While UC security proofs admit strong guarantees, this comes at the cost of
+their formalization being quite complicated. Moreover, because the UC framework
+only exists on paper, protocol descriptions, ideal functionalities, and other
+proof artifacts for proving emulation are traditionally written in a combination
+of prose and pseudocode, which makes them error-prone and difficult to
+verify. Therefore, although the UC framework is widely used for on-paper proofs,
+its modularity benefits have not been enjoyed in practical implementations.
 
-In this paper, we develop a process calculus called the Interactive Lambda
-Calculus (ILC) to serve as the foundation for abstracting the computational
-model underlying UC---interactive Turing machines (ITMs). In the ITM model,
-execution is essentially single-threaded. Processes pass control from one to
-another each time a message is sent so that exactly one process is active at a
-given time. This is in contrast to the standard
-$\pi$-calculus~\cite{milner1999communicating} or variants such as the applied
-$\pi$-calculus~\cite{abadi2001mobile}, for which there may be many possible
-execution paths that lead to different outcomes.
+Previous work, such as Symblic UC~\cite{bohl2016symbolic}, focus on
+systematizing UC by transporting its ideas to the symbolic model of
+cryptography, in which cryptographic operations are abstracted as a term process
+algebra and adversary capabilities are defined by deduction rules over these
+terms. Although this highly abstract vantage point leads to simpler security
+proofs that can be amenable to automated reasoning, security guarantees derived
+from symbolic analyses are not as strong as those from computational analyses
+considered in UC and in cryptography more broadly.
 
-Therefore, ILC adapts ITMs to a subset of the $\pi$-calculus through its type
-system. In other words, well-typed programs are expressible as ITMs. Moreover,
-the invariants maintained by the type system ensure that ILC programs are
-confluent, so any non-determinism in protocols is due to random coinflips taken
-by processes, which have a well-defined distribution. This is essential to
-ensure that the normalization of an ILC program has a computational
-interpretation, as is necessary in cryptographic reduction proofs.
+This paper lays the groundwork for building a concrete implementation of the UC
+framework, which admits computational proofs of security, in the form of a
+process calculus called the Interactive Lambda Calculus (ILC). ILC represents
+the first language-based approach to capturing the computational model
+underlying UC: interactive Turing machines (ITMs). In the ITM model, execution
+is essentially single-threaded. Processes pass control from one to another each
+time a message is sent so that exactly one process is active at a given
+time. And this choice is for good reason---it is necessary for computational
+security proofs (specifically, cryptographic reductions) to go through.
 
-Existing work, such as Symbolic UC~\cite{bohl2016symbolic}, focuses on
-transporting the ideas of UC to the symbolic model of cryptography, in which
-cryptographic operations are abstracted as term algebras and adversary
-capabilities are defined by deduction rules over these terms. Although this
-highly abstract view of protocols leads to simpler security proofs that can be
-amenable to automated verification, security guarantees derived from symbolic
-analyses are not as strong as those from the computational model of cryptography
-we consider in this work. In addition, Symbolic UC uses a variant of the applied
-$\pi$-calculus, so it is possible to write programs that are not expressible as
-ITMs.
+It turns out that existing process calculi, such as the standard
+$\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
+variants such as the applied $\pi$-calculus~\cite{abadi2001mobile}, are not a good
+fit to ITMs. One could quite easily write a program in these languages that has
+many possible execution paths leading to different outcomes, which would not
+expressible as an ITM and hence, could not be used to yield a computational
+security proof. Therefore, to faithfully capture the computational model
+underlying UC, ILC adapts ITMs to a subset of the $\pi$-calculus through its type
+system. In other words, \emph{well-typed programs are expressible as ITMs}. The
+invariants maintained by the type system ensure that ILC programs are confluent,
+so any non-determinism in protocols is due to random coinflips taken by
+processes, which have a well-defined distribution. This is essential to ensure
+that the normalization of an ILC program has a computational interpretation, as
+is necessary in cryptographic reduction proofs.
 
 \begin{comment}
 The success of blockchains and cryptocurrencies have raised interest in building
