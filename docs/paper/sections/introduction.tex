@@ -28,7 +28,7 @@ its modularity benefits have not been enjoyed in practical implementations.
 
 Prior work on systematizing UC, such as Symoblic UC~\cite{bohl2016symbolic},
 focus on transporting its ideas to the symbolic model of cryptography, in which
-cryptographic operations are abstracted as a term algebras and adversary
+cryptographic operations are abstracted as term algebras and adversary
 capabilities are defined by deduction rules over these terms. Although this
 abstract vantage point leads to simpler security proofs that can be amenable to
 automated reasoning, security guarantees derived from symbolic analyses are not
@@ -39,14 +39,14 @@ This paper lays the groundwork for building a concrete implementation of the UC
 framework, which admits computational proofs of security, in the form of a
 process calculus called the Interactive Lambda Calculus (ILC). ILC represents
 the first language-based approach to capturing the computational model
-underlying UC: interactive Turing machines (ITMs). In the ITM model, execution
+underlying UC---interactive Turing machines (ITMs). In the ITM model, execution
 is essentially single-threaded. Processes pass control from one to another each
 time a message is sent so that exactly one process is active at a given
 time. And this choice is for good reason---it is necessary for computational
 security proofs (specifically, cryptographic reductions) to go through.
 
 It turns out that existing process calculi, such as the standard
-$\pi$-calculus~\cite{milner1999communicating} and its cryptography-oriented
+$\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
 variants~\cite{abadi1999calculus, abadi2001mobile}, are not a good fit to
 ITMs. They allow for non-confluent reductions by design, which are not
 expressible in ITMs and hence, do not have computational interpretations.
