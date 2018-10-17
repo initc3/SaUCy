@@ -8,15 +8,15 @@ protocol that is UC-secure enjoys the strongest notion of compositionality---it
 maintains its security properties when run concurrently with arbitrary other
 protocols.
 
-In a nutshell, security proofs in UC follow the real/ideal paradigm. The
-security requirements of a given task are defined as a program for a
-\emph{single trusted process} called an \emph{ideal functionality}, which runs
-in an imagined ideal world. This serves as a specification of the desired
-security properties for a distributed protocol achieving the task across
-\emph{many unstrusted processes}, which runs in the real world. Roughly
-speaking, we say that a protocol $\pi$ \emph{emulates} an ideal functionality
-$\mc{F}$ (i.e., it meets its specification) if every adversarial behavior in the
-real world can also be exhibited in the ideal world.
+In a nutshell, security proofs in UC follow the real/ideal
+paradigm~\cite{goldreich1987play}. The security requirements of a given task are
+defined as a program for a \emph{single trusted process} called an \emph{ideal
+  functionality}, which runs in an imagined ideal world. This serves as a
+specification of the desired security properties for a distributed protocol
+achieving the task across \emph{many unstrusted processes}, which runs in the
+real world. Roughly speaking, we say that a protocol $\pi$ \emph{emulates} an
+ideal functionality $\mc{F}$ (i.e., it meets its specification) if every
+adversarial behavior in the real world can also be exhibited in the ideal world.
 
 While UC security proofs admit strong guarantees, this comes at the cost of
 their formalization being quite complicated. Moreover, because the UC framework
@@ -28,12 +28,12 @@ its modularity benefits have not been enjoyed in practical implementations.
 
 Previous work, such as Symblic UC~\cite{bohl2016symbolic}, focus on
 systematizing UC by transporting its ideas to the symbolic model of
-cryptography, in which cryptographic operations are abstracted as a term process
-algebra and adversary capabilities are defined by deduction rules over these
-terms. Although this highly abstract vantage point leads to simpler security
-proofs that can be amenable to automated reasoning, security guarantees derived
-from symbolic analyses are not as strong as those from computational analyses
-considered in UC and in cryptography more broadly.
+cryptography, in which cryptographic operations are abstracted as a term
+algebras and adversary capabilities are defined by deduction rules over these
+terms. Although this abstract vantage point leads to simpler security proofs
+that can be amenable to automated reasoning, security guarantees derived from
+symbolic analyses are not as strong as those from computational analyses
+considered in UC and in cryptography more broadly~\cite{cortier2011survey}.
 
 This paper lays the groundwork for building a concrete implementation of the UC
 framework, which admits computational proofs of security, in the form of a
@@ -46,19 +46,64 @@ time. And this choice is for good reason---it is necessary for computational
 security proofs (specifically, cryptographic reductions) to go through.
 
 It turns out that existing process calculi, such as the standard
-$\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
-variants such as the applied $\pi$-calculus~\cite{abadi2001mobile}, are not a good
-fit to ITMs. One could quite easily write a program in these languages that has
-many possible execution paths leading to different outcomes, which would not
-expressible as an ITM and hence, could not be used to yield a computational
-security proof. Therefore, to faithfully capture the computational model
-underlying UC, ILC adapts ITMs to a subset of the $\pi$-calculus through its type
-system. In other words, \emph{well-typed programs are expressible as ITMs}. The
-invariants maintained by the type system ensure that ILC programs are confluent,
-so any non-determinism in protocols is due to random coinflips taken by
-processes, which have a well-defined distribution. This is essential to ensure
-that the normalization of an ILC program has a computational interpretation, as
-is necessary in cryptographic reduction proofs.
+$\pi$-calculus~\cite{milner1999communicating} and its cryptography-oriented
+variants~\cite{abadi1999calculus, abadi2001mobile}, are not a good fit to
+ITMs. They allow for non-confluent reductions by design, which are not
+expressible in ITMs and hence, do not have a computational interpretation.
+Therefore, to faithfully capture the computational model underlying UC, ILC
+adapts ITMs to a subset of the $\pi$-calculus through its type system. In other
+words, \emph{well-typed programs are expressible as ITMs}.
+
+Typing judgements in ILC have the form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is a
+linear typing context and $m \in \{\Wm, \Rm, \Vm\}$ is a mode (write, read, and
+value, respectively). The type system maintains the following two invariants.
+\begin{enumerate}[leftmargin=*]
+\item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
+  ITM parlance) has a read end and a write end. The read end of the channel is
+  protected against duplication by binding it in the linear context $\Delta$. This
+  ensures that no non-determinism arises at the receiving end of communications.
+
+\item \emph{No parallel composition of write mode processes.} The typing rules
+  do not allow parallel composition of two write mode processes ($\Wm ||
+  \Wm$). This ensures that no non-determinism arises at the sending end of
+  communications.
+\end{enumerate}
+
+Together, the effect of these is that the only non-determinism in an ILC program
+is due to random coinflips taken by the processes, which have a well-defined
+distribution. This is essential to ensure that the normalization of an ILC
+program has a computational interpretation, as is necessary in cryptography
+reduction proofs. This also guarantees that any apparent concurrency hazards,
+such as adversarial scheduling of messages in an asynchronous network, are due
+to an explicit adversary process $\mc{A}$ rather than uncertainty built into the
+model itself.
+
+%In particular, the invariants maintained by the type system ensure that ILC
+%programs are confluent, so any non-determinism in protocols is due to random
+%coinflips taken by processes, which have a well-defined distribution. This is
+%essential to ensure that the normalization of an ILC program has a computational
+%interpretation, as is necessary in cryptographic reduction proofs. While some
+%existing process calculi enjoy confluence properties, they are insufficient as a
+%foundation for UC, because they either rule out nondeterminism entirely or are
+%restricted to two-party
+%communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}. On
+%the other hand, ILC achieves confluence through its type system, which has the
+%judgement form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is a linear typing context and
+%$m \in \{\Wm, \Rm, \Vm\}$ is a mode (write, read, and value, respectively), and
+%boils down to the following two invariants:
+%\begin{enumerate}[leftmargin=*]
+%\item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
+%  ITM parlance) has a read end and a write end. The read end of the channel is
+%  protected against duplication by binding it in the linear context $\Delta$. This
+%  ensures that no non-determinism arises at the receiving end of communications.
+%
+%\item \emph{No parallel composition of write mode processes.} The typing rules
+%  do not allow parallel composition of two write mode processes ($\Wm ||
+%  \Wm$). This ensures that no non-determinism arises at the sending end of
+%  communications.
+%\end{enumerate}
+
+We have implemented an ILC interpreter in Haskell.
 
 \begin{comment}
 The success of blockchains and cryptocurrencies have raised interest in building
