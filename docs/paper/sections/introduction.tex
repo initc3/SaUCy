@@ -3,16 +3,18 @@
 
 In cryptography, a proof of security in the universal composability (UC) model
 is the gold standard for demonstrating that a protocol carries out a
-cryptographic task securely~\cite{canetti2001universally}. In particular, a
+cryptographic task securely~\cite{canetti2001universally}. More specifically, a
 protocol that is UC-secure enjoys the strongest notion of compositionality---it
 maintains its security properties when run concurrently with arbitrary other
 protocols.
 
-In a nutshell, security in the UC framework follows the real/ideal paradigm.
-The security requirements of a given task are defined as a program for a
-\emph{single trusted process} called an \emph{ideal functionality}, which acts
-as a specification for a distributed protocol across \emph{many unstrusted
-  processes}, and we say that a protocol $\pi$ \emph{emulates} the ideal
+In a nutshell, security proofs in UC follow the real/ideal paradigm. The
+security requirements of a given task are defined as a program for a
+\emph{single trusted process} called an \emph{ideal functionality}, which
+receives inputs from parties, locally computes the outputs, and hands them to
+the prescribed parties. This serves as a specification of the desired security
+properties for a distributed protocol that achieves the task across \emph{many
+  unstrusted processes}. We say that a protocol $\pi$ \emph{emulates} an ideal
 functionality $\mc{F}$ if every adversarial behavior in the real world (running
 with $\pi$) can also be exhibited in the ideal world (running with $\mc{F}$).
 
@@ -20,48 +22,36 @@ However, because the UC framework only exists on paper, protocol descriptions,
 ideal functionalities, and other proof artifacts for proving emulation are
 traditionally written in a combination of prose and pseudocode, which makes them
 error-prone and difficult to verify. Moreover, due to the lack of mechanization,
-the modularity benefits of UC have not been enjoyed in actual protocol
-implementations.
+the modularity benefits of UC have not been enjoyed in protocol implementations.
 
+In this paper, we develop a process calculus called the Interactive Lambda
+Calculus (ILC) to serve as the foundation for abstracting the computational
+model underlying UC---interactive Turing machines (ITMs). In the ITM model,
+execution is essentially single-threaded. Processes pass control from one to
+another each time a message is sent so that exactly one process is active at a
+given time. This is in contrast to the standard
+$\pi$-calculus~\cite{milner1999communicating} or variants such as the applied
+$\pi$-calculus~\cite{abadi2001mobile}, for which there may be many possible
+execution paths that lead to different outcomes.
 
-%However, this power and generality comes at the cost of UC
-%formalization being quite complicated. On top of this, the UC framework exists
-%primarily on paper, which makes proofs error-prone and verifying security claims
-%difficult. In a nutshell, a UC proof involves showing that a protocol $\pi$
-%securely realizes an ideal functionality $\mc{F}$.
+Therefore, ILC adapts ITMs to a subset of the $\pi$-calculus through its type
+system. In other words, well-typed programs are expressible as ITMs. Moreover,
+the invariants maintained by the type system ensure that ILC programs are
+confluent, so any non-determinism in protocols is due to random coinflips taken
+by processes, which have a well-defined distribution. This is essential to
+ensure that the normalization of an ILC program has a computational
+interpretation, as is necessary in cryptographic reduction proofs.
 
-
-In addition to strong composition guarantees, another strength of the UC
-framework is its generality. Practically any cryptographic task can be expressed
-as an ideal functionality, and practically any network model (e.g.,
-authenticated vs. unauthenticated channels, synchronous vs. asynchronous
-messaging) can be expressed in the UC framework. However, this generality comes
-at the cost of UC formalization being quite complicated.
-
-In this paper, \ldots
-
-Adapting theory from UC into a concrete implementation turns out to be
-difficult. To begin with, the computational model underlying UC, called
-Interacting Turing Machines (ITMs), is not a good fit to existing distributed
-languages. In the ITM model, execution is essentially single threaded, passing
-control from one process to another each time a message is sent, such that
-exactly one process is active at a given time. This is in contrast to the
-standard $\pi$-calculus~\cite{milner1999communicating}, for which there may be
-many possible execution paths that lead to different outcomes.
-
-Therefore, we have developed a core process calculus, called Interactive Lambda
-Calculus (ILC), that adapts ITMs to a subset of the $\pi$-calculus through its
-type system. In particular, the invariants maintained by the type system ensures
-that any non-determinism is due to random coinflips taken by processes, which
-have a well-defined distribution. This is essential to ensure that the
-normalization of an ILC program has a computational interpretation, as is
-necessary in cryptographic reduction proofs.
-
-%Using ILC, we will implement the UC network model (asynchronous communication,
-%Byzantine corruptions, etc.) and executable UC implementations (ideal
-%functionalities and simulators) for various primitives in the distributed
-%systems and cryptography literature (e.g., distributed consensus, multiparty
-%computation, and zero-knowledge proofs).
+Existing work, such as Symbolic UC~\cite{bohl2016symbolic}, focuses on
+transporting the ideas of UC to the symbolic model of cryptography, in which
+cryptographic operations are abstracted as term algebras and adversary
+capabilities are defined by deduction rules over these terms. Although this
+highly abstract view of protocols leads to simpler security proofs that can be
+amenable to automated verification, security guarantees derived from symbolic
+analyses are not as strong as those from the computational model of cryptography
+we consider in this work. In addition, Symbolic UC uses a variant of the applied
+$\pi$-calculus, so it is possible to write programs that are not expressible as
+ITMs.
 
 \begin{comment}
 The success of blockchains and cryptocurrencies have raised interest in building
