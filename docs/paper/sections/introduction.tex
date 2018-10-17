@@ -26,14 +26,14 @@ of prose and pseudocode, which makes them error-prone and difficult to
 verify. Therefore, although the UC framework is widely used for on-paper proofs,
 its modularity benefits have not been enjoyed in practical implementations.
 
-Previous work, such as Symblic UC~\cite{bohl2016symbolic}, focus on
-systematizing UC by transporting its ideas to the symbolic model of
-cryptography, in which cryptographic operations are abstracted as a term
-algebras and adversary capabilities are defined by deduction rules over these
-terms. Although this abstract vantage point leads to simpler security proofs
-that can be amenable to automated reasoning, security guarantees derived from
-symbolic analyses are not as strong as those from computational analyses
-considered in UC and in cryptography more broadly~\cite{cortier2011survey}.
+Prior work on systematizing UC, such as Symoblic UC~\cite{bohl2016symbolic},
+focus on transporting its ideas to the symbolic model of cryptography, in which
+cryptographic operations are abstracted as a term algebras and adversary
+capabilities are defined by deduction rules over these terms. Although this
+abstract vantage point leads to simpler security proofs that can be amenable to
+automated reasoning, security guarantees derived from symbolic analyses are not
+as strong as those from computational analyses considered in UC and in
+cryptography more broadly~\cite{cortier2011survey}.
 
 This paper lays the groundwork for building a concrete implementation of the UC
 framework, which admits computational proofs of security, in the form of a
@@ -49,7 +49,7 @@ It turns out that existing process calculi, such as the standard
 $\pi$-calculus~\cite{milner1999communicating} and its cryptography-oriented
 variants~\cite{abadi1999calculus, abadi2001mobile}, are not a good fit to
 ITMs. They allow for non-confluent reductions by design, which are not
-expressible in ITMs and hence, do not have a computational interpretation.
+expressible in ITMs and hence, do not have computational interpretations.
 Therefore, to faithfully capture the computational model underlying UC, ILC
 adapts ITMs to a subset of the $\pi$-calculus through its type system. In other
 words, \emph{well-typed programs are expressible as ITMs}.
@@ -69,14 +69,19 @@ value, respectively). The type system maintains the following two invariants.
   communications.
 \end{enumerate}
 
-Together, the effect of these is that the only non-determinism in an ILC program
-is due to random coinflips taken by the processes, which have a well-defined
-distribution. This is essential to ensure that the normalization of an ILC
-program has a computational interpretation, as is necessary in cryptography
-reduction proofs. This also guarantees that any apparent concurrency hazards,
-such as adversarial scheduling of messages in an asynchronous network, are due
-to an explicit adversary process $\mc{A}$ rather than uncertainty built into the
-model itself.
+Taken together, the effect of these is that the only non-determinism in an ILC
+program is due to random coinflips taken by the processes, which have a
+well-defined distribution. This is essential to ensure that the normalization of
+an ILC program has a computational interpretation, as is necessary in
+cryptography reduction proofs. This also guarantees that any apparent
+concurrency hazards, such as adversarial scheduling of messages in an
+asynchronous network, are due to an explicit adversary process $\mc{A}$ rather
+than uncertainty built into the model itself.
+
+We have implemented an ILC interpreter in Haskell. \todo{Implementation, SaUCy,
+  metatheory}
+
+\begin{comment}
 
 %In particular, the invariants maintained by the type system ensure that ILC
 %programs are confluent, so any non-determinism in protocols is due to random
@@ -101,11 +106,8 @@ model itself.
 %  do not allow parallel composition of two write mode processes ($\Wm ||
 %  \Wm$). This ensures that no non-determinism arises at the sending end of
 %  communications.
-%\end{enumerate}
-
-We have implemented an ILC interpreter in Haskell.
-
-\begin{comment}
+  %\end{enumerate}
+  
 The success of blockchains and cryptocurrencies have raised interest in building
 secure software systems that combine consensus protocols~\cite{miller2016honey},
 zero-knowledge proofs~\cite{kosba2016hawk}, multiparty
