@@ -1,4 +1,4 @@
-fCom :: Rd Msg $\lolli$ !(Wr Msg) $\lollipop{\textsf{\tiny R}}$ !Unit
+fCom :: Rd Msg $\multimap$ !(Wr Msg) $\multimap_{\textsf{\tiny R}}$ !Unit
 let fCom frA toB =
   let (!(Commit b), frA) = rd frA in
     wr Receipt $->$ toB ;

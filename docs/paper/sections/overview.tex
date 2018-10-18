@@ -89,7 +89,7 @@ other hand, write channels are intuitionistically typed, so their use is
 unrestricted.
 
 Because \textsf{fCom} consumes a linear read channel, its type signature
-consists of linear arrows $\lolli$ (or ``lollipops''), which describe the types
+consists of linear arrows $\multimap$ (or ``lollipops''), which describe the types
 of linear functions that consume their arguments exactly once. But what if we
 want a linear function to operate over unrestricted values? In that case, the !
 operator (pronounced ``bang!'') permits an intuitionistically typed value to be
@@ -157,7 +157,7 @@ mode $\Rm$.
 \label{subsec:emulation}
 
 Having defined security in the form of an ideal functionality, the next step is
-to prove that a protocol meets its specification. We say that a protocol $\pi$
+to prove that a protocol meets the definition. We say that a protocol $\pi$
 \emph{emulates} (or \emph{securely realizes}) an ideal functionality $\mc{F}$ if
 every adversarial behavior in the real world (running with $\pi$) can also be
 exhibited in the ideal world (running with $\mc{F}$). But because $\mc{F}$ is
@@ -182,17 +182,22 @@ if no $\mc{Z}$ can distinguish between the two.
   \label{fig:uc-experiment}
 \end{figure}
 
-Figure~\ref{fig:uc-experiment} illustrates what we call the UC experiment:
-connecting lines denote communication channels,\footnote{Note that all
-  communication passes through the adversary $\mc{A}$. In the bare model,
-  communication is asynchronous, unauthenticated, and unreliable, but other
-  models of communication can be built atop this model.} $P_1, P_2, \ldots, P_n$
-represent parties executing protocol $\pi$, and $D_1, D_2, \ldots, D_n$ represent
-``dummy'' parties that simply relay information between the environment and the
-ideal functionality.
+Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
+the commitment scheme we defined before. The real world is shown on the left and
+the ideal world is shown on the right, with connecting lines denoting
+communication channels.\footnote{Note that in the real world, all communication
+  passes through the adversary $\mc{A}$. In the bare model, communication is
+  asynchronous, unauthenticated, and unreliable, but other models of
+  communication can be built atop this model.} In the real world, $A$ and $B$
+carry out the protocol with eachother, while in the ideal world, $A$ and $B$ are
+``dummy'' parties that simply relay messages between $\mc{Z}$ and $\mc{F}$. The
+environment $\mc{Z}$ is tasked to interact with each world and distinguish
+between the two.
 
 \subsection{A Flavor of SaUCy}
 \label{subsec:sauce-flavored}
+
+\todo{SaUCy concrete implementation and prelude, UC metatheory}
 
 
 
