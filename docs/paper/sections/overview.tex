@@ -146,7 +146,7 @@ be composed in two ways: sequentially (i.e., $m ;; n => p$) and in parallel
 in Section~\ref{sec:ilc}, disallow the parallel composition of two write mode
 processes. That is, $\Wm || \Wm => p$ is not derivable for any mode $p$. This
 ensures that no confusion arises as to which process is writing (i.e., is
-activated), since in the ITM model only a single process is active at any given
+activated), since in the ITM model only a single process is active at a given
 time. In \textsf{fCom}, each of the letrd expressions is read mode, and
 sequentially composing two read mode expressions yields a read mode expression
 (i.e., $\Rm ;; \Rm => \Rm$ according to our mode composition rules). As
