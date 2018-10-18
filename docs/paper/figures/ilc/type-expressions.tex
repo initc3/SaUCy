@@ -63,8 +63,8 @@
 \and
 %
 \Infer{fix}
-{\Delta; \Gamma, x : \tyArr{A}{\footnotesize m}{A} |- e : \tyArr{A}{\footnotesize m}{A}}
-{\Delta; \Gamma |- \eFix{x}{e} : \tyArr{A}{\footnotesize m}{A}}
+{\Delta; \Gamma, x : \tyArr{A}{\footnotesize $m$}{A} |- e : \tyArr{A}{\footnotesize $m$}{A}}
+{\Delta; \Gamma |- \eFix{x}{e} : \tyArr{A}{\footnotesize $m$}{A}}
 %
 \and
 %
@@ -88,13 +88,13 @@
 %
 \Infer{lam}
 {\Delta ; \Gamma, x:A |- e : B |> m}
-{\Delta ; \Gamma |- \eLam{x}{e} : \tyArr{A}{\footnotesize m}{B}}
+{\Delta ; \Gamma |- \eLam{x}{e} : \tyArr{A}{\footnotesize $m$}{B}}
 %
 \and
 %
 \Infer{app}
 {\Delta_1 ; \Gamma |- e_2 : A\\\\
-\Delta_2 ; \Gamma |- e_1 : \tyArr{A}{\footnotesize m}{B}}
+\Delta_2 ; \Gamma |- e_1 : \tyArr{A}{\footnotesize $m$}{B}}
 {\Delta_1, \Delta_2 ; \Gamma |- \eApp{e_1}{e_2} : B |> m}
 %
 \and

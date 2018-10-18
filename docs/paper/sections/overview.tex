@@ -75,36 +75,40 @@ trust such a third party (if it even exists), so their hope is that the
 commitment scheme they use is ``just as good as''
 $\Func_{\textsc{com}}$.\smallskip
 
-\myheader{Commitment functionality in ILC.} In Figure~\ref{func:com} (right), we
-have written $\Func_{\textsc{com}}$ in ILC. The function \textsf{fCom} takes as
-arguments a read channel \textsf{frA}, which receives messages from $A$, and a
-write channel \textsf{toB}, which sends messages to $B$. In ILC, channels are
-typed, so each of these channels communicates values inhabiting the sum type
-\textsf{Msg}. Moreover, read channels are linearly typed so that they are
-protected from duplication. This ensures that no confusion arises as to which
-process is being written to. On the other hand, write channels are
-intuitionistically typed, so their use is unrestricted.
+\subsection{A Flavor of ILC}
+\label{subsec:ilc-flavored}
+
+In Figure~\ref{func:com} (right), we have written $\Func_{\textsc{com}}$ in
+ILC. The function \textsf{fCom} takes as arguments a read channel \textsf{frA},
+which receives messages from $A$, and a write channel \textsf{toB}, which sends
+messages to $B$. In ILC, channels are typed, so each of these channels
+communicates values inhabiting the sum type \textsf{Msg}. Moreover, read
+channels are linearly typed so that they are protected from duplication. This
+ensures that no confusion arises as to which process is being written to. On the
+other hand, write channels are intuitionistically typed, so their use is
+unrestricted.
 
 Because \textsf{fCom} consumes a linear read channel, its type signature
 consists of linear arrows $\lolli$ (or ``lollipops''), which describe the types
-of linear functions that consume their arguments exactly once. But what if a
-linear function wishes to consume an intuitionistically typed argument? In that
-case, the ! operator (pronounced ``bang!'') permits an intuitionistically typed
-value to be used in an unrestricted manner as a linearly typed value, i.e.,
-contraction or weakening may be used. This explains why the type of \textsf{frA}
-is \textsf{Rd Msg} and the type of \textsf{toB} is \textsf{!(Wr Msg)}.
+of linear functions that consume their arguments exactly once. But what if we
+want a linear function to operate over unrestricted values? In that case, the !
+operator (pronounced ``bang!'') permits an intuitionistically typed value to be
+used in an unrestricted manner as a linearly typed value, i.e., contraction or
+weakening may be used. This explains why the type of \textsf{frA} is \textsf{Rd
+  Msg} and the type of \textsf{toB} is \textsf{!(Wr Msg)}.
 
-ILC expressions are also typed with a mode $m \in \{\Wm, \Rm, \Vm\}$, denoting
-write, read, and value modes, respectively. Arrow types, both linear and
+An ILC expression is also typed with a mode $m \in \{\Wm, \Rm, \Vm\}$, denoting
+the write, read, and value modes, respectively. Arrow types, both linear and
 intuitionistic, carry the mode of their function bodies, so in the function
-signature for \textsf{fCom}, the left lollipop implicitly carries a mode $\Vm$,
+signature of \textsf{fCom}, the left lollipop implicitly carries a mode $\Vm$,
 which we have chosen to elide, and the right lollipop carries a mode $\Rm$,
-which is the mode of its body. The function body of \textsf{fCom} closely
-follows $\Func_{\textsc{com}}$, but several points are worth mentioning.
+which is the mode of its body.
 
-First, we introduce the typing rules of expressions for reading and writing on a
-channel. Recall that typing judgements have the form $\Delta ; \Gamma |- e : A |> m$,
-where $\Delta$ is a linear typing context and $m \in \{\Wm, \Rm, \Vm\}$ is a mode.
+The function body of \textsf{fCom} closely follows $\Func_{\textsc{com}}$, but
+several points are worth mentioning.  First, we introduce the typing rules of
+expressions for reading and writing on a channel. Recall that typing judgements
+have the form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is a linear typing context, $\Gamma$
+is an intuitionistic typing context, and $m$ is a mode.
 \begin{mathpar}
 \Infer{letrd}
 {\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\
@@ -115,16 +119,16 @@ where $\Delta$ is a linear typing context and $m \in \{\Wm, \Rm, \Vm\}$ is a mod
 
 The letrd rule says that if we can partition the linear context $\Delta$ as $\Delta_1,
 \Delta_2$ such that $e_1$ has type $\tyRd{A}$ and mode $\Vm$ (elided) under contexts
-$\Delta_1, \Gamma$ and $e_2$ has type $B$ and mode $m$ under contexts
+$\Delta_1; \Gamma$ and $e_2$ has type $B$ and mode $m$ under contexts
 $\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma$, then the full expression has type $B$ and
 mode $\Rm$. Here, the idea is that reading a channel of type $\tyRd{A}$ gives a
 linear pair (or ``tensor'') of type $\tyTensor{\tyBang{A}}{\tyRd{A}}$. Because
-only intuitionistically typed values can be sent over channels in ILC, the first
-element of the tensor lifts the value read from the channel into a linear type,
-and the second element rebinds the read channel, so that it may be used again.
-In \textsf{fCom}, pattern matching with the ! operator unpacks linearly typed
-values, so the value bound to the $b$ in the first read from \textsf{frA} has an
-intuitionistic type.
+ILC only allows intuitionistically typed values to be sent over channels, the
+intuitionistic value read from the channel is lifted into the first element of
+the tensor as a linear type. The second element rebinds the read channel, so
+that it may be used again.  In \textsf{fCom}, pattern matching with the !
+operator unpacks linear values of type $\tyBang{A}$, so the value bound to $b$
+in the first read from \textsf{frA} has an intuitionistic type.
 \begin{mathpar}
 \Infer{wr}
 {\Delta_1; \Gamma   |- e_1 : A\\
@@ -139,10 +143,10 @@ mode $\Vm$, then the full expression has type $\tyUnit$ and mode $\Wm$.
 What is not showcased in these two rules is mode composition. In ILC, modes can
 be composed in two ways: sequentially (i.e., $m ;; n => p$) and in parallel
 (i.e., $m || n => p$). The rules for mode composition, which we describe in full
-in Section~\ref{sec:ilc}, prevent composing two write mode processes in
-parallel. That is, $\Wm || \Wm => p$ is not derivable for any mode $p$. This
-ensures that no confusion arises as to which process is writing and hence,
-activated, since in the ITM model only a single process is active at any given
+in Section~\ref{sec:ilc}, disallow the parallel composition of two write mode
+processes. That is, $\Wm || \Wm => p$ is not derivable for any mode $p$. This
+ensures that no confusion arises as to which process is writing (i.e., is
+activated), since in the ITM model only a single process is active at any given
 time. In \textsf{fCom}, each of the letrd expressions is read mode, and
 sequentially composing two read mode expressions yields a read mode expression
 (i.e., $\Rm ;; \Rm => \Rm$ according to our mode composition rules). As
@@ -152,10 +156,13 @@ mode $\Rm$.
 \subsection{UC Emulation}
 \label{subsec:emulation}
 
-We say that a protocol $\pi$ \emph{emulates} (or \emph{securely realizes})
-$\mc{F}$ if any attack that is possible on $\pi$ is also possible on
-$\mc{F}$. However, since $\mc{F}$ is designed to be secure by definition, such
-an attack does not lead to a break in security.
+Having defined security in the form of an ideal functionality, the next step is
+to prove that a protocol meets its specification. We say that a protocol $\pi$
+\emph{emulates} (or \emph{securely realizes}) an ideal functionality $\mc{F}$ if
+every adversarial behavior in the real world (running with $\pi$) can also be
+exhibited in the ideal world (running with $\mc{F}$). But because $\mc{F}$ is
+secure by construction, whatever adversarial behavior can take place in the
+ideal world does not lead to a break in security.
 
 Proving emulation formally proceeds in two steps. The first step is
 constructive: We must construct a \emph{simulator} $\mc{S}$ (a simulated
@@ -170,19 +177,24 @@ if no $\mc{Z}$ can distinguish between the two.
 
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{graphics/uc-experiment}
+  \includegraphics[width=0.85\linewidth]{graphics/suc-experiment}
   \caption{UC experiment with real world (left) and ideal world (right).}
   \label{fig:uc-experiment}
 \end{figure}
 
-Figure~\ref{fig:uc-experiment} illustrates the UC experiment: connecting lines
-denote communication channels,\footnote{Note that all communication passes
-  through the adversary $\mc{A}$. In the bare model, communication is
-  asynchronous, unauthenticated, and unreliable, but other models of
-  communication can be built atop this model.} $P_1, P_2, \ldots, P_n$ represent
-parties executing protocol $\pi$, and $D_1, D_2, \ldots, D_n$ represent ``dummy''
-parties that simply relay information between the environment and the ideal
-functionality.
+Figure~\ref{fig:uc-experiment} illustrates what we call the UC experiment:
+connecting lines denote communication channels,\footnote{Note that all
+  communication passes through the adversary $\mc{A}$. In the bare model,
+  communication is asynchronous, unauthenticated, and unreliable, but other
+  models of communication can be built atop this model.} $P_1, P_2, \ldots, P_n$
+represent parties executing protocol $\pi$, and $D_1, D_2, \ldots, D_n$ represent
+``dummy'' parties that simply relay information between the environment and the
+ideal functionality.
+
+\subsection{A Flavor of SaUCy}
+\label{subsec:sauce-flavored}
+
+
 
 \begin{comment}
 \subsection{UC composition}
