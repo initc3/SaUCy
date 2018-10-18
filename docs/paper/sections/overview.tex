@@ -2,8 +2,8 @@
 \label{sec:background}
 
 We tour the universal composability framework and give a flavor of ILC and SaUCy
-with a simple example of how two untrusting parties, Alice and Bob, can securely
-flip a coin using a commitment scheme.
+with the simple example of how two untrusting parties, Alice and Bob, can
+securely flip a coin using a commitment scheme.
 
 \begin{figure*}[t]
 \centering
@@ -65,52 +65,89 @@ $b=b'$, so that Alice cannot change the committed value in her favor).\smallskip
 \myheader{Commitment functionality.} We can capture both of these properties at
 once by defining an ideal functionality $\Func_{\textsc{com}}$ for a (one-time)
 commitment scheme as it would appear in the cryptography literature
-(Figure~\ref{func:com}, left). Whereas Alice and Bob carry out the two-party
-commitment scheme in the real world, in the ideal world, they trust
-$\Func_{\textsc{com}}$ to carry it out for them, so the hiding and binding
-properties hold trivially. Of course, in the real world, Alice and Bob would not
-want to trust such a third party (if it even exists), so the hope is that the
-commitment scheme they use is ``just as good as'' $\Func_{\textsc{com}}$.\smallskip
+(Figure~\ref{func:com}, left). Upon receiving the bit $b$ that Alice commits to,
+$\Func_{\textsc{com}}$ records $b$ and notifies Bob that it has done so. Then,
+whenever Alice wants to reveal $b$ to Bob, she notifies $\Func_{\textsc{com}}$,
+which sends it to Bob. Because, in this idealized world, Alice and Bob trust
+$\Func_{\textsc{com}}$ to do all the work, the hiding and binding properties
+hold trivially. Of course, in the real world, Alice and Bob would not want to
+trust such a third party (if it even exists), so their hope is that the
+commitment scheme they use is ``just as good as''
+$\Func_{\textsc{com}}$.\smallskip
 
 \myheader{Commitment functionality in ILC.} In Figure~\ref{func:com} (right), we
 have written $\Func_{\textsc{com}}$ in ILC. The function \textsf{fCom} takes as
 arguments a read channel \textsf{frA}, which receives messages from $A$, and a
-write channel \textsf{toB}, which sends messages to $B$. Channels in ILC are
-typed, so each channel communicates values of the sum type \textsf{Msg}. Recall
-that read channels are linearly typed, so \textsf{frA} simply has type
-\textsf{Rd Msg}. On the other hand, write channels are intuitionistically typed,
-so \textsf{toB} has type \textsf{!(Wr Msg)}. The ! operator (pronounced ``bang!'')
-indicates a linear type for which contraction or weakening may be used. Arrow
-types and lollipop types in ILC carry a mode $m \in \{\Wm, \Rm, \Vm\}$ (write,
-read, and value, respectively), but value modes are elided.
+write channel \textsf{toB}, which sends messages to $B$. In ILC, channels are
+typed, so each of these channels communicates values inhabiting the sum type
+\textsf{Msg}. Moreover, read channels are linearly typed so that they are
+protected from duplication. This ensures that no confusion arises as to which
+process is being written to. On the other hand, write channels are
+intuitionistically typed, so their use is unrestricted.
 
-The function body of \textsf{fCom} closely follows the functionality
-$\Func_{\textsc{com}}$, but several points are worth mentioning. First, we give
-the typing rule for the expression $\eLetRd{x_1}{x_2}{e_1}{e_2}$:
+Because \textsf{fCom} consumes a linear read channel, its type signature
+consists of linear arrows $\lolli$ (or ``lollipops''), which describe the types
+of linear functions that consume their arguments exactly once. But what if a
+linear function wishes to consume an intuitionistically typed argument? In that
+case, the ! operator (pronounced ``bang!'') permits an intuitionistically typed
+value to be used in an unrestricted manner as a linearly typed value, i.e.,
+contraction or weakening may be used. This explains why the type of \textsf{frA}
+is \textsf{Rd Msg} and the type of \textsf{toB} is \textsf{!(Wr Msg)}.
+
+ILC expressions are also typed with a mode $m \in \{\Wm, \Rm, \Vm\}$, denoting
+write, read, and value modes, respectively. Arrow types, both linear and
+intuitionistic, carry the mode of their function bodies, so in the function
+signature for \textsf{fCom}, the left lollipop implicitly carries a mode $\Vm$,
+which we have chosen to elide, and the right lollipop carries a mode $\Rm$,
+which is the mode of its body. The function body of \textsf{fCom} closely
+follows $\Func_{\textsc{com}}$, but several points are worth mentioning.
+
+First, we introduce the typing rules of expressions for reading and writing on a
+channel. Recall that typing judgements have the form $\Delta ; \Gamma |- e : A |> m$,
+where $\Delta$ is a linear typing context and $m \in \{\Wm, \Rm, \Vm\}$ is a mode.
 \begin{mathpar}
 \Infer{letrd}
-{\Delta_1 ; \Gamma |- e_1 : \tyRd{A} |> R\\
+{\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\
 \Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma |- e_2 : B |> m
 }
-{\Delta_1, \Delta_2 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : B |> R}
+{\Delta_1, \Delta_2 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : B |> \Rm}
 \end{mathpar}
-The value read on the read channel from evaluating $e_1$ is bound as $x_1$ and
-the read channel itself is rebound as $x_2$ so that it may be reused at a later
-time. Typing judgements also yield modes, and the evaluation of $e_1$ yields a
-mode $\Rm$. The evaluation of $e_2$, on the other hand, can yield any mode
-$m$. However, the mode of the whole read expression is a mode $\Rm$. To be more
-exact, it is the sequential composition of the elided mode $\Vm$ and $m$, i.e.,
 
-The modes $m_1$ and $m_2$ of expressions $e_1$ and $e_2$ compose
-sequentially to yield $m1 ;; m2 => m3$ (mode compositions are defined in
-Section~\ref{sec:ilc}).
-In \textsf{fCom}, pattern matching with the ! operator
-unpacks linearly typed values, so the value bound to the $b$ in the first read
-from \textsf{frA} has an intuitionistic type and can be used without
-restriction.
+The letrd rule says that if we can partition the linear context $\Delta$ as $\Delta_1,
+\Delta_2$ such that $e_1$ has type $\tyRd{A}$ and mode $\Vm$ (elided) under contexts
+$\Delta_1, \Gamma$ and $e_2$ has type $B$ and mode $m$ under contexts
+$\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma$, then the full expression has type $B$ and
+mode $\Rm$. Here, the idea is that reading a channel of type $\tyRd{A}$ gives a
+linear pair (or ``tensor'') of type $\tyTensor{\tyBang{A}}{\tyRd{A}}$. Because
+only intuitionistically typed values can be sent over channels in ILC, the first
+element of the tensor lifts the value read from the channel into a linear type,
+and the second element rebinds the read channel, so that it may be used again.
+In \textsf{fCom}, pattern matching with the ! operator unpacks linearly typed
+values, so the value bound to the $b$ in the first read from \textsf{frA} has an
+intuitionistic type.
+\begin{mathpar}
+\Infer{wr}
+{\Delta_1; \Gamma   |- e_1 : A\\
+\Delta_2; \Gamma   |- e_2 : \tyWr{A}}
+{\Delta_1, \Delta_2; \Gamma |- \eWr{e_1}{e_2} : \tyUnit |> \Wm}
+\end{mathpar}
 
-Finally, evaluating \textsf{fCom} with appropriately typed arguments yields a
-read mode computation that returns a value of type \textsf{!Unit}.
+The wr rule says that if we can partition the linear context $\Delta$ as $\Delta_1, \Delta_2$
+such that $e_1$ has type $A$ and mode $\Vm$ and $e_2$ has a type $\tyWr{A}$ and
+mode $\Vm$, then the full expression has type $\tyUnit$ and mode $\Wm$.
+
+What is not showcased in these two rules is mode composition. In ILC, modes can
+be composed in two ways: sequentially (i.e., $m ;; n => p$) and in parallel
+(i.e., $m || n => p$). The rules for mode composition, which we describe in full
+in Section~\ref{sec:ilc}, prevent composing two write mode processes in
+parallel. That is, $\Wm || \Wm => p$ is not derivable for any mode $p$. This
+ensures that no confusion arises as to which process is writing and hence,
+activated, since in the ITM model only a single process is active at any given
+time. In \textsf{fCom}, each of the letrd expressions is read mode, and
+sequentially composing two read mode expressions yields a read mode expression
+(i.e., $\Rm ;; \Rm => \Rm$ according to our mode composition rules). As
+aforementioned, the right lollipop in \textsf{fCom}'s type signature carries the
+mode $\Rm$.
 
 \subsection{UC Emulation}
 \label{subsec:emulation}

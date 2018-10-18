@@ -3,4 +3,4 @@ let fCom frA toB =
   let (!(Commit b), frA) = rd frA in
     wr Receipt $->$ toB ;
     let (!Open, frA) = rd frA in
-      wr (Opened b) $->$ toB
+      !(wr (Opened b) $->$ toB)
