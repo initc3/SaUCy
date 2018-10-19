@@ -58,9 +58,10 @@ existing process calculi, such as the standard
 $\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
 variants~\cite{abadi1999calculus, abadi2001mobile}, are not a good fit to ITMs,
 since they allow for non-confluent reductions by design. This means that one
-could quite easily write programs in these languages are not expressible in ITMs
-and hence, do not have computational interpretations. Other calculi enjoy
-confluence, but are overly restrictive, only allowing for fixed or two-party
+could quite easily write programs in these languages that are not expressible in
+ITMs and hence, do not have computational interpretations. Other calculi may
+enjoy confluence, but are overly restrictive, only allowing for fixed or
+two-party
 communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 
 We take up the challenge of faithfully capturing UC's computational model by
@@ -68,9 +69,9 @@ adapting ITMs to a subset of the $\pi$-calculus through its type system. In othe
 words, \emph{well-typed ILC programs are expressible as ITMs}.
 
 To give a quick tour of ILC's type system, judgements have the form $\Delta ; \Gamma |- e
-: A |> m$, where $\Delta$ is a linear typing context and $m \in \{\Wm, \Rm, \Vm\}$ is a
-mode (write, read, and value, respectively), and it maintains the following two
-invariants:
+: A |> m$, where $\Delta$ is a linear typing context, $\Gamma$ is an intuitionistic typing
+context, and $m \in \{\Wm, \Rm, \Vm\}$ is a mode (write, read, and value,
+respectively). Importantly, it maintains these invariants:
 
 \begin{enumerate}[leftmargin=*]
 \item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
@@ -84,23 +85,22 @@ invariants:
   communications.
 \end{enumerate}
 
-Taken together, the effect of these is that the only non-determinism in an ILC
-program is due to random coin flips taken by processes, which have a
-well-defined distribution. So in addition to enjoying the usual properties of
-progress and preservation, ILC is also confluent in the absence of coin
-flips. This is essential to ensure that the normalization of an ILC program has
-a computational interpretation, as is necessary in cryptography reduction
-proofs. This also guarantees that any apparent concurrency hazards, such as
-adversarial scheduling of messages in an asynchronous network, are due to an
-explicit adversary process $\mc{A}$ rather than uncertainty built into the model
-itself.
+Together, the effect of these is that the only non-determinism in an ILC program
+is due to random coin flips taken by processes, which have a well-defined
+distribution. So in addition to enjoying the usual properties of progress and
+preservation, ILC is also confluent in the absence of coin flips. This is
+essential to ensure that the normalization of an ILC program has a computational
+interpretation, as is necessary in cryptography reduction proofs. This also
+guarantees that any apparent concurrency hazards, such as adversarial scheduling
+of messages in an asynchronous network, are due to an explicit adversary process
+$\mc{A}$ rather than uncertainty built into the model itself.
 
 We have implemented an ILC interpreter in Haskell. For economy of use, our
 implementation performs polymorphic type inference, bounded polymorphic mode
 inference, and linearity inference. Polymorphism on modes is bounded precisely
 due to our restriction on parallel write mode composition. Moreover, a
-consequence of any mode polymorphism at all is that the modes of higher order
-functions can be dependent on the modes of its function arguments.
+consequence of any kind of mode polymorphism at all is that the modes of higher
+order functions can be dependent on the modes of its function arguments.
 
 \subsection{Super Amazing Universal ComposabilitY}
 

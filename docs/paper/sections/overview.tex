@@ -1,9 +1,9 @@
-\section{A Tour of ILC and SaUCy}
-\label{sec:background}
+\section{Overview}
+\label{sec:overview}
 
 We give a tour of ILC and SaUCy (explaining the universal composability
-framework along the way) with a simple example: How can two untrusting parties,
-Alice and Bob, can securely flip a coin? (The answer: a commitment scheme.)
+framework en route) with a simple example: How can two untrusting parties, Alice
+and Bob, securely flip a coin? (The answer: a commitment scheme.)
 
 \begin{figure*}[t]
 \centering
@@ -41,10 +41,10 @@ real world, a set of parties must execute a protocol for the task among
 themselves in a distributed fashion. In the ideal world, however, the parties
 securely access an \emph{ideal functionality} $\mc{F}$, which is imagined as an
 incorruptible trusted third party that securely (by construction) carries out
-the task to be achieved by the protocol. The idea is that $\mc{F}$ obtains
-inputs from the parties, carries out the task locally, and returns outputs back
-to the parties. Because it is trivially secure, this serves as a self-contained
-specification for the task's security requirements.\smallskip
+the task to be achieved by the protocol. To do so, $\mc{F}$ obtains inputs from
+the parties, performs some local computation, and hands outputs back to the
+parties. Because $\mc{F}$ is trivially secure, it serves as a uniform way to
+describe the task's security requirements.\smallskip
 
 \myheader{Example: Secure coin flipping.} Suppose two untrusting parties, Alice
 and Bob, wish to securely flip a coin---Alice calls the coin flip by publishing a
@@ -55,31 +55,37 @@ publishes $b$ first, then Bob can cheat by manipulating $r$ in his favor (and
 vice versa)!
 
 In order to carry out the coin flip securely, they can use a commitment
-scheme~\cite{brassard1988minimum}. Alice first publishes a commitment $C =
-\mathsf{com}(b)$ for her bit $b$, waits for Bob to publish $r$, and then opens
-and publishes a bit $b' = \mathsf{open}(C)$. If $r = b'$, then Alice wins;
-otherwise, Bob wins.  Now, in order for such a commitment scheme to be secure,
-it should satisfy the following properties:
+scheme~\cite{brassard1988minimum}, which has the following interaction:
 \begin{enumerate}[leftmargin=*]
-  \item \emph{Hiding property.} $C$ should hide $b$ from Bob, so he cannot
-    manipulate $r$ in his favor.
-  \item \emph{Binding property.} It should be the case that $b=b'$, so Alice
-    cannot change the her committed value in her favor.
+\item Alice: Commit to $b$ as $C = \mathsf{com}(b)$, and send $C$ to Bob.
+\item Bob: Compute and send the result $r$ to Alice.
+\item Alice: Open the commitment as $b' = \mathsf{open}(C)$, and send it to Bob.
 \end{enumerate}
+\noindent If $r = b'$, then Alice wins; otherwise, Bob wins. But what is to stop
+either party from cheating? In order for the protocol to be secure, it should
+satisfy these important properties (stated informally):
+\begin{itemize}[leftmargin=*]
+  \item \emph{Hiding.} The commitment $C$ should hide $b$ from Bob, so that he
+    cannot manipulate $r$ in his favor.
+  \item \emph{Binding.} It should be the case that $b =
+    \mathsf{open}(\mathsf{com}(b))$, so that Alice cannot open to a different
+    value.
+\end{itemize}
 
-\myheader{Commitment functionality.} We can capture both of these properties at
-once by defining an ideal functionality $\Func_{\textsc{com}}$ for a (one-time)
-commitment scheme as it would appear in the cryptography literature
+\myheader{Commitment functionality.} We can capture both the hiding and binding
+properties at once by defining an ideal functionality $\Func_{\textsc{com}}$ for
+a (one-time) commitment scheme as it would appear in the cryptography literature
 (Figure~\ref{func:com}, left).
 
-Upon receiving the bit $b$ that Alice commits to, $\Func_{\textsc{com}}$ records
-$b$ and notifies Bob that it has done so. Then, whenever Alice wants to reveal
-$b$ to Bob, she notifies $\Func_{\textsc{com}}$, which sends it to Bob. Because,
-in this idealized world, Alice and Bob trust $\Func_{\textsc{com}}$ to do all
-the work, the hiding and binding properties hold trivially. Of course, in the
-real world, Alice and Bob would not want to trust such a third party (if it even
-exists), so their hope is that the commitment scheme they use is ``just as good
-as'' $\Func_{\textsc{com}}$.\smallskip
+Upon receiving the bit $b$ that Alice wishes to commits to,
+$\Func_{\textsc{com}}$ records $b$ and notifies Bob that it has done so. Then,
+whenever Alice wants to reveal $b$ to Bob, she notifies $\Func_{\textsc{com}}$,
+which sends it to Bob. Because, in this idealized world, Alice and Bob trust
+$\Func_{\textsc{com}}$ to do all the work, the hiding and binding properties
+hold trivially. Of course, in the real world, Alice and Bob would not want to
+trust such a third party (if it even exists), so their hope is that the
+commitment scheme they use is ``just as good as''
+$\Func_{\textsc{com}}$.\smallskip
 
 \subsection{ILC By Example}
 \label{subsec:ilc-flavored}
@@ -87,37 +93,56 @@ as'' $\Func_{\textsc{com}}$.\smallskip
 In Figure~\ref{func:com} (right), we have written $\Func_{\textsc{com}}$ in ILC,
 which we use to highlight the key features of the language.\smallskip
 
-\myheader{Linear types.} The function \textsf{fCom} takes as arguments a read
-channel \textsf{frA}, which receives messages from $A$, and a write channel
-\textsf{toB}, which sends messages to $B$. In ILC, channels are typed, so each
-of these channels communicate values inhabiting the sum type
-\textsf{Msg}. Furthermore, read channels are linearly typed to protect them from
-duplication. This ensures that no confusion arises as to which process is being
-written to. On the other hand, write channels are intuitionistically typed, so
-their use is unrestricted.
+\myheader{Linear types.} Let us first examine the function signature of
+\textsf{fCom}, which (glossing over some notation) takes as arguments two
+channels, a read channel \textsf{frA} and a write channel \textsf{toB}, and
+returns \textsf{Unit}. There are a number of things to unpack here:
 
-Because \textsf{fCom} consumes a linear read channel, its type signature
-consists of linear arrows $\multimap$ (or ``lollipops''), which describe the types
-of linear functions that consume their arguments exactly once. But what if we
-want a linear function to operate over unrestricted values? In that case, the !
-operator (pronounced ``bang!'') permits an intuitionistically typed value to be
-used in an unrestricted manner as a linearly typed value, i.e., contraction or
-weakening may be used. This explains why the type of \textsf{frA} is \textsf{Rd
-  Msg} and the type of \textsf{toB} is \textsf{!(Wr Msg)}.\smallskip
+\begin{itemize}[leftmargin=*]
+  \item The signature consists of linear arrows $\multimap$ (or ``lollipops''), which
+    describe the types of linear functions that consume their argument exactly
+    once.
+  \item A function arrow (both linear and intuitionistic) carries the modal type
+    (either $\Wm$, $\Rm$, or $\Vm$) of its function body. In the example, the
+    left lollipop has mode $\Vm$, which we elide, and the right lollipop has
+    mode $\Rm$. We have more to say about modes later.
+  \item Channels are typed. Both \textsf{frA} and \textsf{toB} communicate
+    values inhabiting the sum type \textsf{Msg}.
+  \item Read channels are linearly typed to protect them from duplication. This
+    ensures that no confusion arises as to which process is being written to.
+  \item Write channels and the unit value are intuitionistically typed. Hence,
+    their types require the ! operator (pronounced ``bang!''), which lifts an
+    intuitionistic type into a linear type.
+\end{itemize}
 
-\myheader{Modes.} An ILC expression is also typed with a mode $m \in \{\Wm, \Rm,
-\Vm\}$, denoting the write, read, and value modes, respectively. Arrow types,
-both linear and intuitionistic, carry the mode of their function bodies, so in
-the function signature of \textsf{fCom}, the left lollipop implicitly carries a
-mode $\Vm$, which we have chosen to elide, and the right lollipop carries a mode
-$\Rm$, which is the mode of its body.\smallskip
+\noindent ILC achieves the above with a two-kind system. That is, types are
+bifurcated into a kind for intuitionistic types and a kind for linear
+types.\smallskip
+
+\myheader{Modal types.} ILC expressions are also typed with one of three modes:
+$\Wm$ (write mode), $\Rm$ (read mode), or $\Vm$ (value mode). Modes can be
+composed either sequentially or in parallel to yield new modes.
+
+To give a few examples, suppose expressions $e_1$ and $e_2$ have modes $m_1$ and
+$m_2$, respectively. Sequential mode composition shows up in the obvious case of
+sequentially evaluating the two expressions, so the mode of $\eSeq{e_1}{e_2}$ is
+$m1 ;; m2 => m3$. Parallel mode composition shows up when one process forks a
+second process, so the mode of $\eFork{e_1}{e_2}$ is $m_1 || m_2 => m_3$.
+
+The rules for mode composition are fleshed out in Section~\ref{sec:ilc}, but the
+key takeaway here is that composing write mode processes in parallel is
+\emph{not allowed}. That is, $\Wm || \Wm => p$ is not derivable for any mode
+$p$. Recall that in the ITM model, execution is essentially single-threaded, so
+this ensures that no confusion arises as to which process is currently writing,
+or equivalently, which process is currently active. A program violating this
+invariant would not be expressible as ITMs.\smallskip
 
 \myheader{Putting it all together.} The function body of \textsf{fCom} closely
-follows $\Func_{\textsc{com}}$, but several points are worth mentioning.  First,
-we introduce the typing rules of expressions for reading and writing on a
-channel. Recall that typing judgements have the form $\Delta ; \Gamma |- e : A |> m$,
-where $\Delta$ is a linear typing context, $\Gamma$ is an intuitionistic typing context,
-and $m$ is a mode.
+follows $\Func_{\textsc{com}}$, but there are several points worth mentioning.
+First, we introduce the letrd and wr typing rules for read and write
+expressions. Typing judgements have the form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is
+a linear typing context, $\Gamma$ is an intuitionistic typing context, and $m$ is a
+mode.
 \begin{mathpar}
 \Infer{letrd}
 {\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\
@@ -130,14 +155,19 @@ The letrd rule says that if we can partition the linear context $\Delta$ as $\De
 \Delta_2$ such that $e_1$ has type $\tyRd{A}$ and mode $\Vm$ (elided) under contexts
 $\Delta_1; \Gamma$ and $e_2$ has type $B$ and mode $m$ under contexts
 $\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma$, then the full expression has type $B$ and
-mode $\Rm$. Here, the idea is that reading a channel of type $\tyRd{A}$ gives a
-linear pair (or ``tensor'') of type $\tyTensor{\tyBang{A}}{\tyRd{A}}$. Because
-ILC only allows intuitionistically typed values to be sent over channels, the
-intuitionistic value read from the channel is lifted into the first element of
-the tensor as a linear type. The second element rebinds the read channel, so
-that it may be used again.  In \textsf{fCom}, pattern matching with the !
-operator unpacks linear values of type $\tyBang{A}$, so the value bound to $b$
-in the first read from \textsf{frA} has an intuitionistic type.
+mode $\Rm$. Notice several things:
+\begin{itemize}[leftmargin=*]
+  \item Reading on channel of type $\tyRd{A}$ produces a linear pair (or
+    ``tensor'') of type $\tyTensor{\tyBang{A}}{\tyRd{A}}$.
+  \item Because ILC only allows intuitionistically typed values to be sent over
+    channels, the value read on the channel is lifted into the first element of
+    the tensor as a linear type.
+  \item The read channel itself is returned as the second tensor element, so
+    that it may be rebound and used again.
+  \item In \textsf{fCom}, pattern matching with the ! operator unpacks linear
+    values, so the value bound to $b$ in the first read from \textsf{frA} has an
+    intuitionistic type.
+\end{itemize}
 \begin{mathpar}
 \Infer{wr}
 {\Delta_1; \Gamma   |- e_1 : A\\
@@ -149,18 +179,12 @@ The wr rule says that if we can partition the linear context $\Delta$ as $\Delta
 such that $e_1$ has type $A$ and mode $\Vm$ and $e_2$ has a type $\tyWr{A}$ and
 mode $\Vm$, then the full expression has type $\tyUnit$ and mode $\Wm$.
 
-What is not showcased in these two rules is mode composition. In ILC, modes can
-be composed in two ways: sequentially (i.e., $m ;; n => p$) and in parallel
-(i.e., $m || n => p$). The rules for mode composition, which we describe in full
-in Section~\ref{sec:ilc}, disallow the parallel composition of two write mode
-processes. That is, $\Wm || \Wm => p$ is not derivable for any mode $p$. This
-ensures that no confusion arises as to which process is writing (i.e., is
-activated), since in the ITM model only a single process is active at a given
-time. In \textsf{fCom}, each of the letrd expressions is read mode, and
-sequentially composing two read mode expressions yields a read mode expression
-(i.e., $\Rm ;; \Rm => \Rm$ according to our mode composition rules). As
-aforementioned, the right lollipop in \textsf{fCom}'s type signature carries the
-mode $\Rm$.
+Revisiting \textsf{fCom}, the two letrd expressions are composed sequentially,
+so the mode of the entire function body is derived as $\Rm ;; \Rm => \Rm$
+according to our mode composition rules. This is reflected in the fact that the
+right lollipop in the function signature carries a mode $\Rm$. Finally, because
+wr expressions return $\eUnit$, we wrap it inside a bang! to lift its type into
+the linear type \textsf{!Unit}.
 
 \subsection{UC Emulation}
 \label{subsec:emulation}
