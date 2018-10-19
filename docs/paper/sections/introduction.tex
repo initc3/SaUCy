@@ -46,9 +46,10 @@ is sent so that exactly one process is active at a given time. And this choice
 is for good reason! It is necessary for computational security proofs
 (specifically, cryptographic reductions) to go through.
 
-In sum, the goal of this work is twofold: to develop a foundational calculus for
-the purpose of systematizing UC (ILC), which importantly admits computational
-security proofs, and the concretization of the UC framework itself (SaUCy).
+In sum, the goal of this work is twofold: first, to develop a foundational
+calculus for the purpose of systematizing UC (ILC), which importantly admits
+computational security proofs, and second, the concretization of the UC
+framework itself (SaUCy).
 
 \subsection{Interactive Lambda Calculus}
 
@@ -98,8 +99,8 @@ We have implemented an ILC interpreter in Haskell. For economy of use, our
 implementation performs polymorphic type inference, bounded polymorphic mode
 inference, and linearity inference. Polymorphism on modes is bounded precisely
 due to our restriction on parallel write mode composition. Moreover, a
-consequence of any mode polymorphism at all is that the mode of a higher order
-function can be dependent on the mode(s) of its function argument(s).
+consequence of any mode polymorphism at all is that the modes of higher order
+functions can be dependent on the modes of its function arguments.
 
 \subsection{Super Amazing Universal ComposabilitY}
 
@@ -114,12 +115,12 @@ semantics of work done in this space, much less verify any security claims.
 
 Prior to this work, UC has not had a sufficient abstraction for its underlying
 computational model. To substantiate ILC's candidacy, we use ILC to build a
-concrete implementation of the UC framework as a UC-specific prelude called
-SaUCy. (This is in addition to ILC's standard prelude.) We use SaUCy to
-elaborate an extended example, namely, UC commitment schemes, and demonstrate
-that it exhibits previously known impossibility results and
-workarounds~\cite{canetti2001commitments}. We are also able transport theory
-from UC to SaUCy, such as protocol emulation.
+concrete implementation of the UC framework as a prelude called SaUCy, which
+stands for Super Amazing Universal ComposabilitY. (This is in addition to ILC's
+standard prelude.) We use SaUCy to elaborate an extended example, namely, UC
+commitment schemes, and demonstrate that it exhibits previously known
+impossibility results and workarounds~\cite{canetti2001commitments}. We are also
+able transport theory from UC to SaUCy, such as protocol emulation.
 
 %One can imagine giving a function that composes two processes in
 %parallel the general mode $\forall m \in \{\Rm, \Vm\}.\, m || m$, as opposed to 

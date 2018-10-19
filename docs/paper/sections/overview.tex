@@ -43,50 +43,58 @@ securely access an \emph{ideal functionality} $\mc{F}$, which is imagined as an
 incorruptible trusted third party that securely (by construction) carries out
 the task to be achieved by the protocol. The idea is that $\mc{F}$ obtains
 inputs from the parties, carries out the task locally, and returns outputs back
-to the parties. This serves as a self-contained specification
-for the task's security requirements.\smallskip
+to the parties. Because it is trivially secure, this serves as a self-contained
+specification for the task's security requirements.\smallskip
 
 \myheader{Example: Secure coin flipping.} Suppose two untrusting parties, Alice
-and Bob, wish to securely flip a coin---Alice calls the coin flip by publishing $b
-\in \{ 0, 1\}$, and Bob flips the coin by publishing $r \in \{0, 1\}$. If $b = r$,
-then Alice wins; otherwise, Bob wins. Observe that simply having Alice and Bob
-publish their respective values is not secure. If Alice publishes $b$ first,
-then Bob can cheat by manipulating $r$ in his favor (and vice versa)!
+and Bob, wish to securely flip a coin---Alice calls the coin flip by publishing a
+bit $b \in \{ 0, 1\}$, and Bob flips the coin by publishing the result $r \in \{0,
+1\}$. If $b = r$, then Alice wins; otherwise, Bob wins. Observe that simply
+having Alice and Bob publish their respective values is not secure. If Alice
+publishes $b$ first, then Bob can cheat by manipulating $r$ in his favor (and
+vice versa)!
 
 In order to carry out the coin flip securely, they can use a commitment
 scheme~\cite{brassard1988minimum}. Alice first publishes a commitment $C =
 \mathsf{com}(b)$ for her bit $b$, waits for Bob to publish $r$, and then opens
 and publishes a bit $b' = \mathsf{open}(C)$. If $r = b'$, then Alice wins;
 otherwise, Bob wins.  Now, in order for such a commitment scheme to be secure,
-it should satisfy the \emph{hiding} property (i.e., $C$ hides $b$ from Bob, so
-he cannot manipulate $r$ in his favor) and the \emph{binding} property (i.e.,
-$b=b'$, so that Alice cannot change the committed value in her favor).\smallskip
+it should satisfy the following properties:
+\begin{enumerate}[leftmargin=*]
+  \item \emph{Hiding property.} $C$ should hide $b$ from Bob, so he cannot
+    manipulate $r$ in his favor.
+  \item \emph{Binding property.} It should be the case that $b=b'$, so Alice
+    cannot change the her committed value in her favor.
+\end{enumerate}
 
 \myheader{Commitment functionality.} We can capture both of these properties at
 once by defining an ideal functionality $\Func_{\textsc{com}}$ for a (one-time)
 commitment scheme as it would appear in the cryptography literature
-(Figure~\ref{func:com}, left). Upon receiving the bit $b$ that Alice commits to,
-$\Func_{\textsc{com}}$ records $b$ and notifies Bob that it has done so. Then,
-whenever Alice wants to reveal $b$ to Bob, she notifies $\Func_{\textsc{com}}$,
-which sends it to Bob. Because, in this idealized world, Alice and Bob trust
-$\Func_{\textsc{com}}$ to do all the work, the hiding and binding properties
-hold trivially. Of course, in the real world, Alice and Bob would not want to
-trust such a third party (if it even exists), so their hope is that the
-commitment scheme they use is ``just as good as''
-$\Func_{\textsc{com}}$.\smallskip
+(Figure~\ref{func:com}, left).
+
+Upon receiving the bit $b$ that Alice commits to, $\Func_{\textsc{com}}$ records
+$b$ and notifies Bob that it has done so. Then, whenever Alice wants to reveal
+$b$ to Bob, she notifies $\Func_{\textsc{com}}$, which sends it to Bob. Because,
+in this idealized world, Alice and Bob trust $\Func_{\textsc{com}}$ to do all
+the work, the hiding and binding properties hold trivially. Of course, in the
+real world, Alice and Bob would not want to trust such a third party (if it even
+exists), so their hope is that the commitment scheme they use is ``just as good
+as'' $\Func_{\textsc{com}}$.\smallskip
 
 \subsection{ILC By Example}
 \label{subsec:ilc-flavored}
 
-In Figure~\ref{func:com} (right), we have written $\Func_{\textsc{com}}$ in
-ILC. The function \textsf{fCom} takes as arguments a read channel \textsf{frA},
-which receives messages from $A$, and a write channel \textsf{toB}, which sends
-messages to $B$. In ILC, channels are typed, so each of these channels
-communicates values inhabiting the sum type \textsf{Msg}. Moreover, read
-channels are linearly typed so that they are protected from duplication. This
-ensures that no confusion arises as to which process is being written to. On the
-other hand, write channels are intuitionistically typed, so their use is
-unrestricted.
+In Figure~\ref{func:com} (right), we have written $\Func_{\textsc{com}}$ in ILC,
+which we use to highlight the key features of the language.\smallskip
+
+\myheader{Linear types.} The function \textsf{fCom} takes as arguments a read
+channel \textsf{frA}, which receives messages from $A$, and a write channel
+\textsf{toB}, which sends messages to $B$. In ILC, channels are typed, so each
+of these channels communicate values inhabiting the sum type
+\textsf{Msg}. Furthermore, read channels are linearly typed to protect them from
+duplication. This ensures that no confusion arises as to which process is being
+written to. On the other hand, write channels are intuitionistically typed, so
+their use is unrestricted.
 
 Because \textsf{fCom} consumes a linear read channel, its type signature
 consists of linear arrows $\multimap$ (or ``lollipops''), which describe the types
@@ -95,20 +103,21 @@ want a linear function to operate over unrestricted values? In that case, the !
 operator (pronounced ``bang!'') permits an intuitionistically typed value to be
 used in an unrestricted manner as a linearly typed value, i.e., contraction or
 weakening may be used. This explains why the type of \textsf{frA} is \textsf{Rd
-  Msg} and the type of \textsf{toB} is \textsf{!(Wr Msg)}.
+  Msg} and the type of \textsf{toB} is \textsf{!(Wr Msg)}.\smallskip
 
-An ILC expression is also typed with a mode $m \in \{\Wm, \Rm, \Vm\}$, denoting
-the write, read, and value modes, respectively. Arrow types, both linear and
-intuitionistic, carry the mode of their function bodies, so in the function
-signature of \textsf{fCom}, the left lollipop implicitly carries a mode $\Vm$,
-which we have chosen to elide, and the right lollipop carries a mode $\Rm$,
-which is the mode of its body.
+\myheader{Modes.} An ILC expression is also typed with a mode $m \in \{\Wm, \Rm,
+\Vm\}$, denoting the write, read, and value modes, respectively. Arrow types,
+both linear and intuitionistic, carry the mode of their function bodies, so in
+the function signature of \textsf{fCom}, the left lollipop implicitly carries a
+mode $\Vm$, which we have chosen to elide, and the right lollipop carries a mode
+$\Rm$, which is the mode of its body.\smallskip
 
-The function body of \textsf{fCom} closely follows $\Func_{\textsc{com}}$, but
-several points are worth mentioning.  First, we introduce the typing rules of
-expressions for reading and writing on a channel. Recall that typing judgements
-have the form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is a linear typing context, $\Gamma$
-is an intuitionistic typing context, and $m$ is a mode.
+\myheader{Putting it all together.} The function body of \textsf{fCom} closely
+follows $\Func_{\textsc{com}}$, but several points are worth mentioning.  First,
+we introduce the typing rules of expressions for reading and writing on a
+channel. Recall that typing judgements have the form $\Delta ; \Gamma |- e : A |> m$,
+where $\Delta$ is a linear typing context, $\Gamma$ is an intuitionistic typing context,
+and $m$ is a mode.
 \begin{mathpar}
 \Infer{letrd}
 {\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\
