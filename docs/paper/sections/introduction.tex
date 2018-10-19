@@ -73,7 +73,7 @@ To give a quick tour of ILC's type system, judgements have the form $\Delta ; \G
 context, and $m \in \{\Wm, \Rm, \Vm\}$ is a mode (write, read, and value,
 respectively). Importantly, it maintains these invariants:
 
-\begin{enumerate}[leftmargin=*]
+\begin{itemize}[leftmargin=*]
 \item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
   ITM parlance) has a read end and a write end. The read end of the channel is
   protected against duplication by binding it in the linear context $\Delta$. This
@@ -83,7 +83,7 @@ respectively). Importantly, it maintains these invariants:
   do not allow parallel composition of two write mode processes ($\Wm ||
   \Wm$). This ensures that no non-determinism arises at the sending end of
   communications.
-\end{enumerate}
+\end{itemize}
 
 Together, the effect of these is that the only non-determinism in an ILC program
 is due to random coin flips taken by processes, which have a well-defined
@@ -120,7 +120,8 @@ stands for Super Amazing Universal ComposabilitY. (This is in addition to ILC's
 standard prelude.) We use SaUCy to elaborate an extended example, namely, UC
 commitment schemes, and demonstrate that it exhibits previously known
 impossibility results and workarounds~\cite{canetti2001commitments}. We are also
-able transport theory from UC to SaUCy, such as protocol emulation.
+able transport theory from UC to SaUCy, such as protocol emulation. \todo{This
+  section needs work.}
 
 %One can imagine giving a function that composes two processes in
 %parallel the general mode $\forall m \in \{\Rm, \Vm\}.\, m || m$, as opposed to 

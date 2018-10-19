@@ -197,16 +197,20 @@ exhibited in the ideal world (running with $\mc{F}$). But because $\mc{F}$ is
 secure by construction, whatever adversarial behavior can take place in the
 ideal world does not lead to a break in security.
 
-Proving emulation formally proceeds in two steps. The first step is
-constructive: We must construct a \emph{simulator} $\mc{S}$ (a simulated
-adversary) that can emulate the attack of any adversary $\mc{A}$ on $\pi$, but
-instead, on $\mc{F}$. The second step is a relational analysis: We must show
-that running $\pi$ under attack by any adversary $\mc{A}$ (the real world) is
-\emph{indistinguishable} from running $\mc{F}$ under attack by $\mc{S}$ (the
-ideal world) to any distinguisher $\mc{Z}$, called the \emph{environment}. In
-particular, $\mc{Z}$ is an interactive distinguisher: It interacts with the real
-world and the ideal world in a well-defined manner, and the simulation is good
-if no $\mc{Z}$ can distinguish between the two.
+Proving emulation formally proceeds in two steps:
+\begin{enumerate}[leftmargin=*]
+\item The first step is constructive: We must construct a \emph{simulator}
+  $\mc{S}$ (a simulated adversary) that can emulate the attack of any adversary
+  $\mc{A}$ on $\pi$, but instead, on $\mc{F}$.
+\item The second step is a relational analysis: We must show that running $\pi$
+  under attack by any adversary $\mc{A}$ (the real world) is
+  \emph{indistinguishable} from running $\mc{F}$ under attack by $\mc{S}$ (the
+  ideal world) to any distinguisher $\mc{Z}$, called the \emph{environment}.
+\end{enumerate}
+In particular, $\mc{Z}$ is an interactive distinguisher: It interacts with the
+real world and the ideal world in a well-defined manner, and the simulation is
+good if no $\mc{Z}$ can distinguish between the two. We call this game the UC
+experiment.
 
 \begin{figure}
   \centering
@@ -216,9 +220,11 @@ if no $\mc{Z}$ can distinguish between the two.
 \end{figure}
 
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
-the commitment scheme we defined before. The real world is shown on the left and
-the ideal world is shown on the right, with connecting lines denoting
-communication channels.\footnote{Note that in the real world, all communication
+the commitment scheme defined previously. The real world is shown on the left
+and the ideal world is shown on the right, with connecting lines denoting
+communication channels.
+
+\footnote{Note that in the real world, all communication
   passes through the adversary $\mc{A}$. In the bare model, communication is
   asynchronous, unauthenticated, and unreliable, but other models of
   communication can be built atop this model.} In the real world, $A$ and $B$
@@ -230,7 +236,7 @@ between the two.
 \subsection{A Flavor of SaUCy}
 \label{subsec:sauce-flavored}
 
-\todo{SaUCy concrete implementation and prelude, UC metatheory}
+\todo{SaUCy prelude, UC metatheory}
 
 
 
