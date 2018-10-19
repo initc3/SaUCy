@@ -43,30 +43,33 @@ approach to capturing the computational model underlying UC---interactive Turing
 machines (ITMs). In the ITM model, execution is essentially
 single-threaded. Processes pass control from one to another each time a message
 is sent so that exactly one process is active at a given time. And this choice
-is for good reason---it is necessary for computational security proofs
+is for good reason! It is necessary for computational security proofs
 (specifically, cryptographic reductions) to go through.
 
 In sum, the goal of this work is twofold: to develop a foundational calculus for
-the purpose of systematizing UC, which (importantly) admits computational
-security proofs, and the concretization of the UC framework itself.
+the purpose of systematizing UC (ILC), which importantly admits computational
+security proofs, and the concretization of the UC framework itself (SaUCy).
 
 \subsection{Interactive Lambda Calculus}
 
-So where have existing concurrency models fallen short?  It turns out that
+So where have existing concurrency models fallen short?  It turns out that some
 existing process calculi, such as the standard
 $\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
 variants~\cite{abadi1999calculus, abadi2001mobile}, are not a good fit to ITMs,
 since they allow for non-confluent reductions by design. This means that one
 could quite easily write programs in these languages are not expressible in ITMs
-and hence, do not have computational interpretations.  Therefore, to faithfully
-capture the computational model underlying UC, ILC adapts ITMs to a subset of
-the $\pi$-calculus through its type system. In other words, \emph{well-typed
-  programs are expressible as ITMs}.
+and hence, do not have computational interpretations. Other calculi enjoy
+confluence, but are overly restrictive, only allowing for fixed or two-party
+communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 
-To give a quick tour of ILC's type system, typing judgements have the form $\Delta ;
-\Gamma |- e : A |> m$, where $\Delta$ is a linear typing context and $m \in \{\Wm, \Rm,
-\Vm\}$ is a mode (write, read, and value, respectively). It maintains the
-following two invariants:
+We take up the challenge of faithfully capturing UC's computational model by
+adapting ITMs to a subset of the $\pi$-calculus through its type system. In other
+words, \emph{well-typed ILC programs are expressible as ITMs}.
+
+To give a quick tour of ILC's type system, judgements have the form $\Delta ; \Gamma |- e
+: A |> m$, where $\Delta$ is a linear typing context and $m \in \{\Wm, \Rm, \Vm\}$ is a
+mode (write, read, and value, respectively), and it maintains the following two
+invariants:
 
 \begin{enumerate}[leftmargin=*]
 \item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
@@ -94,11 +97,29 @@ itself.
 We have implemented an ILC interpreter in Haskell. For economy of use, our
 implementation performs polymorphic type inference, bounded polymorphic mode
 inference, and linearity inference. Polymorphism on modes is bounded precisely
-due to our restriction on parallel write mode composition, and as a consequence,
-the mode of higher order functions can be dependent on the modes of its function
-arguments.
+due to our restriction on parallel write mode composition. Moreover, a
+consequence of any mode polymorphism at all is that the mode of a higher order
+function can be dependent on the mode(s) of its function argument(s).
 
 \subsection{Super Amazing Universal ComposabilitY}
+
+Despite its widespread use, the universal composability framework remains to be
+an unwieldy tool for cryptographers. Many of the complications in UC are
+artifacts of its power and generality, so naturally, numerous variants of UC
+have been proposed to address its hitches~\cite{backes2007reactive,
+  hofheinz2015gnuc, canetti2007universally, canetti2003universal} and to make it
+easier to use~\cite{canetti2015simpler}. Unfortunately, the fact that UC and its
+variants exist on paper makes it difficult to keep track of the precise
+semantics of work done in this space, much less verify any security claims.
+
+Prior to this work, UC has not had a sufficient abstraction for its underlying
+computational model. To substantiate ILC's candidacy, we use ILC to build a
+concrete implementation of the UC framework as a UC-specific prelude called
+SaUCy. (This is in addition to ILC's standard prelude.) We use SaUCy to
+elaborate an extended example, namely, UC commitment schemes, and demonstrate
+that it exhibits previously known impossibility results and
+workarounds~\cite{canetti2001commitments}. We are also able transport theory
+from UC to SaUCy, such as protocol emulation.
 
 %One can imagine giving a function that composes two processes in
 %parallel the general mode $\forall m \in \{\Rm, \Vm\}.\, m || m$, as opposed to 
