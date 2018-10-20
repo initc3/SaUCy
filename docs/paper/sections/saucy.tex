@@ -1,0 +1,28 @@
+\section{SaUCy}
+\label{sec:saucy}
+
+\begin{algorithm}
+\SetAlgorithmName{Protocol}{protocol}{List of Protocols}
+\DontPrintSemicolon
+
+\SetKwBlock{Parameters}{\textnormal{\textsf{Public strings}:}}{}
+\Parameters{
+  $\sigma$---Random string in $\{0,1\}^{4n}$\;
+  ${pk}_0, {pk}_1$---Keys for generator $G_{k} \colon \{0,1\}^n \to \{0,1\}^{4n}$
+}\smallskip
+\SetKwBlock{Commit}{\textnormal{\textsf{Commit}($b$):}}{}
+\Commit{
+  $r \leftarrow \{0, 1\}^n$\;
+  $x \coloneqq G_{{pk}_b}(r)$\;
+  \lIf{$b =1$}{$x \coloneqq x \oplus \sigma$}
+  Send $(\mathsf{Commit}, x)$ to receiver
+}\smallskip
+
+\SetKwBlock{Decommit}{\textnormal{\textsf{Decommit}($x$):}}{}
+\Decommit{
+  Send $(b, r)$ to receiver\;
+  Receiver checks $x = G_{{pk}_b}(r)$ for $b = 0$, or $x = G_{{pk}_b}(r) \oplus \sigma$ for $b = 1$
+}
+\caption{$\Pi_{\textsc{com}}$}
+\label{alg:com}
+\end{algorithm}
