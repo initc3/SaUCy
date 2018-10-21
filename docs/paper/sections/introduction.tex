@@ -6,7 +6,7 @@ is the gold standard for demonstrating that a protocol carries out a
 cryptographic task securely~\cite{canetti2001universally}. More specifically, a
 protocol that is UC-secure enjoys the strongest notion of compositionality---it
 maintains its security properties when run concurrently with arbitrary other
-protocols.
+protocols.\todo{Modularity is another benefit.}
 
 In a nutshell, security proofs in UC follow the real/ideal
 paradigm~\cite{goldreich1987play}. The security requirements of a given task are
@@ -34,7 +34,9 @@ capabilities are defined by deduction rules over these terms. Although this
 abstract vantage point leads to simpler security proofs that can be amenable to
 automated reasoning, security guarantees derived from symbolic analyses are not
 as strong as those from computational analyses considered in UC and in
-cryptography more broadly~\cite{cortier2011survey}.
+cryptography more broadly~\cite{cortier2011survey}.\todo{EasyCrypt is also worth
+mentioning. EasyCrypt is a faithful embedding of computational cryptography, but
+language is not well-suited to express distributed protocols.}
 
 In this paper, we lay the groundwork for building a concrete implementation of
 the UC framework called SaUCy in the form of a process calculus called the
@@ -62,7 +64,8 @@ could quite easily write programs in these languages that are not expressible in
 ITMs and hence, do not have computational interpretations. Other calculi may
 enjoy confluence, but are overly restrictive, only allowing for fixed or
 two-party
-communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
+communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.\todo{Explain
+  why confluence leads to computational interpretations.}
 
 We take up the challenge of faithfully capturing UC's computational model by
 adapting ITMs to a subset of the $\pi$-calculus through its type system. In other
@@ -90,10 +93,10 @@ is due to random coin flips taken by processes, which have a well-defined
 distribution. So in addition to enjoying the usual properties of progress and
 preservation, ILC is also confluent in the absence of coin flips. This is
 essential to ensure that the normalization of an ILC program has a computational
-interpretation, as is necessary in cryptography reduction proofs. This also
-guarantees that any apparent concurrency hazards, such as adversarial scheduling
-of messages in an asynchronous network, are due to an explicit adversary process
-$\mc{A}$ rather than uncertainty built into the model itself.
+interpretation, as is necessary in cryptography reduction proofs. \todo{Why?}
+This also guarantees that any apparent concurrency hazards, such as adversarial
+scheduling of messages in an asynchronous network, are due to an explicit
+adversary process $\mc{A}$ rather than uncertainty built into the model itself.
 
 We have implemented an ILC interpreter in Haskell. For economy of use, our
 implementation performs polymorphic type inference, bounded polymorphic mode
@@ -104,14 +107,15 @@ order functions can be dependent on the modes of its function arguments.
 
 \subsection{Super Amazing Universal ComposabilitY}
 
-Despite its widespread use, the universal composability framework remains to be
-an unwieldy tool for cryptographers. Many of the complications in UC are
-artifacts of its power and generality, so naturally, numerous variants of UC
-have been proposed to address its hitches~\cite{backes2007reactive,
-  hofheinz2015gnuc, canetti2007universally, canetti2003universal} and to make it
-easier to use~\cite{canetti2015simpler}. Unfortunately, the fact that UC and its
-variants exist on paper makes it difficult to keep track of the precise
-semantics of work done in this space, much less verify any security claims.
+\todo{This section needs work.}Despite its widespread use, the universal
+composability framework remains to be an unwieldy tool for cryptographers. Many
+of the complications in UC are artifacts of its power and generality, so
+naturally, numerous variants of UC have been proposed to address its
+hitches~\cite{backes2007reactive, hofheinz2015gnuc, canetti2007universally,
+  canetti2003universal} and to make it easier to
+use~\cite{canetti2015simpler}. Unfortunately, the fact that UC and its variants
+exist on paper makes it difficult to keep track of the precise semantics of work
+done in this space, much less verify any security claims.
 
 Prior to this work, UC has not had a sufficient abstraction for its underlying
 computational model. To substantiate ILC's candidacy, we use ILC to build a
@@ -120,108 +124,4 @@ stands for Super Amazing Universal ComposabilitY. (This is in addition to ILC's
 standard prelude.) We use SaUCy to elaborate an extended example, namely, UC
 commitment schemes, and demonstrate that it exhibits previously known
 impossibility results and workarounds~\cite{canetti2001commitments}. We are also
-able transport theory from UC to SaUCy, such as protocol emulation. \todo{This
-  section needs work.}
-
-%One can imagine giving a function that composes two processes in
-%parallel the general mode $\forall m \in \{\Rm, \Vm\}.\, m || m$, as opposed to 
-
-%Our implementation facilitates economy
-%of use with support for an interactive environment, an Emacs major mode, pattern
-%matching (including guards), custom data declarations, and type inference. In
-%particular, our implementation performs full polymorphic type inference for
-%intuitionistic types, bounded polymorphic inference for modes, and linearity
-%inference.
-
-\begin{comment}
-
-%In particular, the invariants maintained by the type system ensure that ILC
-%programs are confluent, so any non-determinism in protocols is due to random
-%coinflips taken by processes, which have a well-defined distribution. This is
-%essential to ensure that the normalization of an ILC program has a computational
-%interpretation, as is necessary in cryptographic reduction proofs. While some
-%existing process calculi enjoy confluence properties, they are insufficient as a
-%foundation for UC, because they either rule out nondeterminism entirely or are
-%restricted to two-party
-%communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}. On
-%the other hand, ILC achieves confluence through its type system, which has the
-%judgement form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is a linear typing context and
-%$m \in \{\Wm, \Rm, \Vm\}$ is a mode (write, read, and value, respectively), and
-%boils down to the following two invariants:
-%\begin{enumerate}[leftmargin=*]
-%\item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
-%  ITM parlance) has a read end and a write end. The read end of the channel is
-%  protected against duplication by binding it in the linear context $\Delta$. This
-%  ensures that no non-determinism arises at the receiving end of communications.
-%
-%\item \emph{No parallel composition of write mode processes.} The typing rules
-%  do not allow parallel composition of two write mode processes ($\Wm ||
-%  \Wm$). This ensures that no non-determinism arises at the sending end of
-%  communications.
-  %\end{enumerate}
-  
-The success of blockchains and cryptocurrencies have raised interest in building
-secure software systems that combine consensus protocols~\cite{miller2016honey},
-zero-knowledge proofs~\cite{kosba2016hawk}, multiparty
-computation~\cite{bentov2017instantaneous}, and other advanced techniques from
-distributed computing and cryptography.  However, these primitives are known to
-be error-prone and difficult to compose securely.  To the average developer,
-reasoning about asynchronous, distributed, and adversarial deployment
-environments is unnatural. On top of this, the security of a software system is
-generally a whole-system property, but vulnerabilities often arise from
-misunderstandings and mismatches as components are
-integrated~\cite{chong2016report}.
-
-Our solution is to develop a module system, \saucy, that will simplify the task
-of composing distributed protocols and cryptographic primitives.  The novel
-design idea of \saucy is to include with each module a rich behavioral
-specification in the form of an \emph{ideal functionality}, which serves as a
-self-contained specification of all desired security and liveness properties.
-This idea is rooted in the theory of \emph{universal composability}
-(UC)~\cite{canetti2001universally}, which is widely used in cryptography for
-on-paper proofs, but has not yet been adapted for software engineering.  Based
-on our prior experience providing formal specifications for smart contract and
-blockchain protocols~\cite{bentov2017instantaneous, kosba2016hawk,
-  miller2017sprites}, ideal functionalities are well-suited for modular design
-of complex security-oriented applications for several reasons:
-
-\begin{enumerate}
-\item The UC framework is an established standard for modeling distributed and
-  cryptographic protocols, so we can draw on existing literature for ideal
-  functionality models.
-\item Ideal functionalities are executable specifications, so they are amenable
-  to property-based testing and machine-checkable proofs.
-\item UC provides the strongest notion of security under concurrent
-  composition. When we substitute an ideal functionality for a distributed
-  protocol that realizes it, all the properties of the ideal functionality are
-  preserved. Hence a developer's understanding of the ideal functionality
-  carries over to the distributed implementation.
-\end{enumerate}
-
-\subsection{Our Approach}
-\label{subsec:approach}
-
-To reap the expected benefits of the \saucy module system, in this work, we will
-develop infrastructure to help authors write, test, and verify distributed
-protocol and cryptographic primitives.  This work will take place over three
-main tasks: The first task focuses on designing a new high-level language called
-ILC for expressing protocols and implementing the UC framework, the second
-task focuses on developing testing techniques for detecting security and
-liveness violations in the presence of Byzantine failures, and the third task
-focuses on building a verification tool for mechanizing security and liveness
-proofs in the UC framework.\smallskip
-
-\subsection{Organization}
-\label{subsec:org}
-
-This paper is organized as follows. Section~\ref{sec:background} provides an
-overview of the UC framework and potential applications.
-Section~\ref{sec:challenges} highlights several challenges in using
-UC. Section~\ref{sec:ilc} describes the design of our programming language
-Interactive Lambda Calculus (ILC). Section~\ref{sec:session} describes an
-extension of ILC with session types that will enable a form of verification for
-ILC programs. Section~\ref{sec:testing} details our plan to develop new
-techniques for testing security and liveness of ILC procotols in the presence of
-Byzantine failures. Section~\ref{sec:verification} details our plan to develop a
-proof assistant for mechanizing UC proofs.
-\end{comment}
+able transport theory from UC to SaUCy, such as protocol emulation.

@@ -70,6 +70,7 @@ satisfy these important properties (stated informally):
   \item \emph{Binding.} It should be the case that $b =
     \mathsf{open}(\mathsf{com}(b))$, so that Alice cannot open to a different
     value.
+  \item \emph{Non-malleability.} \todo{Also needs this?}
 \end{itemize}
 
 \myheader{Commitment functionality.} We can capture both the hiding and binding
@@ -91,10 +92,11 @@ $\Func_{\textsc{com}}$.\smallskip
 \label{subsec:ilc-flavored}
 
 In Figure~\ref{func:com} (right), we have written $\Func_{\textsc{com}}$ in ILC,
-which we use to highlight the key features of the language.\smallskip
+which we use to highlight the key features of the language. \todo{Update example
+  to eliminate irrefutable pattern matches.}\smallskip
 
 \myheader{Linear types.} Let us first examine the function signature of
-\textsf{fCom}, which (glossing over some notation) takes as arguments two
+\textsf{fCom}, which (glossing over some details) takes as arguments two
 channels, a read channel \textsf{frA} and a write channel \textsf{toB}, and
 returns \textsf{Unit}. There are a number of things to unpack here:
 
@@ -127,7 +129,8 @@ To give a few examples, suppose expressions $e_1$ and $e_2$ have modes $m_1$ and
 $m_2$, respectively. Sequential mode composition shows up in the obvious case of
 sequentially evaluating the two expressions, so the mode of $\eSeq{e_1}{e_2}$ is
 $m1 ;; m2 => m3$. Parallel mode composition shows up when one process forks a
-second process, so the mode of $\eFork{e_1}{e_2}$ is $m_1 || m_2 => m_3$.
+second process, so the mode of $\eFork{e_1}{e_2}$ is $m_1 || m_2 =>
+m_3$. \todo{Explain fork.}
 
 The rules for mode composition are fleshed out in Section~\ref{sec:ilc}, but the
 key takeaway here is that composing write mode processes in parallel is
@@ -159,9 +162,9 @@ mode $\Rm$. Notice several things:
 \begin{itemize}[leftmargin=*]
   \item Reading on channel of type $\tyRd{A}$ produces a linear pair (or
     ``tensor'') of type $\tyTensor{\tyBang{A}}{\tyRd{A}}$.
-  \item Because ILC only allows intuitionistically typed values to be sent over
-    channels, the value read on the channel is lifted into the first element of
-    the tensor as a linear type.
+  \item ILC only allows intuitionistically typed values to be sent over channels
+    ($A$ ranges over intuitionistic types), so the value read on the channel is
+    lifted into the first element of the tensor as a linear type.
   \item The read channel itself is returned as the second tensor element, so
     that it may be rebound and used again.
   \item In \textsf{fCom}, pattern matching with the ! operator unpacks linear
@@ -219,26 +222,22 @@ experiment.
   \label{fig:uc-experiment}
 \end{figure}
 
-Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
-the commitment scheme defined previously. The real world is shown on the left
-and the ideal world is shown on the right, with connecting lines denoting
-communication channels.
-
-\footnote{Note that in the real world, all communication
-  passes through the adversary $\mc{A}$. In the bare model, communication is
-  asynchronous, unauthenticated, and unreliable, but other models of
-  communication can be built atop this model.} In the real world, $A$ and $B$
-carry out the protocol with eachother, while in the ideal world, $A$ and $B$ are
-``dummy'' parties that simply relay messages between $\mc{Z}$ and $\mc{F}$. The
-environment $\mc{Z}$ is tasked to interact with each world and distinguish
-between the two.
+\todo{Need to make this paragraph more clear.} Figure~\ref{fig:uc-experiment}
+illustrates the UC experiment in the context of the commitment scheme defined
+previously. The real world is shown on the left and the ideal world is shown on
+the right, with connecting lines denoting communication channels.\footnote{Note
+  that in the real world, all communication passes through the adversary
+  $\mc{A}$. In the bare model, communication is asynchronous, unauthenticated,
+  and unreliable, but other models of communication can be built atop this
+  model.} In the real world, $A$ and $B$ carry out the protocol with eachother,
+while in the ideal world, $A$ and $B$ are ``dummy'' parties that simply relay
+messages between $\mc{Z}$ and $\mc{F}$. The environment $\mc{Z}$ is tasked to
+interact with each world and distinguish between the two.
 
 \subsection{A Flavor of SaUCy}
 \label{subsec:sauce-flavored}
 
 \todo{SaUCy prelude, UC metatheory}
-
-
 
 \begin{comment}
 \subsection{UC composition}
