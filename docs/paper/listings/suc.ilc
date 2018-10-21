@@ -1,0 +1,13 @@
+let execUC Z (P,Q) A F =
+  $\nu$ (rZ2P, wZ2P), (rP2Z, wP2Z)
+  , (rZ2Q, wZ2Q), (rQ2Z, wQ2Z)
+  , (rP2F, wP2F), (rF2P, wF2P)
+  , (rQ2F, wQ2F), (rF2Q, wF2Q)
+  , (rF2A, wF2A), (rA2F, wA2F)
+  , (rA2Z, wA2Z), (rZ2A, wZ2A)
+  , (rZ2E, wZ2E)
+  . let (crupt', rZ2E) = rd rZ2E in
+    let! crupt = crupt' in
+        f crupt
+      $\xFork$ a crupt rZ2A !wA2Z rF2A
+      $\xFork$ z !wZ2E

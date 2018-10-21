@@ -21,8 +21,11 @@
 \SetKwBlock{Decommit}{\textnormal{\textsf{Decommit}($x$):}}{}
 \Decommit{
   Send $(b, r)$ to receiver\;
-  Receiver checks $x = G_{{pk}_b}(r)$ for $b = 0$, or $x = G_{{pk}_b}(r) \oplus \sigma$ for $b = 1$
+  Receiver checks $x = G_{{pk}_b}(r)$ for $b = 0$, or $x = G_{{pk}_b}(r) \oplus \sigma$
+  for $b = 1$
 }
-\caption{$\Pi_{\textsc{com}}$}
+\caption{Universally Composable Commitment (One-Time)}
 \label{alg:com}
 \end{algorithm}
+
+\lstinputlisting[style=myilc]{listings/suc.ilc}

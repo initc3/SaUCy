@@ -46,7 +46,8 @@ the parties, performs some local computation, and hands outputs back to the
 parties. Because $\mc{F}$ is trivially secure, it serves as a uniform way to
 describe the task's security requirements.\smallskip
 
-\myheader{Example: Secure coin flipping.} Suppose two untrusting parties, Alice
+\myheader{Example: Secure coin flipping.} \todo{Update to include
+  non-malleability property.} Suppose two untrusting parties, Alice
 and Bob, wish to securely flip a coin---Alice calls the coin flip by publishing a
 bit $b \in \{ 0, 1\}$, and Bob flips the coin by publishing the result $r \in \{0,
 1\}$. If $b = r$, then Alice wins; otherwise, Bob wins. Observe that simply
@@ -70,22 +71,23 @@ satisfy these important properties (stated informally):
   \item \emph{Binding.} It should be the case that $b =
     \mathsf{open}(\mathsf{com}(b))$, so that Alice cannot open to a different
     value.
-  \item \emph{Non-malleability.} \todo{Also needs this?}
+  \item \emph{Non-malleability.} Bob should not be able to come up with a
+    commitment $C'$ that is related to $C$.
 \end{itemize}
 
-\myheader{Commitment functionality.} We can capture both the hiding and binding
-properties at once by defining an ideal functionality $\Func_{\textsc{com}}$ for
-a (one-time) commitment scheme as it would appear in the cryptography literature
+\myheader{Commitment functionality.} We can capture all of these properties at
+once by defining an ideal functionality $\Func_{\textsc{com}}$ for a (one-time)
+commitment scheme as it would appear in the cryptography literature
 (Figure~\ref{func:com}, left).
 
 Upon receiving the bit $b$ that Alice wishes to commits to,
 $\Func_{\textsc{com}}$ records $b$ and notifies Bob that it has done so. Then,
 whenever Alice wants to reveal $b$ to Bob, she notifies $\Func_{\textsc{com}}$,
 which sends it to Bob. Because, in this idealized world, Alice and Bob trust
-$\Func_{\textsc{com}}$ to do all the work, the hiding and binding properties
-hold trivially. Of course, in the real world, Alice and Bob would not want to
-trust such a third party (if it even exists), so their hope is that the
-commitment scheme they use is ``just as good as''
+$\Func_{\textsc{com}}$ to do all the work, the hiding, binding, and
+non-malleability properties hold trivially. Of course, in the real world, Alice
+and Bob would not want to trust such a third party (if it even exists), so their
+hope is that the commitment scheme they use is ``just as good as''
 $\Func_{\textsc{com}}$.\smallskip
 
 \subsection{ILC By Example}
