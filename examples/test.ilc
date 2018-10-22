@@ -1,0 +1,10 @@
+data SttCrupt = SttCrupt (String, String) Crupt
+data Crupt = CruptP | CruptQ | CruptNone
+
+let testEnv toExec frP toP frK toK frQ toQ frA toA =
+  let! toExec' = toExec in
+    wr (SttCrupt ("sid1","") CruptP) -> toExec'
+    |> loop frA !(lam x . print x)
+    |> loop frK !(lam x . print x)    
+    |> loop frQ !(lam x . print x)
+    |> loop frP !(lam x . print x)

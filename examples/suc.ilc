@@ -1,27 +1,57 @@
+{- UC experiment -}
+
 {- Static corruptions: Either P is corrupted, Q is corrupted, or neither are
    corrupted. -}
+data SttCrupt = SttCrupt (String, String) Crupt
 data Crupt = CruptP | CruptQ | CruptNone
 
-let advWrapper p = error "todo"
+let iscrupt crupt p =
+  match (crupt, p) with
+  | (CruptP, "P") => true
+  | (CruptQ, "Q") => true
+  | _             => false
+
+{- If P is corrupted, then Z shouldn't be able to write to P, messages from F
+are forwarded to A, and messages from A are forwarded to F. Otherwise, spawn P
+as normal. -}
+let partyWrapper p crupt frZ toZ frF toF frA toA =
+  let! crupt' = crupt in
+  let! toA' = toA in
+  let! toF' = toF in
+    if crupt' then
+        loop frZ !(lam _ . error "fail")
+      |> loop frF !(lam x . wr x -> toA')
+      |> loop frA !(lam x . wr x -> toF')
+    else
+      p frZ toZ frF toF
 
 {- The dummy adversary forwards messages between Z and F (and vice versa). -}
-let dummyAdversary crupt frZ toZ frF toF =
-    loop frZ !(lam x . wr x -> toF)
-  |> loop frF !(lam x . wr x -> toZ)
+{- TODO: Using unpacked write channel should not type check -}
+let dummyAdversary crupt frZ toZ frF toF frP toP frQ toQ =
+  let! toF' = toF in
+  let! toZ' = toZ in
+    loop frZ !(lam x . wr x -> toF')
+  |> loop frF !(lam x . wr x -> toZ')
+  |> loop frP !(lam x . wr x -> toZ')
+  |> loop frQ !(lam x . wr x -> toZ')
 
-{- The ideal protocol forwards messages between Z and F (and vice versa). -}
-let idealProtocol rZ2P wP2F rZ2Q wQ2F rF2P wP2Z rF2Q wQ2Z =
-    loop rZ2P !(lam x . wr x -> wP2F)
-  |> loop rZ2Q !(lam x . wr x -> wQ2F)
-  |> loop rF2P !(lam x . wr x -> wP2Z)
-  |> loop rF2Q !(lam x . wr x -> wQ2Z)
+{- The dummy party forwards messages between Z and F (and vice versa). -}
+let dummyParty frZ toZ frF toF  =
+  let! toF' = toF in
+  let! toZ' = toZ in
+      loop frZ !(lam x . wr x -> toF')
+    |> loop frF !(lam x . wr x -> toZ')    
 
-let testEnv toExec' frP frQ frA =
-  let! toExec = toExec' in
-    wr CruptP -> toExec
+{- z !wZ2E rP2Z !wZ2P rQ2Z !wZ2Q rA2Z !wZ2A -}
+let testEnv toExec frP toP frQ toQ frA toA =
+  let! toExec' = toExec in
+  let! toP' = toP in
+  let! toQ' = toQ in
+  let! toA' = toA in  
+    wr (SttCrupt ("sid1","") CruptP) -> toExec'
     |> loop frP !(lam x . print x)
     |> loop frQ !(lam x . print x)
-    |> loop frA !(lam x . print x)    
+    |> loop frA !(lam x . print x)
 
 {- UC communication layout
    Z --- P/Q
@@ -36,11 +66,15 @@ let execUC z p q f a =
   , (rQ2F, wQ2F), (rF2Q, wF2Q)
   , (rF2A, wF2A), (rA2F, wA2F)
   , (rA2Z, wA2Z), (rZ2A, wZ2A)
+  {- Party wrapper channels -}
+  , (rP2A, wP2A), (rA2P, wA2P)
+  , (rQ2A, wQ2A), (rA2Q, wA2Q)
+  {- Z to execution channels -}  
   , (rZ2E, wZ2E)
-  . let (crupt', rZ2E) = rd rZ2E in
-    let! crupt = crupt' in
-        f crupt
-      |> a crupt rZ2A !wA2Z rF2A
-      {-|> if crupt == CruptP then advWrapper p else p ()
-      |> if crupt == CruptQ then advWrapper q else q ()-}
-      |> z !wZ2E
+  . let (msg, rZ2E) = rd rZ2E in
+    let! (SttCrupt sid crupt) = msg in
+        f !crupt rP2F !wF2P rQ2F !wF2Q rA2F !wF2A
+      |> a !crupt rZ2A !wA2Z rF2A !wA2F rP2A !wA2P rQ2A !wA2Q
+      |> partyWrapper p !(iscrupt crupt "P") rZ2P !wP2Z rF2P !wP2F rA2P !wP2A
+      |> partyWrapper q !(iscrupt crupt "Q") rZ2Q !wQ2Z rF2Q !wQ2F rA2Q !wQ2A
+      |> z !wZ2E rP2Z !wZ2P rQ2Z !wZ2Q rA2Z !wZ2A

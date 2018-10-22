@@ -25,7 +25,7 @@ import Control.Monad.Except
 import Control.Monad.Identity
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.List (nub)
+import Data.List (nub, (\\))
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Development.Placeholders
@@ -259,7 +259,12 @@ freshifyt env TUsed = return (TUsed, env)
 freshifyt _ _ = error "Infer.freshifyt"
 
 freshifyl :: Map.Map TVar TVar -> LType -> Infer (LType, Map.Map TVar TVar)
-freshifyl env t@(LVar _) = return (t, env)
+--freshifyl env t@(LVar _) = return (t, env)
+freshifyl env (LVar a) = case Map.lookup a env of
+  Nothing -> do
+    b <- fresh TV
+    return (LVar b, Map.insert a b env)
+  Just b -> return (LVar b, env)
 freshifyl env (LRdChan t) = do
   (t', env') <- freshifyt env t
   return (LRdChan t', env')
@@ -667,7 +672,7 @@ infer expr = case expr of
     (tyA2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
     (tyA3, c3, m2', _Γ3') <- local (const _Γ2) (infer e3)
     -- TODO
-    _ <- checkType _Γ3 _Γ3' "Branches have different outgoing typing contexts."
+    _ <- checkType _Γ3 _Γ3' (show (_Γ3, _Γ3'))
     m3 <- fresh (MVar . TV)
     let tyConstraints = c1 ++ c2 ++ c3 ++ [ TypeConstraint tyA1 tyBool
                                         , TypeConstraint tyA2 tyA3 ]
@@ -856,12 +861,12 @@ infer expr = case expr of
     (tyRet, tyConstraints) <- case (tyA2B', tyA') of
           (t, TLin l) -> do
             tyV <- fresh (LVar . TV)
-            tyA' <- fresh (LVar . TV)
-            return (TLin tyV, TypeConstraint tyA2B (TLin (LArr tyA' tyV mV)) : TypeConstraint (TLin tyA') tyA : c1 ++ c2)
+            tyA'' <- fresh (LVar . TV)
+            return (TLin tyV, TypeConstraint tyA2B (TLin (LArr tyA'' tyV mV)) : TypeConstraint (TLin tyA'') tyA : c1 ++ c2)
           (TLin l, t) -> do
             tyV  <- fresh (LVar . TV)
-            tyA' <- fresh (LVar . TV)
-            return (TLin tyV, TypeConstraint tyA2B (TLin (LArr tyA' tyV mV)) : TypeConstraint (TLin tyA') tyA : c1 ++ c2)
+            tyA'' <- fresh (LVar . TV)
+            return (TLin tyV, TypeConstraint tyA2B (TLin (LArr tyA'' tyV mV)) : TypeConstraint (TLin tyA'') tyA : c1 ++ c2)
           (t1, t2)    -> do
             tyV <- fresh (TVar . TV)
             return  (tyV, TypeConstraint tyA2B (TArr tyA tyV mV) : c1 ++ c2)

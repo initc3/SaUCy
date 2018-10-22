@@ -408,6 +408,7 @@ tPrim :: Parser Type
 tPrim = tInt <|> tBool <|> tString <|> tUnit
 
 tVar = mklexer (TVar . TV) identifier
+tCon = mklexer TCon constructor
 tList = mklexer TList $ brackets $ ty
 tProd = mklexer TProd $ parens $ commaSep2 ty
 tSet = mklexer TSet $ braces $ ty
@@ -426,6 +427,7 @@ ty = try tArrow <|> ty'
 
 ty' = tPrim
   <|> tVar
+  <|> tCon
   <|> tList
   <|> try tProd
   <|> tSet
