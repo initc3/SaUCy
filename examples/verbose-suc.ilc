@@ -5,12 +5,6 @@
 data SttCrupt = SttCrupt (String, String) Crupt
 data Crupt = CruptP | CruptQ | CruptNone
 
-let iscrupt crupt p =
-  match (crupt, p) with
-  | (CruptP, "P") => true
-  | (CruptQ, "Q") => true
-  | _             => false
-
 {- If P is corrupted, then Z shouldn't be able to write to P, messages from F
 are forwarded to A, and messages from A are forwarded to F. Otherwise, spawn P
 as normal. -}
@@ -91,8 +85,8 @@ let execUC z p q f a =
      let! (SttCrupt sid crupt) = msg in
         print "Spawn f" ; f !crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F
       |> print "Spawn a" ; a !crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A
-      |> print "Spawn p" ; partyWrapper p !(iscrupt crupt "P") !wP2Z rZ2P !wP2F rF2P !wP2A rA2P
-      |> print "Spawn q" ; partyWrapper q !(iscrupt crupt "Q") !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q)
+      |> print "Spawn p" ; partyWrapper p !(crupt == CruptP) !wP2Z rZ2P !wP2F rF2P !wP2A rA2P
+      |> print "Spawn q" ; partyWrapper q !(crupt == CruptQ) !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q)
     |> print "Spawn z" ; z !wZ2E rP2Z !wZ2P rQ2Z !wZ2Q rA2Z !wZ2A
 
 let testExec () = execUC testEnv dummyParty dummyParty dummyFunctionality dummyAdversary

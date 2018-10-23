@@ -77,6 +77,9 @@ eApp = do
 eFix :: Parser Expr
 eFix = $(todo "Parse fixed point expressions")
 
+lets :: Parser Expr
+lets = reserved "let" *> normalLet <|> eLetRd
+
 normalLet :: Parser Expr
 normalLet = do
     reserved "let"
@@ -86,6 +89,17 @@ normalLet = do
     reserved "in"
     e2 <- expr
     return $ foldr (`ELet` e1) e2 ps
+
+eLetRd :: Parser Expr
+eLetRd = do
+    reserved "let"
+    p <- pat
+    reservedOp "="
+    reservedOp "rd"
+    e1 <- expr
+    reserved "in"
+    e2 <- expr
+    return $ ELetRd p (ERd e1) e2
 
 recursiveLet :: Parser Expr
 recursiveLet = do
@@ -98,7 +112,7 @@ recursiveLet = do
     ELet p (EFix $ foldr ELam e (p:args)) <$> expr
 
 eLet :: Parser Expr
-eLet = try recursiveLet <|> normalLet
+eLet = try recursiveLet  <|> normalLet
 
 eLetBang :: Parser Expr
 eLetBang = do
@@ -109,17 +123,6 @@ eLetBang = do
     reserved "in"
     e2 <- expr
     return $ foldr (`ELetBang` e1) e2 ps
-
-eLetRd :: Parser Expr
-eLetRd = do
-    reserved "let"
-    p <- pat
-    reservedOp "="
-    reservedOp "rd"
-    e1 <- expr
-    reserved "in"
-    e2 <- expr
-    return $ ELetRd p (ERd e1) e2
 
 eIf :: Parser Expr
 eIf = do
