@@ -1,10 +1,14 @@
 data SttCrupt = SttCrupt (String, String) Crupt
 data Crupt = CruptP | CruptQ | CruptNone
 
-let testEnv toExec frP toP frK toK frQ toQ frA toA =
-  let! toExec' = toExec in
-    wr (SttCrupt ("sid1","") CruptP) -> toExec'
-    |> loop frA !(lam x . print x)
-    |> loop frK !(lam x . print x)    
-    |> loop frQ !(lam x . print x)
-    |> loop frP !(lam x . print x)
+let partyWrapper p crupt frZ toZ frF toF frA toA =
+  let! crupt' = crupt in
+  let! toZ' = toZ in  
+  let! toA' = toA in
+  let! toF' = toF in
+    if crupt' then
+        loop frZ !(lam _ . error "fail")
+      |> loop frF !(lam x . wr x -> toA')
+      |> loop frA !(lam x . wr x -> toF')
+    else
+      p toZ frZ toF frF

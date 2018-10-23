@@ -20,11 +20,13 @@ let partyWrapper p crupt toZ frZ toF frF toA frA =
   let! toA' = toA in
   let! toF' = toF in
     if crupt' then
+        print "Crupted" ;
         loop frZ !(lam _ . error "fail")
       |> loop frF !(lam x . wr x -> toA')
       |> loop frA !(lam x . wr x -> toF')
     else
-      p toZ frZ toF frF      
+      print "Not crupted" ;
+      p toZ frZ toF frF
 
 {- The dummy adversary forwards messages between Z and F (and vice versa). -}
 {- TODO: Using unpacked write channel should not type check -}
@@ -51,7 +53,7 @@ let dummyFunctionality crupt toP frP toQ frQ toA frA =
   let! toQ' = toQ in
   let! toA' = toA in
       loop frP !(lam x . wr x -> toP')
-    |> loop frQ !(lam x . wr x -> toQ')      
+    |> loop frQ !(lam x . wr x -> toQ')
     |> loop frA !(lam x . wr x -> toA')
 
 {- z !wZ2E rP2Z !wZ2P rQ2Z !wZ2Q rA2Z !wZ2A -}
@@ -59,11 +61,11 @@ let testEnv toExec frP toP frQ toQ frA toA =
   let! toExec' = toExec in
   let! toP' = toP in
   let! toQ' = toQ in
-  let! toA' = toA in  
-    wr (SttCrupt ("sid1","") CruptP) -> toExec'
-    |> loop frP !(lam x . print x)
-    |> loop frQ !(lam x . print x)
-    |> loop frA !(lam x . print x)
+  let! toA' = toA in
+    wr (SttCrupt ("sid1","") CruptNone) -> toExec'
+    |> loop frP !(lam x . print ("P sent: " ++ x))
+    |> loop frQ !(lam x . print ("Q sent: " ++ x))
+    |> loop frA !(lam x . print ("A sent: " ++ x) ; print "Env output 1")
 
 {- UC communication layout
    Z --- P/Q
@@ -81,12 +83,16 @@ let execUC z p q f a =
   {- Party wrapper channels -}
   , (rP2A, wP2A), (rA2P, wA2P)
   , (rQ2A, wQ2A), (rA2Q, wA2Q)
-  {- Z to execution channels -}  
+  {- Z to execution channels -}
   , (rZ2E, wZ2E)
-  . let (msg, rZ2E) = rd rZ2E in
-    let! (SttCrupt sid crupt) = msg in
-        f !crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F
-      |> a !crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A
-      |> partyWrapper p !(iscrupt crupt "P") !wP2Z rZ2P !wP2F rF2P !wP2A rA2P
-      |> partyWrapper q !(iscrupt crupt "Q") !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q
-      |> z !wZ2E rP2Z !wZ2P rQ2Z !wZ2Q rA2Z !wZ2A
+  . print "Starting" ;
+    (let (msg, rZ2E) = rd rZ2E in
+     print "Received msg from Z" ;
+     let! (SttCrupt sid crupt) = msg in
+        print "Spawn f" ; f !crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F
+      |> print "Spawn a" ; a !crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A
+      |> print "Spawn p" ; partyWrapper p !(iscrupt crupt "P") !wP2Z rZ2P !wP2F rF2P !wP2A rA2P
+      |> print "Spawn q" ; partyWrapper q !(iscrupt crupt "Q") !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q)
+    |> print "Spawn z" ; z !wZ2E rP2Z !wZ2P rQ2Z !wZ2Q rA2Z !wZ2A
+
+let testExec () = execUC testEnv dummyParty dummyParty dummyFunctionality dummyAdversary

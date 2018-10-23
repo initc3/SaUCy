@@ -91,7 +91,8 @@ hoistErr (Left err) = do
 --------------------------------------------------------------------------------
 
 evalDecl :: TermEnv -> TopDecl -> IO TermEnv
-evalDecl env (Decl x expr) = silence $ eval env expr >>= return . extendTmEnv env x
+--evalDecl env (Decl x expr) = silence $ eval env expr >>= return . extendTmEnv env x
+evalDecl env (Decl x expr) = eval env expr >>= return . extendTmEnv env x
 evalDecl env (TyCon dc vcs) = do
   env'' <- env'
   return $ mergeTmEnv env (Map.fromList env'')

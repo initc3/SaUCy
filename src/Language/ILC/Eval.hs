@@ -25,6 +25,7 @@ import Control.Exception
 import Data.IORef
 import qualified Data.Map.Strict as Map
 import Data.Typeable
+import Debug.Trace
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Language.ILC.Decl
