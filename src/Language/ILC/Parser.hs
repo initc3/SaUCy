@@ -68,11 +68,14 @@ eLam = do
   reserved "."
   ELam x <$> expr
 
-eApp :: Parser Expr
-eApp = do
-  f <- atomExpr
+eApp :: Expr -> Parser Expr
+eApp f = do
+  -- f <- atomExpr
   args <- many1 atomExpr
   return $ foldl EApp f args
+
+atoms = atomExpr >>= \a ->
+        eApp a <|> return a
 
 eFix :: Parser Expr
 eFix = $(todo "Parse fixed point expressions")
@@ -163,12 +166,10 @@ chanPair = do
   return (c1, c2)
 
 chan2 :: Parser (Name, Name)
-chan2 = do
-  cs <- parens chanPair
-  return cs
+chan2 = parens chanPair
 
 chan :: Parser (Name, Name)
-chan = try chan1 <|> chan2
+chan = chan1 <|> chan2
 
 eNu :: Parser Expr
 eNu = do
@@ -268,9 +269,7 @@ atomExpr =
   <|> parens expr
 
 term :: Parser Expr
-term =
-      try eApp
-  <|> atomExpr
+term = atoms
   <|> eLam
   <|> try eSet
   <|> eLetBang
@@ -352,7 +351,6 @@ pat' =
 dExpr :: Parser TopDecl
 dExpr = do
   e <- expr
-  optional $ reserved ";;"
   return $ Decl "it" e
 
 parseLet :: Parser (Name, [Pattern], Expr)
@@ -361,7 +359,6 @@ parseLet = do
   ps <- many pat
   reserved "="
   e <- expr
-  optional $ reserved ";;"
   return (x, ps, e)
 
 dDeclLetRec :: Parser TopDecl
