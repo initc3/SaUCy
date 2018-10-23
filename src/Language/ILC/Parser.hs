@@ -63,144 +63,127 @@ eSett = mklexer ESett $ braces $ commaSep expr
 
 eLam :: Parser Expr
 eLam = do
-    reserved "lam"
-    x <- pat
-    reserved "."
-    ELam x <$> expr
+  reserved "lam"
+  x <- pat
+  reserved "."
+  ELam x <$> expr
 
 eApp :: Parser Expr
 eApp = do
-    f <- atomExpr
-    args <- many1 atomExpr
-    return $ foldl EApp f args
+  f <- atomExpr
+  args <- many1 atomExpr
+  return $ foldl EApp f args
 
 eFix :: Parser Expr
 eFix = $(todo "Parse fixed point expressions")
 
-lets :: Parser Expr
-lets = reserved "let" *> normalLet <|> eLetRd
+eLets :: Parser Expr
+eLets = reserved "let" *> (try normalLet <|> eLetRd)
 
 normalLet :: Parser Expr
 normalLet = do
-    reserved "let"
-    ps <- commaSep1 pat
-    reservedOp "="
-    e1 <- expr
-    reserved "in"
-    e2 <- expr
-    return $ foldr (`ELet` e1) e2 ps
+  ps <- commaSep1 pat
+  reservedOp "="
+  e1 <- expr
+  reserved "in"
+  e2 <- expr
+  return $ foldr (`ELet` e1) e2 ps
 
 eLetRd :: Parser Expr
 eLetRd = do
-    reserved "let"
-    p <- pat
-    reservedOp "="
-    reservedOp "rd"
-    e1 <- expr
-    reserved "in"
-    e2 <- expr
-    return $ ELetRd p (ERd e1) e2
+  p <- pat
+  reservedOp "="
+  reservedOp "rd"
+  e1 <- expr
+  reserved "in"
+  e2 <- expr
+  return $ ELetRd p (ERd e1) e2
 
-recursiveLet :: Parser Expr
-recursiveLet = do
-    reserved "letrec"
-    p <- pat
-    args <- many1 pat
-    reservedOp "="
-    e <- expr
-    reserved "in"
-    ELet p (EFix $ foldr ELam e (p:args)) <$> expr
-
-eLet :: Parser Expr
-eLet = try recursiveLet  <|> normalLet
+{-eLetRec :: Parser Expr
+eLetRec = do
+  reserved "letrec"
+  p <- pat
+  args <- many1 pat
+  reservedOp "="
+  e <- expr
+  reserved "in"
+  ELet p (EFix $ foldr ELam e (p:args)) <$> expr-}
 
 eLetBang :: Parser Expr
 eLetBang = do
-    reserved "let!"
-    ps <- commaSep1 pat
-    reservedOp "="
-    e1 <- expr
-    reserved "in"
-    e2 <- expr
-    return $ foldr (`ELetBang` e1) e2 ps
+  reserved "let!"
+  ps <- commaSep1 pat
+  reservedOp "="
+  e1 <- expr
+  reserved "in"
+  e2 <- expr
+  return $ foldr (`ELetBang` e1) e2 ps
 
 eIf :: Parser Expr
 eIf = do
-    reserved "if"
-    b <- expr
-    reserved "then"
-    e <- expr
-    reserved "else"
-    EIf b e <$> expr
+  reserved "if"
+  b <- expr
+  reserved "then"
+  e <- expr
+  reserved "else"
+  EIf b e <$> expr
 
 branch :: Parser (Pattern, Expr, Expr)
 branch = do
-    reservedOp "|"
-    p <- pat
-    g <- option (ELit $ LBool True) guard
-    reservedOp "=>"
-    e <- expr
-    return (p, g, e)
+  reservedOp "|"
+  p <- pat
+  g <- option (ELit $ LBool True) guard
+  reservedOp "=>"
+  e <- expr
+  return (p, g, e)
 
 guard :: Parser Expr
 guard = do
-    reserved "when"
-    expr
+  reserved "when"
+  expr
 
 eMatch :: Parser Expr      
 eMatch = do
-    reserved "match"
-    e <- expr
-    reserved "with"
-    bs <- many1 branch
-    return $ EMatch e bs
+  reserved "match"
+  e <- expr
+  reserved "with"
+  bs <- many1 branch
+  return $ EMatch e bs
 
 chan1 :: Parser (Name, Name)
 chan1 = do
-    c <- identifier
-    return (c, c ++ "'")
+  c <- identifier
+  return (c, c ++ "'")
 
 chanPair :: Parser (Name, Name)
 chanPair = do
-    c1 <- identifier
-    _  <- comma
-    c2 <- identifier
-    return (c1, c2)
+  c1 <- identifier
+  _  <- comma
+  c2 <- identifier
+  return (c1, c2)
 
 chan2 :: Parser (Name, Name)
 chan2 = do
-    cs <- parens chanPair
-    return cs
+  cs <- parens chanPair
+  return cs
 
 chan :: Parser (Name, Name)
 chan = try chan1 <|> chan2
 
 eNu :: Parser Expr
 eNu = do
-    reserved "nu"
-    cs <- commaSep1 chan
-    reserved "."
-    e <- expr
-    return $ foldr ENu e cs
+  reserved "nu"
+  cs <- commaSep1 chan
+  reserved "."
+  e <- expr
+  return $ foldr ENu e cs
 
 eWr :: Parser Expr
 eWr = do
-    reserved "wr"
-    e <- expr
-    reserved "->"
-    EWr e <$> atomExpr
-
-eFork :: Parser Expr
-eFork = do
-    e <- expr'
-    reservedOp "|>"
-    EFork e <$> expr
-
-eChoice :: Parser Expr    
-eChoice = do
-    e <- expr'
-    reservedOp "<|>"
-    EChoice e <$> expr
+  reserved "wr"
+  e <- expr
+  reserved "->"
+  EWr e <$> atomExpr
 
 eRef :: Parser Expr
 eRef = mklexer ERef $ reserved "ref" >> atomExpr
@@ -210,16 +193,25 @@ eGet = mklexer EGet $ reservedOp "@" >> atomExpr
 
 eSet :: Parser Expr
 eSet = do
-    reserved "let"
-    x <- identifier
-    reservedOp ":="
-    ESet x <$> expr
+  reserved "let"
+  x <- identifier
+  reservedOp ":="
+  ESet x <$> expr
 
-eSeq :: Parser Expr
-eSeq = do
-    e <- expr'
-    reserved ";"
-    ESeq e <$> expr
+eFork :: Expr -> Parser Expr
+eFork e = do
+  reservedOp "|>"
+  EFork e <$> expr
+
+eChoice :: Expr -> Parser Expr    
+eChoice e = do
+  reservedOp "<|>"
+  EChoice e <$> expr
+
+eSeq :: Expr -> Parser Expr
+eSeq e = do
+  reserved ";"
+  ESeq e <$> expr
   
 table :: [[Ex.Operator String () Identity Expr]]
 table = [ [ binaryOp "*" (EBin Mul) Ex.AssocLeft
@@ -255,39 +247,41 @@ eUn = ePrint
   <|> eError
 
 expr :: Parser Expr
-expr = try eSeq <|> try eChoice <|> try eFork <|> expr'
+expr = expr' >>= \e ->
+       eFork e <|> eChoice e <|> eSeq e <|> return e
 
 expr' :: Parser Expr
 expr' = Ex.buildExpressionParser table term
 
 atomExpr :: Parser Expr
-atomExpr = eVar
-       <|> eCon
-       <|> eInt
-       <|> eBool
-       <|> eString
-       <|> eList
-       <|> eSett
-       <|> eBang
-       <|> try eUnit
-       <|> try eTuple
-       <|> parens expr
+atomExpr =
+      eVar
+  <|> eCon
+  <|> eInt
+  <|> eBool
+  <|> eString
+  <|> eList
+  <|> eSett
+  <|> eBang
+  <|> try eUnit
+  <|> try eTuple
+  <|> parens expr
 
 term :: Parser Expr
-term = try eApp
-   <|> atomExpr
-   <|> eLam
-   <|> try eSet
-   <|> try eLet
-   <|> eLetBang
-   <|> eLetRd
-   <|> eIf
-   <|> eMatch
-   <|> eNu
-   <|> eWr
-   <|> eRef
-   <|> eGet
-   <|> eUn
+term =
+      try eApp
+  <|> atomExpr
+  <|> eLam
+  <|> try eSet
+  <|> eLetBang
+  <|> eLets
+  <|> eIf
+  <|> eMatch
+  <|> eNu
+  <|> eWr
+  <|> eRef
+  <|> eGet
+  <|> eUn
 
 -- | Patterns
 
@@ -320,9 +314,9 @@ pList = mklexer PList $ brackets $ commaSep pat
 
 pCons :: Parser Pattern
 pCons = do
-    hd <- pat'
-    _  <- colon
-    PCons hd <$> pat'
+  hd <- pat'
+  _  <- colon
+  PCons hd <$> pat'
 
 pSet :: Parser Pattern
 pSet = mklexer PSet $ braces $ commaSep pat
@@ -341,7 +335,8 @@ pat :: Parser Pattern
 pat = try pCons <|> pat'
 
 pat' :: Parser Pattern
-pat' = pVar
+pat' =
+      pVar
   <|> pInt
   <|> pBool
   <|> pString
@@ -398,7 +393,7 @@ parseValCon tyCon = do
   return $ (valCon, foldr (\a b -> TArr a b V) (TCon tyCon) params)
 
 decl :: Parser TopDecl
-decl = dDeclCon <|> try dExpr <|> try dDeclLetRec <|> dDeclFun
+decl = dDeclCon <|> dDeclLetRec <|> try dExpr <|> dDeclFun
 
 -- | Parse types
 tInt, tBool, tString, tUnit :: Parser Type  

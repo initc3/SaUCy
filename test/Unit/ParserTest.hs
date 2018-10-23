@@ -68,7 +68,7 @@ examples =
                                     (EVar "y"))
               ]
       )
-    , ( "let command, let binding, expr command"
+    {-, ( "let command, let binding, expr command"
       , "let z = let x = 1 in 2 * x let y = 1;; \"foo\""
       , Right [ Decl "z" (ELet (PVar "x")
                            (ELit $ LInt 1)
@@ -85,7 +85,7 @@ examples =
               , Decl "it" (ESeq (ELit $ LInt 3)
                             (ELit $ LInt 4))
               ]
-      )
+      )-}
     , ( "pattern matching"
       , "match b with | 0 => \"zero\" | 1 => \"one\""
       , Right [ Decl "it" (EMatch (EVar "b")
@@ -108,13 +108,13 @@ examples =
                                            (EVar "y")))
               ]
       )
-    , ( "ref and deref"
+    {-, ( "ref and deref"
       , "let a = ref 1 ;; let b := @ a"
       , Right [ Decl "a" (ERef (ELit $ LInt 1))
               , Decl "it" (ESet "b"
                                (EGet (EVar "a")))
               ]
-      )
+      )-}
     , ( "let binding w/ sequencing and assign"
       , "let a = 1 ; let b := 1 in b"
       , Right [ Decl "it" (ELet (PVar "a")
