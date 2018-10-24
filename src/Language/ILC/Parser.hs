@@ -315,7 +315,7 @@ pCons :: Parser Pattern
 pCons = do
   hd <- pat'
   _  <- colon
-  PCons hd <$> pat'
+  PCons hd <$> pat
 
 pSet :: Parser Pattern
 pSet = mklexer PSet $ braces $ commaSep pat

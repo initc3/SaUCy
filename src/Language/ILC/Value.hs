@@ -60,6 +60,7 @@ instance Pretty Value where
   pretty (VRdChan c _) = text "Rd" <+> text c
   pretty (VWrChan c _) = text "Wr" <+> text c
   pretty (VRef _)      = text "<ref>"
+  pretty (VCust x [])  = text x
   pretty (VCust x vs)  = text x <+> prettySpace (map pretty vs)
   
 -- | A map from names to values.
