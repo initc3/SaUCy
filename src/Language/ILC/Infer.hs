@@ -672,7 +672,7 @@ infer expr = case expr of
     (tyA2, c2, m2, _Γ3) <- local (const _Γ2) (infer e2)
     (tyA3, c3, m2', _Γ3') <- local (const _Γ2) (infer e3)
     -- TODO
-    _ <- checkType _Γ3 _Γ3' (show (_Γ3, _Γ3'))
+    -- _ <- checkType _Γ3 _Γ3' (show (_Γ3, _Γ3'))
     m3 <- fresh (MVar . TV)
     let tyConstraints = c1 ++ c2 ++ c3 ++ [ TypeConstraint tyA1 tyBool
                                         , TypeConstraint tyA2 tyA3 ]
