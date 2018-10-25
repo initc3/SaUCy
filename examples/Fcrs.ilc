@@ -1,8 +1,11 @@
+{- fCrs_helper :: Ref (Maybe Bitstring) -> Wr Bitstring -> a ->@W Unit -}
 let fCrs_helper d c x = match (@d) with
+                        {- Sample from distribution -}
                         | Nothing => let d' = [Z,S] in
 		                       (let d := Just d') ; wr d' -> c
 	                | Just d' => wr d' -> c
 
+{- Parameterize with distribution? -}
 let fCrs crupt toP frP toQ frQ toA frA k bits =
   let! crupt' = crupt in
   let! toP' = toP in

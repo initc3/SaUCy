@@ -1,0 +1,17 @@
+data Msg = Commit Int
+         | Open
+	 | Opened Int
+	 | Receipt
+      
+let fCom crupt toP frP toQ frQ toA frA k bits =
+  let! crupt' = crupt in
+  let! toP' = toP in
+  let! toQ' = toQ in
+  let! toA' = toA in
+  let! bits' = bits in
+  let (msg, frP) = rd frP in
+  let! (Commit b) = msg in
+    wr Receipt -> toQ' ;
+    let (msg', frP) = rd frP in
+    let! Open = msg' in
+      wr (Opened b) -> toQ'
