@@ -1,16 +1,15 @@
+let fCrs_helper d c x = match (@d) with
+                        | Nothing => let d' = [Z,S] in
+		                       (let d := Just d') ; wr d' -> c
+	                | Just d' => wr d' -> c
+
 let fCrs crupt toP frP toQ frQ toA frA k bits =
   let! crupt' = crupt in
   let! toP' = toP in
   let! toQ' = toQ in
   let! toA' = toA in
   let! bits' = bits in
-  let d = ref [] in
-      loop frP !(lam x . if (@d) == [] then
-                       (let d := [Z,S]) ; wr (@d) -> toP'
-		       else wr (@d) -> toP')
-    |> loop frQ !(lam x . if (@d) == [] then
-                       (let d := [Z,S]) ; wr (@d) -> toQ'
-		       else wr (@d) -> toQ')
-    |> loop frA !(lam x . if (@d) == [] then
-                       (let d := [Z,S]) ; wr (@d) -> toA'
-		       else wr (@d) -> toA')
+  let d = ref Nothing in
+      loop frP !(fCrs_helper d toP')
+    |> loop frQ !(fCrs_helper d toQ')
+    |> loop frA !(fCrs_helper d toA')
