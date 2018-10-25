@@ -8,6 +8,11 @@ letrec loop c f =
 
 data Bit = Z | S
 
+{- Sample n bits from a bitstream. Can't use let due to modes. -}
+let sample n bits =
+  match splitAt n (@bits) with
+  | (bs, rest) => (let bits := rest) ; bs
+
 let xor a b = if a == b then Z else S
 
 let xors as bs =
@@ -17,7 +22,7 @@ let xors as bs =
 let prg k bits = foldl (lam x . lam acc . x ++ acc) [] (replicate 4 bits)
 
 {- KGen(1^n) : (td,pk) where td is a trapdoor and pk is a random public key -}
-let kgen bits = (bits, bits)
+let kgen k = (replicate k Z, replicate k S)
 
 {- Given trapdoor td to key pk, check whether y is in the range of G_pk -}
 let check td pk y = Z
