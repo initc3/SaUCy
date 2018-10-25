@@ -90,7 +90,7 @@ evalPut env m expr = case expr of
     -- If binds is not strict, this can miss invalid (but unused)
     -- pattern matches (e.g., let 1 = 2 in ...).
     let !binds = letBinds p v1
-    res <- eval (Map.union env binds) e2
+    res <- eval (Map.union binds env) e2
     putMVar m res
 
   ELetBang p e1 e2 -> do

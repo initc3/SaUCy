@@ -1,12 +1,30 @@
 {- TODO: Shadowing variables not working properly and fix reference cells. -}
-let sim k bits =
+
+let sim crupt toZ frZ toF frF toP frP toQ frQ k bits =
+  let! crupt' = crupt in
+  let! toF' = toF in
+  let! toZ' = toZ in
   let! k' = k in
   let! bits' = bits in
-  let (bs0,bits'') = splitAt 4 bits' in
+  let (bs0,bits') = splitAt 4 bits' in
   let (pk0,td0) = kgen bs0 in
-  let (bs1,bits''') = splitAt 4 bits'' in
+  let (bs1,bits') = splitAt 4 bits' in
   let (pk1,td1) = kgen bs1 in
-  let (r0,bits'''') = splitAt 4 bits''' in
-  let (r1,bits''''') = splitAt 4 bits'''' in
+  let (r0,bits') = splitAt 4 bits' in
+  let (r1,bits') = splitAt 4 bits' in
   let sigma = xors (prg pk0 r0) (prg pk1 r1) in
   print sigma
+  
+let sim2 k bits =
+  let! k' = k in
+  let! bits' = bits in
+  let (bs0,bits') = splitAt 4 bits' in
+  let (pk0,td0) = kgen bs0 in
+  let (bs1,bits') = splitAt 4 bits' in
+  let (pk1,td1) = kgen bs1 in
+  let (r0,bits') = splitAt 4 bits' in
+  let (r1,bits') = splitAt 4 bits' in
+  let sigma = xors (prg pk0 r0) (prg pk1 r1) in
+  print sigma
+
+let testSim () = sim2 !1 ![S,Z,Z,S,S,Z,Z,S,S,Z,Z,S,Z,S,S,Z]
