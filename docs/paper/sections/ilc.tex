@@ -2,7 +2,7 @@
 \label{sec:ilc}
 
 We now present the Interactive Lambda Calculus in full, including its syntax,
-type system, and operational semantics.
+static semantics, and dynamic semantics.
 
 \subsection{Syntax}
 \label{subsec:syntax}
@@ -27,8 +27,8 @@ Expressions include variables (ranged over by $x$) and the standard introduction
 and elimination forms for intuitionistic functions, unit, products, and
 sums. \todo{References, fixpoint.} Linear functions are introduced using
 $\eLAM{x}{e}$ and an intuitionistically typed expression $e$ can be lifted into
-a linearly typed expression as $\eBang{e}$. \todo{App for lollipops? Remove seq?}
-Expressions for concurrency are the following:
+a linearly typed expression as $\eBang{e}$. \todo{App for lollipops?}
+Expressions for message passing concurrency are the following:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     write channel $x_2$ in $e$.
@@ -76,7 +76,7 @@ Expressions for concurrency are the following:
 %the value \textsf{v}, and then repeats \textsf{loop}.\mypar
 %\endgroup
 
-\subsection{Type System}
+\subsection{Static Semantics}
 \label{subsec:types}
 
 %\input{figures/ilc/syntax-types}
@@ -86,12 +86,12 @@ Expressions for concurrency are the following:
 \input{figures/ilc/type-expressions}
 
 The type system of ILC is given in Figure~\ref{fig:type-expressions}. To
-summarize, the type system maintains these invariants to ensure that
-\emph{well-typed ILC programs are expressible as ITMs}:
-\begin{enumerate}[leftmargin=*]
+summarize, it maintains these invariants to ensure that \emph{well-typed ILC
+  programs are expressible as ITMs}:
+\begin{itemize}[leftmargin=*]
   \item No duplication of read channel ends.
   \item No parallel composition of write mode processes.
-\end{enumerate}
+\end{itemize}
 
 The main typing judgement $\Delta ; \Gamma |- e : A |> m$ should be read as follows:
 \begingroup
@@ -101,35 +101,75 @@ The main typing judgement $\Delta ; \Gamma |- e : A |> m$ should be read as foll
   has intuitionistic type $A$ and mode $m$.
 \end{quote}
 \endgroup
-\noindent (The typing judgement for linear types is analagous.) We elide value
-mode expressions to avoid clutter.
+\noindent (The typing judgement for linear types is analagous.) Note that we
+elide value mode derivations in the typing rules to avoid clutter.
 
-The rules for intuitionistic variable lookup (var) and unit (unit) are standard,
-as are the introduction rules for products (pair) and sums (inj). Note that
-these are all value mode expressions, so no communication is permitted in any
-subexpressions. On the other hand, the elimination rules for products (split)
-and sums (case) do allow communication, and so they can derive a mode other than
-value.
+The rules for intuitionistic variable lookup (var), unit (unit), and references
+(ref, get, set) are standard, as are the introduction rules for products (pair)
+and sums (inj). Because these are all value mode expressions, communication is
+not allowed in their subexpressions. On the other hand, the elimination rules
+for products (split) and sums (case) do allow communication in certain
+subexpressions, and so they can derive modes other than $\Vm$.
 
-\todo{Discuss syntax of types, linear typing rules and let!} The rule nu types a restriction as
-$B |> m$ provided that body of the restriction ($e$) has type $B |> m$ under the
-assumptions that $x_1$ is a read channel of type $\tyRd{A}$ in the linear
-context and $x_2$ is a write channel of type $\tyWr{A}$ in the intuitionistic
-context. The rule wr types a write expression as $\tyUnit |> \Wm$ provided that
-the value being sent is compatible with the type of the write channel being sent
-on. Additionally, the linear context $\Delta$ must be partitioned into contexts $\Delta_1$
-and $\Delta_2$, which are used to type the subexpressions $e_1$ and $e_2$
-respectively. The same pattern holds for the other typing rules as well. The rule rd types a read expression as $\tyProd{A}{\tyRd{A}} |> \Rm$, since it
-returns a pair containing the value from the channel and the channel itself, so
-that it can be rebound. Since read channels are typed linearly, returning and
-rebinding read channels allows them to be used more than once. The rule fork is
-types a fork as $B |> m_3$, where the type of the right process is $B$ (the type
-of the left is ignored) and the mode $m_3$ is derived as the parallel
-composition of the modes of the left and right processes ($m_1 || m_2 =>
-m_3$). The rule choice is types an external choice as $A |> \Rm$ provided that
-it is the type of the left and right processes. The rule seq types a sequence
-similarly to the rule fork, except the mode $m_3$ is derived by sequential
-composition of the modes of its sub-expressions.
+The rule (abs) for intuitionistic lambda abstraction ($\eLam{x}{e}$) adds $x:A$
+to the intuitionistic context $\Gamma$ before checking the body $e$, so if the body
+$e$ has type $B$ and mode $m$, then the abstraction has type
+$\tyArr{A}{\footnotesize m}{B}$ and mode $\Vm$. What is noteworthy here is that
+the mode of a function body is carried by its arrow type.
+
+The dual application rule (app) says that applying a function, which carries a
+mode $m$ over its arrow type, to an argument, which must have mode $\Vm$, yields
+the mode $m$. And because a lambda abstraction has mode $\Vm$, it follows that
+partially applying a function yields mode $\Vm$, so only the rightmost arrow in
+a curried function type can carry a mode other than $\Vm$. In function
+signatures, we elide value modes carried over arrows to avoid clutter.
+
+The rule (let) for let binding is more interesting. It says that if we can split
+the linear typing context into $\Delta_1,\Delta_2$ such that the local expression $e_1$
+has type $A$ and mode $m_1$ under context $\Delta_1; \Gamma$, and the body $e_2$ has type
+$B$ and mode $m_2$ under $\Delta_2 ; \Gamma, x:A$, then the entire let binding has type
+$B$ and mode $m_3$ derived by sequentially composing $m_1$ and $m_2$. \todo{Mode
+  composition.}
+
+The let! rule is similar, except it allows us to unpack a value with linear type
+$\tyBang{A}$ to be used in an unrestricted manner in a let-expression body.
+
+The nu rule adds $x_1: \tyRd{A}$ to the linear context $\Delta$ and $x_2 : \tyWr{A}$
+to the intuitionistic context $\Gamma$ before checking the body.
+
+The fork rule says that that if we can split the linear typing context into
+$\Delta_1, \Delta_2$ such that the child process $e_1$ has type $A$ and mode $m_1$ under
+context $\Delta_1; \Gamma$, and the continuation of the process $e_2$ has type $B$ and
+mode $m_2$ under context $\Delta_2; \Gamma$, then $\eFork{e_1}{e_2}$ has type $B$ and mode
+$m_3$ derived by parallel composing $m_1$ and $m_2$. \todo{Parallel mode
+  composition.}
+
+The choice rule says that if we can split the linear typing context into $\Delta_1,
+\Delta_2$ such that the left process $e_1$ has type $A$ and mode $\Rm$ under context
+$\Delta_1; \Gamma$ and the right process $e_2$ has type $A$ and mode $\Rm$ under context
+$\Delta_2; \Gamma$, then the whole expression has type $A$ and mode $\Rm$.
+
+\begin{comment}
+\todo{Discuss syntax of types, linear typing rules and let!} The rule nu types a
+restriction as $B |> m$ provided that body of the restriction ($e$) has type $B
+|> m$ under the assumptions that $x_1$ is a read channel of type $\tyRd{A}$ in
+the linear context and $x_2$ is a write channel of type $\tyWr{A}$ in the
+intuitionistic context. The rule wr types a write expression as $\tyUnit |> \Wm$
+provided that the value being sent is compatible with the type of the write
+channel being sent on. Additionally, the linear context $\Delta$ must be partitioned
+into contexts $\Delta_1$ and $\Delta_2$, which are used to type the subexpressions $e_1$
+and $e_2$ respectively. The same pattern holds for the other typing rules as
+well. The rule rd types a read expression as $\tyProd{A}{\tyRd{A}} |> \Rm$,
+since it returns a pair containing the value from the channel and the channel
+itself, so that it can be rebound. Since read channels are typed linearly,
+returning and rebinding read channels allows them to be used more than once. The
+rule fork is types a fork as $B |> m_3$, where the type of the right process is
+$B$ (the type of the left is ignored) and the mode $m_3$ is derived as the
+parallel composition of the modes of the left and right processes ($m_1 || m_2
+=> m_3$). The rule choice is types an external choice as $A |> \Rm$ provided
+that it is the type of the left and right processes. The rule seq types a
+sequence similarly to the rule fork, except the mode $m_3$ is derived by
+sequential composition of the modes of its sub-expressions.
 
 The rule var looks up the binding of $x$ in the non-linear typing context $\Gamma$,
 and the rule lvar looks up the binding of $x$ in the linear typing context
@@ -146,6 +186,7 @@ function can include communication and arguments to a function must be value
 mode expressions.
 
 \lstinputlisting[style=myilc]{listings/repl.ilc}
+\end{comment}
 
 \subsection{Dynamic Semantics}
 \label{subsec:semantics}

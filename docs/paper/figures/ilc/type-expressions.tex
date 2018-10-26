@@ -86,7 +86,7 @@
 %
 \and
 %
-\Infer{lam}
+\Infer{abs}
 {\Delta ; \Gamma, x:A |- e : B |> m}
 {\Delta ; \Gamma |- \eLam{x}{e} : \tyArr{A}{\footnotesize m}{B}}
 %
@@ -113,7 +113,7 @@
 \and
 %
 \Infer{letrd}
-{\Delta_1 ; \Gamma |- e_1 : \tyRd{A} |> \Rm\\
+{\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\
 \Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma |- e_2 : B |> m
 }
 {\Delta_1, \Delta_2 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : B |> \Rm}
@@ -136,11 +136,11 @@
 %
 \and
 %
-\Infer{seq}
-{m_1 ;; m_2 => m_3\\\\
-\Delta_1; \Gamma |- e_1 : A |> m_1\\
-\Delta_2; \Gamma |- e_2 : B |> m_2}
-{\Delta_1, \Delta_2; \Gamma |- \eSeq{e_1}{e_2} : B |> m_3}
+%\Infer{seq}
+%{m_1 ;; m_2 => m_3\\\\
+%\Delta_1; \Gamma |- e_1 : A |> m_1\\
+%\Delta_2; \Gamma |- e_2 : B |> m_2}
+%{\Delta_1, \Delta_2; \Gamma |- \eSeq{e_1}{e_2} : B |> m_3}
 \end{mathpar}
 \judgbox{\Delta ; \Gamma |- e : X |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has linear
   type $X$ and mode $m$.}
@@ -173,6 +173,6 @@
 {\Delta,x:X ; \Gamma |- e : Y |> m}
 {\Delta ; \Gamma |- \eLAM{x}{e} : \tyLolli{X}{\footnotesize m}{Y}}
 \end{mathpar}
-\caption{Expression typing.}
+\caption{Typing rules.}
 \label{fig:type-expressions}
 \end{figure*}

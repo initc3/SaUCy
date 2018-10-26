@@ -12,7 +12,7 @@
   \\[2mm]
   \judgbox{m ;; n => p}{~~The sequential composition of modes $m$ and $n$ is mode~$p$.}
   \begin{mathpar}
-  \Infer{w*}{ }{\Wm ;; n => n}
+  \Infer{w*}{ }{\Wm ;; n => \Wm}
   \and \Infer{r$\ast$}{ }{\Rm ;; n => \Rm}
   \and \Infer{v$\ast$}{ }{\Vm ;; n => n}
   \end{mathpar}

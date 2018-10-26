@@ -132,7 +132,7 @@ $m_2$, respectively. Sequential mode composition shows up in the obvious case of
 sequentially evaluating the two expressions, so the mode of $\eSeq{e_1}{e_2}$ is
 $m1 ;; m2 => m3$. Parallel mode composition shows up when one process forks a
 second process, so the mode of $\eFork{e_1}{e_2}$ is $m_1 || m_2 =>
-m_3$. \todo{Explain fork.}
+m_3$. \todo{Explain fork. Removed seq.}
 
 The rules for mode composition are fleshed out in Section~\ref{sec:ilc}, but the
 key takeaway here is that composing write mode processes in parallel is
