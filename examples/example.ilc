@@ -21,7 +21,7 @@ let wrapper p crupt toZ frZ toF frF toA frA k bits =
       |> loop frA !(lam x . wr x -> toF')
     else
       print "Not crupted" ;
-      p toZ frZ toF frF
+      p toZ frZ toF frF k bits
 
 {- The dummy adversary forwards messages between Z and F (and vice versa). -}
 {- TODO: Using unpacked write channel should not type check -}
@@ -34,11 +34,27 @@ let dummyAdversary crupt toZ frZ toF frF toP frP toQ frQ k bits =
   |> loop frP !(lam x . wr x -> toZ')
   |> loop frQ !(lam x . wr x -> toZ')
 
+
+{--------------------Parties--------------------}
 {- The dummy party forwards messages between Z and F (and vice versa). Flipped
 argument order for type inference w/o annotations. Fix later. -}
-let dummyParty toZ frZ toF frF =
+let dummyParty toZ frZ toF frF k bits =
   let! toF' = toF in
   let! toZ' = toZ in
+      loop frZ !(lam x . wr x -> toF')
+    |> loop frF !(lam x . wr x -> toZ')
+
+let committer toZ frZ toF frF k bits =
+  let! toF' = toF in
+  let! toZ' = toZ in
+  let! bits' = bits in
+  {- Should receive b from Z and public parameters from Fcrs? -}
+  let b = 0 in
+  let sigma = [S,Z,S,Z] in
+  let pk0 = [S,Z,S,Z] in
+  let pk1 = [S,Z,S,Z] in  
+  let r = [Z,Z,Z,Z] in 
+  let x = if b == 0 then prg pk0 r else xors (prg pk1 r) sigma in
       loop frZ !(lam x . wr x -> toF')
     |> loop frF !(lam x . wr x -> toZ')
 
@@ -166,16 +182,17 @@ let idealCruptNone () =
          dummyParty
 	 dummyParty
 	 fCom
-	 dummyAdversary
+	 dummyAdversary {- Replace with simulator -}
 	 !()
 	 testBits
 
+{- TODO: Finish later. -}
 let idealCruptP () =
   execUC envCruptP
          dummyParty
 	 dummyParty
 	 fCom
-	 dummyAdversary
+	 dummyAdversary {- Replace with simulator -}
 	 !()
 	 testBits
 

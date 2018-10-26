@@ -1,9 +1,5 @@
 \begin{figure*}[htbp]
   \centering
-  \begin{grammar}
-    Modes & $m,n,p$ &$\bnfas$& $\Wm \bnfalt \Rm \bnfalt \Vm$
-  \end{grammar}
-
   \judgbox{m || n => p}{~~The parallel composition of modes $m$ and $n$ is mode~$p$.}
   \begin{mathpar}
   \Infer{sym}{m || n => p}{n || m => p}
@@ -26,6 +22,6 @@
 %  \begin{mathpar}
 %  \Infer{ }{ }{\Wm || \Wm\ \slashed{=>}\ p}
 %  \end{mathpar}
-\caption{Syntax of modes; sequential and parallel mode composition.}
-\label{fig:syntax-modes}
+\caption{Sequential and parallel mode composition.}
+\label{fig:mode-composition}
 \end{figure*}

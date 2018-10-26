@@ -1,92 +1,115 @@
 \section{Interactive Lambda Calculus}
 \label{sec:ilc}
 
-\subsection{Program Syntax}
+We now present the Interactive Lambda Calculus in full, including its syntax,
+type system, and operational semantics.
+
+\subsection{Syntax}
 \label{subsec:syntax}
 
-Figure~\ref{fig:ilc-syntax} gives the syntax of expressions. Expressions $e$
-include variables $x$, primitive values $v$, channels $c$, the unit value $()$,
-pairs (with elimination form \textsf{split}), sums (with elimination form
-\textsf{case}), reference cells (with elimination form \textsf{get} and mutable
-update \textsf{set}), thunks (with elimination form \textsf{force}), fixed
-points, let binding, lambda abstraction, and function application. For
-communication, expressions include restriction ($\eNu{(x_1, x_2)}{e}$), which
-binds a a read channel $x_1$ and write channel $x_2$ in $e$; send
-($\eWr{e_1}{e_2}$), which writes the result of evaluating $e_1$ on the channel
-result of evaluating $e_2$; receive ($\eRd{e}$), which reads from the channel
-result of evaluating $e$ and returns a pair consisting of the read value and the
-read channel itself (see Section~\ref{subsec:types} for details); fork ($\eFork{e_1}{e_2}$), which creates a separate process $e_1$ and continues as $e_2$; external
-choice ($\eChoice{e_1}{e_2}$), which allows a process to evolve as either $e_1$ or
-$e_2$ (based on some initial event in each of the processes); and sequential
-composition ($\eSeq{e_1}{e_2}$).
-
-\begingroup
-\setlength\intextsep{0pt}
-\begin{wrapfigure}{r}{0.275\textwidth}
-  \lstinputlisting[style=myilc]{listings/loop.ilc}
-\end{wrapfigure}
-Note that replication ($!e$ in the $\pi$-calculus), which allows a process to
-spawn repeatedly, is not included for reasons we discuss in
-Section~\ref{subsec:types}. Instead, replication can be achieved through
-recursive definitions. For example, the recursive function \textsf{loop} (above)
-takes as arguments a read channel \textsf{c} and a function \textsf{f}. In the
-definition of \textsf{loop}, the let expression binds the value read from
-\textsf{c} to the variable \textsf{v} and rebinds the read channel to
-\textsf{c}; the body of the let expression applies the function \textsf{f} to
-the value \textsf{v}, and then repeats \textsf{loop}.\mypar
-\endgroup
-
 \input{figures/ilc/syntax}
+
+The syntax of ILC given in Figure~\ref{fig:ilc-syntax} consists of types, modes,
+and expressions.
+
+Types are bifurcated into two kinds: one for intuitionistic types and one for
+linear types. Intuitionistic types include $\tyUnit$, products
+($\tyProd{A}{B}$), sums ($\tySum{A}{B}$), write channels $\tyWr{A}$, references
+($\tyRef{A}$), and arrows ($\tyArr{A}{\footnotesize m}{B}$). Linear types
+include read channels ($\tyRd{A}$), bang! types ($\tyBang{A}$), tensors
+($\tyTensor{X}{Y}$), and lollipops ($\tyLolli{X}{\footnotesize m}{Y}$).
+
+Modes consist $\Wm$ (write mode), $\Rm$ (read mode), and $\Vm$ (value mode). The
+rules for composing modes (either sequentially or in parallel) are given in
+Figure~\ref{fig:mode-composition}.
+
+Expressions include variables (ranged over by $x$) and the standard introduction
+and elimination forms for intuitionistic functions, unit, products, and
+sums. \todo{References, fixpoint.} Linear functions are introduced using
+$\eLAM{x}{e}$ and an intuitionistically typed expression $e$ can be lifted into
+a linearly typed expression as $\eBang{e}$. \todo{App for lollipops? Remove seq?}
+Expressions for concurrency are the following:
+\begin{itemize}[leftmargin=*]
+  \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
+    write channel $x_2$ in $e$.
+  \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the result of evaluating $e_1$ on
+    the write channel result of evaluating $e_2$.
+  \item \emph{Read:} $\eLetRd{x_1}{x_2}{e_1}{e_2}$ reads a value from the read
+    channel result of evaluating $e_1$, binding the value as $x_1$ and the read
+    channel as $x_2$ in $e_2$.
+  \item \emph{Fork:} $\eFork{e_1}{e_2}$ forks a child process $e_1$ and
+    continues as $e_2$.
+  \item \emph{Choice:} $\eChoice{e_1}{e_2}$ allows a process to continue as
+    either $e_1$ or $e_2$ based on some initial read event in each of the
+    processes.
+\end{itemize}
+
+%Expressions $e$ include variables $x$, primitive values $v$, channels
+%$c$, the unit value $()$, pairs (with elimination form \textsf{split}), sums
+%(with elimination form \textsf{case}), reference cells (with elimination form
+%\textsf{get} and mutable update \textsf{set}), thunks (with elimination form
+%\textsf{force}), fixed points, let binding, lambda abstraction, and function
+%application. For communication, expressions include restriction ($\eNu{(x_1,
+%  x_2)}{e}$), which binds a a read channel $x_1$ and write channel $x_2$ in $e$;
+%send ($\eWr{e_1}{e_2}$), which writes the result of evaluating $e_1$ on the
+%channel result of evaluating $e_2$; receive ($\eRd{e}$), which reads from the
+%channel result of evaluating $e$ and returns a pair consisting of the read value
+%and the read channel itself (see Section~\ref{subsec:types} for details); fork
+%($\eFork{e_1}{e_2}$), which creates a separate process $e_1$ and continues as
+%$e_2$; external choice ($\eChoice{e_1}{e_2}$), which allows a process to evolve
+%as either $e_1$ or $e_2$ (based on some initial event in each of the processes);
+%and sequential composition ($\eSeq{e_1}{e_2}$).
+
+%\begingroup
+%\setlength\intextsep{0pt}
+%\begin{wrapfigure}{r}{0.275\textwidth}
+%  \lstinputlisting[style=myilc]{listings/loop.ilc}
+%\end{wrapfigure}
+%Note that replication ($!e$ in the $\pi$-calculus), which allows a process to
+%spawn repeatedly, is not included for reasons we discuss in
+%Section~\ref{subsec:types}. Instead, replication can be achieved through
+%recursive definitions. For example, the recursive function \textsf{loop} (above)
+%takes as arguments a read channel \textsf{c} and a function \textsf{f}. In the
+%definition of \textsf{loop}, the let expression binds the value read from
+%\textsf{c} to the variable \textsf{v} and rebinds the read channel to
+%\textsf{c}; the body of the let expression applies the function \textsf{f} to
+%the value \textsf{v}, and then repeats \textsf{loop}.\mypar
+%\endgroup
 
 \subsection{Type System}
 \label{subsec:types}
 
-\input{figures/ilc/syntax-types}
+%\input{figures/ilc/syntax-types}
 
-\input{figures/ilc/syntax-modes}
+\input{figures/ilc/modes}
 
 \input{figures/ilc/type-expressions}
 
-At a high level, ILC's type system adapts ITMs to a subset of the $\pi$-calculus.
-The invariants maintained by the type system ensure that the only
-non-determinism in an ILC program is due to random coinflips taken by processes,
-which have a well-defined distribution. This is essential to ensure that the
-normalization of an ILC program has a computational interpretation, as is
-necessary in cryptographic reduction proofs. It guarantees that any apparent
-concurrency hazards, such as adversarial scheduling of messages in an
-asynchronous network, are due to an explicit adversary process $\mc{A}$ rather
-than uncertainty built into the model itself.
-
-Typing rules in ILC have the judgement form $\Delta ; \Gamma |- e : A |> m$, read as
-``Under $\Delta$ and $\Gamma$, expression~$e$ has type $A$ and mode $m$''.  Here, $\Delta$
-denotes a linear typing context, $\Gamma$ denotes a non-linear typing context, and
-$m$ is one of three modes: value (\Vm), read (\Rm), and write
-(\Wm). Importantly, these typing rules maintain the following two invariants:
-
-\begin{enumerate}
-\item \emph{No duplication of read channel ends.} In ILC, each channel (or
-  ``tape'' in ITM parlance) has a read end and a write end. The read end of the
-  channel is protected against duplication by binding it in the linear context
-  $\Delta$. The notation $\Delta_1, \Delta_2$ denotes a partitioning of the read channels in
-  $\Delta$. This ensures that no confusion (non-determinism) arises at the receiving
-  end of a communication.
-
-\item \emph{No parallel composition of write mode processes.} The typing rules
-  do not allow parallel composition of two write mode processes ($\Wm ||
-  \Wm$). This ensures that no confusion (non-determinism) arises at the sending
-  end of a communication.
-
-%\item \emph{No sequential composition of write mode processes.} The typing rules
-%  do not allow sequential composition of two write mode processes ($\Wm ;;
-%  \Wm$). This prevents the programmer from writing a process that gets ``stuck''
-%  trying to perform writes in sequence---a writing process becomes inactive after
-%  writing and can only reactivate when written to.
+The type system of ILC is given in Figure~\ref{fig:type-expressions}. To
+summarize, the type system maintains these invariants to ensure that
+\emph{well-typed ILC programs are expressible as ITMs}:
+\begin{enumerate}[leftmargin=*]
+  \item No duplication of read channel ends.
+  \item No parallel composition of write mode processes.
 \end{enumerate}
 
-\noindent Figure~\ref{fig:syntax--types} gives the syntax of types,
-Figure~\ref{fig:syntax-modes} gives the syntax of modes and rules for mode
-composition, and Figure~\ref{fig:type-expressions} gives the typing of
-expressions (eliding value mode derivations).
+The main typing judgement $\Delta ; \Gamma |- e : A |> m$ should be read as follows:
+\begingroup
+\addtolength\leftmargini{-.2in}
+\begin{quote}
+  Under linear context $\Delta$ and intuitionistic context $\Gamma$, the expression $e$
+  has intuitionistic type $A$ and mode $m$.
+\end{quote}
+\endgroup
+\noindent (The typing judgement for linear types is analagous.) We elide value
+mode expressions to avoid clutter.
+
+The rules for intuitionistic variable lookup (var) and unit (unit) are standard,
+as are the introduction rules for products (pair) and sums (inj). Note that
+these are all value mode expressions, so no communication is permitted in any
+subexpressions. On the other hand, the elimination rules for products (split)
+and sums (case) do allow communication, and so they can derive a mode other than
+value.
 
 \todo{Discuss syntax of types, linear typing rules and let!} The rule nu types a restriction as
 $B |> m$ provided that body of the restriction ($e$) has type $B |> m$ under the

@@ -13,6 +13,27 @@
     \\ &&& $\bnfaltbrk \eFork{e_1}{e_2} \bnfalt \eChoice{e_1}{e_2} \bnfalt
     \eSeq{e_1}{e_2}$
   \end{grammar}
-  \caption{Syntax of expressions.}
+  \begin{grammar}
+    Intuitionistic Types
+    & $A,B$
+    &$\bnfas$& $\tyUnit \bnfalt \tyProd{A}{B} \bnfalt \tySum{A}{B} \bnfalt
+    \tyWr{A} \bnfalt \tyRef{A} \bnfalt \tyArr{A}{\footnotesize m}{B}$
+    \\
+    Intuitionistic Typing Contexts
+    & $\Gamma$
+    &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
+    \\
+    Linear Types
+    & $X,Y$
+    &$\bnfas$& $\tyRd{A} \bnfalt \tyBang{A} \bnfalt \tyTensor{X}{Y} \bnfalt
+    \tyLolli{X}{\footnotesize m}{Y}$
+    \\
+    Linear Typing Contexts
+    & $\Delta$
+    &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:X$
+    \\
+    Modes & $m,n,p$ &$\bnfas$& $\Wm \bnfalt \Rm \bnfalt \Vm$    
+  \end{grammar}
+  \caption{Syntax of ILC.}
   \label{fig:ilc-syntax}
 \end{figure*}
