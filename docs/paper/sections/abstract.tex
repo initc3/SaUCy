@@ -1,3 +1,16 @@
 \begin{abstract}
-  Abstract goes here.
+  The universal composability (UC) framework is an established gold standard for
+  analyzing cryptographic protocols in a modular way from simpler building
+  blocks. In particular, security is preserved under general \emph{concurrent}
+  composition, so a UC-secure protocol remains so when dropped into arbitary
+  contexts. But although UC is widely used for on-paper proofs, its modularity
+  benefits have not been enjoyed in practical implementations.
+
+  In this paper, we lay the groundwork for building a concrete implementation of
+  the UC framework called SaUCy in the form of a process calculus called the
+  Interactive Lambda Calculus (ILC). In particular, ILC captures the
+  computational model underlying UC---interactive Turing machines (ITMs)---by
+  adapting ITMs to a subset of the $pi$-calculus through its type system. In
+  other words, \emph{well-typed ILC programs are expressible as ITMs.} Using
+  ILC, we concretize the UC framework in SaUCy. \todo{Edit later.}
 \end{abstract}
