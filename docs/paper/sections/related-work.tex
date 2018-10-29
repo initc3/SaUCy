@@ -16,9 +16,25 @@
     from symbolic analyses are not as strong as those from computational
     analyses considered in UC and in cryptography more broadly.
   \item RSIM~\cite{backes2007reactive}
-  \item CertiCrypt~\cite{barthe2009formal}
-  \item EasyCrypt~\cite{barthe2011computer}
-  \item ProVerif~\cite{blanchet2010proverif}
+  \item CertiCrypt~\cite{barthe2009formal} is a framework (built on
+    Coq~\cite{barras1997coq}) that supports machine-checked game-based proofs of
+    security. It includes tools to reason about the equivalence of probabilistic
+    programs, a relational Hoare logic, a theory of observational equivalence,
+    verified program transformations, and game-based techniques.  Their
+    experience shows that the type system and automated tactics provide valuable
+    information in debugging proofs.
+  \item EasyCrypt~\cite{barthe2011computer} is follow-up work on CertiCrypt,
+    which permits more automation and shorter proof scripts. \todo{Details on
+      their imperative language?}
+  \item ProVerif~\cite{blanchet2010proverif} is a tool for symbolically
+    analyzing cryptographic protocols. It relies on the Horn theory approach, in
+    which protocols and intruders are modeled as Horn theories. Protocols are
+    analyzed with respect to an unbounded number of protocol sessions that may
+    run concurrently and there is no bound on the number of messages an
+    adversary can generate. Verifying security properties, such as secrecy,
+    boils down to solving the derivation problem for Horn theories. Protocols
+    can be specified as either Horn theories, or in a variant of the applied
+    process calculus, which is translated into Horn theories.
   \item CryptoVerif~\cite{blanchet2007cryptoverif}
   \item Cryptol~\cite{lewis2003cryptol}
   \item $\text{F}^{\star}$~\cite{swamy2016dependent}
