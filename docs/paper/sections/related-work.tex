@@ -1,31 +1,76 @@
 \section{Related Work}
 \label{sec:related}
 
-\myheader{Languages for cryptography.}
+\begin{enumerate}
+  \item Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC
+    framework to the symbolic model of cryptography, in which cryptographic
+    operations are abstracted as a term process algebra (specifically, a variant
+    of the applied $\pi$-calculus) and adversary capabilities are defined by
+    deduction rules over these terms. In particular, they show that certain
+    aspects of the UC framework, such as ideal functionality specifications and
+    UC composition, still carry over to the symbolic model. They are also able
+    to show that certain results, such as the impossibility of UC commitments in
+    the standard model of cryptography, can still be observed in the symbolic
+    model. Although this abstract vantage point leads to simpler security proofs
+    that can be amenable to automated reasoning, security guarantees derived
+    from symbolic analyses are not as strong as those from computational
+    analyses considered in UC and in cryptography more broadly.
+  \item RSIM~\cite{backes2007reactive}
+  \item CertiCrypt~\cite{barthe2009formal}
+  \item EasyCrypt~\cite{barthe2011computer}
+  \item ProVerif~\cite{blanchet2010proverif}
+  \item CryptoVerif~\cite{blanchet2007cryptoverif}
+  \item Cryptol~\cite{lewis2003cryptol}
+  \item $\text{F}^{\star}$~\cite{swamy2016dependent}
+  \item Spi calculus~\cite{abadi1999calculus} is an extension of the
+    $\pi$-calculus with cryptographic primitives. In the spi calculus, as in the
+    $\pi$-calculus, channels can be passed over channels, and its scoping rules
+    guarantee that an attacker cannot access a channel it is not explicitly
+    given (scoping is the basis of security). \todo{Why do we prevent passing channels
+    over channels in SaUCy?} The spi calculus allows expressing security
+    guarantees as equivalences between spi calculus processes. For example, we
+    can say that a protocol maintains the secrecy of a value $x$ by stating that
+    the protocol with $x$ is equivalent to the protocol with $x'$, for every
+    $x'$. Here, equivalence means equivalence in the eyes of an arbitrary
+    environment that interacts with the protocol. \todo{They cannot take the
+      standard bisimilarity relation as our notion of equivalence. Why?}
 
-\myheader{Computer-aided security proofs.}
+    Although equivalence makes reference to the environment, we do not need to
+    give a model of the environment explicitly. Instead, the environment can be
+    an arbitrary pi calculus process. In sum, their approach uses the powerful
+    scoping constructs of the $\pi$-calculus, the definition of an environment as
+    an arbitrary spi calculus process, and the representation of security
+    properties (both integrity and security) as equivalences. However, the spi
+    calculus does not include any notion of probability or complexity, so it can
+    be a useful foundation for symbolic cryptography, but not computational
+    cryptography.
 
-Symbolic UC~\cite{bohl2016symbolic} adapts the UC framework, which is defined in
-the context of computational model of cryptography, to the symbolic model. In
-particular, they show that certain aspects of the UC framework, such as ideal
-functionality specifications and UC composition, still carry over to the
-symbolic model. They are also able to show that certain results, such as the
-impossibility of UC commitments in the standard model of cryptography, can still
-be observed in the symbolic model.
+    In $\pi$-calculus, the scope of a channel can change during a
+    computation. When a process sends a restricted channel to a process outside
+    the scope of the restriction, the scope is said to extrude. Why do we
+    disallow extrusion in SaUCy? A central idea in spi calculus is to use
+    restriction and extrusion to keep track of secret values.
 
-%, in which cryptographic operations are abstracted
-%as a term process algebra (specifically, a variant of the applied $\pi$-calculus) and adversary capabilities
-%are defined by deduction rules over these terms. Although this highly abstract
-%view of protocols leads to simpler security proofs that can be amenable to
-%automated reasoning,
-%
-%While some
-%existing process calculi enjoy confluence properties, they are insufficient as a
-%foundation for UC, because they either rule out nondeterminism entirely or are
-%restricted to two-party
-%communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}. 
+    Another difference is that channels are bidirectional. 
+  \item Applied $\pi$-calculus~\cite{abadi2001mobile} is a similar extension to
+    the $pi$-calculus. Here, there is no need to craft a special calculus and
+    develop its proof techniques for each choice of cryptographic
+    operation. Includes name restriction and variable restriction (as in the spi
+    calculus), so fresh channels, nonces, and keys can be represented as new
+    names. Attacks against protocols rely on equational properties.
 
-RSIM~\cite{backes2007reactive}. CertiCrypt~\cite{barthe2009formal},
-EasyCrypt~\cite{barthe2011computer}, ProVerif~\cite{blanchet2010proverif},
-CryptoVerif~\cite{blanchet2007cryptoverif}, Cryptol~\cite{lewis2003cryptol},
-$\text{F}^{\star}$~\cite{swamy2016dependent}.
+    Example for one-way hash functions: Represent hash functions with a unary
+    function symbol \textsf{h} (without any equational properties). The absence
+    of an inverse for \textsf{h} models one-wayness. In comparison with spi
+    calculus, the applied pi calculus permits a more uniform and versatile
+    treatment of cryptographic functions (e.g., one-way hash functions,
+    encryption/decryption, signatures, XOR), their variants, and their
+    properties. \todo{Not clear to me why this is the case.} The spi calculus
+    developed the idea that the context represents an active attacker, and
+    equivalences capture authenticity and secrecy properties (same as here).
+  \item Wysteria?~\cite{rastogi2014wysteria}
+  \item Lambda auth?~\cite{miller2014authenticated}
+  \item Fowler \etal~\cite{fowler2018session} develop a session typed
+    programming language that is confluent. Only allows for fixed and two-party
+    communications.
+\end{enumerate}
