@@ -1,16 +1,18 @@
 \section{Implementation}
 \label{sec:implementation}
 
-We have implemented an ILC interpreter in Haskell. For economy of use, our
-implementation performs polymorphic type inference, bounded polymorphic mode
-inference, and linearity inference. Polymorphism on modes is bounded precisely
-due to our restriction on parallel write mode composition. Moreover, a
-consequence of any kind of mode polymorphism at all is that the modes of higher
-order functions can be dependent on the modes of its function arguments.
+We have implemented an ILC interpreter in Haskell.
 
-This first example features full mode polymorphism and no dependent modes.
-\lstinputlisting[style=myilc]{listings/loop.ilc}
-The \textsf{loop} function takes as arguments a read channel \textsf{c} and an
+For economy of use, our implementation performs polymorphic type inference,
+bounded polymorphic mode inference, and linearity inference. Polymorphism on
+modes is bounded precisely due to our restriction on parallel write mode
+composition. Moreover, a consequence of any kind of mode polymorphism at all is
+that the modes of higher order functions can be dependent on the modes of its
+function arguments.
+
+Here, we give a few examples. This first example features full mode polymorphism
+and no dependent modes.  \lstinputlisting[style=myilc]{listings/loop.ilc} The
+\textsf{loop} function takes as arguments a read channel \textsf{c} and an
 intuitionistic function wrapped in a bang!, which is unpacked as \textsf{f}.  It
 says to first read from the channel \textsf{c}, unpack the read value as
 \textsf{v}, apply the function \textsf{f} to \textsf{v}, and then recursively

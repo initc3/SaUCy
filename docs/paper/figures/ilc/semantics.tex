@@ -94,10 +94,6 @@ C_2' \equiv C_2
 { }
 { \Store ; \eFix{x}{e} -> \Store ; e\ \eFix{x}{e} }
 \and
-\Infer{seq}
-{ }
-{ \Store ; (\eSeq{v}{e}) ---> \Store ; e }
-\and
 \Infer{ref}
 { \ell \not \in dom(\Store) }
 { \Store ; \eRef{v} -> \Store, \ell : v ; \ell }
