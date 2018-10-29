@@ -1,0 +1,12 @@
+fCrsHelper $::$ $\forall \textsf{a}$ . Ref (Maybe Bits) $->$ Wr Bits $->$ a ${->}_{\textsf{W}}$ Unit
+let fCrsHelper d c x =
+  match @d with
+  | Nothing $=>$ let d' = sample D in
+              (let d $\coloneqq$ Just d' ; wr d' $->$ c)
+  | Just d' $=>$ wr d' $->$ c
+
+let fCrs crupt !toP frP !toQ frQ !toA frA k r =
+  let d = ref Nothing in
+       loop frP !(fCrsHelper d toP)
+    $\xFork$ loop frQ !(fCrsHelper d toQ)
+    $\xFork$ loop frA !(fCrsHelper d toA)

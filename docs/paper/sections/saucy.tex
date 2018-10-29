@@ -1,6 +1,18 @@
 \section{SaUCy}
 \label{sec:saucy}
 
+We build a concrete, executable implementation of the UC framework in ILC,
+dubbed SaUCy. The \textsf{execUC} function takes as arguments an environment
+\textsf{Z}, protocol parties \textsf{P} and \textsf{Q}, an adversary \textsf{A},
+and a functionality \textsf{F}.
+
+For a real world execution, programs for the actual protocol participants will be
+used for \textsf{P} and \textsf{Q}, a real world adversary for \textsf{A}, and
+an ideal functionality for \textsf{F} (to model \textsf{F}-hybrid
+protocols). For an ideal world execution, dummy parties will be used for
+\textsf{P} and \textsf{Q}, a simulator for \textsf{A}, and an ideal
+functionality for \textsf{F}.
+
 \begin{algorithm}
 \SetAlgorithmName{Protocol}{protocol}{List of Protocols}
 \DontPrintSemicolon
@@ -29,4 +41,10 @@
 \label{alg:com}
 \end{algorithm}
 
-\lstinputlisting[style=myilc]{listings/suc.ilc}
+%\lstinputlisting[style=myilc]{listings/suc.ilc}
+
+\lstinputlisting[style=myilc]{listings/dummy.ilc}
+
+\lstinputlisting[style=myilc]{listings/dummyp.ilc}
+
+\lstinputlisting[style=myilc]{listings/Fcrs.ilc}

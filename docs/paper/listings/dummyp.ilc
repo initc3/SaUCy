@@ -1,0 +1,3 @@
+let dummyP !toZ frZ !toF frF k r =
+       loop frZ !($\lambda$ x . wr x $->$ toF)
+    $\xFork$ loop frF !($\lambda$ x . wr x $->$ toZ)

@@ -149,15 +149,15 @@ expression follows exactly.
 
 \input{figures/ilc/semantics}
 
-Figures~\ref{fig:configs,fig:semantics} define the dynamic semantics of ILC. The
-top-level judgement $C_1 -> C_2$ should be read as ``configuration $C_1$ steps
-to configuration $C_2$,'' where a configuration $C$ consists of a set of
-communication channels $\Sigma$ (both read-ends and write-ends), a process pool $\pi$,
-and a store $\sigma$ (a finite map from locations $\ell$ to values). Configuration
-stepping uses an ancillary judgement for local stepping, which covers cases in
-which the configuration does not change. \todo{?} The local stepping judgement
-$\sigma_1; \e_1 \longrightarrow \sigma_2; \e_2$ should be read as ``under store $\sigma_1$, expression $e_1$
-steps to store $\sigma_{2}$ and expression $e_2$.
+Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic semantics
+of ILC. The top-level judgement $C_1 -> C_2$ should be read as ``configuration
+$C_1$ steps to configuration $C_2$,'' where a configuration $C$ consists of a
+set of communication channels $\Sigma$ (both read-ends and write-ends), a process
+pool $\pi$, and a store $\sigma$ (a finite map from locations $\ell$ to
+values). Configuration stepping uses an ancillary judgement for local stepping,
+which covers cases in which the configuration does not change. \todo{?} The
+local stepping judgement $\sigma_1; \e_1 \longrightarrow \sigma_2; \e_2$ should be read as ``under store
+$\sigma_1$, expression $e_1$ steps to store $\sigma_{2}$ and expression $e_2$.
 
 Local stepping has a standard call-by-value semantics, but configuration
 stepping is more interesting. In the fork rule, the redex $\eFork{e_1}{e_2}$ in
@@ -169,5 +169,3 @@ write channel of $c_1$, denoted $c_2 \leadsto c_1$, the processes $E_1[R[
     \eRd{\eChan{c_1}}] ]$ and $E_2[ \eWr{\eChan{c_2}}{v}]$ step to the processes
 $E_1[ (v, \eChan{c_1})]$ and $E_2[ \eUnit]$, respectively. \todo{Need to update
   this.}
-
-%\input{figures/defn_execuc}
