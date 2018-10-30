@@ -1,12 +1,6 @@
 \section{UC Theory}
 \label{sec:uc}
 
-\begin{theorem}[Protocol Emulation]
-
-\end{theorem}
-
-\subsection{Brain Dump}
-
 \begin{definition}[Protocol Emulation]
 Let $\pi$ and $\phi$ be probabilistic polynomial time (p.p.t) protocols. We say
 that $\pi$ UC-emulates $\phi$ if for any p.p.t. adversary $\mc{A}$ there exists a
@@ -17,7 +11,7 @@ $\mc{Z}$ we have:
 \end{equation*}
 \end{definition}
 
-\begin{definition}[Protocol Emulation w.r.t. the Dummy Adversary]
+\begin{lemma}[Protocol Emulation w.r.t. the Dummy Adversary]
 Let $\pi$ and $\phi$ be probabilistic polynomial time (p.p.t) protocols. We say
 that $\pi$ UC-emulates $\phi$ if for the dummy adversary $\mc{D}$ there exists a
 p.p.t. ideal-process adversary $\mc{S}$ such that for any balanced PPT environment
@@ -25,7 +19,33 @@ $\mc{Z}$ we have:
 \begin{equation*}
 \textsc{Exec}_{\phi, \mc{S}, \mc{Z}} \approx \textsc{Exec}_{\pi, \mc{D}, \mc{Z}}.
 \end{equation*}
-\end{definition}
+\end{lemma}
+
+\begin{theorem}[Universal Composition]
+  Let $\rho$, $\pi$, and $\phi$, be p.p.t protocols such that $\pi$ UC-emulates $\phi$ and
+  both $\phi$ and $\pi$ are subroutine respecting. Then protocol $\rho^{\phi -> \pi}$
+  UC-emulates protocol $\rho$.
+\end{theorem}
+
+\begin{corollary}
+  Let $\rho$, $\pi$ be p.p.t protocols such that $\pi$ UC-realizes a p.p.t ideal
+  functionality $\mc{F}$, and both $\rho$ and $\pi$ are subroutine respecting. Then
+  protocol $\rho^{\pi/\mc{F}}$ UC-emulates protocol $\rho$.
+\end{corollary}
+
+\begin{corollary}[Universal Composition: Realizing Functionalities]
+  Let $\mc{F}$, $\mc{G}$ be ideal functionalities such that $\mc{F}$ is
+  p.p.t. Let $\rho$ be a subroutine respecting protocol that UC-realizes $\mc{G}$,
+  and let $\pi$ be a subroutine respecting protocol that UC-realizes
+  $\mc{F}$. Then the composed protocol $\rho^{\pi/\mc{F}}$ securely realizes $\mc{G}$.
+\end{corollary}
+
+\begin{theorem}
+  Protocol $\Pi_{\textsc{com}}$ securely realizes functionality
+  $\Func_{\textsc{com}}$ in the CRS model.
+\end{theorem}
+
+\subsection{Brain Dump}
 
 \begin{comment}
 Let {\sf Bit} be the type of single bits (i.e., 0 or 1), and let {\sf Inf} be
@@ -36,7 +56,6 @@ distribution $d$ over the types of return values for all infinite
 bitstrings. Let $\Delta(d_1, d_2)$ denote the statistical distance between two
 distributions $d_1$ and $d_2$.
 %\[ \Delta(d_1, d_2) \defeq max_{A}|d_1 A - d_2 A|\]
-
 
 \begin{definition}[$\epsilon$-indistinguishability of ILC Terms]
 Let $\tau_1$ and $\tau_2$ be ILC terms, which are closed except for an infinite

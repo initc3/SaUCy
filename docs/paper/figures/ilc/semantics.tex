@@ -15,9 +15,9 @@
      \\[2mm]
  Evaluation contexts
   & $E$
-     & $\bnfas$ & $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eApp{E}{e} \bnfalt
- \eApp{v}{E} \bnfalt \eRef{E} \bnfalt \eGet{E} \bnfalt \eSet{E}{e}$
-     \\ &&& $\bnfaltbrk \eSet{\ell}{E} \bnfalt \eSeq{E}{e} \bnfalt
+     & $\bnfas$ & $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eLetBang{x}{E}{e} \bnfalt
+ \eApp{E}{e} \bnfalt \eApp{v}{E} \bnfalt \eRef{E} \bnfalt \eGet{E}$
+     \\ &&& $\bnfaltbrk \eSet{E}{e} \bnfalt \eSet{\ell}{E} \bnfalt
      \eSplit{E}{x_1}{x_2}{e} \bnfalt \eCase{E}{x_1}{e_1}{x_2}{e_2}$
 \\[2mm]
  Read contexts
@@ -77,6 +77,10 @@ C_2' \equiv C_2
 \Infer{let}
 {}
 { \Store ; \eLet{x}{v}{e} ---> \Store ; [v/x]e }
+\and
+\Infer{let!}
+{}
+{ \Store ; \eLetBang{x}{v}{e} ---> \Store ; [v/x]e }
 \and
 \Infer{app}
 {}

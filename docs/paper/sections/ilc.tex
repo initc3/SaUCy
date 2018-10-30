@@ -157,12 +157,13 @@ pool $\pi$, and a store $\sigma$ (a finite map from locations $\ell$ to
 values). Configuration stepping uses an ancillary judgement for local stepping,
 which covers cases in which the configuration does not change. \todo{?} The
 local stepping judgement $\sigma_1; \e_1 \longrightarrow \sigma_2; \e_2$ should be read as ``under store
-$\sigma_1$, expression $e_1$ steps to store $\sigma_{2}$ and expression $e_2$.
+$\sigma_1$, expression $e_1$ steps to store $\sigma_{2}$ and expression
+$e_2$. \todo{Explain evaluation contexts and read contexts}.
 
-Local stepping has a standard call-by-value semantics, but configuration
-stepping is more interesting. In the fork rule, the redex $\eFork{e_1}{e_2}$ in
-evaluation context $E$ spawns a new process $e_1$ and steps to $E[e_2]$. In the
-nu rule, the term $E[ \eNu{(x_1, x_2)}{e} ]$ reduces to $E[
+Local stepping has a standard call-by-value semantics. Configuration stepping is
+more interesting. In the fork rule, the redex $\eFork{e_1}{e_2}$ in evaluation
+context $E$ spawns a new process $e_1$ and steps to $E[e_2]$. In the nu rule,
+the term $E[ \eNu{(x_1, x_2)}{e} ]$ reduces to $E[
   [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]$, where $c_1$ and $c_2$ are fresh
 channels added to $\Sigma$. In the rw rule, given that $c_2$ is the corresponding
 write channel of $c_1$, denoted $c_2 \leadsto c_1$, the processes $E_1[R[
