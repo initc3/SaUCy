@@ -1,7 +1,7 @@
 \section{Related Work}
 \label{sec:related}
 
-\begin{enumerate}
+\begin{enumerate}[leftmargin=*]
   \item Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC
     framework to the symbolic model of cryptography, in which cryptographic
     operations are abstracted as a term process algebra (specifically, a variant
@@ -100,9 +100,30 @@
   \item Fowler \etal~\cite{fowler2018session} develop a session typed
     programming language that is confluent. Only allows for fixed and two-party
     communications.
-  \item Sequentiality and the $\pi$-calculus~\cite{berger2001sequentiality}.
+  \item Sequentiality and the $\pi$-calculus~\cite{berger2001sequentiality}. The
+    authors developed a typed $\pi$-calculus that uses affineness and stateless
+    replication to achieve deterministic computation. \todo{More details.}
   \item Secrecy types for a simulatable cryptographic
-    library~\cite{laud2005secrecy}
+    library~\cite{laud2005secrecy}. They define a language for cryptographic
+    protocols similar to the spi calculus and give it a semantics using the
+    computational model of cryptography. They propose a type system for their
+    language and show that if a protocol types, then it preserves the secrecy of
+    messages given to it by users. The semantics of their calculus is
+    deterministic. When complexity-theoretic security definitions are used,
+    nondeterminism cannot be employed. The adversary is allowed to choose which
+    thread handles the received message. 
   \item PPT process calculus for analysis of cryptographic
-    protocols~\cite{mitchell2006probabilistic}
+    protocols~\cite{mitchell2006probabilistic, lincoln1998probabilistic}. To
+    avoid inconsistency between security and nondeterminism, messages are
+    schedule probabilistically instead of nondeterministically. They prove that
+    any process expression halts in polynomial time, and they define a form of
+    asymptotic protocol equivalence that allows security properties to be
+    expressed using observational equivalence, a standard relation that involves
+    quantifying over all environments that might interact with the protocol. A
+    limitation of deterministic or nondeterministic settings is the inability to
+    analyze probabilistic protocols. Traditional nondeterministic scheduling
+    means that an adversary has exponential computing power. With
+    nondeterministic scheduling, an adversary can guess a $k$-bit key by
+    concatenating $k$ bits. The combination of nondeterminism and bit-level
+    representation of encryption keys renders any encryption function insecure.
 \end{enumerate}
