@@ -1,0 +1,37 @@
+let genFakeCRS r =
+  let (pk0,td0) = kgen 4 in
+  let (pk1,td1) = kgen 4 in  
+  let r0 = sample 4 r in
+  let r1 = sample 4 r in
+  let sigma = xors (prg pk0 r0) (prg pk1 r1) in
+  (sigma, pk0, pk1)
+
+let simulator !crupt !toZ frZ !toF frF !toP frP !toQ frQ k !r =
+  let (sigma, pk0, pk1) = genFakeCRS (ref r) in
+  let b = ref Nothing in
+  match crupt with
+  | CruptP $=>$
+    let (!GetCRS, frZ) = rd frZ in
+      wr (PublicStrings sigma pk0 pk1) $->$toZ ;
+      let (!(ZSCommit y), frZ) = rd frZ in
+	if (check td0 pk0 y == 1) then
+	  wr (Commit 0) $->$ toP ; let b := Just 0
+	else
+	  if (check td1 pk1 (xors y sigma) == 1) then
+	    wr (Commit 1) $->$ toF ; let b := Just 1
+	  else
+	    wr (Commit 0) $->$ toP ; let b := Just 0
+      let (!(Open y'), frZ) = rd frZ in
+	wr Open $->$ toP
+  | CruptQ $=>$
+    let (!GetCRS, frZ) = rd frZ in
+      wr (PublicStrings sigma pk0 pk1) $->$ toZ ;  
+      let (!Receipt, frQ) = rd frQ in
+      let y = prg pk0 r0 in
+	wr (ZSCommit y) $->$ toZ ;
+	let (!(Opened b'), frQ) = rd frQ in
+	  if (b' == 0) then
+	    wr (ZSOpen r0) $->$ toZ
+	  else
+	    wr (ZSOpen r1) $->$ toZ
+  | CruptNone $=>$ error "Fail"
