@@ -10,6 +10,7 @@ data ZSMsg = GetCRS
            | PublicStrings [Bit] [Bit] [Bit]
 	   | ZSCommit [Bit]
 	   | ZSOpen [Bit]
+	   | Invalid
 
 data Msg = Commit Int
          | Open
@@ -43,7 +44,8 @@ let dummyAdversary crupt toZ frZ toF frF toP frP toQ frQ k bits =
 let simulator crupt toZ frZ toF frF toP frP toQ frQ k bits =
   let! crupt' = crupt in
   let! toF' = toF in
-  let! toP' = toP in  
+  let! toP' = toP in
+  let! toQ' = toQ in    
   let! toZ' = toZ in
   let! k' = k in
   let! bits' = bits in
@@ -65,7 +67,10 @@ let simulator crupt toZ frZ toF frF toP frP toQ frQ k bits =
         if (check td1 pk1 (xors y sigma) == S) then
 	  (wr (Commit 1) -> toF' ; (let b := Just 1))
 	else
-	  (wr (Commit 1) -> toF' ; (let b := Just 1))	
+	  {- y is invalid -}
+          (wr (Commit 0) -> toP' ; (let b := Just 0)) ;
+    let (msg'', frZ) = rd frZ in
+      wr Open -> toP'
   else
     let (_, frZ) = rd frZ in
       wr (PublicStrings sigma pk0 pk1) -> toZ' ;  
@@ -168,7 +173,12 @@ let envCruptP toE frE toP frP toQ frQ toA frA k bits =
     let (msg,frA) = rd frA in
     let! (PublicStrings sigma pk0 pk1) = msg in
       {-print msg' ; -}
-      wr (ZSCommit [Z,S,S,Z]) -> toA'
+    let y = [Z,S,S,Z] in
+      wr (ZSCommit y) -> toA' ;
+    let (msg',frQ) = rd frQ in
+      wr (ZSOpen y) -> toA' ;
+    let (msg'',frQ) = rd frQ in
+      print msg''
 
 let envCruptQ toE frE toP frP toQ frQ toA frA k bits =
   let! toE' = toE in
