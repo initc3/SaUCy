@@ -13,9 +13,9 @@ The syntax of ILC given in Figure~\ref{fig:ilc-syntax} consists of types, modes,
 and expressions.
 
 Types are bifurcated into two kinds: one for intuitionistic types and one for
-linear types. Intuitionistic types include $\tyUnit$, products
+affine types. Intuitionistic types include $\tyUnit$, products
 ($\tyProd{A}{B}$), sums ($\tySum{A}{B}$), write channels $\tyWr{A}$, references
-($\tyRef{A}$), and arrows ($\tyArr{A}{\footnotesize m}{B}$). Linear types
+($\tyRef{A}$), and arrows ($\tyArr{A}{\footnotesize m}{B}$). Affine types
 include read channels ($\tyRd{A}$), bang! types ($\tyBang{A}$), tensors
 ($\tyTensor{X}{Y}$), and lollipops ($\tyLolli{X}{\footnotesize m}{Y}$).
 
@@ -25,9 +25,9 @@ Figure~\ref{fig:mode-composition}.
 
 Expressions include variables (ranged over by $x$) and the standard introduction
 and elimination forms for intuitionistic functions, unit, products, and
-sums. \todo{References, fixpoint.} Linear functions are introduced using
+sums. \todo{References, fixpoint.} Affine functions are introduced using
 $\eLAM{x}{e}$ and an intuitionistically typed expression $e$ can be lifted into
-a linearly typed expression as $\eBang{e}$. \todo{App for lollipops?}
+an affinely typed expression as $\eBang{e}$. \todo{App for lollipops?}
 Expressions for message passing concurrency are the following:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
@@ -82,11 +82,11 @@ follows:
 \begingroup
 \addtolength\leftmargini{-.2in}
 \begin{quote}
-  Under linear context $\Delta$ and intuitionistic context $\Gamma$, the expression $e$
+  Under affine context $\Delta$ and intuitionistic context $\Gamma$, the expression $e$
   has intuitionistic type $A$ and mode $m$.
 \end{quote}
 \endgroup
-\noindent The linear typing judgement follows similarly.
+\noindent The affine typing judgement follows similarly.
 
 Before we jump into the typing rules, we point out that the mode composition
 rules are given in Figure~\ref{fig:mode-composition}, which includes both
@@ -120,19 +120,19 @@ We gave a taste of let-expression typing when we introduced the letrd rule. The
 rules for let and let! follow similarly, except they bind values in the
 intuitionistic context (and obviously, they need not read from a channel). The
 difference between let and let!, then, is that let binds an intuitionistic value
-in an intuitionistic body, but let! unpacks a linear value with type
+in an intuitionistic body, but let! unpacks an affine value with type
 $\tyBang{A}$ to be used freely in an intuitionistic body. As with letrd, the
 modes of both forms of let expressions are derived by sequentially composing the
 mode of the bound expression with the mode of the body.
 
 The rules for message passing concurrency are more interesting. The nu rule adds
-the read-end of a channel $x_1: \tyRd{A}$ to the linear context $\Delta$ and its
+the read-end of a channel $x_1: \tyRd{A}$ to the affine context $\Delta$ and its
 corresponding write-end $x_2 : \tyWr{A}$ to the intuitionistic context $\Gamma$
 before checking its body. We do not recap the wr and letrd rules here, but
 recall that the wr rule derives the mode $\Wm$ and the read rule derives the
 rule $\Rm$ as expected.
 
-The fork rule says that that if we can appropriately split the linear context
+The fork rule says that that if we can appropriately split the affine context
 such that the child process $e_1$ has type $A$ and mode $m_1$ and the
 ``continue'' process $e_2$ has type $B$ and mode $m_2$, then the whole
 expression has type $B$ and mode $m_3$, which is derived by composing $m_1$ and
@@ -140,7 +140,7 @@ $m_2$ in parallel. Again, we emphasize that composing two write mode processes
 in parallel violates type checking, i.e., $\Wm ;; \Wm => p$ cannot be derived
 for any mode $p$.
 
-Finally, the choice rule says that if we can appropriately split the linear
+Finally, the choice rule says that if we can appropriately split the affine
 context such that both subexpressions $A$ and mode $R$, then the whole
 expression follows exactly.
 

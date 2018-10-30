@@ -73,14 +73,14 @@ adapting ITMs to a subset of the $\pi$-calculus through its type system. In othe
 words, \emph{well-typed ILC programs are expressible as ITMs}.
 
 To give a quick tour of ILC's type system, judgements have the form $\Delta ; \Gamma |- e
-: A |> m$, where $\Delta$ is a linear typing context, $\Gamma$ is an intuitionistic typing
+: A |> m$, where $\Delta$ is an affine typing context, $\Gamma$ is an intuitionistic typing
 context, and $m \in \{\Wm, \Rm, \Vm\}$ is a mode (write, read, and value,
 respectively). Importantly, it maintains these invariants:
 
 \begin{itemize}[leftmargin=*]
 \item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
   ITM parlance) has a read end and a write end. The read end of the channel is
-  protected against duplication by binding it in the linear context $\Delta$. This
+  protected against duplication by binding it in the affine context $\Delta$. This
   ensures that no non-determinism arises at the receiving end of communications.
 
 \item \emph{No parallel composition of write mode processes.} The typing rules
@@ -101,7 +101,7 @@ adversary process $\mc{A}$ rather than uncertainty built into the model itself.
 
 We have implemented an ILC interpreter in Haskell. For economy of use, our
 implementation performs polymorphic type inference, bounded polymorphic mode
-inference, and \todo{some} linearity inference. Polymorphism on modes is bounded
+inference, and \todo{some} affinity inference. Polymorphism on modes is bounded
 precisely due to our restriction on parallel write mode composition. Moreover, a
 consequence of any kind of mode polymorphism at all is that the modes of higher
 order functions can be dependent on the modes of its function arguments.

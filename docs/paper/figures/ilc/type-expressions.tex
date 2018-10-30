@@ -142,7 +142,7 @@
 %\Delta_2; \Gamma |- e_2 : B |> m_2}
 %{\Delta_1, \Delta_2; \Gamma |- \eSeq{e_1}{e_2} : B |> m_3}
 \end{mathpar}
-\judgbox{\Delta ; \Gamma |- e : X |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has linear
+\judgbox{\Delta ; \Gamma |- e : X |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has affine
   type $X$ and mode $m$.}
 \begin{mathpar}
 \Infer{lvar}
@@ -187,6 +187,6 @@
 \Delta_2 ; \Gamma |- e_1 : \tyLolli{X}{\footnotesize m}{Y}}
 {\Delta_1, \Delta_2 ; \Gamma |- \eApp{e_1}{e_2} : Y |> m}
 \end{mathpar}
-\caption{Typing rules. \todo{Syntactically distinguish linear application?}}
+\caption{Typing rules. \todo{Syntactically distinguish affine application?}}
 \label{fig:type-expressions}
 \end{figure*}
