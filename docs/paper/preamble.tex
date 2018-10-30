@@ -71,7 +71,7 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
 
-% ILC Expressions
+%ILC Expressions
 \newcommand{\eVar}[1]{#1}
 \newcommand{\eChan}[1]{#1}
 \newcommand{\eUnit}{\Lparen\hspace{1px}\Rparen}
@@ -83,13 +83,10 @@
 \newcommand{\eGet}[1]{\keyword{get}\Lparen{#1}\Rparen}
 \newcommand{\eSet}[2]{\keyword{set}\Lparen{#1},{#2}\Rparen}
 \newcommand{\eFix}[2]{\keyword{fix}\Lparen{#1}.{#2}\Rparen}
-\newcommand{\eLfix}[2]{\keyword{lfix}\Lparen{#1}.{#2}\Rparen}
 \newcommand{\eLet}[3]{\keyword{let}\ {#1} = {#2}\ \keyword{in}\ {#3}}
 \newcommand{\eLetRd}[4]{\eLet{\ePair{#1}{#2}}{\eRd{#3}}{{#4}}}
 \newcommand{\eLetBang}[3]{\keyword{let!}\ {#1} = {#2}\ \keyword{in}\ {#3}}
-\newcommand{\eBang}[1]{{!}\,{#1}}
 \newcommand{\eLam}[2]{\lambda{#1}.\,{#2}}
-\newcommand{\eLAM}[2]{\Lambda{#1}.\,{#2}}
 \newcommand{\eApp}[2]{#1\,#2}
 \newcommand{\eNu}[2]{\nu#1.\,#2}
 \newcommand{\eWr}[2]{\keyword{wr}\Lparen{#1},{#2}\Rparen}
@@ -97,6 +94,11 @@
 \newcommand{\eFork}[2]{\ensuremath{#1 \xFork #2}}
 \newcommand{\eChoice}[2]{\ensuremath{#1 \xChoice #2}}
 \newcommand{\eSeq}[2]{{#1}\,;\,{#2}}
+
+\newcommand{\eBang}[1]{{!}\,{#1}}
+\newcommand{\eLAM}[2]{\Lambda{#1}.\,{#2}}
+\newcommand{\eLsplit}[4]{\keyword{lsplit}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
+\newcommand{\eLfix}[2]{\keyword{lfix}\Lparen{#1}.{#2}\Rparen}
 
 % ILC Types
 \newcommand{\tyNat}{\tyname{nat}}

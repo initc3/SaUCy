@@ -35,9 +35,20 @@
     boils down to solving the derivation problem for Horn theories. Protocols
     can be specified as either Horn theories, or in a variant of the applied
     process calculus, which is translated into Horn theories.
-  \item CryptoVerif~\cite{blanchet2007cryptoverif}
-  \item Cryptol~\cite{lewis2003cryptol}
-  \item $\text{F}^{\star}$~\cite{swamy2016dependent}
+  \item CryptoVerif~\cite{blanchet2007cryptoverif} works directly in the
+    computational model. Produces game-based proofs valid for any number of
+    sessions of the protocol in the presence of an active adversary. Games are
+    represented in a process calculus inspired by the $\pi$-calculus,
+    \cite{laud2005secrecy}, and \cite{mitchell2006probabilistic}. The calculus
+    has a probabilistic semantics.
+  \item Cryptol~\cite{lewis2003cryptol} allows for writing executable
+    specifications of a protocol, which are amenable to testing, theorem
+    proving, verifying equivalence to their own programs, and even generating
+    code or hardware from the specification.
+  \item $\text{F}^{\star}$~\cite{swamy2016dependent} is a language that functions as
+    a proof assistant (SMT automation and constructive proofs using dependent
+    types) as well as a general-purpose, verification-oriented programming
+    language.
   \item Spi calculus~\cite{abadi1999calculus} is an extension of the
     $\pi$-calculus with cryptographic primitives. In the spi calculus, as in the
     $\pi$-calculus, channels can be passed over channels, and its scoping rules
@@ -89,4 +100,9 @@
   \item Fowler \etal~\cite{fowler2018session} develop a session typed
     programming language that is confluent. Only allows for fixed and two-party
     communications.
+  \item Sequentiality and the $\pi$-calculus~\cite{berger2001sequentiality}.
+  \item Secrecy types for a simulatable cryptographic
+    library~\cite{laud2005secrecy}
+  \item PPT process calculus for analysis of cryptographic
+    protocols~\cite{mitchell2006probabilistic}
 \end{enumerate}

@@ -1,7 +1,7 @@
-let wrapper p !crupt toZ frZ !toF frF !toA frA k bits =
+let wrapper p !crupt toZ frZ toF frF toA frA k bits =
   if crupt then
        loop frZ !($\lambda$ _ . error "fail")
-    $\xFork$ loop frF !($\lambda$ x . wr x $->$ toA)
-    $\xFork$ loop frA !($\lambda$ x . wr x $->$ toF)
+    $\xFork$ fwd frF toA
+    $\xFork$ fwd frA toF
   else
-    p toZ frZ !toF frF
+    p toZ frZ toF frF

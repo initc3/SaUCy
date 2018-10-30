@@ -6,6 +6,10 @@ letrec loop c f =
   let! f' = f in
     f' v'; loop c f
 
+let fwd r w =
+  let! w' = w in
+  loop r !(lam x . wr x -> w')
+
 data Bit = Z | S
 
 {- Sample n bits from a bitstream. Can't use let due to modes. -}

@@ -12,44 +12,35 @@ as normal. -}
 let wrapper p crupt toZ frZ toF frF toA frA k bits =
   let! crupt' = crupt in
   let! toZ' = toZ in  
-  let! toA' = toA in
-  let! toF' = toF in
     if crupt' then
         print "Crupted" ;
         loop frZ !(lam _ . error "fail")
-      |> loop frF !(lam x . wr x -> toA')
-      |> loop frA !(lam x . wr x -> toF')
+      |> fwd frF toA
+      |> fwd frA toF
     else
       print "Not crupted" ;
-      p toZ frZ toF frF
+      p toZ frZ toF frF k bits
 
 {- The dummy adversary forwards messages between Z and F (and vice versa). -}
 {- TODO: Using unpacked write channel should not type check -}
 let dummyAdversary crupt toZ frZ toF frF toP frP toQ frQ k bits =
   let! crupt' = crupt in
-  let! toF' = toF in
-  let! toZ' = toZ in
-    loop frZ !(lam x . wr x -> toF')
-  |> loop frF !(lam x . wr x -> toZ')
-  |> loop frP !(lam x . wr x -> toZ')
-  |> loop frQ !(lam x . wr x -> toZ')
+    fwd frZ toF
+  |> fwd frF toZ
+  |> fwd frP toZ
+  |> fwd frQ toZ
 
 {- The dummy party forwards messages between Z and F (and vice versa). Flipped
 argument order for type inference w/o annotations. Fix later. -}
-let dummyParty toZ frZ toF frF =
-  let! toF' = toF in
-  let! toZ' = toZ in
-      loop frZ !(lam x . wr x -> toF')
-    |> loop frF !(lam x . wr x -> toZ')
+let dummyParty toZ frZ toF frF k bits =
+      fwd frZ toF
+    |> fwd frF toZ
 
-let dummyFunctionality crupt toP frP toQ frQ toA frA k bits =
+let fDummy crupt toP frP toQ frQ toA frA k bits =
   let! crupt' = crupt in
-  let! toP' = toP in
-  let! toQ' = toQ in
-  let! toA' = toA in
-      loop frP !(lam x . wr x -> toP')
-    |> loop frQ !(lam x . wr x -> toQ')
-    |> loop frA !(lam x . wr x -> toA')
+      fwd frP toP
+    |> fwd frQ toQ
+    |> fwd frA toA    
 
 let testEnv toExec frP toP frQ toQ frA toA k bits =
   let! toExec' = toExec in
@@ -97,7 +88,7 @@ let testExec () =
   execUC testEnv
          dummyParty
 	 dummyParty
-	 dummyFunctionality
+	 fDummy
 	 dummyAdversary
 	 !()
 	 testBits
