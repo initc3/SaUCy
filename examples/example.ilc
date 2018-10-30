@@ -6,7 +6,10 @@ data SttCrupt = SttCrupt (String, String) Crupt
 
 data Crupt = CruptP | CruptQ | CruptNone
 
-data ZSMsg = GetCRS | PublicStrings [Bit] [Bit] [Bit] | ZSCommit [Bit]
+data ZSMsg = GetCRS
+           | PublicStrings [Bit] [Bit] [Bit]
+	   | ZSCommit [Bit]
+	   | ZSOpen [Bit]
 
 data Msg = Commit Int
          | Open
@@ -64,7 +67,18 @@ let simulator crupt toZ frZ toF frF toP frP toQ frQ k bits =
 	else
 	  (wr (Commit 1) -> toF' ; (let b := Just 1))	
   else
-    let (_, frZ) = rd frZ in print "unimplemented"
+    let (_, frZ) = rd frZ in
+      wr (PublicStrings sigma pk0 pk1) -> toZ' ;  
+    let (msg, frQ) = rd frQ in
+    let! msg' = msg in
+    let y = prg pk0 r0 in
+      wr (ZSCommit y) -> toZ' ;
+    let (msg'', frQ) = rd frQ in
+    let! (Opened b') = msg'' in
+      if (b' == 0) then
+        wr (ZSOpen r0) -> toZ'
+      else
+        wr (ZSOpen r1) -> toZ'
 
 
 {--------------------Parties--------------------}
@@ -152,9 +166,27 @@ let envCruptP toE frE toP frP toQ frQ toA frA k bits =
     let (_,frE) = rd frE in
       print "toA" ; wr GetCRS -> toA' ;
     let (msg,frA) = rd frA in
-    let! msg' = msg in
+    let! (PublicStrings sigma pk0 pk1) = msg in
       {-print msg' ; -}
       wr (ZSCommit [Z,S,S,Z]) -> toA'
+
+let envCruptQ toE frE toP frP toQ frQ toA frA k bits =
+  let! toE' = toE in
+  let! toP' = toP in
+  let! toQ' = toQ in
+  let! toA' = toA in
+    wr (SttCrupt ("sid1","") CruptQ) -> toE' ;
+    let (_,frE) = rd frE in
+      print "toA" ; wr GetCRS -> toA' ;
+    let (msg,frA) = rd frA in
+    let! (PublicStrings sigma pk0 pk1) = msg in
+      wr (Commit 0) -> toP' ;
+    let (msg',frA) = rd frA in
+    {-let! msg'' = msg' in
+      print msg''-}
+      wr Open -> toP' ;
+    let (msg'',frA) = rd frA in
+      print "output bit"
 
 let testEnv toExec frP toP frQ toQ frA toA k bits =
   let! toExec' = toExec in
@@ -211,6 +243,15 @@ let idealCruptNone () =
 {- TODO: Finish later. -}
 let idealCruptP () =
   execUC envCruptP
+         dummyParty
+	 dummyParty
+	 fCom
+	 simulator
+	 !()
+	 testBits
+
+let idealCruptQ () =
+  execUC envCruptQ
          dummyParty
 	 dummyParty
 	 fCom
