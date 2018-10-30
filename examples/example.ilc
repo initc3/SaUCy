@@ -6,6 +6,13 @@ data SttCrupt = SttCrupt (String, String) Crupt
 
 data Crupt = CruptP | CruptQ | CruptNone
 
+data ZSMsg = GetCRS | PublicStrings [Bit] [Bit] [Bit] | ZSCommit [Bit]
+
+data Msg = Commit Int
+         | Open
+	 | Opened Int
+	 | Receipt
+
 {- If P is corrupted, then Z shouldn't be able to write to P, messages from F
 are forwarded to A, and messages from A are forwarded to F. Otherwise, spawn P
 as normal. -}
@@ -30,6 +37,35 @@ let dummyAdversary crupt toZ frZ toF frF toP frP toQ frQ k bits =
   |> fwd frP toZ
   |> fwd frQ toZ
 
+let simulator crupt toZ frZ toF frF toP frP toQ frQ k bits =
+  let! crupt' = crupt in
+  let! toF' = toF in
+  let! toP' = toP in  
+  let! toZ' = toZ in
+  let! k' = k in
+  let! bits' = bits in
+  let r = ref bits' in
+  let (pk0,td0) = kgen 4 in
+  let (pk1,td1) = kgen 4 in  
+  let r0 = sample 4 r in
+  let r1 = sample 4 r in
+  let sigma = xors (prg pk0 r0) (prg pk1 r1) in
+  let b = ref Nothing in
+  if crupt' == CruptP then
+    let (_, frZ) = rd frZ in
+      wr (PublicStrings sigma pk0 pk1) -> toZ' ;
+    let (msg, frZ) = rd frZ in
+    let! (ZSCommit y) = msg in
+      if (check td0 pk0 y == S) then
+        (wr (Commit 0) -> toP' ; (let b := Just 0))
+      else
+        if (check td1 pk1 (xors y sigma) == S) then
+	  (wr (Commit 1) -> toF' ; (let b := Just 1))
+	else
+	  (wr (Commit 1) -> toF' ; (let b := Just 1))	
+  else
+    let (_, frZ) = rd frZ in print "unimplemented"
+
 
 {--------------------Parties--------------------}
 {- The dummy party forwards messages between Z and F (and vice versa). Flipped
@@ -51,10 +87,7 @@ let committer toZ frZ toF frF k bits =
     |> fwd frF toZ
 
 {--------------------Functionalities--------------------}
-data Msg = Commit Int
-         | Open
-	 | Opened Int
-	 | Receipt
+
 
 {- One-time commitment functionality -}
 let fCom crupt toP frP toQ frQ toA frA k bits =
@@ -117,11 +150,11 @@ let envCruptP toE frE toP frP toQ frQ toA frA k bits =
   let! toA' = toA in
     wr (SttCrupt ("sid1","") CruptP) -> toE' ;
     let (_,frE) = rd frE in
-      print "toA" ; wr (Commit 0) -> toA' ;
-    let (x, frQ) = rd frQ in
-      print "Z:" ; print x ; wr Open -> toA' ;
-    let (x2, frQ) = rd frQ in
-      print "Z:" ; print x2
+      print "toA" ; wr GetCRS -> toA' ;
+    let (msg,frA) = rd frA in
+    let! msg' = msg in
+      {-print msg' ; -}
+      wr (ZSCommit [Z,S,S,Z]) -> toA'
 
 let testEnv toExec frP toP frQ toQ frA toA k bits =
   let! toExec' = toExec in
@@ -181,7 +214,7 @@ let idealCruptP () =
          dummyParty
 	 dummyParty
 	 fCom
-	 dummyAdversary {- Replace with simulator -}
+	 simulator
 	 !()
 	 testBits
 
