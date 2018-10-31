@@ -1,0 +1,50 @@
+\begin{figure*}
+  \begin{grammar}
+    Expressions
+    & $e$
+        &$\bnfas$&
+        $\eKGen{e} \bnfalt \eTdp{e_1}{e_2} \bnfalt \eHc{e}$
+  \end{grammar}
+  
+  \judgbox{\Delta ; \Gamma |- e : A |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has
+  intuitionistic type $A$ and mode $m$.}
+  \begin{mathpar}
+  \Infer{kgen}
+  {\Delta ; \Gamma |- e : [\tyBit]}
+  {\Delta; \Gamma |- \eKGen{e}: [\tyBit]}
+  %
+  \and
+  %
+  \Infer{eTdp}
+  {\Delta_1; \Gamma |- e_1 : [\tyBit]\\
+   \Delta_2; \Gamma |- e_2 : [\tyBit]}
+  {\Delta_1, \Delta_2; \Gamma |- \eTdp{e_1}{e_2}: [\tyBit]}
+  %
+  \and
+  %
+  \Infer{hc}
+  {\Delta; \Gamma |- e : \tyArr{[\tyBit]}{}{\tyArr{[\tyBit]}{}{[\tyBit]}}}
+  {\Delta; \Gamma |- \eHc{e}: \tyBit}
+  \end{mathpar}
+  
+  \judgbox{\Store_1 ; e_1 ---> \Store_2 ; e_2}{~~Under store $\Store_1$,
+    expression~$e_1$ reduces to~$\Store_2 ; e_2$.}
+  \begin{mathpar}
+  \Infer{kgen}
+  {\keyword{Gen}(v) = (pk, td)}
+  { \Store ; \eKGen{v} ---> \Store ; (pk, td)}
+  \and
+  \Infer{tdp}
+  {f_{v_1}(v_2) = v_3}
+  { \Store ; \eTdp{v_1}{v_2} ---> \Store ; v_3 }
+  \and
+  \Infer{hc}
+  {\mathsf{Hc}(f_{v_1}) = v_2}
+  { \Store ; \eHc{f_{v_1}} ---> \Store ; v_2 }
+  \end{mathpar}
+%  \begin{mathpar}
+%    G_{pk}(r) = (f^{(3n)}_{pk}(r), B(f^{(3n-1)}_{pk}(r)), \ldots, B(f_{pk}(r)), B(r))
+%  \end{mathpar}
+  \caption{Extended ILC.}
+  \label{fig:extended-ilc}
+\end{figure*}

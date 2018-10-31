@@ -185,3 +185,25 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \caption{Simulator for UC commitment.}
 \label{fig:sim}
 \end{figure*}
+
+\section{Cryptography Definitions}
+\begin{definition}[Trapdoor Permutations~\cite{lindell2014introduction}]
+  A tuple of polynomial-time algorithms $(\mathsf{Gen}, \mathsf{Samp},
+  f, \textsf{Inv})$ is a family of trapdoor permutations if:
+  \begin{itemize}[leftmargin=*]
+    \item The probabilistic parameter-generation algorithm \textsf{Gen}, on
+  input $1^n$, outputs $(I, \mathsf{td})$ with $\left| I \right| \geq n$. Each
+  value of $I$ defines a set $D_I$ that constitutes the domain and range of a
+  permutation (i.e., bijection) $f_I \colon D_I -> D_I$.
+    \item Let $\mathsf{Gen}_1$ denote the algorithm that results by
+  running \textsf{Gen} and outputting only $I$. Then
+  $(\mathsf{Gen}_1, \mathsf{Samp}, f)$ is a family of one-way permutations.
+    \item Let $(I, \mathsf{td})$ be an output of $\mathsf{Gen}(1^n)$. The
+  deterministic inverting algorithm \textsf{Inv}, on input \textsf{td} and $y \in
+  D_I$, outputs $x \in D_I$. We denote this by
+  $x \coloneqq \mathsf{Inv}_{\mathsf{td}}(y)$. It is required that with all but
+  negligible probability over $(I, \mathsf{td})$ output by $\mathsf{Gen}(1^n)$
+  and uniform choice of $x \in D_I$, we have $\mathsf{Inv}_{\mathsf{td}}(f_I(x)) =
+  x$.
+  \end{itemize}
+\end{definition}

@@ -71,7 +71,7 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
 
-%ILC Expressions
+% ILC Expressions
 \newcommand{\eVar}[1]{#1}
 \newcommand{\eChan}[1]{#1}
 \newcommand{\eUnit}{\Lparen\hspace{1px}\Rparen}
@@ -100,6 +100,11 @@
 \newcommand{\eLsplit}[4]{\keyword{lsplit}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
 \newcommand{\eLfix}[2]{\keyword{lfix}\Lparen{#1}.{#2}\Rparen}
 
+% Extended ILC
+\newcommand{\eKGen}[1]{\keyword{kgen}\Lparen{#1}\Rparen}
+\newcommand{\eTdp}[2]{\keyword{tdp}\Lparen{#1},{#2}\Rparen}
+\newcommand{\eHc}[1]{\keyword{hc}\Lparen{#1}\Rparen}
+
 % ILC Types
 \newcommand{\tyNat}{\tyname{nat}}
 \newcommand{\tyBool}{\tyname{bool}}
@@ -115,6 +120,8 @@
 \newcommand{\tyTensor}[2]{{#1}\otimes{#2}}
 %\newcommand{\tyLolli}[3]{{#1}\lollipop{#2}{#3}}
 \newcommand{\tyLolli}[3]{{#1}\multimap_{#2}{#3}}
+
+\newcommand{\tyBit}{\keyword{Bit}}
 
 % ILC Modes
 \newcommand{\Rm}{\textsf{R}}
