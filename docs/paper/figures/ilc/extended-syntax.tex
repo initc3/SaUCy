@@ -31,20 +31,21 @@
     expression~$e_1$ reduces to~$\Store_2 ; e_2$.}
   \begin{mathpar}
   \Infer{kgen}
-  {\keyword{Gen}(v) = (pk, td)}
-  { \Store ; \eKGen{v} ---> \Store ; (pk, td)}
+  {\keyword{\textbf{Gen}}(n) = (v_{pk}, v_{td}) \\ v_{pk}, v_{td} \in \{0,1\}^n}
+  { \Store ; \eKGen{n} ---> \Store ; (v_{pk}, v_{td})}
   \and
   \Infer{tdp}
-  {f_{v_1}(v_2) = v_3}
-  { \Store ; \eTdp{v_1}{v_2} ---> \Store ; v_3 }
+  {\mathbf{f}_{v_k}(v_i) = v_o \\ \mathbf{f} \colon \{0,1\}^n -> \{0,1\}^n -> \{0,1\}^n}
+  { \Store ; \eTdp{v_k}{v_i} ---> \Store ; v_o }
   \and
   \Infer{hc}
-  {\mathsf{Hc}(f_{v_1}) = v_2}
-  { \Store ; \eHc{f_{v_1}} ---> \Store ; v_2 }
+  {\keyword{\textbf{Hc}}(\mathbf{f}_{v_k}) = v \\ \keyword{\textbf{Hc}} \colon
+  (\{0,1\}^n -> \{0,1\}^n) -> \{0, 1\}}
+  { \Store ; \eHc{f_{v_k}} ---> \Store ; v}
   \end{mathpar}
 %  \begin{mathpar}
 %    G_{pk}(r) = (f^{(3n)}_{pk}(r), B(f^{(3n-1)}_{pk}(r)), \ldots, B(f_{pk}(r)), B(r))
 %  \end{mathpar}
-  \caption{Extended ILC.}
+  \caption{ILC extended with trapdoor permutations.}
   \label{fig:extended-ilc}
 \end{figure*}
