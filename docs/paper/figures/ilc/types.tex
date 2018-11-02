@@ -113,7 +113,7 @@
 \and
 %
 \Infer{letrd}
-{\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\
+{\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\\\
 \Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma |- e_2 : B |> m
 }
 {\Delta_1, \Delta_2 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : B |> \Rm}
