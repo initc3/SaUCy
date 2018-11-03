@@ -12,6 +12,12 @@ data ZSMsg = GetCRS
 	   | ZSOpen [Bit]
 	   | Invalid
 
+data PFMsg = PFGetCRS
+           | PFCRS [Bit] [Bit] [Bit]
+
+data PQMsg = PQCommit [Bit]
+     	   | PQOpened Int [Bit]
+
 data Msg = Commit Int
          | Open
 	 | Opened Int
@@ -20,7 +26,7 @@ data Msg = Commit Int
 {- If P is corrupted, then Z shouldn't be able to write to P, messages from F
 are forwarded to A, and messages from A are forwarded to F. Otherwise, spawn P
 as normal. -}
-let wrapper p crupt toZ frZ toF frF toA frA k bits =
+let wrapper p crupt toZ frZ toF frF toA frA toP frP k bits =
   let! crupt' = crupt in
   let! toZ' = toZ in  
     if crupt' then
@@ -30,7 +36,7 @@ let wrapper p crupt toZ frZ toF frF toA frA k bits =
       |> fwd frA toF
     else
       print "Not crupted" ;
-      p toZ frZ toF frF k bits
+      p toZ frZ toF frF toP frP k bits
 
 {- The dummy adversary forwards messages between Z and F (and vice versa). -}
 {- TODO: Using unpacked write channel should not type check -}
@@ -85,14 +91,42 @@ let simulator crupt toZ frZ toF frF toP frP toQ frQ k bits =
       else
         wr (ZSOpen r1) -> toZ'
 
-
 {--------------------Parties--------------------}
 {- The dummy party forwards messages between Z and F (and vice versa). Flipped
 argument order for type inference w/o annotations. Fix later. -}
-let dummyParty toZ frZ toF frF k bits =
+let dummyParty toZ frZ toF frF toP frP k bits =
       fwd frZ toF
     |> fwd frF toZ
 
+let pParty toZ frZ toF frF toQ frQ k bits =
+  let! toZ' = toZ in
+  let! bits' = bits in
+  let (msg, frZ)= rd frZ in
+  let! (Commit b) = msg in
+    wr PFGetCRS -> toF ;
+    let (msg', frF) = rd frF in
+    let! (PFCRS sigma pk0 pk1) = msg' in
+    let r = take 4 bits' in 
+    let x = if b == 0 then prg pk0 r else xors (prg pk0 r) sigma in
+      wr PQCommit x -> toQ ;
+      let (msg'', frZ)= rd frZ in
+        wr (PQOpened b r) -> toQ
+      
+let qParty toZ frZ toF frF toP frP k bits =
+  let! toZ' = toZ in
+  let! bits' = bits in
+  let (msg, frP) = rd frP in
+  let! (PQCommit x) = msg in
+    wr PFGetCRS -> toF ;
+    let (msg', frF) = rd frF in
+    let! (PFCRS sigma pk0 pk1) = msg' in  
+      wr Receipt -> toZ' ;
+      let (msg'', frP) = rd frP in
+      let! (PQOpened b r) = msg'' in
+        if b == 0 && x == prg pk0 r || b == 1 && x == xors (prg pk1 r) sigma
+        then wr (Opened b) -> toZ'
+	else error "Cannot occur in honest case"
+      
 let committer toZ frZ toF frF k bits =
   let! bits' = bits in
   {- Should receive b from Z and public parameters from Fcrs? -}
@@ -106,7 +140,6 @@ let committer toZ frZ toF frF k bits =
     |> fwd frF toZ
 
 {--------------------Functionalities--------------------}
-
 
 {- One-time commitment functionality -}
 let fCom crupt toP frP toQ frQ toA frA k bits =
@@ -124,9 +157,9 @@ let fCom crupt toP frP toQ frQ toA frA k bits =
 
 {- fCrs_helper :: Ref (Maybe Bitstring) -> Wr Bitstring -> a ->@W Unit -}
 let fCrs_helper d c x = match (@d) with
-                        {- Sample from distribution -}
-                        | Nothing => let d' = [Z,S] in
-		                       (let d := Just d') ; wr d' -> c
+    		      	{- Fix bug here -}
+                        | Nothing => (let d := Just (PFCRS [Z,S] [Z,S] [Z,S])) ;
+			             wr (PFCRS [Z,S] [Z,S] [Z,S]) -> c
 	                | Just d' => wr d' -> c
 
 {- Parameterize with distribution? -}
@@ -148,28 +181,22 @@ let fDummy crupt toP frP toQ frQ toA frA k bits =
     |> fwd frA toA
 
 {--------------------Environments--------------------}
-let envCruptNone toE frE toP frP toQ frQ toA frA k bits =
-  let! toE' = toE in
+let envCruptNone toP frP toQ frQ toA frA k bits =
   let! toP' = toP in
   let! toQ' = toQ in
   let! toA' = toA in
-    wr (SttCrupt ("sid1","") CruptNone) -> toE' ;
-    let (_,frE) = rd frE in
-      wr (Commit 0) -> toP' ;
+    wr (Commit 0) -> toP' ;
     let (x, frQ) = rd frQ in
       print "Z:" ; print x ; wr Open -> toP' ;
     {- TODO: Fix -}
     let (x2, frQ) = rd frQ in
       print "Z:" ; print x2
 
-let envCruptP toE frE toP frP toQ frQ toA frA k bits =
-  let! toE' = toE in
+let envCruptP toP frP toQ frQ toA frA k bits =
   let! toP' = toP in
   let! toQ' = toQ in
   let! toA' = toA in
-    wr (SttCrupt ("sid1","") CruptP) -> toE' ;
-    let (_,frE) = rd frE in
-      print "toA" ; wr GetCRS -> toA' ;
+    wr GetCRS -> toA' ;
     let (msg,frA) = rd frA in
     let! (PublicStrings sigma pk0 pk1) = msg in
       {-print msg' ; -}
@@ -180,14 +207,11 @@ let envCruptP toE frE toP frP toQ frQ toA frA k bits =
     let (msg'',frQ) = rd frQ in
       print msg''
 
-let envCruptQ toE frE toP frP toQ frQ toA frA k bits =
-  let! toE' = toE in
+let envCruptQ toP frP toQ frQ toA frA k bits  =
   let! toP' = toP in
   let! toQ' = toQ in
   let! toA' = toA in
-    wr (SttCrupt ("sid1","") CruptQ) -> toE' ;
-    let (_,frE) = rd frE in
-      print "toA" ; wr GetCRS -> toA' ;
+    wr GetCRS -> toA' ;
     let (msg,frA) = rd frA in
     let! (PublicStrings sigma pk0 pk1) = msg in
       wr (Commit 0) -> toP' ;
@@ -198,13 +222,11 @@ let envCruptQ toE frE toP frP toQ frQ toA frA k bits =
     let (msg'',frA) = rd frA in
       print "output bit"
 
-let testEnv toExec frP toP frQ toQ frA toA k bits =
-  let! toExec' = toExec in
+let testEnv toP frP toQ frQ toA frA k bits =
   let! toP' = toP in
   let! toQ' = toQ in
   let! toA' = toA in
-    wr (SttCrupt ("sid1","") CruptP) -> toExec'
-    |> loop frP !(lam x . print "P sent")
+      loop frP !(lam x . print "P sent")
     |> loop frQ !(lam x . print "Q sent")
     |> loop frA !(lam x . print "A sent")
       
@@ -214,7 +236,7 @@ let testEnv toExec frP toP frQ toQ frA toA k bits =
    A --- F
  -}
 
-let execUC z p q f a k r =
+let execUC z p q f a k r crupt =
   {- Standard channels -}
   nu (rZ2P, wZ2P), (rP2Z, wP2Z)
   , (rZ2Q, wZ2Q), (rQ2Z, wQ2Z)
@@ -225,19 +247,16 @@ let execUC z p q f a k r =
   {- Party wrapper channels -}
   , (rP2A, wP2A), (rA2P, wA2P)
   , (rQ2A, wQ2A), (rA2Q, wA2Q)
-  {- Z to execution channels -}
-  , (rZ2E, wZ2E), (rE2Z, wE2Z)
+  , (rP2Q, wP2Q), (rQ2P, wQ2P)  
   . print "Initialized" ;
     let! r' = r in
+    let! crupt' = crupt in    
     let (rf,ra,rp,rq,rz) = splitBits5 r' in
-      (let (msg, rZ2E) = rd rZ2E in
-       let! (SttCrupt sid crupt) = msg in
-          wr () -> wE2Z
-	|> f !crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F k !rf
-	|> a !crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A k !ra
-	|> wrapper p !(crupt == CruptP) !wP2Z rZ2P !wP2F rF2P !wP2A rA2P k !rp
-	|> wrapper q !(crupt == CruptQ) !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q k !rq)
-    |> z !wZ2E rE2Z !wZ2P rP2Z !wZ2Q rQ2Z !wZ2A rA2Z k !rz
+	 (f crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F k !rf
+	|> a crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A k !ra
+	|> wrapper p !(crupt' == CruptP) !wP2Z rZ2P !wP2F rF2P !wP2A rA2P !wP2Q rQ2P k !rp
+	|> wrapper q !(crupt' == CruptQ) !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q !wQ2P rP2Q k !rq)
+    |> z !wZ2P rP2Z !wZ2Q rQ2Z !wZ2A rA2Z k !rz
 
 let testBits = ![S,Z,Z,S,S,Z,Z,S,S,Z,Z,S,S,Z,Z,S]
 
@@ -246,11 +265,11 @@ let idealCruptNone () =
          dummyParty
 	 dummyParty
 	 fCom
-	 dummyAdversary {- Replace with simulator -}
+	 simulator
 	 !()
 	 testBits
+	 !CruptNone
 
-{- TODO: Finish later. -}
 let idealCruptP () =
   execUC envCruptP
          dummyParty
@@ -259,6 +278,7 @@ let idealCruptP () =
 	 simulator
 	 !()
 	 testBits
+	 !CruptP
 
 let idealCruptQ () =
   execUC envCruptQ
@@ -268,12 +288,24 @@ let idealCruptQ () =
 	 simulator
 	 !()
 	 testBits
+	 !CruptQ
 
-{-let real () =
-  execUC testEnv
-         dummyParty
-	 dummyParty
+let realCruptNone () =
+  execUC envCruptNone
+  	 pParty
+	 qParty
 	 fCrs
 	 dummyAdversary
 	 !()
-	 testBits-}
+	 testBits
+	 !CruptNone
+
+{-let realCruptP () =
+  execUC envCruptP
+  	 pParty
+	 qParty
+	 fCrs
+	 dummyAdversary
+	 !()
+	 testBits
+	 !CruptP-}

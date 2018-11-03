@@ -953,11 +953,12 @@ infer expr = case expr of
 
   EError e  -> do
     tyV <- fresh (TVar . TV)
+    mV <- fresh (MVar . TV)
     (tyA, c, m, _Γ2) <- infer e
     let tyConstraints = TypeConstraint tyA tyString : c
         moConstraints = [ModeConstraint m V]
         constraints = tyConstraints ++ moConstraints
-    return (tyV, constraints, V, _Γ2)
+    return (tyV, constraints, mV, _Γ2)
 
   ECustom x es -> do
     _Γ1 <- ask

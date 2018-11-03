@@ -23,12 +23,13 @@ Modes consist $\Wm$ (write mode), $\Rm$ (read mode), and $\Vm$ (value mode). The
 rules for composing modes (either sequentially or in parallel) are given in
 Figure~\ref{fig:mode-composition}.
 
-Expressions include variables (ranged over by $x$) and the standard introduction
-and elimination forms for intuitionistic functions, unit, products, and
-sums. \todo{References, fixpoint.} Affine functions are introduced using
-$\eLAM{x}{e}$ and an intuitionistically typed expression $e$ can be lifted into
-an affinely typed expression as $\eBang{e}$. \todo{App for lollipops?}
-Expressions for message passing concurrency are the following:
+Expressions include variables (ranged over by $x$), the standard introduction
+and elimination forms for intuitionistic functions, unit, products, and sums,
+fixed point expressions, and references. \todo{Let bindings.} Affine functions
+are introduced using $\eLAM{x}{e}$ and an intuitionistically typed expression
+$e$ can be lifted into an affinely typed expression as $\eBang{e}$. \todo{App
+  for lollipops?}  Expressions for message passing and concurrency are the
+following:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     write channel $x_2$ in $e$.

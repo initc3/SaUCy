@@ -1,8 +1,6 @@
 \section{SaUCy}
 \label{sec:saucy}
 
-\input{figures/ilc/extended-syntax}
-
 We build a concrete, executable implementation of the UC framework in ILC,
 dubbed SaUCy. The \textsf{execUC} function takes as arguments an environment
 \textsf{Z}, protocol parties \textsf{P} and \textsf{Q}, an adversary \textsf{A},
@@ -30,18 +28,31 @@ functionality for \textsf{F}.
   $x \coloneqq G_{{pk}_b}(r)$\;
   if $b=1$ then $x \coloneqq x \oplus \sigma$\;
   Send $(\mathsf{Commit}, x)$ to receiver.\;
-  Upon receiving (\textsf{Commit}, b) from $A$, $B$ outputs (\textsf{Receipt})
+  Upon receiving $(\mathsf{Commit}, x)$ from $A$, $B$ outputs $(\mathsf{Receipt})$
 }\smallskip
 
 \SetKwBlock{Decommit}{\textnormal{\textsf{Decommit}($x$):}}{}
 \Decommit{
   Send $(b, r)$ to receiver.\;
   Receiver checks $x = G_{{pk}_b}(r)$ for $b = 0$, or $x = G_{{pk}_b}(r) \oplus \sigma$
-  for $b = 1$. If verification succeeds, then $B$ outputs (\textsf{Open}, b).
+  for $b = 1$. If verification succeeds, then $B$ outputs $(\mathsf{Open}, b)$.
 }
 \caption{Universally Composable Commitment}
 \label{alg:com}
 \end{algorithm}
+
+To model the cryptography needed in universally composable commitments, we
+introduce several new syntactic forms---\textsf{kgen}, \textsf{tdp}, and
+\textsf{hc}---with the static and dynamic semantics shown in
+Figure~\ref{fig:extended-ilc}.
+
+The key generation function \textsf{keygen} generates, on input $1^n$ (security
+parameter), a random public key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor
+permutation function \textsf{tdp} computes, on input key $v_k$ and bitstring
+$v_{in}$, a bitstring $v_{out}$. The hardcore predicate function \textsf{hc}
+generates, on input trapdoor permutation $f_{v_k}$.
+
+\input{figures/ilc/extended-syntax}
 
 \lstinputlisting[style=myilc]{listings/dummy.ilc}
 
