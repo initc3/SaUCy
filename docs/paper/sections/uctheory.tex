@@ -1,6 +1,69 @@
 \section{UC Theory}
 \label{sec:uc}
 
+The type judgements do not guarantee termination, let alone polynomial time
+normalization, so we define this additionally.
+
+\begin{definition}[Polynomial time term]
+  A term \[\emptyctxt |- \mathsf{f} : [\tyBit]\ {->}_m\ A\] is polynomial time if for all
+  random bitstreams \textsf{r : [\tyBit]}, where the length of \textsf{r} is a
+  polynomial $L(k)$ in the security parameter $k$, applying \textsf{f} to
+  \textsf{r} normalizes to a value \textsf{v}. Furthermore, this normalization
+  takes a polynomial $\varphi(k)$ number of steps.
+\end{definition}
+
+Because processes are confluent, we know that there is only one such value
+\textsf{v = f r} for each bitstream \textsf{r} and that \textsf{f} is a
+polynomial time computable function. Hence, a uniform distribution of bitstrings
+gives us a distribution of \textsf{v}: \todo{}.
+
+\begin{definition}[Polynomial time in UC]
+  The judgement polyTimeUC is defined as 
+  \begin{mathpar}
+    \Infer{polyTimeUC}
+    {\Delta ; \Gamma, k: \keyword{Int}, n:[\tyBit] |- \keyword{polyTime}(\keyword{execUC}(Z, \pi,
+      A, F, k, r)) : \tyBit}
+    {\Delta ; \Gamma |- \keyword{polyTimeUC}(Z, \pi, F, A)}
+  \end{mathpar}
+  where the length of $r$ is a polynomial $L(k)$ in $k$.
+\end{definition}
+
+We can now define emulation:
+
+\begin{definition}[Protocol Emulation]
+  The protocol-functionality pair $(\pi_0, \mc{F}_0)$ emulates $(\pi_1, \mc{F}_1)$
+  if for all adversaries $\mc{A}$, there exists a simulator $\mc{S}_{\mc{A}}$
+  such that for all environments $\mc{Z}$ such that $|- \keyword{polyTimeUC}(\mc{Z}, \pi_0,
+  \mc{F}_0, \mc{A})$, then $|- \keyword{polyTimeUC}(Z, \pi_1, \mc{F}_1, \mc{S})$
+  and
+  \[ D(\mathsf{execUC} \mc{Z} \pi_0 \mc{F}_0 \mc{A}_0) \approx D(\mathsf{execUC} \mc{Z} \pi_1 \mc{F}_1 \mc{S})\]
+\end{definition}
+
+We can now state useful composition operators, simplifying lemmas, and
+notation. For brevity, we pack several notions from UC into a single alternate
+definition: UC-realizes.
+
+\begin{definition}[UC-realizes]
+  Protocol $\pi$ with $\mc{F}_0$ realizes $\mc{F}_1$, written $\mc{F}_0
+  \yrightarrow{$\pi$} \mc{F}_1$, if for all environments $\mc{Z}$ such that $|-
+  \keyword{polyTimeUC}(\mc{Z}, \pi, \mc{F}_0, \mathsf{dummyA})$, then
+  $|- \keyword{polyTimeUC}(\mc{Z}, \mathsf{dummyP}, \mc{F}_1, \mc{S})$ and the
+  distributions are statistically indistinguishable
+  \[ D(\mathsf{execUC} \mc{Z} \pi \mc{F}_0 \mathsf{dummyA}) \approx D(\mathsf{execUC} \mc{Z} \mathsf{dummyP} \mc{F}_1 \mc{S})\]
+\end{definition}
+
+\begin{definition}[Composition]
+  $\pi^{\phi}$ \todo{}
+\end{definition}
+
+\begin{theorem}[Composition Theorem]
+  From UC-realizes, we can conclude the original UC formulation for arbitrary
+  composition: If $\mc{F}_0 \yrightarrow{$\pi$} \mc{F}_1$, then for all $\phi$ we
+  have that $(\phi^{\pi}, \mc{F}_0)$ emulates $(\phi, \mc{F}_1)$.
+\end{theorem}
+
+\subsection{Brain Dump}
+
 \begin{definition}[Protocol Emulation]
 Let $\pi$ and $\phi$ be probabilistic polynomial time (p.p.t) protocols. We say
 that $\pi$ UC-emulates $\phi$ if for any p.p.t. adversary $\mc{A}$ there exists a
@@ -44,8 +107,6 @@ $\mc{Z}$ we have:
   Protocol $\Pi_{\textsc{com}}$ securely realizes functionality
   $\Func_{\textsc{com}}$ in the CRS model.
 \end{theorem}
-
-\subsection{Brain Dump}
 
 \begin{comment}
 Let {\sf Bit} be the type of single bits (i.e., 0 or 1), and let {\sf Inf} be

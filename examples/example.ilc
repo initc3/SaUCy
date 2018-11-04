@@ -136,18 +136,6 @@ let qParty toZ frZ toF frF toP frP k bits =
         else wr (Opened b) -> toZ'
 	{- TODO: -}
 	{-else error "Cannot occur in honest case"-}
-      
-let committer toZ frZ toF frF k bits =
-  let! bits' = bits in
-  {- Should receive b from Z and public parameters from Fcrs? -}
-  let b = 0 in
-  let sigma = [S,Z,S,Z] in
-  let pk0 = [S,Z,S,Z] in
-  let pk1 = [S,Z,S,Z] in  
-  let r = [Z,Z,Z,Z] in 
-  let x = if b == 0 then prg pk0 r else xors (prg pk1 r) sigma in
-      fwd frZ toF
-    |> fwd frF toZ
 
 {--------------------Functionalities--------------------}
 
