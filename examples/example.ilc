@@ -2,8 +2,6 @@
 
 {- Static corruptions: Either P is corrupted, Q is corrupted, or neither are
    corrupted. -}
-data SttCrupt = SttCrupt (String, String) Crupt
-
 data Crupt = CruptP | CruptQ | CruptNone
 
 data ZSMsg = GetCRS

@@ -1,5 +1,10 @@
-let dummyA crupt toZ frZ toF frF toP frP toQ frQ k r =
-    $\:$fwd frZ toF
-  $\xFork$ fwd frF toZ
-  $\xFork$ fwd frP toZ
-  $\xFork$ fwd frQ toZ
+let dummyA !crupt !toZ frZ !toF frF !toP frP toQ frQ !toQasP toPasQ k r =
+  let fwd2Z c = loop c !($\lambda$ m . wr (X2Z m) $->$ toZ) in
+       loop frZ !($\lambda$ x . match x with
+		     | A2F m $=>$ wr m $->$ toF
+		     | A2P m $=>$ if crupt == CruptP
+			       $\,$then wr m $->$ toQasP
+			       $\,$else wr m $->$ toP)
+    $\xFork$ fwd2Z frF
+    $\xFork$ fwd2Z frP
+    $\xFork$ fwd2Z frQ

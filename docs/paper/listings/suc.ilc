@@ -7,10 +7,10 @@ let execUC z (p,q) f a k !r !crupt =
   , (rA2Z, wA2Z), (rZ2A, wZ2A)
   , (rP2A, wP2A), (rA2P, wA2P)
   , (rQ2A, wQ2A), (rA2Q, wA2Q)
-  , (rZ2E, wZ2E)
+  , (rP2Q, wP2Q), (rQ2P, wQ2P)    
   . let (rf,ra,rp,rq,rz) = splitBits5 r in
-	(f !crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F k !rf
-      $\xFork$ a !crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A k !ra
-      $\xFork$ wrapper p !(crupt == CruptP) !wP2Z rZ2P !wP2F rF2P !wP2A rA2P k !rp
-      $\xFork$ wrapper q !(crupt == CruptQ) !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q k !rq)
-    $\xFork$ z !wZ2E rP2Z !wZ2P rQ2Z !wZ2Q rA2Z !wZ2A k !rz
+       ($\ \ \ $ f !crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F k !rf
+       $\xFork$ a !crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A k !ra
+       $\xFork$ wrapper p !(crupt == CruptP) !wP2Z rZ2P !wP2F rF2P !wP2A rA2P !wP2Q rQ2P k !rp
+       $\xFork$ wrapper q !(crupt == CruptQ) !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q !wQ2P rP2Q k !rq)
+     $\xFork$ z !wZ2P rP2Z !wZ2Q rQ2Z !wZ2A rA2Z k !rz
