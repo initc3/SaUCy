@@ -1,22 +1,21 @@
 \section{UC Theory}
 \label{sec:uc}
 
-The type judgements do not guarantee termination, let alone polynomial time
+The typing rules do not guarantee termination, let alone polynomial time
 normalization, so we define this additional notion.
 
 \begin{definition}[Polynomial time normalization]
   Consider a term \textsf{e} that has the type
-  \[\emptyctxt |- \mathsf{e} : \tyNat ->[\tyBit]\ {->}_m\ \tyBit,\]
+  \[\Delta, \Gamma |- \mathsf{e} : \tyNat ->[\tyBit]\ {->}_m\ \tyBit,\]
   where the first argument is a security parameter \textsf{k} and the second
-  argument is a random bitstring \textsf{r}. We say that \textsf{e} is
-  polynomial time normalizable if for all random bitstrings \textsf{r}, where
-  the length of \textsf{r} is polynomial in the security parameter \textsf{k},
-  the term \textsf{e k r} normalizes to a value \textsf{v} in a polynomial (in
-  \textsf{k}) number of steps.
-
-  This definition applies similarly to a term of the type
-  \[ \mathsf{k} : \tyNat, \mathsf{r} : [\tyBit] |- \mathsf{e} : \tyBit,\]
-  where \textsf{k} and \textsf{r} are free variables in \textsf{e}.
+  argument is a random bitstring \textsf{r}.\footnote{The definition of
+    polynomial time normalization applies similarly to a term \textsf{e} of type
+    $\tyBit$ where the security parameter and random bitstring are free
+    variables in \textsf{e}.} We say that \textsf{e} is polynomial time
+  normalizable, written \textsf{poly(e)}, if for all random bitstrings
+  \textsf{r}, where the length of \textsf{r} is polynomial in the security
+  parameter \textsf{k}, the term \textsf{e k r} normalizes to a value \textsf{v}
+  in a polynomial (in \textsf{k}) number of steps.
 \end{definition}
 
 Because processes are confluent, we know that there is only one such value
@@ -29,23 +28,28 @@ the probability that \textsf{e k r} normalizes to \textsf{v} for a particular
 \begin{definition}[Polynomial time in UC]
   The judgement polyUC is defined as 
   \begin{mathpar}
-    \infer[polyUC]
-    {\Delta, \mathsf{k} : \tyBang{\tyNat}, \mathsf{r} : \tyBang{[\tyBit]} ; \Gamma |-
-      \keyword{poly}(\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}\ \mathsf{k}\ \mathsf{r}) : \tyBit}
+    \Infer{polyUC,}
+    {\Delta' ; \Gamma |-
+      \keyword{poly}(\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}) : \tyBit}
     {\Delta ; \Gamma |- \keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
   \end{mathpar}
-  where the length of \textsf{r} is a polynomial in \textsf{k}. It says that
-  $\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}\ \mathsf{k}\ \mathsf{r}$
-  is a polynomial time normalizing term.
+  where $\Delta' = \Delta, \mathsf{k} : \tyBang{\tyNat}, \mathsf{r} :
+  \tyBang{[\tyBit]}$. It says that the term
+  \[\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}\]
+  is a polynomial time normalizing term. \todo{Elaborate more.}
 \end{definition}
 
-We can now define emulation as follows:
-
-\begin{definition}[Protocol Emulation]
+Protocol emulation defines what it means for a protocol to emulate an idealized
+version of itself, which relies on an ideal functionality to do all the
+work. Stated informally, we say that a protocol $\pi$ emulates a protocol $\phi$ if no
+environment $\mc{Z}$ can distinguish between interactions with a known adversary
+$\mc{A}$ and $\pi$ versus a simulated adversary $\mc{S}$ and $\phi$. Stated in SaUCy,
+the definition is this:
+\begin{definition}[Emulation]
   The protocol-functionality pair $(\pi_0, \mc{F}_0)$ emulates $(\pi_1, \mc{F}_1)$
-  if for all adversaries $\mc{A}$, there exists a simulator $\mc{S}_{\mc{A}}$
-  such that for all environments $\mc{Z}$, where $|- \keyword{polyUC}(\mc{Z}, \pi_0,
-  \mc{F}_0, \mc{A})$, then $|- \keyword{polyUC}(\mc{Z}, \pi_1, \mc{F}_1, \mc{S})$
+  if for all adversaries $\mc{A}$, there exists a simulator $\mc{S}$
+  such that for all environments $\mc{Z}$, if $|- \keyword{polyUC}(\mc{Z}, \pi_0,
+  \mc{F}_0, \mc{A})$ then $|- \keyword{polyUC}(\mc{Z}, \pi_1, \mc{F}_1, \mc{S})$,
   and
   \[ D(\mathsf{execUC}\ \mc{Z}\ \pi_0\ \mc{F}_0\ \mc{A}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_1\ \mc{F}_1\ \mc{S}).\]
 \end{definition}
@@ -56,12 +60,27 @@ definition: UC-realizes.
 
 \begin{definition}[UC-realizes]
   Protocol $\pi$ with $\mc{F}_0$ realizes $\mc{F}_1$, written $\mc{F}_0
-  \yrightarrow{$\pi$} \mc{F}_1$, if for all environments $\mc{Z}$ such that $|-
+  \yrightarrow{$\pi$} \mc{F}_1$, if for all environments $\mc{Z}$ we have that $|-
   \keyword{polyUC}(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
   $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$ and the
-  following indistinguishability relation holds
+  following statistical indistinguishability relation holds
   \[ D(\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_0\ \mc{A}_{\mathbbm{1}}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_{\mathbbm{1}}\ \mc{F}_1\ \mc{S}).\]
 \end{definition}
+
+\subsection{Universal Composition}
+\label{subsec:composition}
+
+While the intended use of universal composition is to replace an ideal
+functionality with a protocol that securely realizes it, we define universal
+composition more generally in terms of replacing one subroutine protocol with
+another. Given a protocol $\phi$, a protocol $\rho$ that makes calls to $\phi$, and a
+protocol $\pi$ that emulates $\phi$, then $\rho^{\phi -> \pi}$ is identical to $\rho$ with the
+following modifications:
+\begin{itemize}[leftmargin=*]
+  \item When $rho$ writes to $\phi$, $\rho^{\phi -> \pi}$ writes to $\pi$.
+  \item When $\rho^{\phi -> \pi}$ receives a message from $\pi$, proceed as $\rho$ would when
+    it receives the same message from $\phi$.
+\end{itemize}
 
 \begin{definition}[Composition]
   $\pi^{\phi}$ \todo{}
