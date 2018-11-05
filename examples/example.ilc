@@ -106,7 +106,7 @@ let dummyParty toZ frZ toF frF toP frP k bits =
       fwd frZ toF
     |> fwd frF toZ
 
-let pParty toZ frZ toF frF toQ frQ k bits =
+let committer toZ frZ toF frF toQ frQ k bits =
   let! toZ' = toZ in
   let! bits' = bits in
   let (msg, frZ)= rd frZ in
@@ -120,7 +120,7 @@ let pParty toZ frZ toF frF toQ frQ k bits =
       let (msg'', frZ)= rd frZ in
         wr (ZSOpen' b r) -> toQ
       
-let qParty toZ frZ toF frF toP frP k bits =
+let receiver toZ frZ toF frF toP frP k bits =
   let! toZ' = toZ in
   let! bits' = bits in
   let (msg, frP) = rd frP in
@@ -288,8 +288,8 @@ let idealCruptQ () =
 
 let realCruptNone () =
   execUC envCruptNone
-  	 pParty
-	 qParty
+  	 committer
+	 receiver
 	 fCrs
 	 dummyAdversary
 	 !()
@@ -298,8 +298,8 @@ let realCruptNone () =
 
 let realCruptP () =
   execUC envCruptP
-  	 pParty
-	 qParty
+  	 committer
+	 receiver
 	 fCrs
 	 dummyAdversary
 	 !()
@@ -308,8 +308,8 @@ let realCruptP () =
 
 let realCruptQ () =
   execUC envCruptQ
-  	 pParty
-	 qParty
+  	 committer
+	 receiver
 	 fCrs
 	 dummyAdversary
 	 !()
