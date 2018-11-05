@@ -24,28 +24,30 @@ Because processes are confluent, we know that there is only one such value
 polynomial time computable function. Hence, a uniform distribution of bitstrings
 gives us a distribution of \textsf{v} as $D_{\mathsf{e}}(\mathsf{v})$, which is
 the probability that \textsf{e k r} normalizes to \textsf{v} for a particular
-\textsf{k} and a uniform choice of \textsf{r}.
+\textsf{k} and a uniform choice of \textsf{r}. \todo{Need to elaborate further.}
 
 \begin{definition}[Polynomial time in UC]
-  The judgement polyTimeUC is defined as 
+  The judgement polyUC is defined as 
   \begin{mathpar}
-    \Infer{polyTimeUC}
-    {\Delta ; \Gamma, k: \keyword{Int}, n:[\tyBit] |- \keyword{polyTime}(\keyword{execUC}(Z, \pi,
-      A, F, k, r)) : \tyBit}
-    {\Delta ; \Gamma |- \keyword{polyTimeUC}(Z, \pi, F, A)}
+    \infer[polyUC]
+    {\Delta, \mathsf{k} : \tyBang{\tyNat}, \mathsf{r} : \tyBang{[\tyBit]} ; \Gamma |-
+      \keyword{poly}(\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}\ \mathsf{k}\ \mathsf{r}) : \tyBit}
+    {\Delta ; \Gamma |- \keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
   \end{mathpar}
-  where the length of $r$ is a polynomial $L(k)$ in $k$.
+  where the length of \textsf{r} is a polynomial in \textsf{k}. It says that
+  $\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}\ \mathsf{k}\ \mathsf{r}$
+  is a polynomial time normalizing term.
 \end{definition}
 
-We can now define emulation:
+We can now define emulation as follows:
 
 \begin{definition}[Protocol Emulation]
   The protocol-functionality pair $(\pi_0, \mc{F}_0)$ emulates $(\pi_1, \mc{F}_1)$
   if for all adversaries $\mc{A}$, there exists a simulator $\mc{S}_{\mc{A}}$
-  such that for all environments $\mc{Z}$ such that $|- \keyword{polyTimeUC}(\mc{Z}, \pi_0,
-  \mc{F}_0, \mc{A})$, then $|- \keyword{polyTimeUC}(Z, \pi_1, \mc{F}_1, \mc{S})$
+  such that for all environments $\mc{Z}$, where $|- \keyword{polyUC}(\mc{Z}, \pi_0,
+  \mc{F}_0, \mc{A})$, then $|- \keyword{polyUC}(\mc{Z}, \pi_1, \mc{F}_1, \mc{S})$
   and
-  \[ D(\mathsf{execUC} \mc{Z} \pi_0 \mc{F}_0 \mc{A}_0) \approx D(\mathsf{execUC} \mc{Z} \pi_1 \mc{F}_1 \mc{S})\]
+  \[ D(\mathsf{execUC}\ \mc{Z}\ \pi_0\ \mc{F}_0\ \mc{A}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_1\ \mc{F}_1\ \mc{S}).\]
 \end{definition}
 
 We can now state useful composition operators, simplifying lemmas, and
@@ -55,10 +57,10 @@ definition: UC-realizes.
 \begin{definition}[UC-realizes]
   Protocol $\pi$ with $\mc{F}_0$ realizes $\mc{F}_1$, written $\mc{F}_0
   \yrightarrow{$\pi$} \mc{F}_1$, if for all environments $\mc{Z}$ such that $|-
-  \keyword{polyTimeUC}(\mc{Z}, \pi, \mc{F}_0, \mathsf{dummyA})$, then
-  $|- \keyword{polyTimeUC}(\mc{Z}, \mathsf{dummyP}, \mc{F}_1, \mc{S})$ and the
-  distributions are statistically indistinguishable
-  \[ D(\mathsf{execUC} \mc{Z} \pi \mc{F}_0 \mathsf{dummyA}) \approx D(\mathsf{execUC} \mc{Z} \mathsf{dummyP} \mc{F}_1 \mc{S})\]
+  \keyword{polyUC}(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
+  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$ and the
+  following indistinguishability relation holds
+  \[ D(\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_0\ \mc{A}_{\mathbbm{1}}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_{\mathbbm{1}}\ \mc{F}_1\ \mc{S}).\]
 \end{definition}
 
 \begin{definition}[Composition]
