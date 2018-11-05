@@ -2,20 +2,29 @@
 \label{sec:uc}
 
 The type judgements do not guarantee termination, let alone polynomial time
-normalization, so we define this additionally.
+normalization, so we define this additional notion.
 
-\begin{definition}[Polynomial time term]
-  A term \[\emptyctxt |- \mathsf{f} : [\tyBit]\ {->}_m\ A\] is polynomial time if for all
-  random bitstreams \textsf{r : [\tyBit]}, where the length of \textsf{r} is a
-  polynomial $L(k)$ in the security parameter $k$, applying \textsf{f} to
-  \textsf{r} normalizes to a value \textsf{v}. Furthermore, this normalization
-  takes a polynomial $\varphi(k)$ number of steps.
+\begin{definition}[Polynomial time normalization]
+  Consider a term \textsf{e} that has the type
+  \[\emptyctxt |- \mathsf{e} : \tyNat ->[\tyBit]\ {->}_m\ \tyBit,\]
+  where the first argument is a security parameter \textsf{k} and the second
+  argument is a random bitstring \textsf{r}. We say that \textsf{e} is
+  polynomial time normalizable if for all random bitstrings \textsf{r}, where
+  the length of \textsf{r} is polynomial in the security parameter \textsf{k},
+  the term \textsf{e k r} normalizes to a value \textsf{v} in a polynomial (in
+  \textsf{k}) number of steps.
+
+  This definition applies similarly to a term of the type
+  \[ \mathsf{k} : \tyNat, \mathsf{r} : [\tyBit] |- \mathsf{e} : \tyBit,\]
+  where \textsf{k} and \textsf{r} are free variables in \textsf{e}.
 \end{definition}
 
 Because processes are confluent, we know that there is only one such value
-\textsf{v = f r} for each bitstream \textsf{r} and that \textsf{f} is a
+\textsf{v = e k r} for each bitstring \textsf{r}, and that \textsf{e} is a
 polynomial time computable function. Hence, a uniform distribution of bitstrings
-gives us a distribution of \textsf{v}: \todo{}.
+gives us a distribution of \textsf{v} as $D_{\mathsf{e}}(\mathsf{v})$, which is
+the probability that \textsf{e k r} normalizes to \textsf{v} for a particular
+\textsf{k} and a uniform choice of \textsf{r}.
 
 \begin{definition}[Polynomial time in UC]
   The judgement polyTimeUC is defined as 
@@ -62,6 +71,7 @@ definition: UC-realizes.
   have that $(\phi^{\pi}, \mc{F}_0)$ emulates $(\phi, \mc{F}_1)$.
 \end{theorem}
 
+\begin{comment}
 \subsection{Brain Dump}
 
 \begin{definition}[Protocol Emulation]
@@ -108,7 +118,6 @@ $\mc{Z}$ we have:
   $\Func_{\textsc{com}}$ in the CRS model.
 \end{theorem}
 
-\begin{comment}
 Let {\sf Bit} be the type of single bits (i.e., 0 or 1), and let {\sf Inf} be
 the type of infinite bitstrings. The meaning of an ILC term $\tau$ is given by the
 denotation $[\![\tau]\!]\sigma$, which returns, for an infinite bitstring $\sigma{:}{\sf Inf}$, a value
@@ -124,7 +133,6 @@ bitstream free variable $\sigma{:}{\sf Inf}$. Additionally, for any such $\sigma
 $[\![t_1]\!]\sigma{:}{\sf Bit}$ and $[\![\tau_2]\!]\sigma{:}{\sf Bit}$. We say that $\tau_1$ and
 $\tau_2$ are $\epsilon$-indistinguishable iff $\Delta([\![\tau_1]\!], [\![\tau_2]\!]) \leq \epsilon$.
 \end{definition}
-\end{comment}
 
 \begin{definition}[Probability Distribution Ensemble]
 An \emph{ensemble} of probability distributions is a family of probability
@@ -201,4 +209,4 @@ of the input to the adversary.
 \end{definition}
 
 Environment should activate the adversary to allow sending of messages.
-
+\end{comment}
