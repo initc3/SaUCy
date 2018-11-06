@@ -46,8 +46,7 @@ the parties, performs some local computation, and hands outputs back to the
 parties. Because $\mc{F}$ is trivially secure, it serves as a uniform way to
 describe the task's security requirements.\smallskip
 
-\myheader{Example: Secure coin flipping.} \todo{Update to include
-  non-malleability property.} Suppose two untrusting parties, Alice
+\myheader{Example: Secure coin flipping.} Suppose two untrusting parties, Alice
 and Bob, wish to securely flip a coin---Alice calls the coin flip by publishing a
 bit $b \in \{ 0, 1\}$, and Bob flips the coin by publishing the result $r \in \{0,
 1\}$. If $b = r$, then Alice wins; otherwise, Bob wins. Observe that simply
@@ -56,29 +55,40 @@ publishes $b$ first, then Bob can cheat by manipulating $r$ in his favor (and
 vice versa)!
 
 In order to carry out the coin flip securely, they can use a commitment
-scheme~\cite{brassard1988minimum}, which has the following interaction:
+scheme~\cite{brassard1988minimum}, which is the digital equivalent of a ``sealed
+envelope.'' Here is the idea:
 \begin{enumerate}[leftmargin=*]
-\item Alice: Commit to $b$ as $C = \mathsf{com}(b)$, and send $C$ to Bob.
-\item Bob: Compute and send the result $r$ to Alice.
-\item Alice: Open the commitment as $b' = \mathsf{open}(C)$, and send it to Bob.
+\item Alice: Commit to $b$ as $C_A = \mathsf{com}(b)$, and send $C_A$ to Bob.
+\item Bob: Commit to $r$ as $C_B = \mathsf{com}(r)$  and send $C_B$ to Alice.
+\item Alice: Open the commitment as $b' = \mathsf{open}(C_A)$, and send it to Bob.
+\item Bob: Open the commitment as $r' = \mathsf{open}(C_B)$, and send it to Bob.
 \end{enumerate}
-\noindent If $r = b'$, then Alice wins; otherwise, Bob wins. But what is to stop
+\noindent If $r' = b'$, then Alice wins; otherwise, Bob wins. But what is to stop
 either party from cheating? In order for the protocol to be secure, it should
 satisfy these important properties (stated informally):
 \begin{itemize}[leftmargin=*]
-  \item \emph{Hiding.} The commitment $C$ should hide $b$ from Bob, so that he
-    cannot manipulate $r$ in his favor.
-  \item \emph{Binding.} It should be the case that $b =
-    \mathsf{open}(\mathsf{com}(b))$, so that Alice cannot open to a different
-    value.
-  \item \emph{Non-malleability.} Bob should not be able to come up with a
-    commitment $C'$ that is related to $C$.
+  \item \emph{Hiding.} A commitment should not reveal any information about the
+    committed value.
+  \item \emph{Binding.} A commitment should only open to the originally
+    committed value.
+  \item \emph{Non-malleability.} One should not be able to create a commitment
+    $C'$ from a commitment $C$ such that the committed values are related.
 \end{itemize}
 
-\myheader{Commitment functionality.} We can capture all of these properties at
-once by defining an ideal functionality $\Func_{\textsc{com}}$ for a (one-time)
-commitment scheme as it would appear in the cryptography literature
-(Figure~\ref{func:com}, left).
+The first two properties are fairly straightforward, and indeed, they are
+sufficient for security in the standalone setting and under sequential
+composition. However, in the concurrent setting described here (Alice and Bob
+are both running a commitment scheme), non-malleability is necessary for
+security. Suppose Bob sees Alice's commitment $C_A$ first. While he cannot
+figure out which bit Alice committed to (due to the hiding property), a
+malleable commitment scheme might allow him to create a commitment $C_B'$ from
+$C_A$, which simply flips the bit committed in $C_A$. Bob does not learn Alice's
+bit, but he can still force the outcome of the game in his favor.\smallskip
+
+\myheader{Commitment functionality.} \todo{Non-malleability is difficult to
+  capture.} We can capture all of these properties at once by defining an ideal
+functionality $\Func_{\textsc{com}}$ for a (one-time) commitment scheme as it
+would appear in the cryptography literature (Figure~\ref{func:com}, left).
 
 Upon receiving the bit $b$ that Alice wishes to commits to,
 $\Func_{\textsc{com}}$ records $b$ and notifies Bob that it has done so. Then,
