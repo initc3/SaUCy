@@ -25,11 +25,10 @@ Figure~\ref{fig:mode-composition}.
 
 Expressions include variables (ranged over by $x$), the standard introduction
 and elimination forms for intuitionistic functions, unit, products, and sums,
-fixed point expressions, and references. \todo{Let bindings.} Affine functions
-are introduced using $\eLAM{x}{e}$ and an intuitionistically typed expression
-$e$ can be lifted into an affinely typed expression as $\eBang{e}$. \todo{App
-  for lollipops?}  Expressions for message passing and concurrency are the
-following:
+fixed point expressions, references, and two different let bindings. Affine
+functions are introduced using $\eLAM{x}{e}$ and an intuitionistically typed
+expression $e$ can be lifted into an affinely typed expression as
+$\eBang{e}$. The expressions for message-passing and concurrency are these:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     write channel $x_2$ in $e$.

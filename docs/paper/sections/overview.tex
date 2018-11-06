@@ -80,17 +80,17 @@ sufficient for security in the standalone setting and under sequential
 composition. However, in the concurrent setting described here (Alice and Bob
 are both running a commitment scheme), non-malleability is necessary for
 security. Suppose Bob sees Alice's commitment $C_A$ first. While he cannot
-figure out which bit Alice committed to (due to the hiding property), a
-malleable commitment scheme might allow him to create a commitment $C_B'$ from
-$C_A$, which simply flips the bit committed in $C_A$. Bob does not learn Alice's
-bit, but he can still force the outcome of the game in his favor.\smallskip
+figure out Alice's bit from $C_A$ (due to the hiding property), a malleable
+commitment scheme might allow him to create a commitment $C_B'$ from $C_A$,
+which simply flips the bit committed in $C_A$. Bob does not learn Alice's bit,
+but he can still force the outcome of the game in his favor.\smallskip
 
 \myheader{Commitment functionality.} \todo{Non-malleability is difficult to
   capture.} We can capture all of these properties at once by defining an ideal
 functionality $\Func_{\textsc{com}}$ for a (one-time) commitment scheme as it
 would appear in the cryptography literature (Figure~\ref{func:com}, left).
 
-Upon receiving the bit $b$ that Alice wishes to commits to,
+Upon receiving the bit $b$ that Alice wishes to commit to,
 $\Func_{\textsc{com}}$ records $b$ and notifies Bob that it has done so. Then,
 whenever Alice wants to reveal $b$ to Bob, she notifies $\Func_{\textsc{com}}$,
 which sends it to Bob. Because, in this idealized world, Alice and Bob trust
@@ -98,7 +98,7 @@ $\Func_{\textsc{com}}$ to do all the work, the hiding, binding, and
 non-malleability properties hold trivially. Of course, in the real world, Alice
 and Bob would not want to trust such a third party (if it even exists), so their
 hope is that the commitment scheme they use is ``just as good as''
-$\Func_{\textsc{com}}$.\smallskip
+$\Func_{\textsc{com}}$.
 
 \subsection{ILC By Example}
 \label{subsec:ilc-flavored}
@@ -140,9 +140,10 @@ composed either sequentially or in parallel to yield new modes.
 To give a few examples, suppose expressions $e_1$ and $e_2$ have modes $m_1$ and
 $m_2$, respectively. Sequential mode composition shows up in the obvious case of
 sequentially evaluating the two expressions, so the mode of $\eSeq{e_1}{e_2}$ is
-$m1 ;; m2 => m3$. Parallel mode composition shows up when one process forks a
-second process, so the mode of $\eFork{e_1}{e_2}$ is $m_1 || m_2 =>
-m_3$. \todo{Explain fork. Removed seq.}
+$m1 ;; m2 => m3$.\footnote{The expression $\eSeq{e_1}{e_2}$ is syntactic sugar
+  for $\eLet{\tyUnit}{e_1}{e_2}$.} Parallel mode composition shows up when one
+process forks a second process, so the mode of $\eFork{e_1}{e_2}$ is $m_1 || m_2
+=> m_3$.
 
 The rules for mode composition are fleshed out in Section~\ref{sec:ilc}, but the
 key takeaway here is that composing write mode processes in parallel is
@@ -150,7 +151,7 @@ key takeaway here is that composing write mode processes in parallel is
 $p$. Recall that in the ITM model, execution is essentially single-threaded, so
 this ensures that no confusion arises as to which process is currently writing,
 or equivalently, which process is currently active. A program violating this
-invariant would not be expressible as ITMs.\smallskip
+invariant would not be expressible in the ITM model.\smallskip
 
 \myheader{Putting it all together.} The function body of \textsf{fCom} closely
 follows $\Func_{\textsc{com}}$, but there are several points worth mentioning.
@@ -202,7 +203,7 @@ wr expressions return $\eUnit$, we wrap it inside a bang! to lift its type into
 the affine type \textsf{!Unit}.
 
 \subsection{The UC Framework, Abstractly}
-\label{subsec:emulation}
+\label{subsec:uc-abstractly}
 
 Having defined security in the form of an ideal functionality, the next step is
 to prove that a protocol meets the definition. We say that a protocol $\pi$
@@ -215,7 +216,7 @@ ideal world does not lead to a break in security.
 Proving emulation formally proceeds in two steps:
 \begin{enumerate}[leftmargin=*]
 \item The first step is constructive: We must construct a \emph{simulator}
-  $\mc{S}$ (a simulated adversary) that can emulate the attack of any adversary
+  $\mc{S}$ (a simulated adversary) that can simulate the attack of any adversary
   $\mc{A}$ on $\pi$, but instead, on $\mc{F}$.
 \item The second step is a relational analysis: We must show that running $\pi$
   under attack by any adversary $\mc{A}$ (the real world) is
@@ -224,8 +225,7 @@ Proving emulation formally proceeds in two steps:
 \end{enumerate}
 In particular, $\mc{Z}$ is an interactive distinguisher: It interacts with the
 real world and the ideal world in a well-defined manner, and the simulation is
-good if no $\mc{Z}$ can distinguish between the two. We call this game the UC
-experiment.
+good if no $\mc{Z}$ can distinguish between the two.
 
 \begin{figure}
   \centering
@@ -234,20 +234,20 @@ experiment.
   \label{fig:uc-experiment}
 \end{figure}
 
-\todo{Need to make this paragraph more clear.} Figure~\ref{fig:uc-experiment}
-illustrates the UC experiment in the context of the commitment scheme defined
-previously. The real world is shown on the left and the ideal world is shown on
-the right, with connecting lines denoting communication channels.\footnote{Note
-  that in the real world, all communication passes through the adversary
-  $\mc{A}$. In the bare model, communication is asynchronous, unauthenticated,
-  and unreliable, but other models of communication can be built atop this
-  model.} In the real world, $A$ and $B$ carry out the protocol with eachother,
-while in the ideal world, $A$ and $B$ are ``dummy'' parties that simply relay
+Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
+the commitment scheme defined previously. The real world is shown on the left
+and the ideal world is shown on the right, with connecting lines denoting
+communication channels.\footnote{Note that in the real world, all communication
+  passes through the adversary $\mc{A}$. In the bare model, communication is
+  asynchronous, unauthenticated, and unreliable, but other models of
+  communication can be built atop this model.} In the real world, $A$ and $B$
+carry out the protocol with eachother, while in the ideal world,
+$A_{\mathbbm{1}}$ and $B_{\mathbbm{1}}$ are ``dummy'' parties that simply relay
 messages between $\mc{Z}$ and $\mc{F}$. The environment $\mc{Z}$ is tasked to
 interact with each world and distinguish between the two.
 
 \subsection{The UC Framework, Concretely}
-\label{subsec:sauce-flavored}
+\label{subsec:uc-concretely}
 
 \todo{Preview of SaUCy and UC metatheory.}
 
