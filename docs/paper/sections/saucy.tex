@@ -2,8 +2,8 @@
 \label{sec:saucy}
 
 Using ILC, we build a concrete, executable implementation of the UC framework,
-dubbed SaUCy. We adapt theory from UC to SaUCy and flesh out an implementation
-and proof for universally composable commitments.
+dubbed SaUCy. We adapt theory from UC to SaUCy and flesh out our commitments
+example.
 
 \subsection{SaUCy?}
 \label{subsec:saucy}
@@ -37,7 +37,7 @@ parameter \textsf{k}, a random bitstring \textsf{r}, and a corruption model
     security parameter. We have more to say on this later.
   \item \emph{Corruptions.} The possible corruption models are either party
     \textsf{p} is corrupt, party \textsf{q} is corrupt, or no parties are
-    corrupt, which are defined in the following data declaration:
+    corrupt, which are defined in the following datatype:
     \lstinputlisting[style=myilc]{listings/crupt.ilc}
 \end{itemize}
 
