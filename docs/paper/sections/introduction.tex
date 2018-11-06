@@ -1,13 +1,17 @@
 \section{Introduction}
 \label{sec:introduction}
 
-In cryptography, a proof of security in the universal composability (UC) model
-is the gold standard for demonstrating that a protocol carries out a
+In cryptography, a proof of security in the universal composability (UC)
+framework is the gold standard for demonstrating that a protocol carries out a
 cryptographic task securely~\cite{canetti2001universally}. More specifically, a
 protocol that is UC-secure enjoys the strongest notion of compositionality---it
-maintains its security properties when run concurrently with arbitrary other
-protocols.\todo{Modularity is another benefit.}
+maintains its security properties when run \emph{concurrently} with arbitrary
+other protocols. This is in contrast with weaker notions, which only guarantee
+security in a standalone setting or under sequential composition. And, of
+course, a desirable benefit of compositionality is modularity---it allows us to
+analyze complex protocols from simpler building blocks.
 
+\begin{comment}
 In a nutshell, security proofs in UC follow the real/ideal
 paradigm~\cite{goldreich1987play}. The security requirements of a given task are
 defined as a program for a \emph{single trusted process} called an \emph{ideal
@@ -17,27 +21,38 @@ achieving the task across \emph{many unstrusted processes}, which runs in the
 real world. Roughly speaking, we say that a protocol $\pi$ \emph{emulates} an
 ideal functionality $\mc{F}$ (i.e., it meets its specification) if every
 adversarial behavior in the real world can also be exhibited in the ideal world.
+\end{comment}
 
 While UC security proofs admit strong guarantees, this comes at the cost of
 their formalization being quite complicated. Moreover, because the UC framework
-only exists on paper, protocol descriptions, ideal functionalities, and other
-proof artifacts for proving emulation are traditionally written in a combination
-of prose and pseudocode, which makes them error-prone and difficult to
-verify. Consequently, although the UC framework is widely used for on-paper
-proofs, its modularity benefits have not been enjoyed in practical
-implementations.
+only exists on paper, protocol descriptions, specifications, and other proof
+artifacts for proving security are traditionally written in a combination of
+prose and pseudocode, which makes them error-prone and difficult to verify. So
+although the UC framework is widely used for on-paper proofs, its modularity
+benefits have not been enjoyed in practical implementations.
 
-Prior work on systematizing UC, such as Symoblic UC~\cite{bohl2016symbolic},
-focus on transporting its ideas to the symbolic model of cryptography, in which
-cryptographic operations are abstracted as term algebras and adversary
-capabilities are defined by deduction rules over these terms. Although this
-abstract vantage point leads to simpler security proofs that can be amenable to
-automated reasoning, security guarantees derived from symbolic analyses are not
-as strong as those from computational analyses considered in UC and in
-cryptography more broadly~\cite{cortier2011survey}. \todo{EasyCrypt is also
-  worth mentioning. EasyCrypt is a faithful embedding of computational
-  cryptography, but language is not well-suited to express distributed
-  protocols.}
+Previous works on systematizing UC (or cryptographic analysis more broadly)
+generally fall short in one of two ways:
+\begin{enumerate}[leftmargin=*]
+  \item They do not permit computational security proofs (the modus operandi in
+    cryptography).
+  \item They are not well-suited to describing distributed protocols (the
+    intended target of the UC framework).
+\end{enumerate}
+For example, Symbolic UC~\cite{bohl2016symbolic} transports ideas from UC to the
+symbolic model of cryptography to simplify analysis, but the cost of weaker
+security guarantees~\cite{cortier2011survey}. On the other hand,
+EasyCrypt~\cite{barthe2011computer} natively supports computational reasoning,
+but does not support message-passing or concurrency. To faithfully model the UC
+framework, we would (at the very least) want to satisfy both of these
+requirements.
+%, in which cryptographic operations
+%are abstracted as term algebras and adversary capabilities are defined by
+%deduction rules over these terms.
+%Although analyzing security from this abstract
+%vantage point can benefit from automated reasoning, security guarantees derived
+%from symbolic analyses are not as strong as those derived from computational
+%analyses~\cite{cortier2011survey}.
 
 In this paper, we lay the groundwork for building a concrete, executable
 implementation of the UC framework called SaUCy in the form of a process
