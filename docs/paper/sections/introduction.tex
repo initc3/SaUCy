@@ -3,13 +3,13 @@
 
 In cryptography, a proof of security in the universal composability (UC)
 framework is the gold standard for demonstrating that a protocol carries out a
-cryptographic task securely~\cite{canetti2001universally}. More specifically, a
-protocol that is UC-secure enjoys the strongest notion of compositionality---it
-maintains its security properties when run \emph{concurrently} with arbitrary
-other protocols. This is in contrast with weaker notions, which only guarantee
-security in a standalone setting or under sequential composition. And, of
-course, a desirable benefit of compositionality is modularity---it allows us to
-analyze complex protocols from simpler building blocks.
+cryptographic task securely~\cite{canetti2001universally}. In particular, a
+UC-secure protocol enjoys the strongest notion of compositionality---it maintains
+its security properties when run \emph{concurrently} with arbitrary other
+protocols. This is in contrast with weaker notions, which only guarantee
+security in the standalone setting or under sequential composition. And, of
+course, a desirable benefit of universal composition is modularity---it allows us
+to design and analyze complex protocols from simpler building blocks.
 
 \begin{comment}
 In a nutshell, security proofs in UC follow the real/ideal
@@ -25,27 +25,28 @@ adversarial behavior in the real world can also be exhibited in the ideal world.
 
 While UC security proofs admit strong guarantees, this comes at the cost of
 their formalization being quite complicated. Moreover, because the UC framework
-only exists on paper, protocol descriptions, specifications, and other proof
+only exists ``on paper'', protocol descriptions, specifications, and other proof
 artifacts for proving security are traditionally written in a combination of
 prose and pseudocode, which makes them error-prone and difficult to verify. So
-although the UC framework is widely used for on-paper proofs, its modularity
+although the UC framework is widely used as a tool for analysis, its modularity
 benefits have not been enjoyed in practical implementations.
 
-Previous works on systematizing UC (or cryptographic analysis more broadly)
-generally fall short in one of two ways:
+While previous works have focused on systematizing UC (or cryptographic analysis
+more broadly), they generally fall short in one of two ways:
 \begin{enumerate}[leftmargin=*]
-  \item They do not permit computational security proofs (the modus operandi in
+  \item They do not support computational reasoning (the modus operandi in
     cryptography).
   \item They are not well-suited to describing distributed protocols (the
-    intended target of the UC framework).
+    intended target of UC).
 \end{enumerate}
 For example, Symbolic UC~\cite{bohl2016symbolic} transports ideas from UC to the
-symbolic model of cryptography to simplify analysis, but the cost of weaker
-security guarantees~\cite{cortier2011survey}. On the other hand,
-EasyCrypt~\cite{barthe2011computer} natively supports computational reasoning,
-but does not support message-passing or concurrency. To faithfully model the UC
-framework, we would (at the very least) want to satisfy both of these
-requirements.
+symbolic model of cryptography (as opposed to the computational model) to
+simplify analysis, but at the cost of weaker security
+guarantees~\cite{cortier2011survey}. On the other hand,
+EasyCrypt~\cite{barthe2011computer} embeds computational reasoning, but does not
+have a language for describing message-passing or concurrency. To faithfully
+model the UC framework, we would (at the very least) want to satisfy both of
+these criteria.
 %, in which cryptographic operations
 %are abstracted as term algebras and adversary capabilities are defined by
 %deduction rules over these terms.
@@ -54,20 +55,22 @@ requirements.
 %from symbolic analyses are not as strong as those derived from computational
 %analyses~\cite{cortier2011survey}.
 
-In this paper, we lay the groundwork for building a concrete, executable
-implementation of the UC framework called SaUCy in the form of a process
+In this paper, we lay the foundation for building a concrete, executable
+implementation of the UC framework (dubbed SaUCy) in the form of a process
 calculus called the Interactive Lambda Calculus (ILC). ILC represents the first
 language-based approach to capturing the computational model underlying
 UC---interactive Turing machines (ITMs). In the ITM model, execution is
-essentially single-threaded. Processes pass control from one to another each
+essentially single-threaded: Processes pass control from one to another each
 time a message is sent so that exactly one process is active at a given
 time. And this choice is for good reason! It is necessary for computational
-security proofs (specifically, cryptographic reductions) to go through.
+security proofs (specifically, cryptographic reductions) to go through. By
+staying true to the ITM model, we can satisfy both of the mentioned criteria at
+once.
 
-In sum, the goal of this work is twofold: first, to develop a foundational
-calculus for the purpose of systematizing UC (ILC), which importantly admits
-computational security proofs, and second, the concretization of the UC
-framework itself (SaUCy).
+%In sum, the goal of this work is twofold: first, to develop a foundational
+%calculus for the purpose of systematizing UC (ILC), which importantly admits
+%computational security proofs, and second, the concretization of the UC
+%framework itself (SaUCy).
 
 \subsection{Interactive Lambda Calculus}
 
@@ -76,7 +79,7 @@ existing process calculi, such as the standard
 $\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
 variants~\cite{abadi1999calculus, abadi2001mobile}, are not a good fit to ITMs,
 since they allow for non-confluent reductions by design. This means that one
-could quite easily write programs in these languages that are not expressible in
+could quite easily write programs in these languages that are not expressible as
 ITMs and hence, do not have computational interpretations. Other calculi may
 enjoy confluence, but are overly restrictive, only allowing for fixed or
 two-party
@@ -116,8 +119,8 @@ adversary process $\mc{A}$ rather than uncertainty built into the model itself.
 
 We have implemented an ILC interpreter in Haskell. For economy of use, our
 implementation performs polymorphic type inference, bounded polymorphic mode
-inference, and \todo{some} affinity inference. Polymorphism on modes is bounded
-precisely due to our restriction on parallel write mode composition. Moreover, a
+inference, and affinity inference. Polymorphism on modes is bounded precisely
+due to our restriction on parallel write mode composition. Moreover, a
 consequence of any kind of mode polymorphism at all is that the modes of higher
 order functions can be dependent on the modes of its function arguments.
 
@@ -145,8 +148,12 @@ able transport theory from UC to SaUCy, such as protocol emulation.
 \subsection{Contributions}
 \label{subsec:contributions}
 
-To summarize, our contributions are these:
+To summarize, our main contributions are these:
 
 \begin{itemize}[leftmargin=*]
-  \item 
+  \item We design a foundational calculus for the purpose of systematizing UC
+    called the Interactive Lambda Calculus, which importantly admits
+    computational security proofs.
+  \item We use ILC to build a concrete, executable implementation of the UC
+    framework called SaUCy.
 \end{itemize}
