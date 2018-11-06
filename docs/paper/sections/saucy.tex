@@ -1,17 +1,168 @@
 \section{SaUCy}
 \label{sec:saucy}
 
-We build a concrete, executable implementation of the UC framework in ILC,
-dubbed SaUCy. The \textsf{execUC} function takes as arguments an environment
-\textsf{Z}, protocol parties \textsf{P} and \textsf{Q}, an adversary \textsf{A},
-and a functionality \textsf{F}.
+Using ILC, we build a concrete, executable implementation of the UC framework,
+dubbed SaUCy. We adapt theory from UC to SaUCy and flesh out an implementation
+and proof for universally composable commitments.
 
-For a real world execution, programs for the actual protocol participants will be
-used for \textsf{P} and \textsf{Q}, a real world adversary for \textsf{A}, and
-an ideal functionality for \textsf{F} (to model \textsf{F}-hybrid
-protocols). For an ideal world execution, dummy parties will be used for
-\textsf{P} and \textsf{Q}, a simulator for \textsf{A}, and an ideal
-functionality for \textsf{F}.
+\subsection{SaUCy?}
+\label{subsec:saucy}
+
+The \textsf{execUC} function defines the UC model of protocol execution. It is
+parameterized by an environment \textsf{z}, protocol parties \textsf{p} and
+\textsf{q}, an adversary \textsf{a}, a functionality \textsf{f}, a security
+parameter \textsf{k}, a random bitstring \textsf{r}, and a corruption model
+\textsf{crupt}.
+
+\begin{itemize}[leftmargin=*]
+  \item \emph{Environment.} The environment's program defines interactions with
+    the protocol parties and the adversary, which have different programs in the
+    real world and the ideal world (see below). Its job is to distinguish which
+    of the worlds it is interacting with.
+  \item \emph{Protocol.} In the real world, the program of the protocol parties
+    correspond to actual programs for running the protocol. In the ideal world,
+    the protocol parties are simply dummy parties, which relay messages between
+    the environment and the functionality.
+  \item \emph{Adversary.} In the real world, the adversary is simply the dummy
+    adversary, which relays messages between the environment and either the
+    functionality or a corrupted party. In the ideal world, the adversary is a
+    simulator, which must mimic the attack of any real world adversary, but in
+    the ideal world.
+  \item \emph{Functionality.} In the real world, the functionality is any
+    functionality that the real world protocol makes calls to (if any). In the
+    ideal world, the functionality is the specification for the protocol under
+    analysis.
+  \item \emph{Security parameter.} Each process is handed a security parameter
+    (a natural number), and must run in a number of steps polynomial in this
+    security parameter. We have more to say on this later.
+  \item \emph{Corruptions.} The possible corruption models are either party
+    \textsf{p} is corrupt, party \textsf{q} is corrupt, or no parties are
+    corrupt, which are defined in the following data declaration:
+    \lstinputlisting[style=myilc]{listings/crupt.ilc}
+\end{itemize}
+
+%For a real world execution, the protocol parties contain code for running the
+%actual protocol under analysis, the adversary is the dummy adversary, and the
+%ideal functionality is any functionality that the protocol makes calls to (if
+%any). For an ideal world execution, the protocol parties are simply dummy
+%parties, the adversary is a simulator, and the ideal functionality is a
+%specification for the protocol under analysis. The environment has the ability
+%to interact with each of the executions as they evolve. For the simulation to be
+%good, the environment should not be able to distinguish which of the executions
+%it is interacting with.
+
+\subsection{Adapting UC Theory to SaUCy}
+\label{subsec:uc}
+
+The typing rules do not guarantee termination, let alone polynomial time
+normalization, so we define this additional notion.
+
+\begin{definition}[Polynomial time normalization]
+  Consider a term \textsf{e} that has the type
+  \[\Delta, \Gamma |- \mathsf{e} : \tyNat ->[\tyBit]\ {->}_m\ \tyBit,\]
+  where the first argument is a security parameter \textsf{k} and the second
+  argument is a random bitstring \textsf{r}.\footnote{The definition of
+    polynomial time normalization applies similarly to a term \textsf{e} of type
+    $\tyBit$ where the security parameter and random bitstring are free
+    variables in \textsf{e}.} We say that \textsf{e} is polynomial time
+  normalizable, written \textsf{poly(e)}, if for all random bitstrings
+  \textsf{r}, where the length of \textsf{r} is polynomial in the security
+  parameter \textsf{k}, the term \textsf{e k r} normalizes to a value \textsf{v}
+  in a polynomial (in \textsf{k}) number of steps.
+\end{definition}
+
+Because processes are confluent, we know that there is only one such value
+\textsf{v = e k r} for each bitstring \textsf{r}, and that \textsf{e} is a
+polynomial time computable function. Hence, a uniform distribution of bitstrings
+gives us a distribution of \textsf{v} as $D_{\mathsf{e}}(\mathsf{v})$, which is
+the probability that \textsf{e k r} normalizes to \textsf{v} for a particular
+\textsf{k} and a uniform choice of \textsf{r}. \todo{Need to elaborate further.}
+
+\begin{definition}[Polynomial time in UC]
+  The judgement polyUC is defined as 
+  \begin{mathpar}
+    \Infer{polyUC,}
+    {\Delta' ; \Gamma |-
+      \keyword{poly}(\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}) : \tyBit}
+    {\Delta ; \Gamma |- \keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
+  \end{mathpar}
+  where $\Delta' = \Delta, \mathsf{k} : \tyBang{\tyNat}, \mathsf{r} :
+  \tyBang{[\tyBit]}$. It says that the term
+  \[\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}\]
+  is a polynomial time normalizing term. \todo{Elaborate more.}
+\end{definition}
+
+Protocol emulation defines what it means for a protocol to emulate an idealized
+version of itself, which relies on an ideal functionality to do all the
+work. Stated informally, we say that a protocol $\pi$ emulates a protocol $\phi$ if no
+environment $\mc{Z}$ can distinguish between interactions with a known adversary
+$\mc{A}$ and $\pi$ versus a simulated adversary $\mc{S}$ and $\phi$. Stated in SaUCy,
+the definition is this:
+\begin{definition}[Emulation]
+  The protocol-functionality pair $(\pi_0, \mc{F}_0)$ emulates $(\pi_1, \mc{F}_1)$
+  if for all adversaries $\mc{A}$, there exists a simulator $\mc{S}$
+  such that for all environments $\mc{Z}$, if $|- \keyword{polyUC}(\mc{Z}, \pi_0,
+  \mc{F}_0, \mc{A})$ then $|- \keyword{polyUC}(\mc{Z}, \pi_1, \mc{F}_1, \mc{S})$,
+  and
+  \[ D(\mathsf{execUC}\ \mc{Z}\ \pi_0\ \mc{F}_0\ \mc{A}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_1\ \mc{F}_1\ \mc{S}).\]
+\end{definition}
+
+We can now state useful composition operators, simplifying lemmas, and
+notation. For brevity, we pack several notions from UC into a single alternate
+definition: UC-realizes.
+
+\begin{definition}[UC-realizes]
+  Protocol $\pi$ with $\mc{F}_0$ realizes $\mc{F}_1$, written $\mc{F}_0
+  \yrightarrow{$\pi$} \mc{F}_1$, if for all environments $\mc{Z}$, if $|-
+  \keyword{polyUC}(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
+  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$, and the
+  following statistical indistinguishability relation holds
+  \[ D(\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_0\ \mc{A}_{\mathbbm{1}}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_{\mathbbm{1}}\ \mc{F}_1\ \mc{S}).\]
+\end{definition}
+
+\subsection{Universal Composition}
+\label{subsec:composition}
+
+While the intended use of universal composition is to replace an ideal
+functionality with a protocol that securely realizes it, we define universal
+composition more generally in terms of replacing one subroutine protocol with
+another. Given a protocol $\phi$, a protocol $\rho$ that makes calls to $\phi$, and a
+protocol $\pi$ that emulates $\phi$, then $\rho^{\phi -> \pi}$ is identical to $\rho$ with the
+following modifications:
+\begin{itemize}[leftmargin=*]
+  \item When $\rho$ writes to $\phi$, $\rho^{\phi -> \pi}$ writes to $\pi$.
+  \item When $\rho^{\phi -> \pi}$ receives a message from $\pi$, proceed as $\rho$ would when
+    it receives the same message from $\phi$.
+\end{itemize}
+
+\begin{figure}
+\lstinputlisting[style=myilc]{listings/compose.ilc}
+\caption{Universal composition operator.}
+\label{fig:composition-operator}
+\end{figure}
+
+From UC-realizes, we can conclude the original UC formulation for arbitrary
+composition:
+\begin{theorem}[Composition Theorem]
+  If $\mc{F}_0 \yrightarrow{$\pi$} \mc{F}_1$, then for all $\rho$ we
+  have that $(\rho^{\pi}, \mc{F}_0)$ emulates $(\rho, \mc{F}_1)$.
+\end{theorem}
+
+\subsection{Commitments Example}
+\label{subsec:example}
+
+To model the cryptography needed in universally composable commitments, we
+introduce several new syntactic forms---\textsf{kgen}, \textsf{tdp}, and
+\textsf{hc}---with the static and dynamic semantics shown in
+Figure~\ref{fig:extended-ilc}.
+
+The key generation function \textsf{keygen} generates, on input $1^n$ (security
+parameter), a random public key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor
+permutation function \textsf{tdp} computes, on input key $v_k$ and bitstring
+$v_{in}$, a bitstring $v_{out}$. The hardcore predicate function \textsf{hc}
+generates, on input trapdoor permutation $f_{v_k}$.
+
+\input{figures/ilc/extended-syntax}
 
 \begin{algorithm}
 \SetAlgorithmName{Protocol}{protocol}{List of Protocols}

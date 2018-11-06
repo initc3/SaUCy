@@ -176,25 +176,44 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/suc.ilc}
-\caption{Full definition of \textsf{execUC}.}
+\caption{Full definition of \textsf{execUC}. The channels follow a uniform
+naming scheme. The read end of a channel is prefixed with \textsf{r-} and the
+write end of a channel is prefixed with \textsf{w-}. The channel \textsf{rZ2P}
+denotes the read end of communications from the environment \textsf{z} to the
+party \textsf{p}. First, the random bitstring is split amongst each of the five
+parties. Then, the functionality, the adversary, and both protocol parties are
+spawned in a child process (given the appropriate channels and parameters), and
+the process continues as the environment process. Notice that parties are
+wrapped in a \textsf{wrapper} function, which takes an additional boolean
+parameter for whether or not the party is corrupted.}
 \label{fig:execUC}
 \end{figure*}
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/wrapper.ilc}
-\caption{Party wrapper.}
+\caption{Party wrapper. The \textsf{wrapper} function takes as parameters a
+process \textsf{p}, a boolean \textsf{crupt}, the process' associated
+communication channels, the security parameter, and a random bitstring. If the
+party is corrupted, then messages from the functionality or the other party are
+simply forwarded to the adversary, and messages from the adversary are forwarded
+to the functionality. Otherwise, the party runs as expected.}
 \label{fig:wrapper}
 \end{figure*}
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/dummy.ilc}
-\caption{Dummy adversary.}
+\caption{Dummy adversary. The dummy adversary forwards messages from the
+environment to either the functionality (if the message has
+constructor \textsf{A2F}) or the party \textsf{p} (if the message has
+constructor \textsf{A2P}). Similarly, the dummy adversary forwards messages from
+the functionality or the procotol parties to the environment.}
 \label{fig:dummy-adversary}
 \end{figure*}
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/dummyp.ilc}
-\caption{Dummy party.}
+\caption{Dummy party. The dummy party simply relays information between the
+environment and the functionality.}
 \label{fig:dummy-party}
 \end{figure*}
 
@@ -223,6 +242,146 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \end{figure*}
 
 \section{Cryptography Definitions}
+
+\begin{comment}
+\subsection{Brain Dump}
+
+\begin{definition}[Protocol Emulation]
+Let $\pi$ and $\phi$ be probabilistic polynomial time (p.p.t) protocols. We say
+that $\pi$ UC-emulates $\phi$ if for any p.p.t. adversary $\mc{A}$ there exists a
+p.p.t. ideal-process adversary $\mc{S}$ such that for any balanced PPT environment
+$\mc{Z}$ we have:
+\begin{equation*}
+\textsc{Exec}_{\phi, \mc{S}, \mc{Z}} \approx \textsc{Exec}_{\pi, \mc{A}, \mc{Z}}.
+\end{equation*}
+\end{definition}
+
+\begin{lemma}[Protocol Emulation w.r.t. the Dummy Adversary]
+Let $\pi$ and $\phi$ be probabilistic polynomial time (p.p.t) protocols. We say
+that $\pi$ UC-emulates $\phi$ if for the dummy adversary $\mc{D}$ there exists a
+p.p.t. ideal-process adversary $\mc{S}$ such that for any balanced PPT environment
+$\mc{Z}$ we have:
+\begin{equation*}
+\textsc{Exec}_{\phi, \mc{S}, \mc{Z}} \approx \textsc{Exec}_{\pi, \mc{D}, \mc{Z}}.
+\end{equation*}
+\end{lemma}
+
+\begin{theorem}[Universal Composition]
+  Let $\rho$, $\pi$, and $\phi$, be p.p.t protocols such that $\pi$ UC-emulates $\phi$ and
+  both $\phi$ and $\pi$ are subroutine respecting. Then protocol $\rho^{\phi -> \pi}$
+  UC-emulates protocol $\rho$.
+\end{theorem}
+
+\begin{corollary}
+  Let $\rho$, $\pi$ be p.p.t protocols such that $\pi$ UC-realizes a p.p.t ideal
+  functionality $\mc{F}$, and both $\rho$ and $\pi$ are subroutine respecting. Then
+  protocol $\rho^{\pi/\mc{F}}$ UC-emulates protocol $\rho$.
+\end{corollary}
+
+\begin{corollary}[Universal Composition: Realizing Functionalities]
+  Let $\mc{F}$, $\mc{G}$ be ideal functionalities such that $\mc{F}$ is
+  p.p.t. Let $\rho$ be a subroutine respecting protocol that UC-realizes $\mc{G}$,
+  and let $\pi$ be a subroutine respecting protocol that UC-realizes
+  $\mc{F}$. Then the composed protocol $\rho^{\pi/\mc{F}}$ securely realizes $\mc{G}$.
+\end{corollary}
+
+\begin{theorem}
+  Protocol $\Pi_{\textsc{com}}$ securely realizes functionality
+  $\Func_{\textsc{com}}$ in the CRS model.
+\end{theorem}
+
+Let {\sf Bit} be the type of single bits (i.e., 0 or 1), and let {\sf Inf} be
+the type of infinite bitstrings. The meaning of an ILC term $\tau$ is given by the
+denotation $[\![\tau]\!]\sigma$, which returns, for an infinite bitstring $\sigma{:}{\sf Inf}$, a value
+$v{:}{\sf Bit}$. The denotation $[\![\tau]\!]$, then, returns a binary
+distribution $d$ over the types of return values for all infinite
+bitstrings. Let $\Delta(d_1, d_2)$ denote the statistical distance between two
+distributions $d_1$ and $d_2$.
+%\[ \Delta(d_1, d_2) \defeq max_{A}|d_1 A - d_2 A|\]
+
+\begin{definition}[$\epsilon$-indistinguishability of ILC Terms]
+Let $\tau_1$ and $\tau_2$ be ILC terms, which are closed except for an infinite
+bitstream free variable $\sigma{:}{\sf Inf}$. Additionally, for any such $\sigma$,
+$[\![t_1]\!]\sigma{:}{\sf Bit}$ and $[\![\tau_2]\!]\sigma{:}{\sf Bit}$. We say that $\tau_1$ and
+$\tau_2$ are $\epsilon$-indistinguishable iff $\Delta([\![\tau_1]\!], [\![\tau_2]\!]) \leq \epsilon$.
+\end{definition}
+
+\begin{definition}[Probability Distribution Ensemble]
+An \emph{ensemble} of probability distributions is a family of probability
+distributions $\{ X_{\lambda, z} \}_{\lambda \in \mathbb{N}, z \in {\{0,1\}}^{*}}$ with index
+set $\mathbb{N} \times \{0,1\}^{*}$.  The ensembles considered in this work are binary probability
+distribution ensembles, which describe single bit outputs of computations, where
+$\lambda \in \mathbb{N}$ represents the security parameter, and $z \in \{0,1\}^{*}$
+represents input.
+\end{definition}
+
+\begin{definition}[Indistinguishability]
+Let $X$ and $Y$ be two binary probability distribution
+ensembles. We say that $X$ and $Y$ are indistinguishable
+(written $X \approx Y$) if for any $c, d \in \mathbb{N}$, there exists
+$\lambda_0 \in \mathbb{N}$ such that for all $\lambda > \lambda_0$ and all $z \in \cup_{\lambda \leq \lambda^d}\{0,1\}^{\lambda}$,
+\[ | \Pr[X_{\lambda, z} = 1] - \Pr[Y_{\lambda, z} = 1] | < \lambda^{-c}. \]
+\end{definition}
+
+\begin{definition}[Bit Producing ILC Term]
+Let $\tau$ be an ILC term. We say that $\tau$ is bit producing if it is closed except
+for an infinite bitstream free variable $\sigma{:}{\sf Inf}$ and $\sigma{:}{\sf Inf} \vdash
+\tau{:}{\sf Bit}$.
+%security parameter in judgement
+%and converging
+\end{definition}
+
+\noindent The denotation $[\![\tau]\!]\sigma$, in which a particular $\sigma$ is
+given, evaluates to a value of type {\sf Bit}, and the denotation $[\![\tau]\!]$,
+in which no $\sigma$ is specified, evaluates to a binary probability distribution
+ensemble over types or values?
+
+\begin{definition}[Indistinguishability of Bit Producing ILC Terms]
+Let $\tau_1$ and $\tau_2$ be bit producing ILC terms. We say that $\tau_1$ and $\tau_2$ are
+indistinguishable terms if the binary probability distribution ensembles
+$[\![\tau_1]\!]$ and $[\![\tau_2]\!]$ are indistinguishable.
+\end{definition}
+%tau is an ILC+ stream w/ infinite streams and security parameter
+
+\begin{definition}[Protocol Emulation in ILC]
+Let $(\pi_1, \mc{F}_1)$ and $(\pi_2, \mc{F}_2)$ be two protocol-functionality
+pairs. We say that $(\pi_1, \mc{F}_1)$ UC-emulates $(\pi_2, \mc{F}_2)$ iff for all
+adversaries $\mc{A}$, there exists an ideal-process adversary $\mc{S}$ such that
+for any environment $\mc{Z}$,
+$\textsc{ExecUC}_{\mc{Z}, \mc{A}, \pi_1, \mc{F}_1}$ and
+$\textsc{ExecUC}_{\mc{Z}, \mc{S}, \pi_2, \mc{F}_2}$ are bit producing and
+indistinguishable terms.
+% ExecUC should have sigma and parameter as free variables
+% bit respecting adversaries and environments
+% first define constraints pi and F for divergence wrt A and Z
+\end{definition}
+
+\begin{definition}[Protocol Emulation in ILC]
+Let $\pi$ and $\phi$ be probabilistic polynomial time (p.p.t.) protocols. We say that
+$\pi$ UC-emulates $\phi$ if for any p.p.t. adversary 
+$\mc{A}$, there exists a p.p.t. ideal-process adversary $\mc{S}$
+such that for any balanced p.p.t. environment $\mc{Z}$,
+$\textsc{ExecUC}_{\phi, \mc{S}, \mc{Z}}$ and $\textsc{ExecUC}_{\pi, \mc{A}, \mc{Z}}$
+are indistinguishable bit producing terms.
+\end{definition}
+
+\begin{definition}[Protocol Emulation in ILC]
+Let $\pi$ and $\phi$ be protocols. We say that $\pi$ UC-emulates $\phi$ iff for all
+adversaries $\mc{A}$, there exists an ideal-process adversary $\mc{S}$ such that
+for any environment $\mc{Z}$,
+$\textsc{ExecUC}[\pi, \mc{A}, \mc{Z}, \lambda, \sigma]$ and
+$\textsc{ExecUC}[\phi, \mc{S}, \mc{Z}, \lambda, \sigma]$ are bit producing and
+indistinguishable terms.
+\end{definition}
+
+\begin{definition}[Balanced Environment]
+An environment $\mc{Z}$ is balanced if the overall length of inputs given by
+$\mc{Z}$ to the parties of the main instance $\pi$ is at most $k$ times the length
+of the input to the adversary.
+\end{definition}
+
+Environment should activate the adversary to allow sending of messages.
+\end{comment}
 
 \begin{definition}[Interactive Turing Machine]
 \end{definition}
