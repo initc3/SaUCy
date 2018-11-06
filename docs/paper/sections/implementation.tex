@@ -1,14 +1,13 @@
 \section{Implementation}
 \label{sec:implementation}
 
-We have implemented an ILC interpreter in Haskell.
-
-For economy of use, our implementation performs polymorphic type inference,
-bounded polymorphic mode inference, and affinity inference. Polymorphism on
-modes is bounded precisely due to our restriction on parallel write mode
-composition. Moreover, a consequence of any kind of mode polymorphism at all is
-that the modes of higher order functions can be dependent on the modes of its
-function arguments. Below, we give a few examples of this.
+We have implemented an ILC interpreter in Haskell.  For economy of use, our
+implementation performs polymorphic type inference, bounded polymorphic mode
+inference, and affinity inference. Polymorphism on modes is bounded precisely
+due to our restriction on parallel write mode composition. Moreover, a
+consequence of any kind of mode polymorphism at all is that the modes of higher
+order functions can be dependent on the modes of its function arguments. We
+illustrate this below.
 
 This first example features full mode polymorphism and no dependent modes.
 \lstinputlisting[style=myilc]{listings/loop.ilc}
@@ -23,8 +22,8 @@ parallel compositions take place, and the function's mode $\Rm$ is monomorphic.
 This next example features bounded mode polymorphism and dependent modes.
 \lstinputlisting[style=myilc]{listings/par.ilc}
 The \textsf{par} function takes as arguments two functions \textsf{f} and
-\textsf{g} and a value \textsf{v}. It says to compute \textsf{f v} and \textsf{g
-  v} in parallel. Here, because write mode expressions cannot be composed in
-parallel, at most one of the modes carried over the function arguments can have
-mode $\Wm$. Additionally, the mode \textsf{p} carried over the rightmost arrow
-is dependent on the modes of the function arguments.
+\textsf{g} and a third argument \textsf{v}. It says to compute \textsf{f v} and
+\textsf{g v} in parallel. Here, because write mode expressions cannot be
+composed in parallel, at most one of the modes carried over the function
+arguments can have mode $\Wm$. Additionally, the mode \textsf{p} carried over
+the rightmost arrow is dependent on the modes of the function arguments.
