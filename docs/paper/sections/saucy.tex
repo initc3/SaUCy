@@ -40,16 +40,3 @@ functionality for \textsf{F}.
 \caption{Universally Composable Commitment}
 \label{alg:com}
 \end{algorithm}
-
-To model the cryptography needed in universally composable commitments, we
-introduce several new syntactic forms---\textsf{kgen}, \textsf{tdp}, and
-\textsf{hc}---with the static and dynamic semantics shown in
-Figure~\ref{fig:extended-ilc}.
-
-The key generation function \textsf{keygen} generates, on input $1^n$ (security
-parameter), a random public key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor
-permutation function \textsf{tdp} computes, on input key $v_k$ and bitstring
-$v_{in}$, a bitstring $v_{out}$. The hardcore predicate function \textsf{hc}
-generates, on input trapdoor permutation $f_{v_k}$.
-
-\input{figures/ilc/extended-syntax}

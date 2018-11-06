@@ -60,9 +60,9 @@ definition: UC-realizes.
 
 \begin{definition}[UC-realizes]
   Protocol $\pi$ with $\mc{F}_0$ realizes $\mc{F}_1$, written $\mc{F}_0
-  \yrightarrow{$\pi$} \mc{F}_1$, if for all environments $\mc{Z}$ we have that $|-
+  \yrightarrow{$\pi$} \mc{F}_1$, if for all environments $\mc{Z}$, if $|-
   \keyword{polyUC}(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
-  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$ and the
+  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$, and the
   following statistical indistinguishability relation holds
   \[ D(\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_0\ \mc{A}_{\mathbbm{1}}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_{\mathbbm{1}}\ \mc{F}_1\ \mc{S}).\]
 \end{definition}
@@ -77,20 +77,39 @@ another. Given a protocol $\phi$, a protocol $\rho$ that makes calls to $\phi$, 
 protocol $\pi$ that emulates $\phi$, then $\rho^{\phi -> \pi}$ is identical to $\rho$ with the
 following modifications:
 \begin{itemize}[leftmargin=*]
-  \item When $rho$ writes to $\phi$, $\rho^{\phi -> \pi}$ writes to $\pi$.
+  \item When $\rho$ writes to $\phi$, $\rho^{\phi -> \pi}$ writes to $\pi$.
   \item When $\rho^{\phi -> \pi}$ receives a message from $\pi$, proceed as $\rho$ would when
     it receives the same message from $\phi$.
 \end{itemize}
 
-\begin{definition}[Composition]
-  $\pi^{\phi}$ \todo{}
-\end{definition}
+\begin{figure}
+\lstinputlisting[style=myilc]{listings/compose.ilc}
+\caption{Universal composition operator.}
+\label{fig:composition-operator}
+\end{figure}
 
+From UC-realizes, we can conclude the original UC formulation for arbitrary
+composition:
 \begin{theorem}[Composition Theorem]
-  From UC-realizes, we can conclude the original UC formulation for arbitrary
-  composition: If $\mc{F}_0 \yrightarrow{$\pi$} \mc{F}_1$, then for all $\phi$ we
-  have that $(\phi^{\pi}, \mc{F}_0)$ emulates $(\phi, \mc{F}_1)$.
+  If $\mc{F}_0 \yrightarrow{$\pi$} \mc{F}_1$, then for all $\rho$ we
+  have that $(\rho^{\pi}, \mc{F}_0)$ emulates $(\rho, \mc{F}_1)$.
 \end{theorem}
+
+\subsection{Application to Commitments}
+\label{subsec:application}
+
+To model the cryptography needed in universally composable commitments, we
+introduce several new syntactic forms---\textsf{kgen}, \textsf{tdp}, and
+\textsf{hc}---with the static and dynamic semantics shown in
+Figure~\ref{fig:extended-ilc}.
+
+The key generation function \textsf{keygen} generates, on input $1^n$ (security
+parameter), a random public key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor
+permutation function \textsf{tdp} computes, on input key $v_k$ and bitstring
+$v_{in}$, a bitstring $v_{out}$. The hardcore predicate function \textsf{hc}
+generates, on input trapdoor permutation $f_{v_k}$.
+
+\input{figures/ilc/extended-syntax}
 
 \begin{comment}
 \subsection{Brain Dump}
