@@ -3,15 +3,16 @@
     Expressions
     & $e$
         &$\bnfas$&
-        $\eKGen{e} \bnfalt \eTdp{e_1}{e_2} \bnfalt \eHc{e}$
+        $\eKGen{e_1}{e_2} \bnfalt \eTdp{e_1}{e_2} \bnfalt \eHc{e}$
   \end{grammar}
   
   \judgbox{\Delta ; \Gamma |- e : A |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has
   intuitionistic type $A$ and mode $m$.}
   \begin{mathpar}
   \Infer{kgen}
-  {\Delta ; \Gamma |- e : [\tyBit]}
-  {\Delta; \Gamma |- \eKGen{e}: ([\tyBit], [\tyBit])}
+  {\Delta_1 ; \Gamma |- e_1 : \tyNat
+   \Delta_2 ; \Gamma |- e_2 : [\tyBit]}
+  {\Delta_1, \Delta_2; \Gamma |- \eKGen{e_1}{e_2}: ([\tyBit], [\tyBit])}
   %
   \and
   %
@@ -31,21 +32,18 @@
     expression~$e_1$ reduces to~$\Store_2 ; e_2$.}
   \begin{mathpar}
   \Infer{kgen}
-  {\keyword{\textbf{Gen}}(n) = (v_{pk}, v_{td}) \\ v_{pk}, v_{td} \in \{0,1\}^n}
+  {\keyword{\textbf{Gen}}(k, r) = (v_{pk}, v_{td}) \\ v_{k}, v_{td} \in \{0,1\}^n}
   { \Store ; \eKGen{n} ---> \Store ; (v_{pk}, v_{td})}
   \and
   \Infer{tdp}
-  {\mathbf{f}_{v_k}(v_i) = v_o \\ \mathbf{f} \colon \{0,1\}^n -> \{0,1\}^n -> \{0,1\}^n}
-  { \Store ; \eTdp{v_k}{v_i} ---> \Store ; v_o }
+  {\mathbf{f}_{v_{pk}}(v_i) = v_o \\ \mathbf{f} \colon \{0,1\}^n -> \{0,1\}^n -> \{0,1\}^n}
+  { \Store ; \eTdp{v_{pk}}{v_i} ---> \Store ; v_o }
   \and
   \Infer{hc}
-  {\keyword{\textbf{Hc}}(\mathbf{f}_{v_k}) = v \\ \keyword{\textbf{Hc}} \colon
+  {\keyword{\textbf{Hc}}(\mathbf{f}_{v_{pk}}) = v \\ \keyword{\textbf{Hc}} \colon
   (\{0,1\}^n -> \{0,1\}^n) -> \{0, 1\}}
-  { \Store ; \eHc{f_{v_k}} ---> \Store ; v}
+  { \Store ; \eHc{f_{v_{pk}}} ---> \Store ; v}
   \end{mathpar}
-%  \begin{mathpar}
-%    G_{pk}(r) = (f^{(3n)}_{pk}(r), B(f^{(3n-1)}_{pk}(r)), \ldots, B(f_{pk}(r)), B(r))
-%  \end{mathpar}
-  \caption{ILC extended with trapdoor permutations.}
+  \caption{Extending ILC with trapdoor permutations.}
   \label{fig:extended-ilc}
 \end{figure*}

@@ -59,7 +59,7 @@ normalization, so we define this additional notion.
 
 \begin{definition}[Polynomial time normalization]
   Consider a term \textsf{e} that has the type
-  \[\Delta, \Gamma |- \mathsf{e} : \tyNat ->[\tyBit]\ {->}_m\ \tyBit,\]
+  \[\emptyctxt |- \mathsf{e} : \tyNat ->[\tyBit]\ {->}_m\ \tyBit,\]
   where the first argument is a security parameter \textsf{k} and the second
   argument is a random bitstring \textsf{r}.\footnote{The definition of
     polynomial time normalization applies similarly to a term \textsf{e} of type
@@ -69,14 +69,13 @@ normalization, so we define this additional notion.
   \textsf{r}, where the length of \textsf{r} is polynomial in the security
   parameter \textsf{k}, the term \textsf{e k r} normalizes to a value \textsf{v}
   in a polynomial (in \textsf{k}) number of steps.
-  \todo{The term must be closed to normalize, so no $\Delta,\Gamma$}
 \end{definition}
 
 \begin{definition}[Value Distribution] 
   Because processes are confluent, we know that if $\mathsf{e~k~r} \leadsto \mathsf{v}$ then the value $\mathsf{v}$ is unique.
   We can therefore define the probability distribution ensemble $D(\mathsf{e}) = \{ D_{\mathsf{e,k}} \}_\mathsf{k}$ of values given a uniform distribution $U_k$ over $\mathsf{k}$-bit strings $\mathsf{r}$, where
 \[
-D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~k~r} \leadsto \mathsf{v} \}
+D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~k~r} \leadsto \mathsf{v} \}.
 \]
 \end{definition}
 
@@ -84,15 +83,14 @@ D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\
   The judgement polyUC is defined as 
   \begin{mathpar}
     \Infer{polyUC,}
-    {\Delta' ; \Gamma |-
+    {\Delta ; \emptyctxt |-
       \keyword{poly}(\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}) : \tyBit}
-    {\Delta ; \Gamma |- \keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
+    {\emptyctxt ; \emptyctxt |- \keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
   \end{mathpar}
-  where $\Delta' = \Delta, \mathsf{k} : \tyBang{\tyNat}, \mathsf{r} :
-  \tyBang{[\tyBit]}$. It says that the term
+  where $\Delta = \mathsf{k} : \tyBang{\tyNat}, \mathsf{r} : \tyBang{[\tyBit]}$. It
+  says that the term
   \[\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}\]
-  is a polynomial time normalizing term. \todo{Elaborate more.}
-  \todo{The term with \textsf{execUC} should be closed, so no $\Delta,\Gamma$}  
+  is a polynomial time normalizing term.
 \end{definition}
 
 Protocol emulation defines what it means for a protocol to emulate an idealized
@@ -123,12 +121,12 @@ definition: UC-realizes.
   \[ D(\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_0\ \mc{A}_{\mathbbm{1}}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_{\mathbbm{1}}\ \mc{F}_1\ \mc{S}).\]
 \end{definition}
 
-\subsection{Universal Composition}
+\subsection{Protocol Composition}
 \label{subsec:composition}
 
 \todo{The idea is that the environment can arbitrarily and adaptively choose inputs to the protocol $\phi$. So when we compose with an arbitrary other protocol $\rho$, it is not any worse than what the environment could have done. It essentially creates a proof obligation to ensure isolation of the protocols.}
 While the intended use of universal composition is to replace an ideal
-functionality with a protocol that securely realizes it, we define universal
+functionality with a protocol that securely realizes it, we define protocol
 composition \todo{Let's just call it protocol composition, not universal composition. It's not really universal.} more generally in terms of replacing one subroutine protocol with
 another. Given a protocol $\phi$, a protocol $\rho$ that makes calls to $\phi$,
 \todo{instead of ``makes calls'', specify that the \textsf{toF} channel of $\rho$ is connected to the \textsf{fromZ} channel of  $\phi$. }
