@@ -1,9 +1,8 @@
 \section{Overview}
 \label{sec:overview}
 
-We give a tour of ILC and SaUCy (explaining the universal composability
-framework en route) with a simple example: How can two untrusting parties, Alice
-and Bob, securely flip a coin? (The answer: a commitment scheme.)
+We first provide background on the universal composability framework and then
+give a tour of ILC and SaUCy.
 
 \begin{figure*}[t]
 \centering
@@ -32,9 +31,43 @@ and Bob, securely flip a coin? (The answer: a commitment scheme.)
 \label{func:com}
 \end{figure*}
 
-\subsection{Ideal Functionalities}
-\label{subsec:functionalities}
+\subsection{Background on Universal Composability}
+\label{subsec:background-uc}
 
+In a nutshell, security proofs in the UC framework follow the real/ideal
+paradigm~\cite{goldreich1987play}. To carry out some cryptographic task in the
+real world, we define a distributed protocol that achieves the task across
+\emph{many untrusted processes}. Of course, the big question is then: \emph{How
+  do we know the protocol is secure?}
+
+So imagine, if you will, an ideal world in which the protocol processes can
+simply rely on a \emph{single trusted process} to carry out the task for them,
+and so security is satisfied trivially. The program for this single trusted
+process is called an \emph{ideal functionality}, and it serves as a uniform way
+to describe all of the security properties we want from the protocol. In other
+words, it is the security specification.
+
+Roughly speaking, we say that a protocol $\pi$ \emph{emulates} an ideal
+functionality $\mc{F}$ (i.e., it meets its specification) if every adversarial
+behavior in the real world can also be exhibited in the ideal world. But because
+the ideal world is our security definition, whatever adversarial behavior that
+can take place there does not lead to a break in security in the real world.
+
+\begin{comment}
+The security requirements of a given
+cryptographic task are defined as a program for a \emph{single trusted process}
+called an \emph{ideal functionality}, which runs in the ideal world. This serves
+as a specification of the desired security properties for a distributed protocol
+achieving the task across \emph{many unstrusted processes}, which runs in the
+real world. Roughly speaking, we say that a protocol $\pi$ \emph{emulates} an
+ideal functionality $\mc{F}$ (i.e., it meets its specification) if every
+adversarial behavior in the real world can also be exhibited in the ideal
+world. But because the ideal world is our definition of security, whatever
+adversarial behavior can take place in the ideal world does not lead to a break
+in security in the real world.
+\end{comment}
+
+\begin{comment}
 Security in the UC framework is based on the real/ideal
 paradigm~\cite{goldreich1987play}. To carry out some cryptographic task in the
 real world, a set of parties must execute a protocol for the task among
@@ -44,8 +77,73 @@ incorruptible trusted third party that securely (by construction) carries out
 the task to be achieved by the protocol. To do so, $\mc{F}$ obtains inputs from
 the parties, performs some local computation, and hands outputs back to the
 parties. Because $\mc{F}$ is trivially secure, it serves as a uniform way to
-describe the task's security requirements.\smallskip
+describe the task's security requirements.
 
+Having defined security in the form of an ideal functionality, the next step is
+to prove that a protocol meets the definition. We say that a protocol $\pi$
+\emph{emulates} (or \emph{securely realizes}) an ideal functionality $\mc{F}$ if
+every adversarial behavior in the real world (running with $\pi$) can also be
+exhibited in the ideal world (running with $\mc{F}$). But because $\mc{F}$ is
+secure by construction, whatever adversarial behavior can take place in the
+ideal world does not lead to a break in security.
+\end{comment}
+
+Proving emulation formally proceeds in two steps:
+\begin{enumerate}[leftmargin=*]
+\item The first step is constructive: We must construct a \emph{simulator}
+  $\mc{S}$ (a simulated adversary) that can simulate the attack of any adversary
+  $\mc{A}$ on $\pi$, but instead, on $\mc{F}$.
+\item The second step is a relational analysis: We must show that running $\pi$
+  under attack by any adversary $\mc{A}$ (the real world) is
+  \emph{indistinguishable} from running $\mc{F}$ under attack by $\mc{S}$ (the
+  ideal world) to any distinguisher $\mc{Z}$, called the \emph{environment}.
+\end{enumerate}
+In particular, $\mc{Z}$ is an interactive distinguisher: It interacts with the
+real world and the ideal world in a well-defined manner, and the simulation is
+good if no $\mc{Z}$ can distinguish between the two.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.85\linewidth]{graphics/suc-experiment}
+  \caption{UC experiment with real world (left) and ideal world (right).}
+  \label{fig:uc-experiment}
+\end{figure}
+
+All of this is indeed quite abstract, so it helps to visualize what the UC
+indistinguishability experiment looks like. Figure~\ref{fig:uc-experiment} shows
+the UC experiment, with the real world on the left, the ideal world on the
+right, and connecting lines as communication channels. There are several things
+worth mentioning:
+
+\begin{itemize}[leftmargin=*]
+\item For simplicity, we illustrate the UC experiment in the context of
+  two-party protocols: $A$ and $B$ in the real world, and $A_{\mathbbm{1}}$ and
+  $B_{\mathbbm{1}}$ in the ideal world.
+\item In the real world, parties $A$ and $B$ execute the protocol amongst
+  themselves, with all messages flowing through the adversary.
+\item In the ideal world, parties $A_{\mathbbm{1}}$ and $B_{\mathbbm{1}}$ are
+  ``dummy'' parties that simply relay information between the environment
+  $\mc{Z}$ and the ideal functionality $\mc{F}$.
+\item The environment $\mc{Z}$ can interact with each of the worlds in the same
+  way, with the main difference being that, in the ideal world, it is
+  (indirectly) interacting with the ideal functionality.
+\end{itemize}
+
+\begin{comment}
+Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
+the commitment scheme defined previously. The real world is shown on the left
+and the ideal world is shown on the right, with connecting lines denoting
+communication channels.\footnote{Note that in the real world, all communication
+  passes through the adversary $\mc{A}$. In the bare model, communication is
+  asynchronous, unauthenticated, and unreliable, but other models of
+  communication can be built atop this model.} In the real world, $A$ and $B$
+carry out the protocol with eachother, while in the ideal world,
+$A_{\mathbbm{1}}$ and $B_{\mathbbm{1}}$ are ``dummy'' parties that simply relay
+messages between $\mc{Z}$ and $\mc{F}$. The environment $\mc{Z}$ is tasked to
+interact with each world and distinguish between the two.
+\end{comment}
+
+\begin{comment}
 \myheader{Example: Secure coin flipping.} Suppose two untrusting parties, Alice
 and Bob, wish to securely flip a coin---Alice calls the coin flip by publishing a
 bit $b \in \{ 0, 1\}$, and Bob flips the coin by publishing the result $r \in \{0,
@@ -84,6 +182,7 @@ figure out Alice's bit from $C_A$ (due to the hiding property), a malleable
 commitment scheme might allow him to create a commitment $C_B'$ from $C_A$,
 which simply flips the bit committed in $C_A$. Bob does not learn Alice's bit,
 but he can still force the outcome of the game in his favor.\smallskip
+\end{comment}
 
 \myheader{Commitment functionality.} \todo{Non-malleability is difficult to
   capture.} We can capture all of these properties at once by defining an ideal
@@ -201,50 +300,6 @@ according to our mode composition rules. This is reflected in the fact that the
 right lollipop in the function signature carries a mode $\Rm$. Finally, because
 wr expressions return $\eUnit$, we wrap it inside a bang! to lift its type into
 the affine type \textsf{!Unit}.
-
-\subsection{The UC Framework, Abstractly}
-\label{subsec:uc-abstractly}
-
-Having defined security in the form of an ideal functionality, the next step is
-to prove that a protocol meets the definition. We say that a protocol $\pi$
-\emph{emulates} (or \emph{securely realizes}) an ideal functionality $\mc{F}$ if
-every adversarial behavior in the real world (running with $\pi$) can also be
-exhibited in the ideal world (running with $\mc{F}$). But because $\mc{F}$ is
-secure by construction, whatever adversarial behavior can take place in the
-ideal world does not lead to a break in security.
-
-Proving emulation formally proceeds in two steps:
-\begin{enumerate}[leftmargin=*]
-\item The first step is constructive: We must construct a \emph{simulator}
-  $\mc{S}$ (a simulated adversary) that can simulate the attack of any adversary
-  $\mc{A}$ on $\pi$, but instead, on $\mc{F}$.
-\item The second step is a relational analysis: We must show that running $\pi$
-  under attack by any adversary $\mc{A}$ (the real world) is
-  \emph{indistinguishable} from running $\mc{F}$ under attack by $\mc{S}$ (the
-  ideal world) to any distinguisher $\mc{Z}$, called the \emph{environment}.
-\end{enumerate}
-In particular, $\mc{Z}$ is an interactive distinguisher: It interacts with the
-real world and the ideal world in a well-defined manner, and the simulation is
-good if no $\mc{Z}$ can distinguish between the two.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.85\linewidth]{graphics/suc-experiment}
-  \caption{UC experiment with real world (left) and ideal world (right).}
-  \label{fig:uc-experiment}
-\end{figure}
-
-Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
-the commitment scheme defined previously. The real world is shown on the left
-and the ideal world is shown on the right, with connecting lines denoting
-communication channels.\footnote{Note that in the real world, all communication
-  passes through the adversary $\mc{A}$. In the bare model, communication is
-  asynchronous, unauthenticated, and unreliable, but other models of
-  communication can be built atop this model.} In the real world, $A$ and $B$
-carry out the protocol with eachother, while in the ideal world,
-$A_{\mathbbm{1}}$ and $B_{\mathbbm{1}}$ are ``dummy'' parties that simply relay
-messages between $\mc{Z}$ and $\mc{F}$. The environment $\mc{Z}$ is tasked to
-interact with each world and distinguish between the two.
 
 \subsection{The UC Framework, Concretely}
 \label{subsec:uc-concretely}
