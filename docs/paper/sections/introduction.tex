@@ -27,9 +27,12 @@ While UC security proofs admit strong guarantees, this comes at the cost of
 their formalization being quite complicated. Moreover, because the UC framework
 only exists ``on paper'', protocol descriptions, specifications, and other proof
 artifacts for proving security are traditionally written in a combination of
-prose and pseudocode, which makes them error-prone and difficult to verify. So
-although the UC framework is widely used as a tool for analysis, its modularity
-benefits have not been enjoyed in practical implementations.
+prose and pseudocode, which makes them error-prone and difficult to
+verify. \todo{Protocols and specs are also often underspecified or expose
+  unexpected behavior, so they may not enjoy nice composition properties or
+  their security proofs may be flawed.} So although the UC framework is widely
+used as a tool for analysis, its modularity benefits have not been enjoyed in
+practical implementations.
 
 While previous works have focused on systematizing UC (or cryptographic analysis
 more broadly), they generally fall short in one of two ways:
