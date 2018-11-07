@@ -51,7 +51,8 @@ Roughly speaking, we say that a protocol $\pi$ \emph{emulates} an ideal
 functionality $\mc{F}$ (i.e., it meets its specification) if every adversarial
 behavior in the real world can also be exhibited in the ideal world. But because
 the ideal world is our security definition, whatever adversarial behavior that
-can take place there does not lead to a break in security in the real world.
+can take place there does not translate to a break in security in the real
+world.
 
 \begin{comment}
 The security requirements of a given
@@ -112,8 +113,8 @@ good if no $\mc{Z}$ can distinguish between the two.
 All of this is indeed quite abstract, so it helps to visualize what the UC
 indistinguishability experiment looks like. Figure~\ref{fig:uc-experiment} shows
 the UC experiment, with the real world on the left, the ideal world on the
-right, and connecting lines as communication channels. There are several things
-worth mentioning:
+right, and communication channels as connecting lines. There are several things
+worth noting here:
 
 \begin{itemize}[leftmargin=*]
 \item For simplicity, we illustrate the UC experiment in the context of
@@ -122,12 +123,17 @@ worth mentioning:
 \item In the real world, parties $A$ and $B$ execute the protocol amongst
   themselves, with all messages flowing through the adversary.
 \item In the ideal world, parties $A_{\mathbbm{1}}$ and $B_{\mathbbm{1}}$ are
-  ``dummy'' parties that simply relay information between the environment
+  ``dummy'' parties that simply relay messages between the environment
   $\mc{Z}$ and the ideal functionality $\mc{F}$.
-\item The environment $\mc{Z}$ can interact with each of the worlds in the same
-  way, with the main difference being that, in the ideal world, it is
-  (indirectly) interacting with the ideal functionality.
+\item An environment $\mc{Z}$ can interact with each of the worlds in the same
+  way, but the main underlying difference is that it is (indirectly) interacting
+  with the ideal functionality in the ideal world. If it is the case that the
+  real world protocol emulates $\mc{F}$, then no environment should be able to
+  tell the two worlds apart.
 \end{itemize}
+
+\todo{Other things maybe worth mentioning: formal definitions, protocol
+  composition, dummy lemma?}
 
 \begin{comment}
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
