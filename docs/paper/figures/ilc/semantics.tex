@@ -1,30 +1,30 @@
 \begin{figure*}
 \centering
 \begin{grammar}
-  Channels
-  & $\Chans$ 
-    & $\bnfas$ & $\emptyChans ~|~ \Chans, c$
-    \\[2mm]
-  Process pool
+  Names
+  & $\Names$ 
+    & $\bnfas$ & $\emptyNames ~|~ \Names, c ~|~ \Names, p$~\hspace*{10mm}~Channel names~$c$; process names~$p$ and $q$.
+  \\[1mm]
+  Process pools
   & $\Procs$ 
-    & $\bnfas$ & $\emptyProcs ~|~ \Procs, \proc{e}$
-    \\[2mm]
+    & $\bnfas$ & $\emptyProcs ~|~ \Procs, p{:}\proc{e}$
+    \\[1mm]
   Configurations
   & $C$
-     & $\bnfas$ & $\Config{\Chans}{\Store}{\Procs} $
-     \\[2mm]
+     & $\bnfas$ & $\Config{\Names}{\Store}{\Procs} $
+     \\[1mm]
  Evaluation contexts
   & $E$
      & $\bnfas$ & $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eLetBang{x}{E}{e} \bnfalt
  \eApp{E}{e} \bnfalt \eApp{v}{E} \bnfalt \eRef{E} \bnfalt \eGet{E}$
      \\ &&& $\bnfaltbrk \eSet{E}{e} \bnfalt \eSet{\ell}{E} \bnfalt
      \eSplit{E}{x_1}{x_2}{e} \bnfalt \eCase{E}{x_1}{e_1}{x_2}{e_2}$
-\\[2mm]
+\\[1mm]
  Read contexts
   & $R$
      & $\bnfas$ & $\bullet \bnfalt \eRd{\eChan{c}} \oplus R \bnfalt R \oplus \eRd{\eChan{c}}$
 \end{grammar}
-\caption{Configurations and evaluation contexts. \todo{Update.}}
+\caption{Channel names, process names, configurations and evaluation contexts. \todo{Update.}}
 \label{fig:configs}
 \end{figure*}
 
@@ -34,7 +34,7 @@
 \begin{mathpar}
 \Infer{permProcs}
 {  \Procs_1 \equiv_\textsf{perm} \Procs_2 }
-{ \Config{\Chans}{\Store}{\Procs_1} \equiv \Config{\Chans}{\Store}{\Procs_2} }
+{ \Config{\Names}{\Store}{\Procs_1} \equiv \Config{\Names}{\Store}{\Procs_2} }
 \end{mathpar}
 %\caption{Structural congruence.}
 %\label{fig:structural-congruence}
@@ -44,12 +44,12 @@
 \judgbox{C_1 ---> C_2}{~~Configuration~$C_1$ reduces to $C_2$.}
 \begin{mathpar}
 \Infer{local}{ \Store_1 ; e_1 ---> \Store_2 ; e_2 }
-{ \Config{\Chans}{\Store_1}{\Procs, \proc{E[e_1]}} --->
-  \Config{\Chans}{\Store_2}{\Procs, \proc{E[e_2]}} }
+{ \Config{\Names}{\Store_1}{\Procs, \ProcNm{p} \proc{E[e_1]}} --->
+  \Config{\Names}{\Store_2}{\Procs, \ProcNm{p} \proc{E[e_2]}} }
 \and
-\Infer{fork}{ ~ }
-{ \Config{\Chans}{\Store}{\Procs, \proc{E[ \eFork{e_1}{e_2} }] } --->
-  \Config{\Chans}{\Store}{\Procs, \proc{e_1}, \proc{E[ e_2 ]}}}
+\Infer{fork}{ q \notin \Names }
+{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eFork{e_1}{e_2} }] } --->
+  \Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1}, \ProcNm{p} \proc{E[ e_2 ]}}}
 \and
 \Infer{congr}{
 C_1 \equiv C_1' 
@@ -60,14 +60,14 @@ C_2' \equiv C_2
 }
 { C_1 ---> C_2 }
 \and
-\Infer{nu}{ c_1, c_2 \notin \Chans }
-{ \Config{\Chans}{\Store}{\Procs, \proc{E[ \eNu{(x_1, x_2)}{e} ]}} --->
-  \Config{\Chans, c_1, c_2}{\Store}{\Procs, \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}}}
+\Infer{nu}{ c_1, c_2 \notin \Names }
+{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eNu{(x_1, x_2)}{e} ]}} --->
+  \Config{\Names, c_1, c_2}{\Store}{\Procs, \ProcNm{p} \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}}}
 \and
 \Infer{rw}
 { c_2 \leadsto c_1 }
-{ \Config{\Chans}{\Store}{\Procs, E_1[R[ \eRd{\eChan{c_1}}] ], E_2[ \eWr{\eChan{c_2}}{v}]} --->
-  \Config{\Chans}{\Store}{\Procs, E_1[ (v, \eChan{c_1})], E_2[ \e]} }
+{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
+  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ (v, \eChan{c_1})], \ProcNm{q} E_2[ () ]} }
 \\
 \end{mathpar}
 
