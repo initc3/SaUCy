@@ -272,7 +272,7 @@ To give a few examples, suppose expressions $e_1$ and $e_2$ have modes $m_1$ and
 $m_2$, respectively. Sequential mode composition shows up in the obvious case of
 sequentially evaluating the two expressions, so the mode of $\eSeq{e_1}{e_2}$ is
 $m1 ;; m2 => m3$.\footnote{The expression $\eSeq{e_1}{e_2}$ is syntactic sugar
-  for $\eLet{\tyUnit}{e_1}{e_2}$.} Parallel mode composition shows up when one
+  for $\eLet{\eUnit}{e_1}{e_2}$.} Parallel mode composition shows up when one
 process forks a second process, so the mode of $\eFork{e_1}{e_2}$ is $m_1 || m_2
 => m_3$.
 
