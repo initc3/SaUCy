@@ -233,7 +233,7 @@ since it is not ``cryptographic'' in nature, it is better handled from the PL
 viewpoint.
 
 We illustrate the problem with a fragment of ILC code:
-\todo{fragment one}
+\lstinputlisting[style=myilc]{listings/reentrant.ilc}
 
 This paradox introduces a race condition: after receiving input from party P, it
 notifies the adversary, then forks a background thread to wait for OK before
@@ -244,7 +244,7 @@ queued messages. Which one gets delivered first when the adversary sends â€œOKâ€
 Actually this would not be expressible in ILC. The read channel would not be
 duplicated, preventing this.
 
-\todo{fragment two}
+\lstinputlisting[style=myilc]{listings/non-reentrant.ilc}
 
 Now consider the second fragment.  It is sequential, so it type checks. It is
 not, however, reentrant, so it would simply get stuck if it receives a second
