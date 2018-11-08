@@ -7,9 +7,9 @@ cryptographic task securely~\cite{canetti2001universally}. In particular, a
 UC-secure protocol enjoys the strongest notion of compositionality---it maintains
 its security properties when run \emph{concurrently} with arbitrary other
 protocols. This is in contrast with weaker notions, which only guarantee
-security in the standalone setting or under sequential composition. And, of
-course, a desirable benefit of universal composition is modularity---it allows us
-to design and analyze complex protocols from simpler building blocks.
+security in the standalone setting or under sequential composition. Of course,
+the big payoff of this strong composition property is modularity---it allows us to
+design and analyze complex protocols from simpler building blocks.
 
 \begin{comment}
 In a nutshell, security proofs in UC follow the real/ideal
@@ -25,11 +25,14 @@ adversarial behavior in the real world can also be exhibited in the ideal world.
 
 While UC security proofs admit strong guarantees, this comes at the cost of
 their formalization being quite complicated. Moreover, because the UC framework
-only exists ``on paper'', protocol descriptions, specifications, and other proof
+only exists ``on paper,'' protocol descriptions, specifications, and other proof
 artifacts for proving security are traditionally written in a combination of
-prose and pseudocode, which makes them error-prone and difficult to verify. So
-although the UC framework is widely used as a tool for analysis, its modularity
-benefits have not been enjoyed in practical implementations.
+prose and pseudocode, which makes them error-prone and difficult to
+verify. \todo{Protocols and specs are also often underspecified or expose
+  unexpected behavior, so they may not enjoy nice composition properties or
+  their security proofs may be flawed.} So although the UC framework is widely
+used as a tool for analysis, its modularity benefits have not been enjoyed in
+practical implementations.
 
 While previous works have focused on systematizing UC (or cryptographic analysis
 more broadly), they generally fall short in one of two ways:
@@ -156,4 +159,5 @@ To summarize, our main contributions are these:
     computational security proofs.
   \item We use ILC to build a concrete, executable implementation of the UC
     framework called SaUCy.
+  \item \todo{SaUCy validation.}
 \end{itemize}

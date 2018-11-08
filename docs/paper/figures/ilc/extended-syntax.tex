@@ -33,7 +33,7 @@
   \begin{mathpar}
   \Infer{kgen}
   {\keyword{\textbf{Gen}}(k, r) = (v_{pk}, v_{td}) \\ v_{k}, v_{td} \in \{0,1\}^n}
-  { \Store ; \eKGen{n} ---> \Store ; (v_{pk}, v_{td})}
+  { \Store ; \eKGen{k}{r} ---> \Store ; (v_{pk}, v_{td})}
   \and
   \Infer{tdp}
   {\mathbf{f}_{v_{pk}}(v_i) = v_o \\ \mathbf{f} \colon \{0,1\}^n -> \{0,1\}^n -> \{0,1\}^n}
@@ -44,6 +44,6 @@
   (\{0,1\}^n -> \{0,1\}^n) -> \{0, 1\}}
   { \Store ; \eHc{f_{v_{pk}}} ---> \Store ; v}
   \end{mathpar}
-  \caption{Extending ILC with trapdoor permutations.}
+  \caption{Extending ILC with trapdoor permutations. \todo{Invert.}}
   \label{fig:extended-ilc}
 \end{figure*}

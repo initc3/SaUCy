@@ -69,8 +69,11 @@ normalization, so we define this additional notion.
 \end{definition}
 
 \begin{definition}[Value Distribution] 
-  Because processes are confluent, we know that if $\mathsf{e~k~r} \leadsto \mathsf{v}$ then the value $\mathsf{v}$ is unique.
-  We can therefore define the probability distribution ensemble $D(\mathsf{e}) = \{ D_{\mathsf{e,k}} \}_\mathsf{k}$ of values given a uniform distribution $U_k$ over $\mathsf{k}$-bit strings $\mathsf{r}$, where
+  Because processes are confluent, we know that if $\mathsf{e~k~r} \leadsto \mathsf{v}$
+  then the value $\mathsf{v}$ is unique.  We can therefore define the
+  probability distribution ensemble $D(\mathsf{e}) = \{ D_{\mathsf{e,k}}
+  \}_\mathsf{k}$ of values given a uniform distribution $U_k$ over
+  $\mathsf{k}$-bit strings $\mathsf{r}$, where
 \[
 D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~k~r} \leadsto \mathsf{v} \}.
 \]
@@ -108,16 +111,14 @@ the definition is this:
 \subsection{A composition theorem in SaUCy}
 \label{subsec:composition}
 
-As a first usage of SaUCy,
-work through the development of a composition operator, and give a composition
-theorem explaining its use.
+As a first usage of SaUCy, work through the development of a composition
+operator, and give a composition theorem explaining its use.
 
 \todo{Explain more the importance of composition operators}
 
-Essentially, our operator is the notion of UC-realizes,
-We can now state useful composition operators, simplifying lemmas, and
-notation. For brevity, we pack several notions from UC into a single alternate
-definition: UC-realizes.
+Essentially, our operator is the notion of UC-realizes, We can now state useful
+composition operators, simplifying lemmas, and notation. For brevity, we pack
+several notions from UC into a single alternate definition: UC-realizes.
 
 \begin{definition}[UC-realizes]
   Protocol $\pi$ with $\mc{F}_0$ realizes $\mc{F}_1$, written $\mc{F}_0
@@ -128,15 +129,19 @@ definition: UC-realizes.
   \[ D(\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_0\ \mc{A}_{\mathbbm{1}}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_{\mathbbm{1}}\ \mc{F}_1\ \mc{S}).\]
 \end{definition}
 
-\todo{The idea is that the environment can arbitrarily and adaptively choose inputs to the protocol $\phi$. So when we compose with an arbitrary other protocol $\rho$, it is not any worse than what the environment could have done. It essentially creates a proof obligation to ensure isolation of the protocols.}
-While the intended use of universal composition is to replace an ideal
-functionality with a protocol that securely realizes it, we define protocol
-composition \todo{Let's just call it protocol composition, not universal composition. It's not really universal.} more generally in terms of replacing one subroutine protocol with
-another. Given a protocol $\phi$, a protocol $\rho$ that makes calls to $\phi$,
-\todo{instead of ``makes calls'', specify that the \textsf{toF} channel of $\rho$ is connected to the \textsf{fromZ} channel of  $\phi$. }
-and a
-protocol $\pi$ that emulates $\phi$, then $\rho^{\phi -> \pi}$ is identical to $\rho$ with the
-following modifications:
+\todo{The idea is that the environment can arbitrarily and adaptively choose
+  inputs to the protocol $\phi$. So when we compose with an arbitrary other
+  protocol $\rho$, it is not any worse than what the environment could have
+  done. It essentially creates a proof obligation to ensure isolation of the
+  protocols.}  While the intended use of universal composition is to replace an
+ideal functionality with a protocol that securely realizes it, we define
+protocol composition \todo{Let's just call it protocol composition, not
+  universal composition. It's not really universal.} more generally in terms of
+replacing one subroutine protocol with another. Given a protocol $\phi$, a protocol
+$\rho$ that makes calls to $\phi$, \todo{instead of ``makes calls'', specify that the
+  \textsf{toF} channel of $\rho$ is connected to the \textsf{fromZ} channel of
+  $\phi$. } and a protocol $\pi$ that emulates $\phi$, then $\rho^{\phi -> \pi}$ is identical to
+$\rho$ with the following modifications:
 \begin{itemize}[leftmargin=*]
   \item When $\rho$ writes to $\phi$, $\rho^{\phi -> \pi}$ writes to $\pi$.
   \item When $\rho^{\phi -> \pi}$ receives a message from $\pi$, proceed as $\rho$ would when
@@ -145,7 +150,7 @@ following modifications:
 
 \begin{figure}
 \lstinputlisting[style=myilc]{listings/compose.ilc}
-\caption{Universal composition operator.}
+\caption{Protocol composition operator.}
 \label{fig:composition-operator}
 \end{figure}
 
@@ -169,7 +174,7 @@ To model the cryptography we need, we extend ILC with the additional syntax we n
 The functionality FCom has already been defined.
 \todo{Recap the proof obligation}
 
-\paragraph{Extending ILC with cryptographic primitives}
+\paragraph{Extending ILC with cryptographic primitives.}
 UC Commitments are realized from cryptographic primitives, such as pseudorandom trapdoor permutations. This requires us to extend the syntax. The semantics are written in terms of the cryptography objects themselves, and we still arrive at a computational reduction for our security proof.
 
 We introduce several new syntactic forms---\textsf{kgen}, \textsf{tdp}, and
@@ -211,29 +216,39 @@ generates, on input trapdoor permutation $f_{v_k}$.
 \label{alg:com}
 \end{algorithm}
 
-\paragraph{Commitment Protocol}
+\paragraph{Commitment Protocol.}
 We defer the protocol to the appendix.
 
-\paragraph{Defining the simulator}
+\paragraph{Defining the simulator.}
 
-\paragraph{Relational argument}
+\paragraph{Relational argument.}
 
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}
 
-Recently, cryptographers have identified a subtlety of defining functionalities, related to reentrancy and scheduling of concurrent code; as a result many functionalities are somewhat ill-defined.
-This is a subtle issue, although since it is not ``cryptographic'' in nature, it is better handled from the PL viewpoint.
+Recently, cryptographers have identified a subtlety of defining functionalities,
+related to reentrancy and scheduling of concurrent code; as a result many
+functionalities are somewhat ill-defined.  This is a subtle issue, although
+since it is not ``cryptographic'' in nature, it is better handled from the PL
+viewpoint.
 
 We illustrate the problem with a fragment of ILC code:
 \todo{fragment one}
 
-This paradox introduces a race condition: after receiving input from party P, it notifies the adversary, then forks a background thread to wait for OK before delivering the message. Suppose input m1 is sent by P, then A, before sending “OK”, returns control to Z, which delivers a second input m2. Now there are two queued messages. Which one gets delivered first when the adversary sends “OK”?
+This paradox introduces a race condition: after receiving input from party P, it
+notifies the adversary, then forks a background thread to wait for OK before
+delivering the message. Suppose input m1 is sent by P, then A, before sending
+“OK”, returns control to Z, which delivers a second input m2. Now there are two
+queued messages. Which one gets delivered first when the adversary sends “OK”?
 
-Actually this would not be expressible in ILC. The read channel would not be duplicated, preventing this.
+Actually this would not be expressible in ILC. The read channel would not be
+duplicated, preventing this.
 
 \todo{fragment two}
 
-Now consider the second fragment.
-It is sequential, so it type checks. It is not, however, reentrant, so it would simply get stuck if it receives a second message on fromP while waiting on fromA.
+Now consider the second fragment.  It is sequential, so it type checks. It is
+not, however, reentrant, so it would simply get stuck if it receives a second
+message on fromP while waiting on fromA.
 
-Other patterns are possible in saucy, such as making use of the ``choice'' operator.
+Other patterns are possible in saucy, such as making use of the ``choice''
+operator.
