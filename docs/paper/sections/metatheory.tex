@@ -1,14 +1,75 @@
 \section{ILC Metatheory}
 \label{sec:metatheory}
 
-\begin{theorem}[Progress]
+TODO: define $\JCterm{C}$
 
+TODO: define $\JCty{\ChTy}{C}{\PrTy}$
+
+TODO: define $\ChTy' \supseteq \ChTy$
+
+TODO: define $\PrTy' \supseteq \PrTy$
+
+
+\begin{theorem}[Progress]
+For all configurations $C$,
+channel typings~$\ChTy$
+and process typings~$\PrTy$,
+%
+if $\JCty{\ChTy}{C}{\PrTy}$
+then 
+either $\JCterm{C}$,
+or $\exists C'$ such that $\JCred{C}{C'}$.
+\begin{proof}
+  TODO
+\end{proof}
 \end{theorem}
 
 \begin{theorem}[Preservation]
-
+For all configurations $C, C'$,
+channel typings~$\ChTy$
+and process typings~$\PrTy$,
+\\
+%
+ if $\JCty{\ChTy}{C}{\PrTy}$
+and $\JCred{C}{C'}$ 
+then there exists 
+channel typing extension $\ChTy' \supseteq \ChTy$
+and process typing extension $\PrTy' \supseteq \PrTy$
+such that $\JCty{\ChTy'}{C'}{\PrTy'}$.
+\begin{proof}
+  TODO
+\end{proof}
 \end{theorem}
 
-\begin{theorem}[Confluence]
+\begin{theorem}[Single-step confluence]
+For all configurations $C$,
+%
+ if $\JCred{C}{C_1}$ 
+and $\JCred{C}{C_2}$ 
+then 
+there exists renaming function~$f$ 
+such that either:
+\begin{enumerate}
+\item $\JCterm{C_1}$ and $C_1 = f(C_2)$, or
+\item $\exists C_3$ 
+such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
+\end{enumerate}
+\begin{proof}
+  TODO
+\end{proof}
+\end{theorem}
 
+\begin{theorem}[Multi-step confluence]
+For all configurations $C$,
+%
+ if $\JCredm{C}{C_1}$ 
+and $\JCredm{C}{C_2}$ 
+and $\JCterm{C_1}$
+and $\JCterm{C_2}$
+then 
+there exists renaming function~$f$ 
+such that $C_1 = f(C_2)$.
+\begin{proof}
+  TODO: corollary to single-step confluence?
+\end{proof}
 \end{theorem}

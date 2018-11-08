@@ -130,10 +130,13 @@
 \newcommand{\Vm}{\textsf{V}}
 
 % ILC Semantics
-\newcommand{\Chans}{\Sigma}
-\newcommand{\emptyChans}{\varepsilon}
+%\newcommand{\Chans}{\Sigma}
+%\newcommand{\emptyChans}{\varepsilon}
+\newcommand{\Names}{\Sigma}
+\newcommand{\emptyNames}{\varepsilon}
 \newcommand{\Store}{\sigma}
 \newcommand{\Procs}{\pi}
+\newcommand{\ProcNm}[1]{#1{:}}
 \newcommand{\proc}[1]{#1}
 \newcommand{\emptyProcs}{\varepsilon}
 \newcommand{\Config}[3]{\left<#1;#2;#3\right>}
@@ -201,3 +204,40 @@
 \newcommand{\env}{\Z}
 \newcommand{\Z}{{\mcal{E}}}
 \newcommand{\R}{{\mathcal R}}
+
+
+%% ILC judgement forms
+%% ---------------------------------------------------------------------
+%% Used to write the line-by-line reasoning of inductive proofs.
+
+%% Channel typing meta var: each one maps channel names to types
+\newcommand{\ChTy}{\Psi}
+
+%% Process typing meta var: each one maps process names to types
+\newcommand{\PrTy}{\Phi}
+
+%% Affine typing judgement
+\newcommand{\JtyAff}[5]{#1 ; #2 |- #3 : #4 |> #5}
+
+%% Intuitionisitic typing judgement
+\newcommand{\JtyInt}[5]{#1 ; #2 |- #3 : #4 |> #5}
+
+%% Configuration typing judgement: Each process has a mode, with at most one write-mode process, and each process has a return type, 
+%% captured in the final mapping (#3).
+\newcommand{\JCty}[3]{#1 |- #2 : #3}
+
+%% Configurations~$C_1$ and $C_2$ are equivalent.
+\newcommand{\JCequiv}[2]{#1 \equiv #2}
+
+%% Configuration~$C_1$ reduces to $C_2$. single step.
+\newcommand{\JCred}[2]{#1 ---> #2}
+
+%% Configuration~$C_1$ reduces to $C_2$. multiple steps.
+\newcommand{\JCredm}[2]{#1 --->^\ast #2}
+
+%% Configuration has terminated, and all processes consist of their final values.
+\newcommand{\JCterm}[1]{#1~\textbf{term}}
+
+% Under store $\Store_1$, expression~$e_1$ reduces to~$\Store_2 ; e_2$.
+\newcommand{\Jered}[4]{#1 ; #2 ---> #3 ; #4}
+
