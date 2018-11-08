@@ -128,8 +128,7 @@ several things worth noting here:
   tell the two worlds apart.
 \end{itemize}
 
-\todo{Other things maybe worth mentioning: formal definitions, protocol
-  composition, dummy lemma?}
+\todo{The big payoff of UC is modularity.}
 
 \begin{comment}
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
@@ -234,7 +233,7 @@ it would appear in the cryptography literature. The functionality simply waits
 for the committer $A$ to commit to some bit $b$, notifies the receiver $B$ that
 it has taken place, and reveals $b$ to $B$ upon request by $A$. Notice that $B$
 never actually sees a commitment to $b$ (it only sees the (\textsf{Receipt})
-message), so the three properties are satisfied trivially.
+message), so the three properties hold trivially.
 
 On the right side of Figure~\ref{func:com}, we define $\Func_{\textsc{com}}$ in
 ILC to highlight some key features of the language.\smallskip
