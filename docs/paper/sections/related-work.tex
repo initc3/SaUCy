@@ -6,8 +6,8 @@
 
 Process calculi have a long and rich history. ILC occupies a point in this space
 that is particularly suited for faithfully capturing interactive Turing
-machines, but plenty of existing calculi are cryptographically-flavored and/or
-enjoy similar properties to ILC. We survey some of them here.
+machines, but plenty of existing calculi are also cryptographically-flavored
+and/or enjoy similar properties to ILC. We survey some of them here.
 
 Two of the early adaptations of process calculi for reasoning about
 cryptographic protocols were the spi calculus~\cite{abadi1999calculus} and the
@@ -36,6 +36,16 @@ calculus. Additionally, it includes a type system that ensures well-typed
 protocols preserve the secrecy of messages given to it by users.
 
 \todo{Composition of crypto protocols in p.p.t. calculus.}
+
+Fowler \etal~\cite{fowler2018session} present a core linear lambda calculus with
+session-typed channels and exception handling that enjoys a strong form of
+confluence called the diamond property. Here, confluence is due to linearity of
+buffer endpoints, so communication actions on different channels can be
+performed in any order. Unfortunately, the calculus only extends to binary
+sessions, so in our multiparty setting, ILC requires a more sophisticated type
+system to achieve confluence.
+
+\todo{Sequentiality in the $\pi$-calculus.}
 
 \subsection{Computer-Aided Cryptography}
 \label{subsec:computer-aided-cryptography}
