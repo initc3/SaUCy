@@ -5,8 +5,8 @@
 \label{subsec:process-calculi}
 
 Process calculi have a long and rich history. ILC occupies a point in this space
-that is particularly suited for faithfully capturing interactive Turing
-machines, but plenty of existing calculi are also cryptographically-flavored
+that is particularly suited to faithfully capturing interactive Turing machines,
+but plenty of existing process calculi are also cryptographically-flavored
 and/or enjoy similar properties to ILC. We survey some of them here.
 
 Two of the early adaptations of process calculi for reasoning about
@@ -15,37 +15,62 @@ applied $\pi$-calculus~\cite{abadi2001mobile}, both of which extend the standard
 $\pi$-calculus~\cite{milner1999communicating}. The spi calculus extends the
 $\pi$-calculus with constructs for encryption and decryption, and develops a
 technique for proving authenticity and secrecy properties of cryptographic
-protocols via equivalences between spi calculus processes. Here, equivalence is
-in the eyes of an environment (attacker) that can interact with the protocol to
-break its security. While similar to the spi calculus, the applied $\pi$-calculus
-permits a wider variety of cryptographic primitives, which can be defined by
-means of an equational theory.
+protocols via observational equivalence between spi calculus processes. The
+applied $\pi$-calculus builds on this work, permitting a wider variety of
+cryptographic primitives that can be defined by means of an equational theory.
 
-\todo{Transition to computational setting.} Lincoln
-\etal~\cite{lincoln1998probabilistic} give a computational semantics to a
-variant of the $\pi$-calculus. In particular, their language allows defining
-probabilistic polynomial-time processes, and so adversary processes can perform
-arbitrary polynomial-time computations to break security. They refine the notion
-of observational equivalence between protocols introduced by Abadi and
-Gordon~\cite{abadi1999calculus} to work for p.p.t. processes, and they are able
-to relate this new notion to cryptographic ones such as indistinguishability.
+A variety of tools for protocol analysis, some of which we discuss in the next
+subsection, can trace their roots back to these works. They generally operate in
+what is called the \emph{symbolic} model of cryptography (also known as the
+Dolev-Yao model), in which cryptographic primitives are abstracted (and
+idealized) as term algebras and adversary capabilities are defined as deduction
+rules over these terms~\cite{cortier2011survey}. Although analyzing protocols
+from this abstract vantage point makes the analysis relatively tractable, it is
+possible to verify protocols that are susceptible to simple attacks that lie
+outside the adversary model.
 
-Laud~\cite{laud2005secrecy} introduces a language for cryptographic protocols
-that gives a computational and deterministic semantics to the spi
-calculus. Additionally, it includes a type system that ensures well-typed
-protocols preserve the secrecy of messages given to it by users.
+Hence, much follow-up work has focused on bridging the gap between this PL-style
+of formalization and the \emph{computational} model of cryptography (the modus
+operandi in cryptography), by outfitting process calculi with computational
+semantics.
 
-\todo{Composition of crypto protocols in p.p.t. calculus.}
+Lincoln \etal~\cite{lincoln1998probabilistic} give a computational semantics to
+a variant of the $\pi$-calculus, which allows one to define communicating
+probabilistic polynomial-time (p.p.t.) processes. In contrast to adversaries in
+the symbolic model, which find attack traces nondeterministically, computational
+adversaries can perform arbitrary p.p.t. computations to break
+security. Additionally, they refine the notion of observational equivalence
+between protocols introduced by Abadi and Gordon~\cite{abadi1999calculus} to
+work in this new setting, and they are able to relate this new notion to
+cryptographic ones such as indistinguishability.
+
+Laud~\cite{laud2005secrecy} gives a computational and deterministic semantics to
+the spi calculus, which additionally includes a type system for ensuring
+well-typed protocols preserve the secrecy of messages given to it by users.
+
+Mateus \etal~\cite{mateus2003composition} adapt the p.p.t. calculus by Lincoln
+\etal~\cite{lincoln1998probabilistic} to explore (sequential) compositionality
+properties in protocols. In their work, the security of a protocol is
+established by a notion of emulation: A process $P$ emulates a process $Q$ if
+for any adversary (context) $A[\cdot]$, the trace process of $A[P]$ is
+observationally equivalent to the trace process of $B[Q]$ for ideal adversary
+$B[\cdot]$. Compositionality follows naturally: A process that uses $Q$ can also use
+$P$ as a secure implementation of $Q$.
+
+\todo{Transition.}
+
+Berger \etal~\cite{berger2001sequentiality} describe a type system for capturing
+deterministic (sequential) computation in the $\pi$-calculus. The type system uses
+affineness and stateless replication to achieve deterministic
+computation. \todo{More details.}
 
 Fowler \etal~\cite{fowler2018session} present a core linear lambda calculus with
 session-typed channels and exception handling that enjoys a strong form of
 confluence called the diamond property. Here, confluence is due to linearity of
 buffer endpoints, so communication actions on different channels can be
 performed in any order. Unfortunately, the calculus only extends to binary
-sessions, so in our multiparty setting, ILC requires a more sophisticated type
+sessions, so in our multiparty setting, we require a more sophisticated type
 system to achieve confluence.
-
-\todo{Sequentiality in the $\pi$-calculus.}
 
 \subsection{Computer-Aided Cryptography}
 \label{subsec:computer-aided-cryptography}
