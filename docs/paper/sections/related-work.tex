@@ -1,6 +1,53 @@
 \section{Related Work}
 \label{sec:related}
 
+\subsection{Process Calculi}
+\label{subsec:process-calculi}
+
+Process calculi have a long and rich history. ILC occupies a point in this space
+that is particularly suited for faithfully capturing interactive Turing
+machines, but plenty of existing calculi are cryptographically-flavored and/or
+enjoy similar properties to ILC. We survey some of them here.
+
+Two of the early adaptations of process calculi for reasoning about
+cryptographic protocols were the spi calculus~\cite{abadi1999calculus} and the
+applied $\pi$-calculus~\cite{abadi2001mobile}, both of which extend the standard
+$\pi$-calculus~\cite{milner1999communicating}. The spi calculus extends the
+$\pi$-calculus with constructs for encryption and decryption, and develops a
+technique for proving authenticity and secrecy properties of cryptographic
+protocols via equivalences between spi calculus processes. Here, equivalence is
+in the eyes of an environment (attacker) that can interact with the protocol to
+break its security. While similar to the spi calculus, the applied $\pi$-calculus
+permits a wider variety of cryptographic primitives, which can be defined by
+means of an equational theory.
+
+\todo{Transition to computational setting.} Lincoln
+\etal~\cite{lincoln1998probabilistic} give a computational semantics to a
+variant of the $\pi$-calculus. In particular, their language allows defining
+probabilistic polynomial-time processes, and so adversary processes can perform
+arbitrary polynomial-time computations to break security. They refine the notion
+of observational equivalence between protocols introduced by Abadi and
+Gordon~\cite{abadi1999calculus} to work for p.p.t. processes, and they are able
+to relate this new notion to cryptographic ones such as indistinguishability.
+
+Laud~\cite{laud2005secrecy} introduces a language for cryptographic protocols
+that gives a computational and deterministic semantics to the spi
+calculus. Additionally, it includes a type system that ensures well-typed
+protocols preserve the secrecy of messages given to it by users.
+
+\todo{Composition of crypto protocols in p.p.t. calculus.}
+
+\subsection{Computer-Aided Cryptography}
+\label{subsec:computer-aided-cryptography}
+
+Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC framework to
+the symbolic model of cryptography, in which cryptographic operations are
+abstracted as term algebras and adversary capabilities are defined by deduction
+rules over these terms~\cite{cortier2011survey}.  Although analyzing security
+from this abstract vantage point can benefit from automated reasoning, security
+guarantees derived from symbolic analyses are not as strong as those derived
+from computational analyses~\cite{cortier2011survey}.
+
 \begin{enumerate}[leftmargin=*]
   \item Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC
     framework to the symbolic model of cryptography, in which cryptographic
@@ -53,14 +100,14 @@
     $\pi$-calculus with cryptographic primitives. In the spi calculus, as in the
     $\pi$-calculus, channels can be passed over channels, and its scoping rules
     guarantee that an attacker cannot access a channel it is not explicitly
-    given (scoping is the basis of security). \todo{Why do we prevent passing channels
-    over channels in SaUCy?} The spi calculus allows expressing security
-    guarantees as equivalences between spi calculus processes. For example, we
-    can say that a protocol maintains the secrecy of a value $x$ by stating that
-    the protocol with $x$ is equivalent to the protocol with $x'$, for every
-    $x'$. Here, equivalence means equivalence in the eyes of an arbitrary
-    environment that interacts with the protocol. \todo{They cannot take the
-      standard bisimilarity relation as our notion of equivalence. Why?}
+    given (scoping is the basis of security). The spi calculus allows expressing
+    security guarantees as equivalences between spi calculus processes. For
+    example, we can say that a protocol maintains the secrecy of a value $x$ by
+    stating that the protocol with $x$ is equivalent to the protocol with $x'$,
+    for every $x'$. Here, equivalence means equivalence in the eyes of an
+    arbitrary environment that interacts with the protocol. \todo{They cannot
+      take the standard bisimilarity relation as our notion of
+      equivalence. Why?}
 
     Although equivalence makes reference to the environment, we do not need to
     give a model of the environment explicitly. Instead, the environment can be
@@ -130,4 +177,6 @@
     operations~\cite{backes2003composable}.
   \item Symmetric encryption in a simulatable Dolev-Yao style cryptographic
     library~\cite{backes2004symmetric}.
+  \item Composition of cryptographic protocols in a p.p.t. process
+    calculus~\cite{mateus2003composition}.
 \end{enumerate}
