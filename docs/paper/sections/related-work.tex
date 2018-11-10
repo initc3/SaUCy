@@ -1,10 +1,10 @@
 \section{Related Work}
 \label{sec:related}
 
-We first touch on two views of cryptography that have emerged over the
-years: symbolic cryptography and computational cryptography. Their distinctions
-show up in our subsequent discussions of related process calculi, tools for
-cryptographic reasoning, and variations of the UC framework.
+We first touch on two distinct but useful approaches for analyzing cryptographic
+protocols: the symbolic approach and the computational approach. Their
+distinctions show up in our subsequent discussions of related process calculi,
+tools for cryptographic reasoning, and variations of the UC framework.
 
 \subsection{Symbolic vs. Computational Cryptography}
 \label{subsec:symbolic-computational}
@@ -15,20 +15,26 @@ of which have their merits and drawbacks.
 
 In the symbolic model, cryptographic operations are abstracted (and idealized)
 as term algebras, and adversary capabilities are defined as deduction rules over
-these terms~\cite{cortier2011survey}. Importantly, adversaries can make choices
-nondeterministically, and so an attack trace will be found if there is
-one. Viewing protocols from this abstract vantage point makes the analysis
-relatively tractable, but because adversaries are nondeterministic, their
-capabilities must be severely restricted. Therefore, it is possible to verify
-protocols that are susceptible to simple attacks that lie outside the adversary
-model.
+these terms~\cite{cortier2011survey}. Importantly, adversaries make
+nondeterministic choices, and so an attack trace will be found if there is
+one. On the upside, Viewing protocols from this abstract vantage point makes the
+analysis relatively tractable. However, because adversaries have
+nondeterministic behavior, their capabilities must be severely
+restricted. Therefore, it is possible to verify protocols that are susceptible
+to simple attacks that lie outside the adversary model.
 
-In the computational model, cryptographic operations are functions over
-bitstrings, and adversaries are probabilistic polynomial time (p.p.t.) Turing
-machines. Here, security is defined in terms of the probability and
-computational complexity of attacks. While this model is much more realistic and
-security analysis admits much stronger guarantees, proofs are more complicated
-and are, for the most part, done manually.
+In the computational model, cryptographic operations are modeled as functions
+over bitstrings, and adversaries are modeled as probabilistic polynomial time
+(p.p.t.)  Turing machines. Importantly, security is defined in terms of the
+probability and computational complexity of attacks, which complicates proofs,
+but admits much stronger security guarantees. Analyzing protocols in the
+computational model is the modus operandi in cryptography, but, for the most
+part, proofs are done manually. The goal of this work, and others we discuss
+later, seek to change this dynamic.
+
+There are also a number of works on computational soundness, which focuses on
+bridging the gap between the symbolic and computational
+models~\cite{abadi2002reconciling}.
 
 \subsection{Process Calculi}
 \label{subsec:process-calculi}
@@ -43,56 +49,63 @@ Two of the early adaptations of process calculi for reasoning about
 cryptographic protocols were the spi calculus~\cite{abadi1999calculus} and the
 applied $\pi$-calculus~\cite{abadi2001mobile}, both of which extend the standard
 $\pi$-calculus~\cite{milner1999communicating}. The spi calculus extends the
-$\pi$-calculus with constructs for encryption and decryption, and develops a
+$\pi$-calculus with constructs for encryption and decryption, and introduces a
 technique for proving authenticity and secrecy properties of cryptographic
 protocols via observational equivalence between spi calculus processes. The
 applied $\pi$-calculus builds on this work, permitting a wider variety of
 cryptographic primitives that can be defined by means of an equational theory.
 
-A variety of tools for protocol analysis, some of which we discuss in the next
-subsection, can trace their roots back to these works. They generally operate in
-what is called the \emph{symbolic} model of cryptography (also known as the
-Dolev-Yao model), in which cryptographic primitives are abstracted (and
-idealized) as term algebras and adversary capabilities are defined as deduction
-rules over these terms~\cite{cortier2011survey}. Although analyzing protocols
-from this abstract vantage point makes the analysis relatively tractable, it is
-possible to verify protocols that are susceptible to simple attacks that lie
-outside the adversary model.
+%A variety of tools for protocol analysis, some of which we discuss in the next
+%subsection, can trace their roots back to these works. They generally operate in
+%what is called the \emph{symbolic} model of cryptography (also known as the
+%Dolev-Yao model), in which cryptographic primitives are abstracted (and
+%idealized) as term algebras and adversary capabilities are defined as deduction
+%rules over these terms~\cite{cortier2011survey}. Although analyzing protocols
+%from this abstract vantage point makes the analysis relatively tractable, it is
+%possible to verify protocols that are susceptible to simple attacks that lie
+%outside the adversary model.
 
-Hence, much follow-up work has focused on bridging the gap between this PL-style
-of formalization and the \emph{computational} model of cryptography (the modus
-operandi in cryptography), by outfitting process calculi with computational
-semantics that considers issues of complexity and probability.
+A variety of tools for symbolic analysis, some of which we discuss in the next
+subsection, can trace their roots back to these works. Naturally, ensuing work
+has also turned to bridging the gap between this PL-style of formalization and
+the computational model of cryptography by outfitting existing calculi with
+a computational semantics that considers issues of complexity and probability.
 
 Lincoln \etal~\cite{lincoln1998probabilistic} give a computational semantics to
 a variant of the $\pi$-calculus, which allows one to define communicating
-probabilistic polynomial-time (p.p.t.) processes. In contrast to adversaries in
-the symbolic model, which find attack traces nondeterministically, computational
-adversaries can perform arbitrary p.p.t. computations to break
-security. Additionally, they refine the notion of observational equivalence
-between protocols introduced by Abadi and Gordon~\cite{abadi1999calculus} to
-work in this new setting, and they are able to relate this new notion to
-cryptographic ones such as indistinguishability.
+probabilistic polynomial-time (p.p.t.) processes. They also refine the notion of
+observational equivalence between protocols introduced by Abadi and
+Gordon~\cite{abadi1999calculus} to work in the computational setting, and they
+are able to relate this new notion to cryptographic ones such as
+indistinguishability.
 
 Laud~\cite{laud2005secrecy} gives a computational and deterministic semantics to
 the spi calculus, which additionally includes a type system for ensuring
 well-typed protocols preserve the secrecy of messages given to it by users.
 
-Mateus \etal~\cite{mateus2003composition} adapt the p.p.t. calculus by Lincoln
-\etal~\cite{lincoln1998probabilistic} to explore (sequential) compositionality
-properties in protocols. In their work, the security of a protocol is
-established by a notion of emulation: A process $P$ emulates a process $Q$ if
-for any adversary (context) $A[\cdot]$, the trace process of $A[P]$ is
-observationally equivalent to the trace process of $B[Q]$ for ideal adversary
-$B[\cdot]$. Compositionality follows naturally: A process that uses $Q$ can also use
-$P$ as a secure implementation of $Q$.
+Mateus \etal~\cite{mateus2003composition} adapt the p.p.t. process calculus by
+Lincoln \etal~\cite{lincoln1998probabilistic} to explore (sequential)
+compositionality properties in protocols. In particular, they derive a
+compositionality property from structural properties of the process calculus,
+which is also based on protocol emulation.
 
-\todo{Transition.}
+%In their work, the security of a protocol is established
+%by a notion of emulation: A process $P$ emulates a process $Q$ if for any
+%adversary (context) $A[\cdot]$, the trace process of $A[P]$ is observationally
+%equivalent to the trace process of $B[Q]$ for ideal adversary
+%$B[\cdot]$. Compositionality follows naturally: A process that uses $Q$ can also use
+%$P$ as a secure implementation of $Q$.
+
+A prominent distinction between calculi for symbolic analysis and calculi for
+computational analysis is the treatment of nondeterminism. Nondeterminism is
+fundamentally as odds with probabilistic reasoning, so computational calculi
+avoid it entirely. In ILC, nondeterminism is eliminated via confluence. There
+are a number of other non-cryptographically-related calculi that also enjoy
+similar properties.
 
 Berger \etal~\cite{berger2001sequentiality} describe a type system for capturing
 deterministic (sequential) computation in the $\pi$-calculus. The type system uses
-affineness and stateless replication to achieve deterministic
-computation. \todo{More details.}
+affineness and stateless replication to achieve deterministic computation.
 
 Fowler \etal~\cite{fowler2018session} present a core linear lambda calculus with
 session-typed channels and exception handling that enjoys a strong form of
@@ -102,12 +115,30 @@ performed in any order. Unfortunately, the calculus only extends to binary
 sessions, so in our multiparty setting, we require a more sophisticated type
 system to achieve confluence.
 
-\subsection{Tools for Cryptographic Reasoning}
+\subsection{Tools for Cryptographic Analysis}
 \label{subsec:tools}
 
-As we touched on previously, tools for reasoning about the security of
-cryptographic protocols generally come in one of two flavors: ones that operate
-in the symbolic model and ones that operate in the computational model.
+Cryptography and formal methods have a flourishing interplay, and there are
+variety of computer-aided tools for cryptographic analysis, both symbolic and
+computational. Among the symbolic tools include the NRL protocol
+analyzer~\cite{meadows1996nrl}, Maude-NPA~\cite{escobar2009maude}, and
+Proverif~\cite{blanchet2010proverif}. Among the computational tools include
+CertiCrypt~\cite{barthe2009formal}, EasyCrypt~\cite{barthe2011computer},
+CryptoVerif~\cite{blanchet2007cryptoverif}, Cryptol~\cite{lewis2003cryptol}, and
+$\text{F}^{\star}$~\cite{swamy2016dependent}.
+
+%CertiCrypt~\cite{barthe2009formal} is a framework (built on
+%Coq~\cite{barras1997coq}) that supports machine-checked game-based proofs of
+%security. It includes tools to reason about the equivalence of probabilistic
+%programs, a relational Hoare logic, a theory of observational equivalence,
+%verified program transformations, and game-based techniques.  Their experience
+%shows that the type system and automated tactics provide valuable information in
+%debugging proofs. EasyCrypt~\cite{barthe2011computer} is follow-up work on
+%CertiCrypt, which permits more automation and shorter proof
+%scripts. \todo{Details on their imperative language?}
+
+\subsection{Variations of the UC Framework}
+\label{subsec:uc-variants}
 
 Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC framework to
 the symbolic model of cryptography. In particular, they show that certain
@@ -116,19 +147,7 @@ composition, still carry over to the symbolic model. They are also able to show
 that certain results, such as the impossibility of UC commitments in the
 standard model of cryptography, can still be observed in the symbolic model.
 
-CertiCrypt~\cite{barthe2009formal} is a framework (built on
-Coq~\cite{barras1997coq}) that supports machine-checked game-based proofs of
-security. It includes tools to reason about the equivalence of probabilistic
-programs, a relational Hoare logic, a theory of observational equivalence,
-verified program transformations, and game-based techniques.  Their experience
-shows that the type system and automated tactics provide valuable information in
-debugging proofs. EasyCrypt~\cite{barthe2011computer} is follow-up work on
-CertiCrypt, which permits more automation and shorter proof
-scripts. \todo{Details on their imperative language?}
-
-\subsection{Variations of the UC Framework}
-\label{subsec:uc-variants}
-
+\begin{comment}
 \begin{enumerate}[leftmargin=*]
   \item Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC
     framework to the symbolic model of cryptography, in which cryptographic
@@ -261,3 +280,4 @@ scripts. \todo{Details on their imperative language?}
   \item Composition of cryptographic protocols in a p.p.t. process
     calculus~\cite{mateus2003composition}.
 \end{enumerate}
+\end{comment}
