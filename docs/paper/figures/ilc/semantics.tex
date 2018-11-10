@@ -1,5 +1,6 @@
-\begin{figure*}
+\begin{figure*}[t]
 \centering
+\begin{subfigure}{0.35\textwidth}
 \begin{grammar}
   Channel names & $c$   &$\bnfas$& $\cdots$
   \\
@@ -22,6 +23,8 @@
      & $\bnfas$ & $\Config{\Names}{\Store}{\Procs} $
      \\[1mm]
 \end{grammar}
+\end{subfigure}%
+\begin{subfigure}{0.5\textwidth}
 \begin{grammar}
  Evaluation
   & $E$
@@ -35,7 +38,8 @@
   & $R$
      & $\bnfas$ & $\bullet \bnfalt \eRd{\eChan{c}} \oplus R \bnfalt R \oplus \eRd{\eChan{c}}$
 \end{grammar}
-\caption{Channel names, process names, configurations and evaluation contexts. \todo{Arrange grammars side-by-side, for space.}}
+\end{subfigure}
+\caption{Channel names, process names, configurations and evaluation contexts.}
 \label{fig:configs}
 \end{figure*}
 

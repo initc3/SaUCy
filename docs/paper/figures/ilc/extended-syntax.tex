@@ -3,7 +3,8 @@
     Expressions
     & $e$
         &$\bnfas$&
-        $\eKGen{e_1}{e_2} \bnfalt \eTdp{e_1}{e_2} \bnfalt \eHc{e}$
+        $\eKGen{e_1}{e_2} \bnfalt \eTdp{e_1}{e_2} \bnfalt \eInv{e_1}{e_2}
+    \bnfalt \eHc{e}$
   \end{grammar}
   
   \judgbox{\Delta ; \Gamma |- e : A |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has
@@ -16,10 +17,17 @@
   %
   \and
   %
-  \Infer{eTdp}
+  \Infer{tdp}
   {\Delta_1; \Gamma |- e_1 : [\tyBit]\\
    \Delta_2; \Gamma |- e_2 : [\tyBit]}
   {\Delta_1, \Delta_2; \Gamma |- \eTdp{e_1}{e_2}: [\tyBit]}
+  %
+  \and
+  %
+  \Infer{inv}
+  {\Delta_1; \Gamma |- e_1 : \tyProd{[\tyBit]}{[\tyBit]}\\
+   \Delta_2; \Gamma |- e_2 : [\tyBit]}
+  {\Delta_1, \Delta_2; \Gamma |- \eInv{e_1}{e_2}: [\tyBit]}
   %
   \and
   %
@@ -36,14 +44,19 @@
   { \Store ; \eKGen{k}{r} ---> \Store ; (v_{pk}, v_{td})}
   \and
   \Infer{tdp}
-  {\mathbf{f}_{v_{pk}}(v_i) = v_o \\ \mathbf{f} \colon \{0,1\}^n -> \{0,1\}^n -> \{0,1\}^n}
-  { \Store ; \eTdp{v_{pk}}{v_i} ---> \Store ; v_o }
+  {\mathbf{f}({v_{pk}},v_{in}) = v_{out} \\ \mathbf{f} \colon \{0,1\}^n -> \{0,1\}^n -> \{0,1\}^n}
+  { \Store ; \eTdp{v_{pk}}{v_{in}} ---> \Store ; v_{out} }
+  \and
+  \Infer{inv}
+  {\mathbf{Inv}((v_{pk}, v_{td}), v_{in}) = v_{out} \\ \mathbf{f} \colon \{0,1\}^n \times
+    \{0,1\}^n -> \{0,1\}^n -> \{0,1\}^n}
+  { \Store ; \eInv{(v_{pk}, v_{td})}{v_{in}} ---> \Store ; v_{out} }
   \and
   \Infer{hc}
-  {\keyword{\textbf{Hc}}(\mathbf{f}_{v_{pk}}) = v \\ \keyword{\textbf{Hc}} \colon
-  (\{0,1\}^n -> \{0,1\}^n) -> \{0, 1\}}
-  { \Store ; \eHc{f_{v_{pk}}} ---> \Store ; v}
+  {\keyword{\textbf{Hc}}_{\mathbf{f}}(v_{pk}) = v \\ \keyword{\textbf{Hc}}_{\mathbf{f}} \colon \{0,1\}^n
+    -> \{0, 1\}}
+  { \Store ; \eHc{v_{pk}} ---> \Store ; v}
   \end{mathpar}
-  \caption{Extending ILC with trapdoor permutations. \todo{Invert.}}
+  \caption{Extending ILC with trapdoor permutations.}
   \label{fig:extended-ilc}
 \end{figure*}
