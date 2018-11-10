@@ -1,45 +1,131 @@
 \section{ILC Metatheory}
 \label{sec:metatheory}
 
-TODO: define $\JCterm{C}$
+(We summarize the meta theory of ILC; see TODO for full proofs).
 
-TODO: define $\JCty{\ChTy}{C}{\PrTy}$
+Intuitively, ILC's type system design enforces that a
+configuration's reduction consists of a unique
+(\emph{deterministic}) sequence of reader-writer process pairings,
+and is \emph{confluent} with any other reduction choice that exchanges 
+the order of \emph{other} (non-interactive) reduction steps.
+%among a unique sequence of read-write process pairs.
+%
+As explained in \Secref{sec:ilc}, 
+ILC's type system does so by restricting the dataflow of read channels
+(via affine typing) 
+and by restricting the composition of write effects 
+(forbidding write-mode parallel processes).
+%
+The proofs of type soundness, whose statements we discuss next, 
+establish the validity of these invariants.
+%
+These language-level invariants support confluence theorems, also
+stated below.
+%
+These theorems include \emph{full confluence}:
+Any two full reductions of a configuration yield a pair of equivalent configurations
+(isomorphic, up to a renaming of non-determinisitic name choices).
+
+\subsection{Type soundness}
+
+We prove type soundness of ILC via mostly-standard notions of progress
+and preservation.
+%
+To state these theorems, we follow the usual recipe, except that we
+give a special definition of ``program terimination'' which permits
+deadlocks.
+%
+Informally, $\JCterm{C}$ holds when:
+\begin{enumerate}
+ \item $C$ is fully normal: every process in~$C$  
+   is normalized (consists of a value).
+ \item $C$ is (at least partially) deadlocked: 
+   there exists one or more read-mode processes in $C$, or
+   there exists one or more write-mode processes in $C$,
+   however, no reader-writer pair exists for a common channel~$c$.
+\end{enumerate}
+
+Recall that ILC is concerned with enforcing \emph{confluence} as its
+central meta theoretic property, \emph{not} deadlock freedom.
+%
+Confluence implies, among other things, that the order of reduction steps is
+inconsequential, and that no process scheduling choices will affect
+the final outcome.
+%
+(As discussed in ~\Secref{sec:related}, deadlock freedom is an
+orthogonal concern that a future variation of ILC could enforce).
+
+TODO: define $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
 
 TODO: define $\ChTy' \supseteq \ChTy$
 
 TODO: define $\PrTy' \supseteq \PrTy$
 
+\begin{lemma}[Non-progress]
+For all configurations $C$,
+store typings~$\StTy$,
+channel typings~$\ChTy$,
+and process typings~$\PrTy$,
+%
+if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
+and $\JCterm{C}$,
+then $\not\exists C'$ such that $\JCred{C}{C'}$.
+%% \begin{proof}
+%%   TODO
+%% \end{proof}
+\end{lemma}
+
 
 \begin{theorem}[Progress]
 For all configurations $C$,
-channel typings~$\ChTy$
+store typings~$\StTy$,
+channel typings~$\ChTy$,
 and process typings~$\PrTy$,
 %
-if $\JCty{\ChTy}{C}{\PrTy}$
+if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
 then 
 either $\JCterm{C}$,
 or $\exists C'$ such that $\JCred{C}{C'}$.
-\begin{proof}
-  TODO
-\end{proof}
+%% \begin{proof}
+%%   TODO
+%% \end{proof}
 \end{theorem}
 
 \begin{theorem}[Preservation]
 For all configurations $C, C'$,
+store typings~$\StTy$,
 channel typings~$\ChTy$
 and process typings~$\PrTy$,
 \\
 %
- if $\JCty{\ChTy}{C}{\PrTy}$
+ if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
 and $\JCred{C}{C'}$ 
 then there exists 
+store typing extension $\StTy' \supseteq \StTy$
 channel typing extension $\ChTy' \supseteq \ChTy$
 and process typing extension $\PrTy' \supseteq \PrTy$
-such that $\JCty{\ChTy'}{C'}{\PrTy'}$.
-\begin{proof}
-  TODO
-\end{proof}
+such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
+%% \begin{proof}
+%%   TODO
+%% \end{proof}
 \end{theorem}
+
+
+\subsection{Confluence}
+
+ILC's type system enforces confluence 
+%by enforcing a stronger
+%property: the communication effects of every reduction are
+%\emph{unique}, 
+up to non-deterministic naming choices in 
+rules \Rule{ref}, \Rule{nu}, and \Rule{fork} (\Figref{fig:semantics}).
+%
+To account for different choices of dynamically-named
+store locations, channels and processes, respectively, 
+we state and prove confluence
+with respect to a renaming function~$f$, which consistently renames
+the choices of store locations, channels and processes in 
+a ``sister'' configuration $C_2$ of $C_1$:
 
 \begin{theorem}[Single-step confluence]
 For all configurations $C$,
@@ -50,16 +136,27 @@ then
 there exists renaming function~$f$ 
 such that either:
 \begin{enumerate}
-\item $\JCterm{C_1}$ and $C_1 = f(C_2)$, or
-\item $\exists C_3$ 
-such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
+\item %$\JCterm{C_1}$ and 
+$C_1 = f(C_2)$,
+or
+\item $\exists C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
 \end{enumerate}
-\begin{proof}
-  TODO
-\end{proof}
+%% \begin{proof}
+%%   TODO
+%% \end{proof}
 \end{theorem}
 
-\begin{theorem}[Multi-step confluence]
+Intuitively, the sister configuration $C_2$ is either different
+because of a name choice (case 1), or a different process scheduling choice
+(case 2).  In either case, there exists a renaming of any choice made
+to reach $C_2$, captured by function~$f$.
+%
+By composing multiple uses of this theorem, and the renaming functions
+that they construct, we prove a multi-step notion of confluence that 
+reduces a single configuration $C$ to two equivalent terminal configurations,
+ $C_1$ and $C_2$:
+
+\begin{theorem}[Full confluence]
 For all configurations $C$,
 %
  if $\JCredm{C}{C_1}$ 
@@ -69,7 +166,7 @@ and $\JCterm{C_2}$
 then 
 there exists renaming function~$f$ 
 such that $C_1 = f(C_2)$.
-\begin{proof}
-  TODO: corollary to single-step confluence?
-\end{proof}
+%% \begin{proof}
+%%   TODO: corollary to single-step confluence?
+%% \end{proof}
 \end{theorem}

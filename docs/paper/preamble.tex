@@ -216,15 +216,18 @@
 %% Process typing meta var: each one maps process names to types
 \newcommand{\PrTy}{\Phi}
 
+%% Process typing meta var: each one maps process names to types
+\newcommand{\StTy}{\Omega}
+
 %% Affine typing judgement
-\newcommand{\JtyAff}[5]{#1 ; #2 |- #3 : #4 |> #5}
+\newcommand{\JtyAff}[6]{#1 ; #2 ; #3 |- #4 : #5 |> #6}
 
 %% Intuitionisitic typing judgement
-\newcommand{\JtyInt}[5]{#1 ; #2 |- #3 : #4 |> #5}
+\newcommand{\JtyInt}[6]{#1 ; #2 ; #3 |- #4 : #5 |> #6}
 
 %% Configuration typing judgement: Each process has a mode, with at most one write-mode process, and each process has a return type, 
 %% captured in the final mapping (#3).
-\newcommand{\JCty}[3]{#1 |- #2 : #3}
+\newcommand{\JCty}[4]{#1 ; #2 |- #3 : #4}
 
 %% Configurations~$C_1$ and $C_2$ are equivalent.
 \newcommand{\JCequiv}[2]{#1 \equiv #2}
@@ -241,3 +244,4 @@
 % Under store $\Store_1$, expression~$e_1$ reduces to~$\Store_2 ; e_2$.
 \newcommand{\Jered}[4]{#1 ; #2 ---> #3 ; #4}
 
+\newcommand{\Rule}[1]{\textrm{#1}}
