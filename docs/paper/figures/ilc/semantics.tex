@@ -1,10 +1,18 @@
 \begin{figure*}
 \centering
 \begin{grammar}
-  Names
-  & $\Names$ 
-    & $\bnfas$ & $\emptyNames ~|~ \Names, c ~|~ \Names, p$~\hspace*{10mm}~Channel names~$c$; process names~$p$ and $q$.
+  Channel names & $c$   &$\bnfas$& $\cdots$
+  \\
+  Process names & $p,q$ &$\bnfas$& $\cdots$
+  \\
+  Store locations & $\ell$ & $\bnfas$ & $\cdots$
   \\[1mm]
+  Name sets
+  & $\Names$ 
+    & $\bnfas$ & $\emptyNames ~|~ \Names, c ~|~ \Names, p$
+  \\
+  Stores & $\Store$ & $\bnfas$ & $\Store ~|~ \Store, \ell{:}v$
+  \\
   Process pools
   & $\Procs$ 
     & $\bnfas$ & $\emptyProcs ~|~ \Procs, p{:}\proc{e}$
@@ -13,18 +21,21 @@
   & $C$
      & $\bnfas$ & $\Config{\Names}{\Store}{\Procs} $
      \\[1mm]
- Evaluation contexts
+\end{grammar}
+\begin{grammar}
+ Evaluation
   & $E$
-     & $\bnfas$ & $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eLetBang{x}{E}{e} \bnfalt
- \eApp{E}{e} \bnfalt \eApp{v}{E} \bnfalt \eRef{E} \bnfalt \eGet{E}$
-     \\ &&& $\bnfaltbrk \eSet{E}{e} \bnfalt \eSet{\ell}{E} \bnfalt
-     \eSplit{E}{x_1}{x_2}{e} \bnfalt \eCase{E}{x_1}{e_1}{x_2}{e_2}$
+     & $\bnfas$ & 
+ $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eLetBang{x}{E}{e}$
+\\ contexts &&& $\bnfaltbrk \eApp{E}{e} \bnfalt \eApp{v}{E} \bnfalt \eRef{E} \bnfalt \eGet{E}$
+     \\ &&& $\bnfaltbrk \eSet{E}{e} \bnfalt \eSet{\ell}{E}$
+\\ &&& $\bnfaltbrk \eSplit{E}{x_1}{x_2}{e} \bnfalt \eCase{E}{x_1}{e_1}{x_2}{e_2}$
 \\[1mm]
  Read contexts
   & $R$
      & $\bnfas$ & $\bullet \bnfalt \eRd{\eChan{c}} \oplus R \bnfalt R \oplus \eRd{\eChan{c}}$
 \end{grammar}
-\caption{Channel names, process names, configurations and evaluation contexts. \todo{Update.}}
+\caption{Channel names, process names, configurations and evaluation contexts. \todo{Arrange grammars side-by-side, for space.}}
 \label{fig:configs}
 \end{figure*}
 
@@ -96,7 +107,7 @@ C_2' \equiv C_2
 \and
 \Infer{fix}
 { }
-{ \Store ; \eFix{x}{e} -> \Store ; e\ \eFix{x}{e} }
+{ \Store ; \eFix{x}{e} -> \Store ; [\eFix{x}{e} / x] e }
 \and
 \Infer{ref}
 { \ell \not \in dom(\Store) }
