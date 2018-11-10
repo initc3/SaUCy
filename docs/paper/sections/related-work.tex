@@ -1,13 +1,43 @@
 \section{Related Work}
 \label{sec:related}
 
+We first touch on two views of cryptography that have emerged over the
+years: symbolic cryptography and computational cryptography. Their distinctions
+show up in our subsequent discussions of related process calculi, tools for
+cryptographic reasoning, and variations of the UC framework.
+
+\subsection{Symbolic vs. Computational Cryptography}
+\label{subsec:symbolic-computational}
+
+Approaches for reasoning about the security of cryptographic protocols generally
+operate in one of two models---the symbolic model and the computational model---each
+of which have their merits and drawbacks.
+
+In the symbolic model, cryptographic operations are abstracted (and idealized)
+as term algebras, and adversary capabilities are defined as deduction rules over
+these terms~\cite{cortier2011survey}. Importantly, adversaries can make choices
+nondeterministically, and so an attack trace will be found if there is
+one. Viewing protocols from this abstract vantage point makes the analysis
+relatively tractable, but because adversaries are nondeterministic, their
+capabilities must be severely restricted. Therefore, it is possible to verify
+protocols that are susceptible to simple attacks that lie outside the adversary
+model.
+
+In the computational model, cryptographic operations are functions over
+bitstrings, and adversaries are probabilistic polynomial time (p.p.t.) Turing
+machines. Here, security is defined in terms of the probability and
+computational complexity of attacks. While this model is much more realistic and
+security analysis admits much stronger guarantees, proofs are more complicated
+and are, for the most part, done manually.
+
 \subsection{Process Calculi}
 \label{subsec:process-calculi}
 
 Process calculi have a long and rich history. ILC occupies a point in this space
-that is particularly suited to faithfully capturing interactive Turing machines,
-but plenty of existing process calculi are also cryptographically-flavored
-and/or enjoy similar properties to ILC. We survey some of them here.
+that is particularly suited to faithfully capturing interactive Turing machines
+(and hence, computational cryptography), but plenty of existing process calculi
+are also cryptographically-flavored and/or enjoy similar properties to ILC. We
+survey some of them here.
 
 Two of the early adaptations of process calculi for reasoning about
 cryptographic protocols were the spi calculus~\cite{abadi1999calculus} and the
@@ -32,7 +62,7 @@ outside the adversary model.
 Hence, much follow-up work has focused on bridging the gap between this PL-style
 of formalization and the \emph{computational} model of cryptography (the modus
 operandi in cryptography), by outfitting process calculi with computational
-semantics.
+semantics that considers issues of complexity and probability.
 
 Lincoln \etal~\cite{lincoln1998probabilistic} give a computational semantics to
 a variant of the $\pi$-calculus, which allows one to define communicating
@@ -72,16 +102,32 @@ performed in any order. Unfortunately, the calculus only extends to binary
 sessions, so in our multiparty setting, we require a more sophisticated type
 system to achieve confluence.
 
-\subsection{Computer-Aided Cryptography}
-\label{subsec:computer-aided-cryptography}
+\subsection{Tools for Cryptographic Reasoning}
+\label{subsec:tools}
+
+As we touched on previously, tools for reasoning about the security of
+cryptographic protocols generally come in one of two flavors: ones that operate
+in the symbolic model and ones that operate in the computational model.
 
 Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC framework to
-the symbolic model of cryptography, in which cryptographic operations are
-abstracted as term algebras and adversary capabilities are defined by deduction
-rules over these terms~\cite{cortier2011survey}.  Although analyzing security
-from this abstract vantage point can benefit from automated reasoning, security
-guarantees derived from symbolic analyses are not as strong as those derived
-from computational analyses~\cite{cortier2011survey}.
+the symbolic model of cryptography. In particular, they show that certain
+aspects of the UC framework, such as ideal functionality specifications and UC
+composition, still carry over to the symbolic model. They are also able to show
+that certain results, such as the impossibility of UC commitments in the
+standard model of cryptography, can still be observed in the symbolic model.
+
+CertiCrypt~\cite{barthe2009formal} is a framework (built on
+Coq~\cite{barras1997coq}) that supports machine-checked game-based proofs of
+security. It includes tools to reason about the equivalence of probabilistic
+programs, a relational Hoare logic, a theory of observational equivalence,
+verified program transformations, and game-based techniques.  Their experience
+shows that the type system and automated tactics provide valuable information in
+debugging proofs. EasyCrypt~\cite{barthe2011computer} is follow-up work on
+CertiCrypt, which permits more automation and shorter proof
+scripts. \todo{Details on their imperative language?}
+
+\subsection{Variations of the UC Framework}
+\label{subsec:uc-variants}
 
 \begin{enumerate}[leftmargin=*]
   \item Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC
@@ -97,7 +143,7 @@ from computational analyses~\cite{cortier2011survey}.
     that can be amenable to automated reasoning, security guarantees derived
     from symbolic analyses are not as strong as those from computational
     analyses considered in UC and in cryptography more broadly.
-  \item RSIM~\cite{backes2007reactive}
+  \item RSIM~\cite{backes2007reactive}.
   \item CertiCrypt~\cite{barthe2009formal} is a framework (built on
     Coq~\cite{barras1997coq}) that supports machine-checked game-based proofs of
     security. It includes tools to reason about the equivalence of probabilistic
