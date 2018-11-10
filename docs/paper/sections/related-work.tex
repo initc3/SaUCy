@@ -1,7 +1,7 @@
 \section{Related Work}
 \label{sec:related}
 
-We first touch on two distinct but useful approaches for analyzing cryptographic
+We first touch on two different approaches for analyzing cryptographic
 protocols: the symbolic approach and the computational approach. Their
 distinctions show up in our subsequent discussions of related process calculi,
 tools for cryptographic reasoning, and variations of the UC framework.
@@ -10,30 +10,29 @@ tools for cryptographic reasoning, and variations of the UC framework.
 \label{subsec:symbolic-computational}
 
 Approaches for reasoning about the security of cryptographic protocols generally
-operate in one of two models---the symbolic model and the computational model---each
+operate in one of two models---the symbolic model or the computational model---each
 of which have their merits and drawbacks.
 
 In the symbolic model, cryptographic operations are abstracted (and idealized)
 as term algebras, and adversary capabilities are defined as deduction rules over
-these terms~\cite{cortier2011survey}. Importantly, adversaries make
-nondeterministic choices, and so an attack trace will be found if there is
-one. On the upside, Viewing protocols from this abstract vantage point makes the
-analysis relatively tractable. However, because adversaries have
-nondeterministic behavior, their capabilities must be severely
-restricted. Therefore, it is possible to verify protocols that are susceptible
-to simple attacks that lie outside the adversary model.
+these terms (which can be applied
+nondeterministically)~\cite{cortier2011survey}. Viewing protocols from this
+abstract vantage point makes the analysis relatively tractable. However, because
+adversaries are nondeterministic, their capabilities must be severely restricted
+and it is therefore possible to verify protocols that are susceptible to attacks
+that lie outside the adversary model.
 
 In the computational model, cryptographic operations are modeled as functions
 over bitstrings, and adversaries are modeled as probabilistic polynomial time
-(p.p.t.)  Turing machines. Importantly, security is defined in terms of the
-probability and computational complexity of attacks, which complicates proofs,
-but admits much stronger security guarantees. Analyzing protocols in the
-computational model is the modus operandi in cryptography, but, for the most
-part, proofs are done manually. The goal of this work, and others we discuss
-later, seek to change this dynamic.
+Turing machines. Here, security is defined in terms of the probability and
+computational complexity of attacks, which complicates proofs, but admits much
+stronger security guarantees. Analyzing protocols in the computational model is
+the modus operandi in cryptography, and, for the most part, proofs are done
+manually. The goal of this work, and others we discuss later, seek to change
+this dynamic.
 
-There are also a number of works on computational soundness, which focuses on
-bridging the gap between the symbolic and computational
+There is also a body of interesting work on computational soundness, which
+focuses on bridging the gap between the symbolic and computational
 models~\cite{abadi2002reconciling}.
 
 \subsection{Process Calculi}
@@ -118,9 +117,8 @@ system to achieve confluence.
 \subsection{Tools for Cryptographic Analysis}
 \label{subsec:tools}
 
-Cryptography and formal methods have a flourishing interplay, and there are
-variety of computer-aided tools for cryptographic analysis, both symbolic and
-computational. Among the symbolic tools include the NRL protocol
+There are a variety of computer-aided tools for cryptographic analysis, both
+symbolic and computational. Among the symbolic tools include the NRL protocol
 analyzer~\cite{meadows1996nrl}, Maude-NPA~\cite{escobar2009maude}, and
 Proverif~\cite{blanchet2010proverif}. Among the computational tools include
 CertiCrypt~\cite{barthe2009formal}, EasyCrypt~\cite{barthe2011computer},
@@ -140,12 +138,34 @@ $\text{F}^{\star}$~\cite{swamy2016dependent}.
 \subsection{Variations of the UC Framework}
 \label{subsec:uc-variants}
 
-Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC framework to
-the symbolic model of cryptography. In particular, they show that certain
-aspects of the UC framework, such as ideal functionality specifications and UC
-composition, still carry over to the symbolic model. They are also able to show
-that certain results, such as the impossibility of UC commitments in the
-standard model of cryptography, can still be observed in the symbolic model.
+A number of variants of the UC framework have been proposed to address some of
+its hitches or to make it easier to use.
+
+The closest work to ours is Symbolic UC~\cite{bohl2016symbolic}, which
+transports ideas from the UC framework to the symbolic model of cryptography. In
+particular, they show that certain aspects of the UC framework, such as ideal
+functionality specifications and UC composition, still carry over to the
+symbolic model.
+
+Simplified universal composability (SUC)~\cite{canetti2015simpler} gives a
+simpler and restricted variant of the UC framework that is suitable for
+two-party multiparty computation tasks. The main difference from vanilla UC is
+that the set of parties is fixed, which greatly simplifies polynomial time
+reasoning and protocol composition. Due to this difference (and others), not all
+cryptographic tasks can be expressed in SUC, but those that can enjoy the same
+security and compositionality properties as in vanilla UC.
+
+The reactive simulatability framework (RSIM)~\cite{backes2007reactive} is
+another framework for representing and analyzing cryptographic protocols in a
+composable way. In contrast with UC, which uses interactive Turing machines as
+its computational model, RSIM uses probabilistic IO automata. The benefit of
+this is that many cryptographic protocols can be specified in an ideal protocol
+consisting of a single, deterministic IO automaton without requiring any
+cryptography at all. This greatly simplifies the model and makes it amenable to
+automated reasoning.
+
+\todo{GUC~\cite{canetti2007universally}, GNUC~\cite{hofheinz2015gnuc},
+  JUC~\cite{canetti2003universal}}
 
 \begin{comment}
 \begin{enumerate}[leftmargin=*]
