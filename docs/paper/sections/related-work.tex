@@ -141,28 +141,22 @@ $\text{F}^{\star}$~\cite{swamy2016dependent}.
 A number of variants of the UC framework have been proposed to address some of
 its hitches or to make it easier to use.
 
-The closest work to ours is Symbolic UC~\cite{bohl2016symbolic}, which
-transports ideas from the UC framework to the symbolic model of cryptography. In
-particular, they show that certain aspects of the UC framework, such as ideal
-functionality specifications and UC composition, still carry over to the
-symbolic model.
+Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC framework to
+the symbolic model of cryptography. In particular, they show that certain
+aspects of the UC framework, such as ideal functionality specifications and UC
+composition, still carry over to the symbolic model.
 
 Simplified universal composability (SUC)~\cite{canetti2015simpler} gives a
 simpler and restricted variant of the UC framework that is suitable for
 two-party multiparty computation tasks. The main difference from vanilla UC is
 that the set of parties is fixed, which greatly simplifies polynomial time
-reasoning and protocol composition. Due to this difference (and others), not all
-cryptographic tasks can be expressed in SUC, but those that can enjoy the same
-security and compositionality properties as in vanilla UC.
+reasoning and protocol composition while maintaining the same strong properties.
 
 The reactive simulatability framework (RSIM)~\cite{backes2007reactive} is
 another framework for representing and analyzing cryptographic protocols in a
-composable way. In contrast with UC, which uses interactive Turing machines as
-its computational model, RSIM uses probabilistic IO automata. The benefit of
-this is that many cryptographic protocols can be specified in an ideal protocol
-consisting of a single, deterministic IO automaton without requiring any
-cryptography at all. This greatly simplifies the model and makes it amenable to
-automated reasoning.
+composable way. In contrast with UC, which uses ITMs as its computational model,
+RSIM uses probabilistic IO automata. This simplified model makes analyzing
+protocols amenable to automated reasoning tools.
 
 \todo{GUC~\cite{canetti2007universally}, GNUC~\cite{hofheinz2015gnuc},
   JUC~\cite{canetti2003universal}}

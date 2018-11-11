@@ -8,8 +8,8 @@ UC-secure protocol enjoys the strongest notion of compositionality---it maintain
 its security properties when run \emph{concurrently} with arbitrary other
 protocols. This is in contrast with weaker notions, which only guarantee
 security in the standalone setting or under sequential composition. Of course,
-the big payoff of this strong composition property is modularity---it allows us to
-design and analyze complex protocols from simpler building blocks.
+the big payoff of this is that it allows us to design and analyze complex
+protocols in a modular fashion from simpler building blocks.
 
 \begin{comment}
 In a nutshell, security proofs in UC follow the real/ideal
@@ -24,24 +24,32 @@ adversarial behavior in the real world can also be exhibited in the ideal world.
 \end{comment}
 
 While UC security proofs admit strong guarantees, this comes at the cost of
-their formalization being quite complicated. Moreover, because the UC framework
-only exists ``on paper,'' protocol descriptions, specifications, and other proof
+their formalization being quite complicated. And because the UC framework only
+exists ``on paper,'' protocol descriptions, specifications, and other proof
 artifacts for proving security are traditionally written in a combination of
 prose and pseudocode, which makes them error-prone and difficult to
-verify. \todo{Protocols and specs are also often underspecified or expose
-  unexpected behavior, so they may not enjoy nice composition properties or
-  their security proofs may be flawed.} So although the UC framework is widely
-used as a tool for analysis, its modularity benefits have not been enjoyed in
-practical implementations.
+verify. Moreover, it is sometimes the case that specifications of proven-secure
+protocols are underspecified or ill-specified, and so compositionality
+properties may be lost~\cite{camenisch2016universal}.
 
-While previous works have focused on systematizing UC (or cryptographic analysis
-more broadly), they generally fall short in one of two ways:
+We believe that applying a PL-style of systemization to UC can help to resolve
+these issues. While this idea is not new, we find that previous work falls short
+of appropriately abstracting the underlying computational model in
+UC---interactive Turing machines (ITMs).
+
+In the ITM model, execution is essentially single-threaded: Processes pass
+control from one to another each time a message is sent so that exactly one
+process is active at a given time. And this choice is for good reason! It is
+necessary for computational security proofs (specifically, cryptographic
+reductions) to go through.
+
 \begin{enumerate}[leftmargin=*]
-  \item They do not support computational reasoning (the modus operandi in
-    cryptography).
+  \item They support symbolic reasoning, but not computational reasoning (the
+    modus operandi in cryptography).
   \item They are not well-suited to describing distributed protocols (the
     intended target of UC).
 \end{enumerate}
+\begin{comment}
 For example, Symbolic UC~\cite{bohl2016symbolic} transports ideas from UC to the
 symbolic model of cryptography (as opposed to the computational model) to
 simplify analysis, but at the cost of weaker security
@@ -57,18 +65,19 @@ these criteria.
 %vantage point can benefit from automated reasoning, security guarantees derived
 %from symbolic analyses are not as strong as those derived from computational
 %analyses~\cite{cortier2011survey}.
+\end{comment}
 
-In this paper, we lay the foundation for building a concrete, executable
-implementation of the UC framework (dubbed SaUCy) in the form of a process
-calculus called the Interactive Lambda Calculus (ILC). ILC represents the first
-language-based approach to capturing the computational model underlying
-UC---interactive Turing machines (ITMs). In the ITM model, execution is
-essentially single-threaded: Processes pass control from one to another each
-time a message is sent so that exactly one process is active at a given
-time. And this choice is for good reason! It is necessary for computational
-security proofs (specifically, cryptographic reductions) to go through. By
-staying true to the ITM model, we can satisfy both of the mentioned criteria at
-once.
+\todo{Fix rest of intro.} In this paper, we lay the foundation for building a
+concrete, executable implementation of the UC framework (dubbed SaUCy) in the
+form of a process calculus called the Interactive Lambda Calculus (ILC). ILC
+represents the first language-based approach to capturing the computational
+model underlying UC---interactive Turing machines (ITMs). In the ITM model,
+execution is essentially single-threaded: Processes pass control from one to
+another each time a message is sent so that exactly one process is active at a
+given time. And this choice is for good reason! It is necessary for
+computational security proofs (specifically, cryptographic reductions) to go
+through. By staying true to the ITM model, we can satisfy both of the mentioned
+criteria at once.
 
 %In sum, the goal of this work is twofold: first, to develop a foundational
 %calculus for the purpose of systematizing UC (ILC), which importantly admits
