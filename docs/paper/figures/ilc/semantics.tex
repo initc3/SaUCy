@@ -111,19 +111,19 @@ C_2' \equiv C_2
 \and
 \Infer{fix}
 { }
-{ \Store ; \eFix{x}{e} -> \Store ; [\eFix{x}{e} / x] e }
-\and
+{ \Store ; \eFix{x}{e} ---> \Store ; [\eFix{x}{e} / x] e }
+~\hspace*{4mm}
 \Infer{ref}
 { \ell \not \in dom(\Store) }
-{ \Store ; \eRef{v} -> \Store, \ell : v ; \ell }
-\and
+{ \Store ; \eRef{v} ---> \Store, \ell{:}v ; \ell }
+~\hspace*{4mm}
 \Infer{get}
 { \Store(\ell) = v }
-{ \Store ; \eGet{\ell} -> \Store; v }
-\and
+{ \Store ; \eGet{\ell} ---> \Store; v }
+~\hspace*{4mm}
 \Infer{set}
 { }
-{ \Store ; \eSet{\ell}{v} -> [\ell \mapsto v]\Store; \eUnit }
+{ \Store ; \eSet{\ell}{v} ---> \Store[\ell := v]; \eUnit }
 \end{mathpar}
 \caption{Reduction semantics.}
 \label{fig:semantics}
