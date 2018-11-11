@@ -1,15 +1,16 @@
 \section{Introduction}
 \label{sec:introduction}
 
-Demonstrating that a protocol ``does its job securely'' plays a huge role in
-cryptography, and a proof of security in the universal composability (UC)
-framework is the gold standard~\cite{canetti2001universally}. In particular, a
-UC-secure protocol enjoys the strongest notion of compositionality---it maintains
-its security properties when run \emph{concurrently} with arbitrary other
-protocols. This is in contrast with weaker notions that only guarantee security
-in the standalone setting or under sequential composition. Of course, the big
-payoff of this is modularity, which allows us to analyze complex protocols from
-simpler building blocks.
+Demonstrating that a protocol ``does its job securely'' is an essential
+component of cryptography, and a proof of security in the universal
+composability (UC) framework is the gold standard for doing
+so~\cite{canetti2001universally}. In particular, a UC-secure protocol enjoys the
+strongest notion of compositionality---it maintains its security properties when
+run \emph{concurrently} with arbitrary other protocols. This is in contrast with
+weaker notions that only guarantee security in the standalone setting or under
+sequential composition. Of course, another big payoff of using UC is
+modularity---it allows us to analyze complex protocols from simpler building
+blocks.
 
 \begin{comment}
 In a nutshell, security proofs in UC follow the real/ideal
@@ -33,24 +34,34 @@ underspecified or ill-specified, which leads to compositionality properties
 being lost or complicated~\cite{camenisch2016universal}.
 
 We believe that applying a PL-style of systemization to UC can help resolve
-these issues. While this idea is not new, we find that previous work crucially
-falls short of being a proper abstraction for UC's underlying computational
-model---interactive Turing machines (ITMs). They either do not support
-computational reasoning (which considers issues of probability and computational
-complexity), are not well-suited to describing distributed protocols (cannot
-express message-passing concurrency), or are overly expressive (allow describing
-a superset of ITMs).
+these issues. Unfortunately, we find that previous works in the vein of applying
+PL-techniques to cryptography do not have quite the right abstraction for UC's
+underlying computational model---\emph{interactive Turing machines (ITMs)}. Either
+they do not support computational reasoning (which considers issues of
+probability and computational complexity), are not well-suited to describing
+distributed protocols (cannot express message-passing concurrency), or are too
+expressive (allow describing a superset of ITMs).
 
-But there are good reasons behind this choice of modeling! In particular, note
-that the ITM model essentially has a single-threaded execution semantics:
-Processes pass control from one to another each time a message is sent so that
-\emph{exactly one process is active at any given time}. Moreover, the order of
-activations is completely determined by the protocol definition, random coin
-flips taken by processes, and an explicit adversary process, rather than
-uncertainty (nondeterminism) built into the model itself. This is necessary for
-a protocol to have a computational interpretation, and hence, a computational
-proof of security.
+Still, there are good reasons for having ITMs as the model of choice! In a
+nutshell, sticking to ITMs ensures that whatever protocol we define has a
+\emph{computational interpretation.} What, exactly, do we mean by this? We mean
+it in the following cryptographic sense: We want to be able to prove security by
+\emph{reduction}, i.e., by relating a bad execution trace to a computation that
+breaks a computational hardness assumption with non-negligible probability.
 
+The fact that we are dealing in a concurrent setting would threaten our desire of
+having computational interpretations, since the presence of (non-probabilistic)
+nondeterminism would greatly complicate probabilistic reasoning, but thankfully,
+ITMs work around this by having a deterministic (modulo random coin tosses),
+single-threaded execution semantics. That is, processes pass control from one to
+another each time a message is sent so that exactly one process is active at any
+given time, and, moreover, this order of activations is fully determined.
+
+%Moreover, the order
+%of activations is completely determined by the protocol definition, random coin
+%flips taken by processes, and an explicit adversary process (for adversarial
+%scheduling), rather than uncertainty (nondeterminism) built into the model
+%itself.
 %Security proofs require pervasive
 %reasoning about probability and computational complexity, so modeling protocols
 %at the low-level of Turing machines (while not particularly convenient) is often
@@ -80,17 +91,10 @@ proof of security.
 %analyses~\cite{cortier2011survey}.
 %\end{comment}
 
-\todo{Read up to here.} In this paper, we lay the foundation for building a
-concrete, executable implementation of the UC framework (dubbed SaUCy) in the
-form of a process calculus called the Interactive Lambda Calculus (ILC). ILC
-represents the first language-based approach to capturing the computational
-model underlying UC---interactive Turing machines (ITMs). In the ITM model,
-execution is essentially single-threaded: Processes pass control from one to
-another each time a message is sent so that exactly one process is active at a
-given time. And this choice is for good reason! It is necessary for
-computational security proofs (specifically, cryptographic reductions) to go
-through. By staying true to the ITM model, we can satisfy both of the mentioned
-criteria at once.
+In this paper, we take up the challenge of faithfully capturing ITMs by adapting
+them to a subset of the $\pi$-calculus through a type discipline. We call our
+process calculus the Interactive Lambda Calculus (ILC), and we use it to build a
+concrete, executable implementation of the UC framework, dubbed SaUCy.
 
 %In sum, the goal of this work is twofold: first, to develop a foundational
 %calculus for the purpose of systematizing UC (ILC), which importantly admits
@@ -108,8 +112,7 @@ could quite easily write programs in these languages that are not expressible as
 ITMs and hence, do not have computational interpretations. Other calculi may
 enjoy confluence, but are overly restrictive, only allowing for fixed or
 two-party
-communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}. \todo{Explain
-  why confluence leads to computational interpretations.}
+communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 
 We take up the challenge of faithfully capturing UC's computational model by
 adapting ITMs to a subset of the $\pi$-calculus through its type system. In other
