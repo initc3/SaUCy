@@ -1,15 +1,15 @@
 \section{Introduction}
 \label{sec:introduction}
 
-In cryptography, a proof of security in the universal composability (UC)
-framework is the gold standard for demonstrating that a protocol carries out a
-cryptographic task securely~\cite{canetti2001universally}. In particular, a
+Demonstrating that a protocol ``does its job securely'' plays a huge role in
+cryptography, and a proof of security in the universal composability (UC)
+framework is the gold standard~\cite{canetti2001universally}. In particular, a
 UC-secure protocol enjoys the strongest notion of compositionality---it maintains
 its security properties when run \emph{concurrently} with arbitrary other
-protocols. This is in contrast with weaker notions, which only guarantee
-security in the standalone setting or under sequential composition. Of course,
-the big payoff of this is that it allows us to design and analyze complex
-protocols in a modular fashion from simpler building blocks.
+protocols. This is in contrast with weaker notions that only guarantee security
+in the standalone setting or under sequential composition. Of course, the big
+payoff of this is modularity, which allows us to analyze complex protocols from
+simpler building blocks.
 
 \begin{comment}
 In a nutshell, security proofs in UC follow the real/ideal
@@ -25,39 +25,52 @@ adversarial behavior in the real world can also be exhibited in the ideal world.
 
 While UC security proofs admit strong guarantees, this comes at the cost of
 their formalization being quite complicated. And because the UC framework only
-exists ``on paper,'' protocol descriptions, specifications, and other proof
-artifacts for proving security are traditionally written in a combination of
-prose and pseudocode, which makes them error-prone and difficult to
-verify. Moreover, it is sometimes the case that specifications of proven-secure
-protocols are underspecified or ill-specified, and so compositionality
-properties may be lost~\cite{camenisch2016universal}.
+exists ``on paper,'' protocol descriptions, specifications, and other artifacts
+for proving security are traditionally written in a combination of prose and
+pseudocode. Not only does this make them error-prone and difficult to verify,
+but it is sometimes the case that proven-secure protocols are subtly
+underspecified or ill-specified, which leads to compositionality properties
+being lost or complicated~\cite{camenisch2016universal}.
 
-We believe that applying a PL-style of systemization to UC can help to resolve
-these issues. While this idea is not new, we find that previous work falls short
-of appropriately abstracting the underlying computational model in
-UC---interactive Turing machines (ITMs).
+We believe that applying a PL-style of systemization to UC can help resolve
+these issues. While this idea is not new, we find that previous work crucially
+falls short of being a proper abstraction for UC's underlying computational
+model---interactive Turing machines (ITMs). They either do not support
+computational reasoning (which considers issues of probability and computational
+complexity), are not well-suited to describing distributed protocols (cannot
+express message-passing concurrency), or are overly expressive (allow describing
+a superset of ITMs).
 
-In the ITM model, execution is essentially single-threaded: Processes pass
-control from one to another each time a message is sent so that exactly one
-process is active at a given time. And this choice is for good reason! It is
-necessary for computational security proofs (specifically, cryptographic
-reductions) to go through.
+But there are good reasons behind this choice of modeling! In particular, note
+that the ITM model essentially has a single-threaded execution semantics:
+Processes pass control from one to another each time a message is sent so that
+\emph{exactly one process is active at any given time}. Moreover, the order of
+activations is completely determined by the protocol definition, random coin
+flips taken by processes, and an explicit adversary process, rather than
+uncertainty (nondeterminism) built into the model itself. This is necessary for
+a protocol to have a computational interpretation, and hence, a computational
+proof of security.
 
-\begin{enumerate}[leftmargin=*]
-  \item They support symbolic reasoning, but not computational reasoning (the
-    modus operandi in cryptography).
-  \item They are not well-suited to describing distributed protocols (the
-    intended target of UC).
-\end{enumerate}
-\begin{comment}
-For example, Symbolic UC~\cite{bohl2016symbolic} transports ideas from UC to the
-symbolic model of cryptography (as opposed to the computational model) to
-simplify analysis, but at the cost of weaker security
-guarantees~\cite{cortier2011survey}. On the other hand,
-EasyCrypt~\cite{barthe2011computer} embeds computational reasoning, but does not
-have a language for describing message-passing or concurrency. To faithfully
-model the UC framework, we would (at the very least) want to satisfy both of
-these criteria.
+%Security proofs require pervasive
+%reasoning about probability and computational complexity, so modeling protocols
+%at the low-level of Turing machines (while not particularly convenient) is often
+%necessary for proofs to go through.
+
+%\begin{enumerate}[leftmargin=*]
+%  \item They support symbolic reasoning, but not computational reasoning (the
+%    modus operandi in cryptography).
+%  \item They are not well-suited to describing distributed protocols (the
+%    intended target of UC).
+%\end{enumerate}
+%\begin{comment}
+%For example, Symbolic UC~\cite{bohl2016symbolic} transports ideas from UC to the
+%symbolic model of cryptography (as opposed to the computational model) to
+%simplify analysis, but at the cost of weaker security
+%guarantees~\cite{cortier2011survey}. On the other hand,
+%EasyCrypt~\cite{barthe2011computer} embeds computational reasoning, but does not
+%have a language for describing message-passing or concurrency. To faithfully
+%model the UC framework, we would (at the very least) want to satisfy both of
+%these criteria.
 %, in which cryptographic operations
 %are abstracted as term algebras and adversary capabilities are defined by
 %deduction rules over these terms.
@@ -65,9 +78,9 @@ these criteria.
 %vantage point can benefit from automated reasoning, security guarantees derived
 %from symbolic analyses are not as strong as those derived from computational
 %analyses~\cite{cortier2011survey}.
-\end{comment}
+%\end{comment}
 
-\todo{Fix rest of intro.} In this paper, we lay the foundation for building a
+\todo{Read up to here.} In this paper, we lay the foundation for building a
 concrete, executable implementation of the UC framework (dubbed SaUCy) in the
 form of a process calculus called the Interactive Lambda Calculus (ILC). ILC
 represents the first language-based approach to capturing the computational
@@ -122,12 +135,12 @@ respectively). Importantly, it maintains these invariants:
 Together, the effect of these is that the only non-determinism in an ILC program
 is due to random coin flips taken by processes, which have a well-defined
 distribution. So in addition to enjoying the usual properties of progress and
-preservation, ILC is also confluent in the absence of coin flips. This is
-essential to ensure that the normalization of an ILC program has a computational
-interpretation, as is necessary in cryptography reduction proofs. \todo{Why?}
-This also guarantees that any apparent concurrency hazards, such as adversarial
-scheduling of messages in an asynchronous network, are due to an explicit
-adversary process $\mc{A}$ rather than uncertainty built into the model itself.
+preservation, ILC is also confluent. This is essential to ensure that the
+normalization of an ILC program has a computational interpretation, as is
+necessary in cryptography reduction proofs. \todo{Why?}  This also guarantees
+that any apparent concurrency hazards, such as adversarial scheduling of
+messages in an asynchronous network, are due to an explicit adversary process
+$\mc{A}$ rather than uncertainty built into the model itself.
 
 We have implemented an ILC interpreter in Haskell. For economy of use, our
 implementation performs polymorphic type inference, bounded polymorphic mode
