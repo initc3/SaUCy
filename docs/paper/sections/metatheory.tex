@@ -40,6 +40,7 @@ Informally, $\JCterm{C}$ holds when:
  \item $C$ is fully normal: every process in~$C$  
    is normalized (consists of a value).
  \item $C$ is (at least partially) deadlocked: 
+   some (possibly-empty) portion of $C$ is normal, and
    there exists one or more read-mode processes in $C$, or
    there exists one or more write-mode processes in $C$,
    however, no reader-writer pair exists for a common channel~$c$.
@@ -55,11 +56,9 @@ the final outcome.
 (As discussed in ~\Secref{sec:related}, deadlock freedom is an
 orthogonal concern that a future variation of ILC could enforce).
 
-TODO: define $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
-
-TODO: define $\ChTy' \supseteq \ChTy$
-
-TODO: define $\PrTy' \supseteq \PrTy$
+%TODO: define $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
+%TODO: define $\ChTy' \supseteq \ChTy$
+%TODO: define $\PrTy' \supseteq \PrTy$
 
 \begin{lemma}[Non-progress]
 For all configurations $C$,
