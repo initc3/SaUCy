@@ -2,9 +2,9 @@
 \label{sec:saucy}
 
 Using ILC, we build a concrete, executable implementation of the UC framework,
-dubbed SaUCy. We demonstrate the use of SaUCy in three ways: we develop a
-composition operator, instantiate UC commitments, and re-examine subtle issues
-in UC definitions within SaUCy.
+dubbed SaUCy. We demonstrate the use of SaUCy in three ways: We develop a
+composition operator, walk through an instantiation of UC commitments, and
+re-examine subtle issues that show up in UC definitions.
 
 \subsection{Defining UC Security in ILC}
 \label{subsec:saucy}
@@ -14,6 +14,8 @@ parameterized by an environment \textsf{z}, protocol parties \textsf{p} and
 \textsf{q}, an adversary \textsf{a}, a functionality \textsf{f}, a security
 parameter \textsf{k}, a random bitstring \textsf{r}, and a corruption model
 \textsf{crupt}.
+
+\lstinputlisting[style=myilc]{listings/simp-suc.ilc}
 
 \begin{itemize}[leftmargin=*]
   \item \emph{Environment.} The environment's program defines interactions with
