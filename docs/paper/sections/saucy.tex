@@ -2,8 +2,9 @@
 \label{sec:saucy}
 
 Using ILC, we build a concrete, executable implementation of the UC framework,
-dubbed SaUCy. We adapt theory from UC to SaUCy and flesh out our commitments
-example.
+dubbed SaUCy. We demonstrate the use of SaUCy in three ways: we develop a
+composition operator, instantiate UC commitments, and re-examine subtle issues
+in UC definitions within SaUCy.
 
 \subsection{Defining UC Security in ILC}
 \label{subsec:saucy}
@@ -188,12 +189,12 @@ The functionality FCom has already been defined.
 \paragraph{Extending ILC with cryptographic primitives.}
 UC Commitments are realized from cryptographic primitives, such as pseudorandom
 trapdoor permutations. This requires us to extend the syntax. The semantics are
-written in terms of the cryptography objects themselves, and we still arrive at
+written in terms of the cryptographic objects themselves, and we still arrive at
 a computational reduction for our security proof.
 
 The new syntactic forms are \textsf{kgen}, \textsf{tdp}, \textsf{inv}, and
 \textsf{hc} with the static and dynamic semantics shown in
-Figure~\ref{fig:extended-ilc}.  The key generation function \textsf{keygen}
+Figure~\ref{fig:extended-ilc}. The key generation function \textsf{keygen}
 generates, on input $1^n$ (security parameter), a random public key $v_{pk}$ and
 a trapdoor $v_{td}$. The trapdoor permutation function \textsf{tdp} computes, on
 input key $v_k$ and bitstring $v_{in}$, a bitstring $v_{out}$. The hardcore
@@ -230,11 +231,11 @@ $f_{v_k}$.
 \label{alg:com}
 \end{algorithm}
 
-\begin{figure*}
+\begin{figure}
 \lstinputlisting[style=myilc]{listings/ucc.ilc}
 \caption{Universally composable commitment in ILC.}
 \label{fig:ucc}
-\end{figure*}
+\end{figure}
 
 \paragraph{Commitment Protocol.}
 We defer the protocol to the appendix.

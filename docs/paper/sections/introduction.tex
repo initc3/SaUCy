@@ -110,9 +110,9 @@ framework, dubbed SaUCy.
 With regard to ITMs, where have existing concurrency models fallen short? On the
 one hand, some existing process calculi, such as the standard
 $\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
-variants~\cite{abadi1999calculus, abadi2001mobile}, are not a good fit to ITMs,
-since they permit non-confluent reductions by design (i.e., non-probabilistic
-nondeterminism).
+variants~\cite{abadi1999calculus, abadi2001mobile, lincoln1998probabilistic},
+are not a good fit to ITMs, since they permit non-confluent reductions by design
+(i.e., non-probabilistic nondeterminism).
 %One could quite easily write programs in these languages that
 %are not expressible as ITMs.
 On the other hand, the various calculi that do enjoy confluence are overly
@@ -122,12 +122,12 @@ communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 ILC fills this gap by adapting ITMs to a subset of the $\pi$-calculus through its
 type system. In other words, \emph{well-typed ILC programs are expressible as
   ITMs}. To give a brief summary, ILC's type system restricts the dataflow of
-read channels (via affine typing) and by restricting the composition of write
-effects (forbidding write-mode parallel processes). The net effect of these is
-confluence:  The only nondeterminism in an ILC program is due to random coin
-tosses taken by processes, which have a well-defined distribution, and any
-apparent concurrency hazards, such as adversarial scheduling of messages in an
-asynchronous network, are due to an explicit adversary process rather than
+read channels (via affine typing) and restricts the composition of write effects
+(forbidding write-mode parallel processes), with the net effect being
+confluence. Therefore, the only nondeterminism in an ILC program is due to
+random coin tosses taken by processes, which have a well-defined distribution,
+and any apparent concurrency hazards, such as adversarial scheduling of messages
+in an asynchronous network, are due to an explicit adversary process rather than
 uncertainty built into the model itself.
 
 \begin{comment}
