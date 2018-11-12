@@ -1,0 +1,19 @@
+let committer toZ frZ !toF frF !toQ frQ !k !bits =
+  let (!(Commit b), frZ)= rd frZ in
+    wr GetCRS $->$ toF ;
+    let (!(PublicStrings sigma pk0 pk1), frF) = rd frF in
+    let r = take k bits in 
+    let x = if b == 0 then prg pk0 r else xors (prg pk1 r) sigma in
+      wr Commit' x $->$ toQ ;
+      let (!Open, frZ)= rd frZ in
+        wr (Open' b r) $->$ toQ
+
+let receiver !toZ frZ toF frF toP frP k bits =
+  let (!(Commit' x), frP) = rd frP in
+    wr GetCRS $->$ toF ;
+    let (!(PublicStrings sigma pk0 pk1), frF) = rd frF in
+      wr Receipt $->$ toZ ;
+      let (!(Open' b r), frP) = rd frP in
+        if b == 0 && x == prg pk0 r || b == 1 && x == xors (prg pk1 r) sigma
+        then wr (Opened b) $->$ toZ
+	else error "Cannot occur in honest case"

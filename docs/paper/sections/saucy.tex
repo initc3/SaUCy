@@ -123,7 +123,7 @@ operator, and give a composition theorem explaining its use.
 
 \todo{Explain more the importance of composition operators}
 
-Essentially, our operator is the notion of UC-realizes, We can now state useful
+Essentially, our operator is the notion of UC-realizes. We can now state useful
 composition operators, simplifying lemmas, and notation. For brevity, we pack
 several notions from UC into a single alternate definition: UC-realizes.
 
@@ -170,28 +170,35 @@ composition:
 
 \subsection{Instantiating UC Commitments}
 \label{subsec:example}
-We walk through the development of a UC instantiation, commitments.
-UC commitments can be instantiated with standard cryptographic assumptions, for example the RSA problem.
-Also rely on a ``trusted setup'', or common reference string, essentially public parameters generated ahead of time (modeled as an ideal functionality FCRS).
+We walk through the development of a UC instantiation for commitments.  UC
+commitments can be instantiated with standard cryptographic assumptions, for
+example the RSA problem.  Also rely on a ``trusted setup'', or common reference
+string, essentially public parameters generated ahead of time (modeled as an
+ideal functionality FCRS).
 
-Instantiation proofs in UC follow a standard rhythm. Start with a definition as ideal functionalities, we then give the protocol, and then the simulator, and finally complete the relational analysis on paper.
-UC commitments are reasoned to be secure assuming a common reference string is suitably generated.
-To model the cryptography we need, we extend ILC with the additional syntax we need.
+Instantiation proofs in UC follow a standard rhythm. We start with a security
+definition as an ideal functionality, give the protocol, construct a simulator,
+and finally complete the relational analysis on paper.  UC commitments are
+reasoned to be secure assuming a common reference string is suitably generated.
+To model the cryptography we extend ILC with additional syntax.
 
 The functionality FCom has already been defined.
 \todo{Recap the proof obligation}
 
 \paragraph{Extending ILC with cryptographic primitives.}
-UC Commitments are realized from cryptographic primitives, such as pseudorandom trapdoor permutations. This requires us to extend the syntax. The semantics are written in terms of the cryptography objects themselves, and we still arrive at a computational reduction for our security proof.
+UC Commitments are realized from cryptographic primitives, such as pseudorandom
+trapdoor permutations. This requires us to extend the syntax. The semantics are
+written in terms of the cryptography objects themselves, and we still arrive at
+a computational reduction for our security proof.
 
-We introduce several new syntactic forms---\textsf{kgen}, \textsf{tdp}, and
-\textsf{hc}---with the static and dynamic semantics shown in
-Figure~\ref{fig:extended-ilc}.
-The key generation function \textsf{keygen} generates, on input $1^n$ (security
-parameter), a random public key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor
-permutation function \textsf{tdp} computes, on input key $v_k$ and bitstring
-$v_{in}$, a bitstring $v_{out}$. The hardcore predicate function \textsf{hc}
-generates, on input trapdoor permutation $f_{v_k}$.
+The new syntactic forms are \textsf{kgen}, \textsf{tdp}, \textsf{inv}, and
+\textsf{hc} with the static and dynamic semantics shown in
+Figure~\ref{fig:extended-ilc}.  The key generation function \textsf{keygen}
+generates, on input $1^n$ (security parameter), a random public key $v_{pk}$ and
+a trapdoor $v_{td}$. The trapdoor permutation function \textsf{tdp} computes, on
+input key $v_k$ and bitstring $v_{in}$, a bitstring $v_{out}$. The hardcore
+predicate function \textsf{hc} generates, on input trapdoor permutation
+$f_{v_k}$.
 
 \input{figures/ilc/extended-syntax}
 
@@ -222,6 +229,12 @@ generates, on input trapdoor permutation $f_{v_k}$.
 \caption{Universally Composable Commitment}
 \label{alg:com}
 \end{algorithm}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/ucc.ilc}
+\caption{Universally composable commitment in ILC.}
+\label{fig:ucc}
+\end{figure*}
 
 \paragraph{Commitment Protocol.}
 We defer the protocol to the appendix.
