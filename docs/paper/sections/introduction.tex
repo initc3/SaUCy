@@ -8,9 +8,8 @@ so~\cite{canetti2001universally}. In particular, a UC-secure protocol enjoys the
 strongest notion of compositionality---it maintains its security properties when
 run \emph{concurrently} with arbitrary other protocols. This is in contrast with
 weaker notions that only guarantee security in the standalone setting or under
-sequential composition. Of course, another big payoff of using UC is
-modularity---it allows us to analyze complex protocols from simpler building
-blocks.
+sequential composition. Of course, the big payoff of using UC is modularity---it
+allows us to analyze complex protocols from simpler building blocks.
 
 \begin{comment}
 In a nutshell, security proofs in UC follow the real/ideal
@@ -36,26 +35,28 @@ being lost or complicated~\cite{camenisch2016universal}.
 We believe that applying a PL-style of systemization to UC can help resolve
 these issues. Unfortunately, we find that previous works in the vein of applying
 PL-techniques to cryptography do not have quite the right abstraction for UC's
-underlying computational model---\emph{interactive Turing machines (ITMs)}. Either
-they do not support computational reasoning (which considers issues of
-probability and computational complexity), are not well-suited to describing
-distributed protocols (cannot express message-passing concurrency), or are too
-expressive (allow describing a superset of ITMs).
+underlying computational model---\emph{interactive Turing machines (ITMs)}. (One
+can think of these as Turing machines that can write on each other's
+tapes.) Either they do not support computational reasoning (which considers
+issues of probability and computational complexity), are not well-suited to
+describing distributed protocols (cannot express message-passing concurrency),
+or are too expressive (allow describing a superset of ITMs).
 
-Still, there are good reasons for having ITMs as the model of choice! In a
+Still, there are good reasons for having ITMs as the model of choice. In a
 nutshell, sticking to ITMs ensures that whatever protocol we define has a
 \emph{computational interpretation.} What, exactly, do we mean by this? We mean
-it in the following cryptographic sense: We want to be able to prove security by
-\emph{reduction}, i.e., by relating a bad execution trace to a computation that
-breaks a computational hardness assumption with non-negligible probability.
+it in the following cryptographic sense: We should be able to prove its security
+by \emph{reduction}, i.e., by relating a bad execution trace to a computation
+that breaks a computational hardness assumption with non-negligible probability.
 
-The fact that we are dealing in a concurrent setting would threaten our desire of
-having computational interpretations, since the presence of (non-probabilistic)
-nondeterminism would greatly complicate probabilistic reasoning, but thankfully,
-ITMs work around this by having a deterministic (modulo random coin tosses),
-single-threaded execution semantics. That is, processes pass control from one to
-another each time a message is sent so that exactly one process is active at any
-given time, and, moreover, this order of activations is fully determined.
+The fact that we are dealing in a concurrent setting would normally threaten our
+desire of having computational interpretations, since the presence of
+(non-probabilistic) nondeterminism would severely complicate probabilistic
+reasoning, but ITMs work around this by having a deterministic (modulo random
+coin tosses), single-threaded execution semantics. That is, processes pass
+control from one to another each time a message is sent so that \emph{exactly
+  one process is active at any given time}, and, moreover, this order of
+activations is fully determined.
 
 %Moreover, the order
 %of activations is completely determined by the protocol definition, random coin
@@ -92,7 +93,7 @@ given time, and, moreover, this order of activations is fully determined.
 %\end{comment}
 
 In this paper, we take up the challenge of faithfully capturing ITMs by adapting
-them to a subset of the $\pi$-calculus through a type discipline. We call our
+them to a subset of the $\pi$-calculus through a type discipline. We call this
 process calculus the Interactive Lambda Calculus (ILC), and we use it to build a
 concrete, executable implementation of the UC framework, dubbed SaUCy.
 
@@ -103,21 +104,29 @@ concrete, executable implementation of the UC framework, dubbed SaUCy.
 
 \subsection{Interactive Lambda Calculus}
 
-So where have existing concurrency models fallen short?  It turns out that some
+So where have existing concurrency models fallen short? On the one hand, some
 existing process calculi, such as the standard
 $\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
 variants~\cite{abadi1999calculus, abadi2001mobile}, are not a good fit to ITMs,
-since they allow for non-confluent reductions by design. This means that one
-could quite easily write programs in these languages that are not expressible as
-ITMs and hence, do not have computational interpretations. Other calculi may
-enjoy confluence, but are overly restrictive, only allowing for fixed or
-two-party
+since they permit non-confluent reductions by design (i.e., non-probabilistic
+nondeterminism).
+%One could quite easily write programs in these languages that
+%are not expressible as ITMs.
+On the other hand, calculi that do enjoy confluence are overly restrictive, only
+allowing for fixed or two-party
 communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 
-We take up the challenge of faithfully capturing UC's computational model by
-adapting ITMs to a subset of the $\pi$-calculus through its type system. In other
-words, \emph{well-typed ILC programs are expressible as ITMs}.
+ILC fills this gap by adapting ITMs to a subset of the $\pi$-calculus through its
+type system to ensure that \emph{well-typed ILC programs are expressible as
+  ITMs}. In essence, the type system restricts how communication endpoints can
+be used, so that the calculus is confluent. \todo{More detail?} Thus, the only
+nondeterminism in an ILC program is due to random coin tosses taken by
+processes, which have a well-defined distribution, and any apparent concurrency
+hazards, such as adversarial scheduling of messages in an asynchronous network,
+are due to an explicit adversary process rather than uncertainty built into the
+model itself.
 
+\begin{comment}
 To give a quick tour of ILC's type system, judgements have the form $\Delta ; \Gamma |- e
 : A |> m$, where $\Delta$ is an affine typing context, $\Gamma$ is an intuitionistic typing
 context, and $m \in \{\Wm, \Rm, \Vm\}$ is a mode (write, read, and value,
@@ -127,30 +136,21 @@ respectively). Importantly, it maintains these invariants:
 \item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
   ITM parlance) has a read end and a write end. The read end of the channel is
   protected against duplication by binding it in the affine context $\Delta$. This
-  ensures that no non-determinism arises at the receiving end of communications.
+  ensures that no nondeterminism arises at the receiving end of communications.
 
 \item \emph{No parallel composition of write mode processes.} The typing rules
   do not allow parallel composition of two write mode processes ($\Wm ||
-  \Wm$). This ensures that no non-determinism arises at the sending end of
+  \Wm$). This ensures that no nondeterminism arises at the sending end of
   communications.
 \end{itemize}
+\end{comment}
 
-Together, the effect of these is that the only non-determinism in an ILC program
-is due to random coin flips taken by processes, which have a well-defined
-distribution. So in addition to enjoying the usual properties of progress and
-preservation, ILC is also confluent. This is essential to ensure that the
-normalization of an ILC program has a computational interpretation, as is
-necessary in cryptography reduction proofs. \todo{Why?}  This also guarantees
-that any apparent concurrency hazards, such as adversarial scheduling of
-messages in an asynchronous network, are due to an explicit adversary process
-$\mc{A}$ rather than uncertainty built into the model itself.
-
-We have implemented an ILC interpreter in Haskell. For economy of use, our
-implementation performs polymorphic type inference, bounded polymorphic mode
-inference, and affinity inference. Polymorphism on modes is bounded precisely
-due to our restriction on parallel write mode composition. Moreover, a
-consequence of any kind of mode polymorphism at all is that the modes of higher
-order functions can be dependent on the modes of its function arguments.
+%We have implemented an ILC interpreter in Haskell. For economy of use, our
+%implementation performs polymorphic type inference, bounded polymorphic mode
+%inference, and affinity inference. Polymorphism on modes is bounded precisely
+%due to our restriction on parallel write mode composition. Moreover, a
+%consequence of any kind of mode polymorphism at all is that the modes of higher
+%order functions can be dependent on the modes of its function arguments.
 
 \subsection{Super Amazing Universal ComposabilitY}
 

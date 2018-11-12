@@ -68,16 +68,8 @@ $\eBang{e}$. The expressions for message-passing and concurrency are these:
 
 %\input{figures/ilc/syntax-types}
 
-The type system of ILC is given in Figure~\ref{fig:type-expressions}. To
-summarize, it maintains these invariants to ensure that \emph{well-typed ILC
-  programs are expressible as ITMs}:
-\begin{itemize}[leftmargin=*]
-  \item No duplication of read channel ends.
-  \item No parallel composition of write mode processes.
-\end{itemize}
-
-The intuitionistic typing judgement $\Delta ; \Gamma |- e : A |> m$ should be read as
-follows:
+The type system of ILC is given in Figure~\ref{fig:type-expressions}. The
+intuitionistic typing judgement $\Delta ; \Gamma |- e : A |> m$ should be read as follows:
 \begingroup
 \addtolength\leftmargini{-.2in}
 \begin{quote}
@@ -85,7 +77,38 @@ follows:
   has intuitionistic type $A$ and mode $m$.
 \end{quote}
 \endgroup
-\noindent The affine typing judgement follows similarly.
+\noindent The affine typing judgement follows similarly. Importantly, the type
+  system maintains these invariants:
+
+\begin{comment}
+Judgements have the form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is an affine typing
+context, $\Gamma$ is an intuitionistic typing context, and $m \in \{\Wm, \Rm, \Vm\}$ is
+a mode (write, read, and value, respectively). Importantly, it maintains these
+invariants:
+\end{comment}
+
+\begin{itemize}[leftmargin=*]
+\item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
+  ITM parlance) has a read end and a write end. The read end of the channel is
+  protected against duplication by binding it in the affine context $\Delta$. This
+  ensures that no nondeterminism arises at the receiving end of communications.
+
+\item \emph{No parallel composition of write mode processes.} The typing rules
+  do not allow parallel composition of two write mode processes ($\Wm ||
+  \Wm$). This ensures that no nondeterminism arises at the sending end of
+  communications.
+\end{itemize}
+
+\begin{comment}
+To summarize, it maintains these invariants to ensure that \emph{well-typed ILC
+programs are expressible as ITMs}:
+\begin{itemize}[leftmargin=*]
+  \item No duplication of read channel ends.
+  \item No parallel composition of write mode processes.
+\end{itemize}
+\end{comment}
+
+
 
 Before we jump into the typing rules, we point out that the mode composition
 rules are given in Figure~\ref{fig:mode-composition}, which includes both

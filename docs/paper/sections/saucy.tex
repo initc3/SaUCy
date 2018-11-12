@@ -69,13 +69,13 @@ normalization, so we define this additional notion.
 \end{definition}
 
 \begin{definition}[Value Distribution] 
-  Because processes are confluent, we know that if $\mathsf{e~k~r} \leadsto \mathsf{v}$
+  Because processes are confluent, we know that if $\mathsf{e~k~r} {->}^{*} \mathsf{v}$
   then the value $\mathsf{v}$ is unique.  We can therefore define the
   probability distribution ensemble $D(\mathsf{e}) = \{ D_{\mathsf{e,k}}
   \}_\mathsf{k}$ of values given a uniform distribution $U_k$ over
   $\mathsf{k}$-bit strings $\mathsf{r}$, where
 \[
-D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~k~r} \leadsto \mathsf{v} \}.
+D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~k~r} {->}^{*} \mathsf{v} \}.
 \]
 \end{definition}
 
