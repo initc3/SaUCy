@@ -1,3 +1,4 @@
+fCrs :: $\forall$ ... . $\tyBang{\keyword{Crupt} \multimap ... \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}}$
 let fCrs crupt !toP frP !toQ frQ !toA frA k r =
   let pubref = ref Nothing in
   let replyCrs fr $\mathsf{to}$ = loop fr !(match @pubref with

@@ -1,3 +1,4 @@
+committer :: $\forall$ ... . $\tyBang{\tyWr{\mathsf{a}}} \multimap ... \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}$
 let committer toZ frZ !toF frF !toQ frQ !k !bits =
   let (!(Commit b), frZ)= rd frZ in
     wr GetCRS $->$ toF ;
@@ -10,6 +11,7 @@ let committer toZ frZ !toF frF !toQ frQ !k !bits =
       let (!Open, frZ)= rd frZ in
         wr (Open' b r) $->$ toQ
 
+receiver :: $\forall$ ... . $\tyBang{\tyWr{\mathsf{a}}} \multimap ... \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}$
 let receiver !toZ frZ toF frF toP frP k bits =
   let (!(Commit' x), frP) = rd frP in
     wr GetCRS $->$ toF ;
