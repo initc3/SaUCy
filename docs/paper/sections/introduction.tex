@@ -7,9 +7,10 @@ securely''~\cite{canetti2001universally}. In particular, a UC-secure protocol
 enjoys the strongest notion of compositionality---it maintains its security
 properties when run \emph{concurrently} with arbitrary other protocols. This is
 in contrast with weaker notions that only guarantee security in the standalone
-setting or under sequential composition. Of course, the big payoff of using UC
-is its modularity benefits---it allows analyzing complex protocols from
-simpler building blocks.
+setting~\cite{lindell2014introduction} or under sequential
+composition~\cite{goldreich1987play}. Of course, the big payoff of using UC is
+its modularity benefits---it allows analyzing complex protocols from simpler
+building blocks.
 
 \begin{comment}
 In a nutshell, security proofs in UC follow the real/ideal
@@ -43,18 +44,17 @@ are not well-suited to describing distributed protocols (cannot express
 message-passing concurrency), or are too expressive (allow describing a superset
 of ITMs).
 
-Still, there are compelling reasons for sticking to ITMs as the model of
-choice. In a nutshell, it ensures that whatever protocol we define in the model
-has a \emph{computational interpretation.} What, exactly, do we mean by this? We
-mean it in the following cryptographic sense: We should be able to prove its
-security by \emph{reduction}, i.e., by relating a bad execution trace to a
-computation that breaks a computational hardness assumption with non-negligible
-probability.
+Still, there are compelling reasons for sticking with ITMs as the model of
+choice. Most importantly, it ensures that whatever protocol we define in the
+model has a \emph{computational interpretation.} What, exactly, do we mean by
+this? We mean it in the following cryptographic sense: We should be able to
+prove its security by \emph{reduction}, i.e., by relating a bad execution trace
+to a computation that breaks a computational hardness assumption with
+non-negligible probability~\cite{lindell2014introduction}.
 
-Were it not for ITMs, the fact that we are dealing in a concurrent setting would
-threaten our desire of having computational interpretations, since the
-presence of (non-probabilistic) nondeterminism would severely complicate
-probabilistic reasoning. However, ITMs work around this by having a deterministic
+Were it not for ITMs, the presence of (non-probabilistic) nondeterminism due to
+concurrency would severely complicate the necessary probabilistic reasoning for
+reduction proofs. However, ITMs avoid this issue by having a deterministic
 (modulo random coin tosses), single-threaded execution semantics. That is,
 processes pass control from one to another each time a message is sent so that
 \emph{exactly one process is active at any given time}, and, moreover, this
@@ -107,27 +107,28 @@ framework, dubbed SaUCy.
 
 \subsection{Interactive Lambda Calculus}
 
-So where have existing concurrency models fallen short? On the one hand, some
-existing process calculi, such as the standard
+With regard to ITMs, where have existing concurrency models fallen short? On the
+one hand, some existing process calculi, such as the standard
 $\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
 variants~\cite{abadi1999calculus, abadi2001mobile}, are not a good fit to ITMs,
 since they permit non-confluent reductions by design (i.e., non-probabilistic
 nondeterminism).
 %One could quite easily write programs in these languages that
 %are not expressible as ITMs.
-On the other hand, calculi that do enjoy confluence are overly restrictive, only
-allowing for fixed or two-party
+On the other hand, the various calculi that do enjoy confluence are overly
+restrictive, only allowing for fixed or two-party
 communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 
 ILC fills this gap by adapting ITMs to a subset of the $\pi$-calculus through its
-type system to ensure that \emph{well-typed ILC programs are expressible as
-  ITMs}. In essence, the type system restricts how communication endpoints can
-be used, so that the calculus is confluent. \todo{More detail?} Thus, the only
-nondeterminism in an ILC program is due to random coin tosses taken by
-processes, which have a well-defined distribution, and any apparent concurrency
-hazards, such as adversarial scheduling of messages in an asynchronous network,
-are due to an explicit adversary process rather than uncertainty built into the
-model itself.
+type system. In other words, \emph{well-typed ILC programs are expressible as
+  ITMs}. To give a brief summary, ILC's type system restricts the dataflow of
+read channels (via affine typing) and by restricting the composition of write
+effects (forbidding write-mode parallel processes). The net effect of these is
+confluence:  The only nondeterminism in an ILC program is due to random coin
+tosses taken by processes, which have a well-defined distribution, and any
+apparent concurrency hazards, such as adversarial scheduling of messages in an
+asynchronous network, are due to an explicit adversary process rather than
+uncertainty built into the model itself.
 
 \begin{comment}
 To give a quick tour of ILC's type system, judgements have the form $\Delta ; \Gamma |- e

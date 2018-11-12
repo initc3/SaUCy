@@ -238,23 +238,26 @@ message), so the three properties hold trivially.
 On the right side of Figure~\ref{func:com}, we define $\Func_{\textsc{com}}$ in
 ILC to highlight some key features of the language.\smallskip
 
-\myheader{Affine types.} Let us first examine the function signature of
-\textsf{fCom}, which (glossing over some details) takes as arguments two
-channels, a read channel \textsf{frA} and a write channel \textsf{toB}, and
-returns \textsf{Unit}. There are a number of things to unpack here:
+\myheader{Affine types.} The role of affine types is to restrict the
+dataflow of read channels so that no confusion arises at the receiving end of a
+communication.
+
+Let us first examine the function signature of \textsf{fCom}, which (glossing
+over some details) takes as arguments two channels, a read channel \textsf{frA}
+and a write channel \textsf{toB}, and returns \textsf{Unit}. There are a number
+of things to unpack here:
 
 \begin{itemize}[leftmargin=*]
   \item The signature consists of affine arrows $\multimap$ (or ``lollipops''), which
-    describe the types of affine functions that consume their argument exactly
-    once.
-  \item A function arrow (both affine and intuitionistic) carries the modal type
-    (either $\Wm$, $\Rm$, or $\Vm$) of its function body. In the example, the
-    left lollipop has mode $\Vm$, which we elide, and the right lollipop has
-    mode $\Rm$. We have more to say about modes later.
+    describe the types of functions that consume their argument at most once.
+  \item A function arrow (both affine and intuitionistic) carries the
+    \emph{modal type} (either write $\Wm$, read $\Rm$, or value $\Vm$) of its
+    function body. In the example, the left lollipop has mode $\Vm$, which we
+    elide, and the right lollipop has mode $\Rm$. We have more to say about
+    modes later.
   \item Channels are typed. Both \textsf{frA} and \textsf{toB} communicate
     values inhabiting the sum type \textsf{Msg}.
-  \item Read channels are affinely typed to protect them from duplication. This
-    ensures that no confusion arises as to which process is being written to.
+  \item Read channels are affinely typed to protect them from duplication.
   \item Write channels and the unit value are intuitionistically typed. Hence,
     their types require the ! operator (pronounced ``bang!''), which lifts an
     intuitionistic type into an affine type.
@@ -264,9 +267,16 @@ returns \textsf{Unit}. There are a number of things to unpack here:
 bifurcated into a kind for intuitionistic types and a kind for affine
 types.\smallskip
 
-\myheader{Modal types.} ILC expressions are also typed with one of three modes:
-$\Wm$ (write mode), $\Rm$ (read mode), or $\Vm$ (value mode). Modes can be
-composed either sequentially or in parallel to yield new modes.
+\myheader{Modal types.} The role of modal types is to restrict the composition
+of write effects by forbidding write-mode parallel processes. Recall that in the
+ITM model, execution is essentially single-threaded, so this ensures that no
+confusion arises as to which process is currently writing, or equivalently,
+which process is currently active. A program violating this invariant would not
+be expressible in the ITM model.
+
+ILC expressions are typed with one of three modes: $\Wm$ (write mode), $\Rm$
+(read mode), or $\Vm$ (value mode). Modes can be composed either sequentially or
+in parallel to yield new modes.
 
 To give a few examples, suppose expressions $e_1$ and $e_2$ have modes $m_1$ and
 $m_2$, respectively. Sequential mode composition shows up in the obvious case of
@@ -279,10 +289,7 @@ process forks a second process, so the mode of $\eFork{e_1}{e_2}$ is $m_1 || m_2
 The rules for mode composition are fleshed out in Section~\ref{sec:ilc}, but the
 key takeaway here is that composing write mode processes in parallel is
 \emph{not allowed}. That is, $\Wm || \Wm => p$ is not derivable for any mode
-$p$. Recall that in the ITM model, execution is essentially single-threaded, so
-this ensures that no confusion arises as to which process is currently writing,
-or equivalently, which process is currently active. A program violating this
-invariant would not be expressible in the ITM model.\smallskip
+$p$. \smallskip
 
 \myheader{Putting it all together.} The function body of \textsf{fCom} closely
 follows $\Func_{\textsc{com}}$, but there are several points worth mentioning.
