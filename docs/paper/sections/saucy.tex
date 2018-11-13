@@ -9,21 +9,42 @@ re-examine subtle issues that show up in UC definitions.
 \subsection{Defining UC Security in ILC}
 \label{subsec:saucy}
 \label{subsec:uc}
-The \textsf{execUC} function defines the UC model of protocol execution. It is
-parameterized by an environment \textsf{z}, protocol parties \textsf{p} and
-\textsf{q}, an adversary \textsf{a}, a functionality \textsf{f}, a security
-parameter \textsf{k}, a random bitstring \textsf{r}, and a static corruption
-model \textsf{crupt}.
-
-The function splits the random bitstring and distributes them to each of the
-parties when they are run. The protocol parties are wrapped in a
-\textsf{wrapper} function, which determines their behaviors based on the static
-corruption model.
+We implement the UC execution model (roughly) as follows:
 
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
 
+\noindent Before we explain what is going on here, note several things:
+
+\begin{itemize}[leftmargin=*]
+  \item It turns out that implementing the UC execution model requires hooking
+    up lots of channels. For space and readability, we elide channel allocation
+    and distribution (with ellipses) and abbreviate the type signature (e.g.,
+    $X_{\mathsf{z}}$ is the type of \textsf{z}), but more details can be found
+    in Appendix~\ref{sec:full-execUC}.
+  \item For demonstration, we only show the case of two-party protocols (\`{a}
+    la Simplified UC~\cite{canetti2015simpler}), which will be sufficient for
+    instantiating universally composable commitments later.
+  \item Also, we only show the case of \emph{static} corruptions, in which
+    parties are corrupted at the onset of the execution. This is in contrast to
+    \emph{adaptive} corruptions, in which parties can be corrupted as the
+    execution proceeds.
+\end{itemize}
+
+
+The function \textsf{execUC} is parameterized by an environment
+\textsf{z}, protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a},
+an ideal functionality \textsf{f}, a security parameter \textsf{k}, a random
+bitstring \textsf{r}, and a static corruption model \textsf{crupt}. 
+
+The function splits a random bitstring and distributes them to each of the
+parties when they are run. Note that each protocol party are run in a
+\textsf{wrapper} function, which determines its behavior based on the static
+corruptions. If a party is corrupted, then the adversary can masquerade as the
+party.
+
 %$\{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}} || (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R} || \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}_{\mathsf{e}}}\}$
 
+\begin{comment}
 \begin{itemize}[leftmargin=*]
   \item \emph{Environment.} The environment's program defines interactions with
     the protocol parties and the adversary, which have different programs in the
@@ -50,6 +71,7 @@ corruption model.
     corrupt, which are defined in the following datatype:
     \lstinputlisting[style=myilc]{listings/crupt.ilc}
 \end{itemize}
+\end{comment}
 
 %For a real world execution, the protocol parties contain code for running the
 %actual protocol under analysis, the adversary is the dummy adversary, and the
@@ -79,13 +101,13 @@ normalization, so we define this additional notion.
 \end{definition}
 
 \begin{definition}[Value Distribution] 
-  Because processes are confluent, we know that if $\mathsf{e~k~r} {->}^{*} \mathsf{v}$
+  Because processes are confluent, we know that if $\mathsf{e~k~r}~{->}^{*}~\mathsf{v}$
   then the value $\mathsf{v}$ is unique.  We can therefore define the
   probability distribution ensemble $D(\mathsf{e}) = \{ D_{\mathsf{e,k}}
   \}_\mathsf{k}$ of values given a uniform distribution $U_k$ over
   $\mathsf{k}$-bit strings $\mathsf{r}$, where
 \[
-D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~k~r} {->}^{*} \mathsf{v} \}.
+D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~k~r}~{->}^{*}~\mathsf{v} \}.
 \]
 \end{definition}
 
