@@ -12,10 +12,17 @@ re-examine subtle issues that show up in UC definitions.
 The \textsf{execUC} function defines the UC model of protocol execution. It is
 parameterized by an environment \textsf{z}, protocol parties \textsf{p} and
 \textsf{q}, an adversary \textsf{a}, a functionality \textsf{f}, a security
-parameter \textsf{k}, a random bitstring \textsf{r}, and a corruption model
-\textsf{crupt}.
+parameter \textsf{k}, a random bitstring \textsf{r}, and a static corruption
+model \textsf{crupt}.
+
+The function splits the random bitstring and distributes them to each of the
+parties when they are run. The protocol parties are wrapped in a
+\textsf{wrapper} function, which determines their behaviors based on the static
+corruption model.
 
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
+
+%$\{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}} || (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R} || \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}_{\mathsf{e}}}\}$
 
 \begin{itemize}[leftmargin=*]
   \item \emph{Environment.} The environment's program defines interactions with

@@ -248,11 +248,11 @@ let execUC z p q f a k r crupt =
     let! r' = r in
     let! crupt' = crupt in    
     let (rf,ra,rp,rq,rz) = splitBits5 r' in
-	 (f crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F k !rf
-	|> a crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A !wP2Q !wQ2P k !ra
-	|> wrapper p !(crupt' == CruptP) !wP2Z rZ2P !wP2F rF2P !wP2A rA2P !wP2Q rQ2P k !rp
-	|> wrapper q !(crupt' == CruptQ) !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q !wQ2P rP2Q k !rq)
-    |> z !wZ2P rP2Z !wZ2Q rQ2Z !wZ2A rA2Z k !rz
+	f crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F k !rf
+      |> a crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A !wP2Q !wQ2P k !ra
+      |> wrapper p !(crupt' == CruptP) !wP2Z rZ2P !wP2F rF2P !wP2A rA2P !wP2Q rQ2P k !rp
+      |> wrapper q !(crupt' == CruptQ) !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q !wQ2P rP2Q k !rq
+      |> z !wZ2P rP2Z !wZ2Q rQ2Z !wZ2A rA2Z k !rz
 
 let testBits = ![S,Z,Z,S,S,Z,Z,S,S,Z,Z,S,S,Z,Z,S]
 
