@@ -6,14 +6,15 @@ dubbed SaUCy. We demonstrate the use of SaUCy in three ways: We develop a
 composition operator, walk through an instantiation of UC commitments, and
 re-examine subtle issues that show up in UC definitions.
 
-\subsection{Defining UC Security in ILC}
-\label{subsec:saucy}
-\label{subsec:uc}
-We implement the UC execution model (roughly) as follows:
+\subsection{The UC Framework, Concretely}
+\label{subsec:concrete-uc}
+
+We build a concrete implementation of the UC execution model in ILC, dubbed
+SaUCy, which is defined (roughly) as follows:
 
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
 
-\noindent Before we explain what is going on here, note several things:
+\noindent Before we unpack what is going on here, note several things:
 
 \begin{itemize}[leftmargin=*]
   \item It turns out that implementing the UC execution model requires hooking
@@ -30,17 +31,21 @@ We implement the UC execution model (roughly) as follows:
     execution proceeds.
 \end{itemize}
 
+The function \textsf{execUC} is parameterized by an environment \textsf{z},
+protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a}, an ideal
+functionality \textsf{f}, a security parameter \textsf{k}, a random bitstring
+\textsf{r}, and a static corruption model \textsf{crupt :: Crupt}. The
+\textsf{Crupt} datatype is defined below, with its variants denoting the cases
+when party \textsf{p} is corrupt, party \textsf{q} is corrupt, or no party is
+corrupt, respectively.
 
-The function \textsf{execUC} is parameterized by an environment
-\textsf{z}, protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a},
-an ideal functionality \textsf{f}, a security parameter \textsf{k}, a random
-bitstring \textsf{r}, and a static corruption model \textsf{crupt}. 
+\lstinputlisting[style=myilc]{listings/crupt.ilc}
 
-The function splits a random bitstring and distributes them to each of the
-parties when they are run. Note that each protocol party are run in a
-\textsf{wrapper} function, which determines its behavior based on the static
-corruptions. If a party is corrupted, then the adversary can masquerade as the
-party.
+The function proceeds by first allocating the required channels (see Figure),
+and then splits a random bitstring, distributing pieces to each of the parties
+as they are run.  Note that each protocol party is run in a \textsf{wrapper}
+function, which alters its behavior based on whether or not it is corrupted. If
+a party is corrupted, then the adversary masquerades as the party.
 
 %$\{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}} || (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R} || \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}_{\mathsf{e}}}\}$
 
@@ -82,6 +87,9 @@ party.
 %to interact with each of the executions as they evolve. For the simulation to be
 %good, the environment should not be able to distinguish which of the executions
 %it is interacting with.
+
+\subsection{Defining UC Security in ILC}
+\label{subsec:uc}
 
 The typing rules do not guarantee termination, let alone polynomial time
 normalization, so we define this additional notion.
