@@ -1,0 +1,10 @@
+let discardingF ... =
+  loop frP !($\lambda$ m .$\ \ \ \ $    wr m $->$ toA;
+    letrec f (frA, frP) = choice
+        | let (!Ok, frA) = rd frA in
+          wr m $->$ toQ;
+          (frA, frP)
+        | let (_, frP) = rd frP in  // return to sender
+         wr Discard $->$ toP;
+         (frA, frP)
+  )
