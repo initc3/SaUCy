@@ -2,9 +2,12 @@
 \label{sec:saucy}
 
 Using ILC, we build a concrete, executable implementation of the UC framework,
-dubbed SaUCy. We demonstrate the use of SaUCy in three ways: We develop a
-composition operator, walk through an instantiation of UC commitments, and
-re-examine subtle issues that show up in UC definitions.
+dubbed SaUCy. Then, we demonstrate the versatility of SaUCy in three ways:
+\begin{enumerate}[leftmargin=*]
+\item We develop a composition operator.
+\item We walk through an instantiation of UC commitments.
+\item We reexamine a subtle issue that shows up in UC definitions.
+\end{enumerate}
 
 \subsection{The UC Framework, Concretely}
 \label{subsec:concrete-uc}
@@ -95,34 +98,49 @@ The typing rules do not guarantee termination, let alone polynomial time
 normalization, so we define this additional notion.
 
 \begin{definition}[Polynomial time normalization]
-  Consider a term \textsf{e} that has the type
-  \[\emptyctxt |- \mathsf{e} : \tyNat ->[\tyBit]\ {->}_m\ \tyBit,\]
-  where the first argument is a security parameter \textsf{k} and the second
-  argument is a random bitstring \textsf{r}.\footnote{The definition of
-    polynomial time normalization applies similarly to a term \textsf{e} of type
-    $\tyBit$ where the security parameter and random bitstring are free
-    variables in \textsf{e}.} We say that \textsf{e} is polynomial time
-  normalizable, written \textsf{poly(e)}, if for all random bitstrings
-  \textsf{r}, where the length of \textsf{r} is polynomial in the security
-  parameter \textsf{k}, the term \textsf{e k r} normalizes to a value \textsf{v}
-  in a polynomial (in \textsf{k}) number of steps.
+  \begin{comment}
+  Consider a term \textsf{e} with the type
+  \[\emptyctxt ;\emptyctxt |- \mathsf{e} : \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}~{\multimap}_m~\tyBang{\tyBit},\]
+  where the first argument is a security parameter and the second argument is a
+  random bitstring.\footnote{The definition of polynomial time normalization
+    applies similarly to a term \textsf{e} of type $\tyBit$ where the security
+    parameter and random bitstring are free variables in \textsf{e}.} We say
+  that \textsf{e} is polynomial time normalizable, written \textsf{poly(e)}, if
+  for all security parameters \textsf{k} and all random bitstrings \textsf{r},
+  where the length of \textsf{r} is polynomial in the security parameter
+  \textsf{k}, the term \textsf{e k r} normalizes to a value \textsf{v} in a
+  polynomial (in \textsf{k}) number of steps.
+  \end{comment}
+  The poly judgement is defined as follows.
+  \begin{mathpar}
+    \Infer{poly}
+    {\emptyctxt ; \emptyctxt |- e : \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} {\multimap}_{m}
+      \tyBang{\tyBit}\\
+    \forall~\mathsf{k} \in \tyNat.~\forall~r \in {[\tyBit]}^{(poly(\mathsf{k}))}.~\mathsf{e~!k~!r}~{->}^{poly(\mathsf{k})}~\mathsf{v}}
+    {\keyword{poly}(\mathsf{e})}
+  \end{mathpar}
+  It says that if for all security parameters \textsf{k} and all bitstrings
+  \textsf{r} with length polynomial in \textsf{k} the term \textsf{e~!k~!r}
+  normalizes to a value \textsf{v} in $poly(\mathsf{k})$ steps, then \textsf{e}
+  is polynomial time normalizable, written \textsf{poly(e)}.
 \end{definition}
 
 \begin{definition}[Value Distribution] 
-  Because processes are confluent, we know that if $\mathsf{e~k~r}~{->}^{*}~\mathsf{v}$
+  Because processes are confluent, we know that if $\mathsf{e~!k~!r}~{->}^{*}~\mathsf{v}$
   then the value $\mathsf{v}$ is unique.  We can therefore define the
   probability distribution ensemble $D(\mathsf{e}) = \{ D_{\mathsf{e,k}}
   \}_\mathsf{k}$ of values given a uniform distribution $U_k$ over
   $\mathsf{k}$-bit strings $\mathsf{r}$, where
 \[
-D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~k~r}~{->}^{*}~\mathsf{v} \}.
+D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~!k~!r}~{->}^{*}~\mathsf{v} \}.
 \]
 \end{definition}
 
+\begin{comment}
 \begin{definition}[Polynomial time in UC]
-  The judgement polyUC is defined as 
+  The judgement polyUC is defined as  follows.
   \begin{mathpar}
-    \Infer{polyUC,}
+    \Infer{polyUC}
     {\Delta ; \emptyctxt |-
       \keyword{poly}(\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}) : \tyBit}
     {\emptyctxt ; \emptyctxt |- \keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
@@ -131,6 +149,21 @@ D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\
   says that the term
   \[\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}\]
   is a polynomial time normalizing term.
+\end{definition}
+\end{comment}
+
+\begin{definition}[Polynomial time in UC]
+  The judgement polyUC is defined as  follows.
+  \begin{mathpar}
+    \Infer{polyUC}
+    {\keyword{poly}(\keyword{execUC}~\mc{Z}~\pi~\mc{F}~\mc{A})}
+    {\keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
+  \end{mathpar}
+
+  \noindent It says that if the term
+  \[\keyword{execUC}~\mc{F}~\mc{Z}~\pi~\mc{A}\]
+  is polynomial time normalizing, then the parties that comprise the execution
+  are all polynomial time in UC. \todo{Explain better?}
 \end{definition}
 
 Protocol emulation defines what it means for a protocol to emulate an idealized
@@ -142,10 +175,20 @@ the definition is this:
 \begin{definition}[Emulation]
   The protocol-functionality pair $(\pi_0, \mc{F}_0)$ emulates $(\pi_1, \mc{F}_1)$
   if for all adversaries $\mc{A}$, there exists a simulator $\mc{S}$
-  such that for all environments $\mc{Z}$, if $|- \keyword{polyUC}(\mc{Z}, \pi_0,
-  \mc{F}_0, \mc{A})$ then $|- \keyword{polyUC}(\mc{Z}, \pi_1, \mc{F}_1, \mc{S})$,
+  such that for all environments $\mc{Z}$, if $\keyword{polyUC}(\mc{Z}, \pi_0,
+  \mc{F}_0, \mc{A})$ then $\keyword{polyUC}(\mc{Z}, \pi_1, \mc{F}_1, \mc{S})$,
   and
   \[ D(\mathsf{execUC}\ \mc{Z}\ \pi_0\ \mc{F}_0\ \mc{A}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_1\ \mc{F}_1\ \mc{S}).\]
+
+  \begin{mathpar}
+    \Infer{emulate}
+    {\forall~\mc{A}.~\exists~\mc{S}.~\forall~\mc{Z}.~\keyword{polyUC}(\mc{Z},\pi_0,\mc{F}_0,\mc{A})
+      =>\\\\
+     (\keyword{polyUC}(\mc{Z},\pi_1,\mc{F}_1,\mc{S}) \land\\\\
+      D(\mathsf{execUC}\ \mc{Z}\ \pi_0\ \mc{F}_0\ \mc{A}) \approx
+      D(\mathsf{execUC}\ \mc{Z}\ \pi_1\ \mc{F}_1\ \mc{S}))}
+    {(\pi_0, \mc{F}_0) \approx (\pi_1, \mc{F}_1)}
+  \end{mathpar}
 \end{definition}
 
 \subsection{A composition theorem in SaUCy}

@@ -4,11 +4,11 @@
    corrupted. -}
 data Crupt = CruptP | CruptQ | CruptNone
 
-data ZSMsg = GetCRS
+data Msg' = GetCRS
            | PublicStrings [Bit] [Bit] [Bit]
-	   | ZSCommit [Bit]
-	   | ZSOpened [Bit]
-	   | ZSOpen' Int [Bit]
+	   | Commit' [Bit]
+	   | Opened' [Bit]
+	   | Open' Int [Bit]
 
 data Msg = Commit Int
          | Open
@@ -74,7 +74,7 @@ let simulator crupt toZ frZ toF frF toP frP toQ frQ toQasP toPasQ k bits =
       wr (X2Z (PublicStrings sigma pk0 pk1)) -> toZ' ;
     let (msg, frZ) = rd frZ in
     let! (A2P mm) = msg in
-    let (ZSCommit y) = mm in    
+    let (Commit' y) = mm in    
       if (check td0 pk0 y == S) then
         (wr (Commit 0) -> toP' ; (let b := Just 0))
       else
@@ -91,13 +91,13 @@ let simulator crupt toZ frZ toF frF toP frP toQ frQ toQasP toPasQ k bits =
     let (msg, frQ) = rd frQ in
     let! msg' = msg in
     let y = prg pk0 r0 in
-      wr (X2Z (ZSCommit y)) -> toZ' ;
+      wr (X2Z (Commit' y)) -> toZ' ;
     let (msg'', frQ) = rd frQ in
     let! (Opened b') = msg'' in
       if (b' == 0) then
-        wr (X2Z (ZSOpened r0)) -> toZ'
+        wr (X2Z (Opened' r0)) -> toZ'
       else
-        wr (X2Z (ZSOpened r1)) -> toZ'
+        wr (X2Z (Opened' r1)) -> toZ'
 
 {--------------------Parties--------------------}
 {- The dummy party forwards messages between Z and F (and vice versa). Flipped
@@ -116,21 +116,22 @@ let committer toZ frZ toF frF toQ frQ k bits =
     let! (PublicStrings sigma pk0 pk1) = msg' in
     let r = take 4 bits' in 
     let x = if b == 0 then prg pk0 r else xors (prg pk0 r) sigma in
-      wr ZSCommit x -> toQ ;
+      wr Commit' x -> toQ ;
       let (msg'', frZ)= rd frZ in
-        wr (ZSOpen' b r) -> toQ
+        wr (Open' b r) -> toQ
+{- TODO: Bang operator around writes -}
       
 let receiver toZ frZ toF frF toP frP k bits =
   let! toZ' = toZ in
   let! bits' = bits in
   let (msg, frP) = rd frP in
-  let! (ZSCommit x) = msg in
+  let! (Commit' x) = msg in
     wr GetCRS -> toF ;
     let (msg', frF) = rd frF in
     let! (PublicStrings sigma pk0 pk1) = msg' in
       wr Receipt -> toZ' ;
       let (msg'', frP) = rd frP in
-      let! (ZSOpen' b r) = msg'' in
+      let! (Open' b r) = msg'' in
         if b == 0 && x == prg pk0 r || b == 1 && x == xors (prg pk1 r) sigma
         then wr (Opened b) -> toZ'
         else wr (Opened b) -> toZ'
@@ -198,9 +199,9 @@ let envCruptP toP frP toQ frQ toA frA k bits =
     let (msg,frA) = rd frA in
     let! (X2Z (PublicStrings sigma pk0 pk1)) = msg in
     let y = [Z,S,S,Z] in
-      wr (A2P (ZSCommit y)) -> toA' ;
+      wr (A2P (Commit' y)) -> toA' ;
     let (msg',frQ) = rd frQ in
-      wr (A2P (ZSOpen' 0 y)) -> toA' ;
+      wr (A2P (Open' 0 y)) -> toA' ;
     let (msg'',frQ) = rd frQ in
       print msg''
 
