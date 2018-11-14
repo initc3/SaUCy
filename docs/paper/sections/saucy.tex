@@ -95,17 +95,31 @@ The typing rules do not guarantee termination, let alone polynomial time
 normalization, so we define this additional notion.
 
 \begin{definition}[Polynomial time normalization]
-  Consider a term \textsf{e} that has the type
-  \[\emptyctxt |- \mathsf{e} : \tyNat ->[\tyBit]\ {->}_m\ \tyBit,\]
-  where the first argument is a security parameter \textsf{k} and the second
-  argument is a random bitstring \textsf{r}.\footnote{The definition of
-    polynomial time normalization applies similarly to a term \textsf{e} of type
-    $\tyBit$ where the security parameter and random bitstring are free
-    variables in \textsf{e}.} We say that \textsf{e} is polynomial time
-  normalizable, written \textsf{poly(e)}, if for all random bitstrings
-  \textsf{r}, where the length of \textsf{r} is polynomial in the security
-  parameter \textsf{k}, the term \textsf{e k r} normalizes to a value \textsf{v}
-  in a polynomial (in \textsf{k}) number of steps.
+  \begin{comment}
+  Consider a term \textsf{e} with the type
+  \[\emptyctxt ;\emptyctxt |- \mathsf{e} : \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}~{\multimap}_m~\tyBang{\tyBit},\]
+  where the first argument is a security parameter and the second argument is a
+  random bitstring.\footnote{The definition of polynomial time normalization
+    applies similarly to a term \textsf{e} of type $\tyBit$ where the security
+    parameter and random bitstring are free variables in \textsf{e}.} We say
+  that \textsf{e} is polynomial time normalizable, written \textsf{poly(e)}, if
+  for all security parameters \textsf{k} and all random bitstrings \textsf{r},
+  where the length of \textsf{r} is polynomial in the security parameter
+  \textsf{k}, the term \textsf{e k r} normalizes to a value \textsf{v} in a
+  polynomial (in \textsf{k}) number of steps.
+  \end{comment}
+  The poly judgement is defined as follows.
+  \begin{mathpar}
+    \Infer{poly}
+    {\emptyctxt ; \emptyctxt |- e : \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} {\multimap}_{m}
+      \tyBang{\tyBit}\\
+    \forall~\mathsf{k} \in \tyNat , r \in {[\tyBit]}^{(poly(\mathsf{k}))}.~\mathsf{e~!k~!r}~{->}^{poly(\mathsf{k})}~\mathsf{v}}
+    {\keyword{poly}(\mathsf{e})}
+  \end{mathpar}
+  It says that if for all security parameters \textsf{k} and all bitstrings
+  \textsf{r} with length polynomial in \textsf{k} the term \textsf{e~!k~!r}
+  normalizes to a value \textsf{v} in $poly(\mathsf{k})$ steps, then \textsf{e}
+  is polynomial time normalizable, written \textsf{poly(e)}.
 \end{definition}
 
 \begin{definition}[Value Distribution] 
@@ -119,10 +133,11 @@ D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\
 \]
 \end{definition}
 
+\begin{comment}
 \begin{definition}[Polynomial time in UC]
-  The judgement polyUC is defined as 
+  The judgement polyUC is defined as  follows.
   \begin{mathpar}
-    \Infer{polyUC,}
+    \Infer{polyUC}
     {\Delta ; \emptyctxt |-
       \keyword{poly}(\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}) : \tyBit}
     {\emptyctxt ; \emptyctxt |- \keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
@@ -131,6 +146,16 @@ D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\
   says that the term
   \[\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}\]
   is a polynomial time normalizing term.
+\end{definition}
+\end{comment}
+
+\begin{definition}[Polynomial time in UC]
+  The judgement polyUC is defined as  follows.
+  \begin{mathpar}
+    \Infer{polyUC}
+    {\keyword{poly}(\keyword{execUC}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F})}
+    {\keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
+  \end{mathpar}
 \end{definition}
 
 Protocol emulation defines what it means for a protocol to emulate an idealized
