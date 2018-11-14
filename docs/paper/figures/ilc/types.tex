@@ -63,7 +63,7 @@
 \and
 %
 \Infer{fix}
-{\Delta; \Gamma, x : \tyArr{A}{\footnotesize m}{A} |- e : \tyArr{A}{\footnotesize m}{A}}
+{\emptyctxt; \Gamma, x : \tyArr{A}{\footnotesize m}{A} |- e : \tyArr{A}{\footnotesize m}{A}}
 {\Delta; \Gamma |- \eFix{x}{e} : \tyArr{A}{\footnotesize m}{A}}
 %
 \and
@@ -87,7 +87,7 @@
 \and
 %
 \Infer{abs}
-{\Delta ; \Gamma, x:A |- e : B |> m}
+{\emptyctxt ; \Gamma, x:A |- e : B |> m}
 {\Delta ; \Gamma |- \eLam{x}{e} : \tyArr{A}{\footnotesize m}{B}}
 %
 \and
@@ -153,7 +153,7 @@
 %
 \Infer{bang}
 {\emptyctxt ; \Gamma |- e : A }
-{\emptyctxt ; \Gamma |- \eBang{e} : \tyBang{A}}
+{\Delta ; \Gamma |- \eBang{e} : \tyBang{A}}
 %
 \and
 %
