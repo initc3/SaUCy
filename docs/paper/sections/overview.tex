@@ -38,7 +38,7 @@ In a nutshell, security proofs in the UC framework follow the real/ideal
 paradigm~\cite{goldreich1987play}. To carry out some cryptographic task in the
 real world, we define a distributed protocol that achieves the task across
 \emph{many untrusted processes}. Then, to show that it is secure, we compare it
-to an idealized protocol in which processes simply rely on a \emph{single
+with an idealized protocol in which processes simply rely on a \emph{single
   trusted process} to carry out the task for them (and so security is satisfied
 trivially).
 
@@ -48,8 +48,8 @@ properties we want from the protocol. Roughly speaking, we say that a protocol
 $\pi$ \emph{emulates} an ideal functionality $\mc{F}$ (i.e., it meets its
 specification) if every adversarial behavior in the real world can also be
 exhibited in the ideal world. But because the ideal world is our security
-definition, whatever adversarial behavior that can take place there does not
-translate to a break in security in the real world.
+definition, whatever adversarial behavior can take place there does not
+translate to any insecurity in the real world.
 
 \begin{comment}
 The security requirements of a given
@@ -86,7 +86,8 @@ secure by construction, whatever adversarial behavior can take place in the
 ideal world does not lead to a break in security.
 \end{comment}
 
-Proving emulation formally proceeds in two steps:
+Once we have defined $\pi$ and $\mc{F}$, proving emulation formally
+follows a standard rhythm with two main steps:
 \begin{enumerate}[leftmargin=*]
 \item The first step is constructive: We must construct a \emph{simulator}
   $\mc{S}$ that can simulate the attack of any adversary $\mc{A}$ on $\pi$, but
@@ -100,13 +101,13 @@ In particular, $\mc{Z}$ is an interactive distinguisher: It interacts with the
 real world and the ideal world in a well-defined manner, and the simulation is
 good if no $\mc{Z}$ can distinguish between the two.
 
+\begin{comment}
 \begin{figure}
   \centering
   \includegraphics[width=0.85\linewidth]{graphics/suc-experiment}
   \caption{UC experiment with real world (left) and ideal world (right).}
   \label{fig:uc-experiment}
 \end{figure}
-
 All of this is indeed quite abstract, so it helps to visualize what the UC
 indistinguishability experiment looks like. Figure~\ref{fig:uc-experiment}
 illustrates the UC experiment with the real world on the left, the ideal world
@@ -127,8 +128,19 @@ several things worth noting here:
   real world protocol emulates $\mc{F}$, then no environment should be able to
   tell the two worlds apart.
 \end{itemize}
+\end{comment}
 
-\todo{The big payoff of UC is modularity.}
+So why bother going through all of this? The answer is: \emph{for modularity.}
+Suppose a protocol $\pi$ emulates a functionality $\mc{F}$ and a protocol
+$\rho$, which uses $\mc{F}$ as a subroutine. emulates a functionality
+$\mc{G}$.  Then, the protocol $[\pi / \mc{F}]\rho$, in which calls to
+$\mc{F}$ are replaced by calls to $\pi$, also emulates $\mc{G}$. But
+wait---$\pi$ lives in the real world and $\mc{F}$ lives in the ideal world! We
+call this the \emph{$\mc{F}$-hybrid world}, and therein lies the power of UC.
+Instead of analyzing the composite protocol with $\rho$ and $\pi$, it suffices to
+analyze the security of $\rho$ by itself in the much simpler $\mc{F}$-hybrid
+world. To obtain a ``completely real world'' protocol, we can substitute for
+$\mc{F}$ any protocol that emulates it.
 
 \begin{comment}
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of

@@ -24,25 +24,26 @@ ideal functionality $\mc{F}$ (i.e., it meets its specification) if every
 adversarial behavior in the real world can also be exhibited in the ideal world.
 \end{comment}
 
-While UC security proofs admit strong guarantees, this comes at the cost of
-their formalization being quite complicated. And because the UC framework only
-exists ``on paper,'' protocol descriptions, specifications, and other artifacts
-for proving security are traditionally written in a combination of prose and
-pseudocode. Not only does this make them error-prone and difficult to verify,
-but it is sometimes the case that proven-secure protocols are subtly
-underspecified or ill-specified, which leads to compositionality properties
-being lost or complicated~\cite{camenisch2016universal}.
+\todo{Get to the point sooner.} While UC security proofs admit strong
+guarantees, this comes at the cost of their formalization being quite
+complicated. And because the UC framework only exists ``on paper,'' protocol
+descriptions, specifications, and other artifacts for proving security are
+traditionally written in a combination of prose and pseudocode. Not only does
+this make them error-prone and difficult to verify, but it is sometimes the case
+that proven-secure protocols are subtly underspecified or ill-specified, which
+leads to compositionality properties being lost or
+complicated~\cite{camenisch2016universal}.
 
 We believe that applying a PL-style of systemization to UC can help resolve
 these issues. Unfortunately, we find that previous works in the vein of applying
-PL-techniques to cryptography are not a good fit to capturing \emph{interactive
-  Turing machines} (ITMs), the computational model underlying UC.\footnote{One
-  can think of interactive Turing machines as normal Turing machines that can
-  write on each other's tapes.} Either they do not support computational
-reasoning (which considers issues of probability and computational complexity),
-are not well-suited to describing distributed protocols (cannot express
-message-passing concurrency), or are too expressive (allow describing a superset
-of ITMs).
+PL-techniques to cryptography are not a good fit for describing
+\emph{interactive Turing machines} (ITMs), the computational model underlying
+UC.\footnote{One can think of interactive Turing machines as normal Turing
+  machines that can write on each other's tapes.} Either they do not support
+computational reasoning (which considers issues of probability and computational
+complexity), are not well-suited to describing distributed protocols (cannot
+express message-passing concurrency), or are too expressive (allow describing a
+superset of ITMs).
 
 Still, there are compelling reasons for sticking with ITMs as the model of
 choice. Most importantly, it ensures that whatever protocol we define in the
@@ -53,7 +54,7 @@ to a computation that breaks a computational hardness assumption with
 non-negligible probability~\cite{lindell2014introduction}.
 
 Were it not for ITMs, the presence of (non-probabilistic) nondeterminism due to
-concurrency would severely complicate the necessary probabilistic reasoning for
+concurrency would severely complicate the necessary probabilistic reasoning in
 reduction proofs. However, ITMs avoid this issue by having a deterministic
 (modulo random coin tosses), single-threaded execution semantics. That is,
 processes pass control from one to another each time a message is sent so that
@@ -121,14 +122,14 @@ communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 
 ILC fills this gap by adapting ITMs to a subset of the $\pi$-calculus through its
 type system. In other words, \emph{well-typed ILC programs are expressible as
-  ITMs}. To give a brief summary, ILC's type system restricts the dataflow of
-read channels (via affine typing) and restricts the composition of write effects
+  ITMs}. To give a taste of the type system, it restricts the dataflow of read
+channels (via affine typing) and restricts the composition of write effects
 (forbidding write-mode parallel processes), with the net effect being
 confluence. Therefore, the only nondeterminism in an ILC program is due to
-random coin tosses taken by processes, which have a well-defined distribution,
-and any apparent concurrency hazards, such as adversarial scheduling of messages
-in an asynchronous network, are due to an explicit adversary process rather than
-uncertainty built into the model itself.
+random coin tosses taken by processes, which have a well-defined
+distribution. Additionally, any apparent concurrency hazards, such as
+adversarial scheduling of messages in an asynchronous network, are due to an
+explicit adversary process rather than uncertainty built into the model itself.
 
 \begin{comment}
 To give a quick tour of ILC's type system, judgements have the form $\Delta ; \Gamma |- e

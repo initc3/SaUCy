@@ -2,7 +2,7 @@ letrec discardingF frP frA ... =
   let (!m, frP) = rd frP in
     wr m $->$ toA;
     letrec iloop frP frA =
-       (let (_, frP) = rd frP in  // return to sender
+       (let (_, frP) = rd frP in
           wr Discard $->$ toP;
 	  iloop frP frA)
        $\oplus$ (let (!Ok, frA) = rd frA in
