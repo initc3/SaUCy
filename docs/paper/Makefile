@@ -6,7 +6,7 @@ GRAPHICS = $(wildcard graphics/*.eps) $(wildcard graphics/*.pdf) $(wildcard grap
 BUILD=./build
 LATEX_CMD=pdflatex
 LATEX_FLAGS=-output-directory=$(BUILD) -aux-directory=$(BUILD) 
-DEPENDENCIES = $(TEXFILES) $(FIGURES) $(GRAPHICS) 
+DEPENDENCIES = $(TEXFILES) $(FIGURES) $(GRAPHICS) $(wildcard listings/*.ilc)
 
 # Default to compile when no specification is provided:
 all: $(BUILD)/$(PAPERNAME).pdf

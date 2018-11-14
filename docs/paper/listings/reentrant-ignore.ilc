@@ -1,10 +1,12 @@
-let discardingF ... =
-  loop frP !($\lambda$ m . wr m $->$ toA;
-    letrec f (frA, frP) = 
-	    (let (!Ok, frA) = rd frA in
-	    wr m $->$ toQ;
-	    (frA, frP))
-         $\oplus$ (let (_, frP) = rd frP in  // return to sender
-	   wr Discard $->$ toP;
-	   (frA, frP))
-  )
+letrec discardingF frP frA ... =
+  let (!m, frP) = rd frP in
+    wr m $->$ toA;
+    letrec iloop frP frA =
+       (let (_, frP) = rd frP in  // return to sender
+          wr Discard $->$ toP;
+	  iloop frP frA)
+       $\oplus$ (let (!Ok, frA) = rd frA in
+	  wr m $->$ toQ;
+	  discardingF frA frP ...)
+     in iloop frP frA
+

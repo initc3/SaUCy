@@ -1,4 +1,6 @@
-let sequentialF ... =
-  loop frP !($\lambda$ m . wr m $->$ toA;
-	      let (!Ok, frA) = rd frA in
-	      wr m $->$ toQ)
+letrec sequentialF frP frA ... =
+  let (!m, frP) = rd frP in
+    wr m $->$ toA;
+    let (!Ok, frA) = rd frA in
+      wr m $->$ toQ;
+      sequentialF frP frA
