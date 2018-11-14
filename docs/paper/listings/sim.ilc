@@ -1,34 +1,34 @@
 let simulator !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !r =
   let rref = ref r in
-  let (pk0,td0) = kgen k in
-  let (pk1,td1) = kgen k in  
-  let r0 = sample k rref in
-  let r1 = sample k rref in
-  let sigma = xors (prg pk0 r0) (prg pk1 r1) in
+  let ($\mathsf{pk}_0$,$\mathsf{td}_0$) = kgen k in
+  let ($\mathsf{pk}_1$,$\mathsf{td}_1$) = kgen k in  
+  let $\mathsf{r}_0$ = sample k rref in
+  let $\mathsf{r}_1$ = sample k rref in
+  let $\sigma$ = xors (prg $\mathsf{pk}_0$ $\mathsf{r}_0$) (prg $\mathsf{pk}_1$ $\mathsf{r}_1$) in
   let b = ref Nothing in
-  match crupt with
-  | CruptP $=>$
-    let (!GetCRS, frZ) = rd frZ in
-      wr (PublicStrings sigma pk0 pk1) $->$toZ ;
-      let (!(ZSCommit y), frZ) = rd frZ in
-	if (check td0 pk0 y == 1) then
-	  wr (Commit 0) $->$ toP ; let b := Just 0
-	else
-	  if (check td1 pk1 (xors y sigma) == 1) then
-	    wr (Commit 1) $->$ toF ; let b := Just 1
-	  else
+    match crupt with
+    | CruptP $=>$
+      let (!GetCRS, frZ) = rd frZ in
+	wr (X2Z (PublicStrings $\sigma$ $\mathsf{pk}_0$ $\mathsf{pk}_1$)) $->$toZ ;
+	let (!(A2P (Commit' y)), frZ) = rd frZ in
+	  if (check $\mathsf{td}_0$ $\mathsf{pk}_0$ y == 1) then
 	    wr (Commit 0) $->$ toP ; let b := Just 0
-      let (!(Open y'), frZ) = rd frZ in
-	wr Open $->$ toP
-  | CruptQ $=>$
-    let (!GetCRS, frZ) = rd frZ in
-      wr (PublicStrings sigma pk0 pk1) $->$ toZ ;  
-      let (!Receipt, frQ) = rd frQ in
-      let y = prg pk0 r0 in
-	wr (ZSCommit y) $->$ toZ ;
-	let (!(Opened b'), frQ) = rd frQ in
-	  if (b' == 0) then
-	    wr (ZSOpen r0) $->$ toZ
 	  else
-	    wr (ZSOpen r1) $->$ toZ
-  | CruptNone $=>$ error "Fail"
+	    if (check $\mathsf{td}_1$ $\mathsf{pk}_1$ (xors y $\sigma$) == 1) then
+	      wr (Commit 1) $->$ toF ; let b := Just 1
+	    else
+	      wr (Commit 0) $->$ toP ; let b := Just 0 ;
+	  let (!(A2P (Open y')), frZ) = rd frZ in
+	    wr Open $->$ toP
+    | CruptQ $=>$
+      let (!GetCRS, frZ) = rd frZ in
+	wr (X2Z (PublicStrings $\sigma$ $\mathsf{pk}_0$ $\mathsf{pk}_1$)) $->$ toZ ;  
+	let (!Receipt, frQ) = rd frQ in
+	let y = prg $\mathsf{pk}_0$ $\mathsf{r}_0$ in
+	  wr (X2Z (Commit' y)) $->$ toZ ;
+	  let (!(Opened b'), frQ) = rd frQ in
+	    if (b' == 0) then
+	      wr (X2Z (Opened' $\mathsf{r}_0$)) $->$ toZ
+	    else
+	      wr (X2Z (Opened' $\mathsf{r}_1$)) $->$ toZ
+    | CruptNone $=>$ error "Fail"

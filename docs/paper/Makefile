@@ -3,10 +3,11 @@ PAPERNAME=saucy-paper
 TEXFILES = $(wildcard *.tex) $(wildcard bibs/*.bib) $(wildcard sections/*.tex)
 FIGURES = $(wildcard figures/*.tex) $(wildcard figures/ilc/*.tex) $(wildcard figures/session/*.tex) 
 GRAPHICS = $(wildcard graphics/*.eps) $(wildcard graphics/*.pdf) $(wildcard graphics/*.png)
+LISTINGS = $(wildcard listings/*.tex) $(wildcard listings/*.ilc)
 BUILD=./build
 LATEX_CMD=pdflatex
 LATEX_FLAGS=-output-directory=$(BUILD) -aux-directory=$(BUILD) 
-DEPENDENCIES = $(TEXFILES) $(FIGURES) $(GRAPHICS) 
+DEPENDENCIES = $(TEXFILES) $(FIGURES) $(GRAPHICS) $(LISTINGS)
 
 # Default to compile when no specification is provided:
 all: $(BUILD)/$(PAPERNAME).pdf
