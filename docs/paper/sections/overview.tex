@@ -130,17 +130,20 @@ several things worth noting here:
 \end{itemize}
 \end{comment}
 
-So why bother going through all of this? The answer is: \emph{for modularity.}
-Suppose a protocol $\pi$ emulates a functionality $\mc{F}$ and a protocol
-$\rho$, which uses $\mc{F}$ as a subroutine. emulates a functionality
-$\mc{G}$.  Then, the protocol $[\pi / \mc{F}]\rho$, in which calls to
-$\mc{F}$ are replaced by calls to $\pi$, also emulates $\mc{G}$. But
-wait---$\pi$ lives in the real world and $\mc{F}$ lives in the ideal world! We
-call this the \emph{$\mc{F}$-hybrid world}, and therein lies the power of UC.
-Instead of analyzing the composite protocol with $\rho$ and $\pi$, it suffices to
-analyze the security of $\rho$ by itself in the much simpler $\mc{F}$-hybrid
-world. To obtain a ``completely real world'' protocol, we can substitute for
-$\mc{F}$ any protocol that emulates it.
+So why bother going through all of this? The primary benefit is
+\emph{modularity.}  Suppose a protocol $\pi$ emulates a functionality $\mc{F}$,
+and suppose a protocol $\rho$, which uses $\mc{F}$ as a subroutine, emulates a
+functionality $\mc{G}$.  Then, the protocol $\rho^{\mc{F} -> \pi}$, in which calls to
+$\mc{F}$ are replaced by calls to $\pi$, also emulates $\mc{G}$!
+
+This may seem a bit odd---the protocol $\pi$ lives in the real world and $\mc{F}$
+lives in the ideal world. Indeed, we call this the \emph{$\mc{F}$-hybrid world},
+and therein lies the power of UC. Instead of analyzing the composite protocol
+consisting of $\rho$ and $\pi$, it suffices to analyze the security of $\rho$ by itself
+in the much simpler $\mc{F}$-hybrid world, where it can make calls to
+$\mc{F}$. If we can show that $\rho$ emulates $\mc{G}$ in the $\mc{F}$-hybrid
+world, then we can later substitute for $\mc{F}$ any protocol that emulates it
+without fear of something going wrong.
 
 \begin{comment}
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
@@ -219,7 +222,7 @@ $\Func_{\textsc{com}}$.
 \emph{Commitment} is an essential building block in many cryptographic
 protocols~\cite{brassard1988minimum}. The idea is simple: A \emph{committer}
 provides a \emph{receiver} with the digital equivalent of a ``sealed envelope''
-containing some value and can later reveal that value. Formalizing the security
+containing some value that can be later revealed. Formalizing the security
 of this basic primitive, however, is nontrivial.
 
 To obtain security in the standalone setting or under sequential composition, a
@@ -241,74 +244,77 @@ should satisfy a third subtle property:
 We can capture all three of these properties at once using an ideal
 functionality. On the left side of Figure~\ref{func:com}, we define
 $\Func_{\textsc{com}}$, an ideal functionality for one-time bit commitment, as
-it would appear in the cryptography literature. The functionality simply waits
-for the committer $A$ to commit to some bit $b$, notifies the receiver $B$ that
-it has taken place, and reveals $b$ to $B$ upon request by $A$. Notice that $B$
-never actually sees a commitment to $b$ (it only sees the (\textsf{Receipt})
-message), so the three properties hold trivially.
+it would appear in the cryptography
+literature~\cite{canetti2001commitments}. The functionality simply waits for the
+committer $A$ to commit to some bit $b$, notifies the receiver $B$ that it has
+taken place, and reveals $b$ to $B$ upon request by $A$. Notice that $B$ never
+actually sees a commitment to $b$ (only the (\textsf{Receipt}) message), so the
+three properties hold trivially.
 
 On the right side of Figure~\ref{func:com}, we define $\Func_{\textsc{com}}$ in
-ILC to highlight some key features of the language.\smallskip
+ILC to highlight some key features of the language, such as its affine and modal
+type system. Keep in mind that the overarching feature of ILC is confluence, so
+many of our design choices are artifacts of reaching for this
+quality. \todo{Sequential activation order?}\smallskip
 
-\myheader{Affine types.} The role of affine types is to restrict the
-dataflow of read channels so that no confusion arises at the receiving end of a
-communication.
-
+\myheader{Affine types.}
+%The role of affine types is to restrict the dataflow of
+%read channels so that no confusion arises at the receiving ends of
+%communications.
 Let us first examine the function signature of \textsf{fCom}, which (glossing
 over some details) takes as arguments two channels, a read channel \textsf{frA}
-and a write channel \textsf{toB}, and returns \textsf{Unit}. There are a number
-of things to unpack here:
+(reads message from $A$) and a write channel \textsf{toB} (writes messages to
+$B$), and returns \textsf{Unit}. There are a number of things to unpack here:
 
 \begin{itemize}[leftmargin=*]
   \item The signature consists of affine arrows $\multimap$ (or ``lollipops''), which
     describe the types of functions that consume their argument at most once.
-  \item A function arrow (both affine and intuitionistic) carries the
-    \emph{modal type} (either write $\Wm$, read $\Rm$, or value $\Vm$) of its
-    function body. In the example, the left lollipop has mode $\Vm$, which we
-    elide, and the right lollipop has mode $\Rm$. We have more to say about
-    modes later.
+  \item Both lollipops and intuitionistic (unrestricted) arrows carry the
+    \emph{modal type} (or \emph{mode}) of their function bodies. A mode can have
+    one of three values: either write $\Wm$, read $\Rm$, or value $\Vm$.  In the
+    example, the left lollipop has mode $\Vm$, which we elide, and the right
+    lollipop has mode $\Rm$. We have more to say about modes later.
   \item Channels are typed. Both \textsf{frA} and \textsf{toB} communicate
     values inhabiting the sum type \textsf{Msg}.
   \item Read channels are affinely typed to protect them from duplication.
   \item Write channels and the unit value are intuitionistically typed. Hence,
-    their types require the ! operator (pronounced ``bang!''), which lifts an
-    intuitionistic type into an affine type.
+    their types require the ! operator (pronounced ``bang!'') to be lifted into
+    an affine type.
 \end{itemize}
 
 \noindent ILC achieves the above with a two-kind system. That is, types are
 bifurcated into a kind for intuitionistic types and a kind for affine
-types.\smallskip
+types.
 
-\myheader{Modal types.} The role of modal types is to restrict the composition
-of write effects by forbidding write-mode parallel processes. Recall that in the
-ITM model, execution is essentially single-threaded, so this ensures that no
-confusion arises as to which process is currently writing, or equivalently,
-which process is currently active. A program violating this invariant would not
-be expressible in the ITM model.
+The main takeaway of the affine type system is this: It restricts the dataflow
+of read channels so that no confusion arises at the receiving ends of
+communications.\smallskip
 
-ILC expressions are typed with one of three modes: $\Wm$ (write mode), $\Rm$
-(read mode), or $\Vm$ (value mode). Modes can be composed either sequentially or
-in parallel to yield new modes.
+\myheader{Modal types.} ILC expressions are typed with one of three modes: $\Wm$
+(write mode), $\Rm$ (read mode), or $\Vm$ (value mode). Modes can be composed
+either sequentially or in parallel to yield new modes.
 
 To give a few examples, suppose expressions $e_1$ and $e_2$ have modes $m_1$ and
 $m_2$, respectively. Sequential mode composition shows up in the obvious case of
-sequentially evaluating the two expressions, so the mode of $\eSeq{e_1}{e_2}$ is
-$m1 ;; m2 => m3$.\footnote{The expression $\eSeq{e_1}{e_2}$ is syntactic sugar
-  for $\eLet{\eUnit}{e_1}{e_2}$.} Parallel mode composition shows up when one
-process forks a second process, so the mode of $\eFork{e_1}{e_2}$ is $m_1 || m_2
-=> m_3$.
+sequentially evaluating the two expressions, so the mode of the expression
+$\eSeq{e_1}{e_2}$ is $m1 ;; m2 => m3$.\footnote{The expression $\eSeq{e_1}{e_2}$
+  is syntactic sugar for $\eLet{\eUnit}{e_1}{e_2}$.} Parallel mode composition
+shows up when one process forks a second process, so the mode of the expression
+$\eFork{e_1}{e_2}$ (fork a process $e_1$ and continue as $e_2$) is $m_1 || m_2
+=> m_3$. The rules for mode composition are discussed in Section~\ref{sec:ilc}.
 
-The rules for mode composition are fleshed out in Section~\ref{sec:ilc}, but the
-key takeaway here is that composing write mode processes in parallel is
-\emph{not allowed}. That is, $\Wm || \Wm => p$ is not derivable for any mode
-$p$. \smallskip
+The main takeaway of the modal type system is this: The parallel composition of
+write mode processes is \emph{not allowed}, i.e., $\Wm || \Wm => p$ is not
+derivable for any mode $p$. Recall that in the ITM model, execution is
+essentially single-threaded, so this ensures that no confusion arises as to
+which process is currently writing, or equivalently, which process is currently
+active.\smallskip
 
 \myheader{Putting it all together.} The function body of \textsf{fCom} closely
 follows $\Func_{\textsc{com}}$, but there are several points worth mentioning.
-First, we introduce the letrd and wr typing rules for read and write
-expressions. Typing judgements have the form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is
-an affine typing context, $\Gamma$ is an intuitionistic typing context, and $m$ is a
-mode.
+First, we introduce the letrd and wr typing rules. Typing judgements have the
+form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is an affine typing context, $\Gamma$ is an
+intuitionistic typing context, and $m$ is a mode.
 \begin{mathpar}
 \Infer{letrd}
 {\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\
@@ -319,20 +325,20 @@ mode.
 
 The letrd rule says that if we can partition the affine context $\Delta$ as $\Delta_1,
 \Delta_2$ such that $e_1$ has type $\tyRd{A}$ and mode $\Vm$ (elided) under contexts
-$\Delta_1; \Gamma$ and $e_2$ has type $B$ and mode $m$ under contexts
+$\Delta_1; \Gamma$, and $e_2$ has type $B$ and mode $m$ under contexts
 $\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma$, then the full expression has type $B$ and
 mode $\Rm$. Notice several things:
 \begin{itemize}[leftmargin=*]
-  \item Reading on channel of type $\tyRd{A}$ produces an affine pair (or
+  \item Reading on a channel of type $\tyRd{A}$ produces an affine pair (or
     ``tensor'') of type $\tyTensor{\tyBang{A}}{\tyRd{A}}$.
   \item ILC only allows intuitionistically typed values to be sent over channels
     ($A$ ranges over intuitionistic types), so the value read on the channel is
-    lifted into the first element of the tensor as an affine type.
-  \item The read channel itself is returned as the second tensor element, so
-    that it may be rebound and used again.
-  \item In \textsf{fCom}, pattern matching with the ! operator unpacks affine
-    values, so the value bound to $b$ in the first read from \textsf{frA} has an
-    intuitionistic type.
+    lifted into the first element of the tensor as an affine type using the
+    bang! operator.
+  \item The read channel itself is rebound as the second tensor element, so that
+    it may be used again.
+  \item Pattern matching with the ! operator unpacks affine values, so the value
+    bound to $b$ in the first read from \textsf{frA} has an intuitionistic type.
 \end{itemize}
 \begin{mathpar}
 \Infer{wr}
@@ -342,15 +348,15 @@ mode $\Rm$. Notice several things:
 \end{mathpar}
 
 The wr rule says that if we can partition the affine context $\Delta$ as $\Delta_1, \Delta_2$
-such that $e_1$ has type $A$ and mode $\Vm$ and $e_2$ has a type $\tyWr{A}$ and
+such that $e_1$ has type $A$ and mode $\Vm$, and $e_2$ has a type $\tyWr{A}$ and
 mode $\Vm$, then the full expression has type $\tyUnit$ and mode $\Wm$.
 
-Revisiting \textsf{fCom}, the two letrd expressions are composed sequentially,
-so the mode of the entire function body is derived as $\Rm ;; \Rm => \Rm$
-according to our mode composition rules. This is reflected in the fact that the
-right lollipop in the function signature carries a mode $\Rm$. Finally, because
-wr expressions return $\eUnit$, we wrap it inside a bang! to lift its type into
-the affine type \textsf{!Unit}.
+Revisiting \textsf{fCom}, observe that the two letrd expressions are composed
+sequentially, so the mode of the entire function body is derived as $\Rm ;; \Rm
+=> \Rm$ according to our mode composition rules. This is reflected in the fact
+that the right lollipop in the function signature carries a mode $\Rm$. Finally,
+because wr expressions return $\eUnit$, we wrap it inside a bang! to lift its
+type into the affine type \textsf{!Unit}.
 
 \subsection{The UC Framework, Concretely}
 \label{subsec:uc-concretely}
