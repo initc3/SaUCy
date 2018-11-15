@@ -17,9 +17,9 @@ let simulator !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !r =
 	    if (check $\mathsf{td}_1$ $\mathsf{pk}_1$ (xors y $\sigma$) == 1) then
 	      wr (Commit 1) $->$ toF ; set b := Just 1
 	    else
-	      wr (Commit 0) $->$ toP ; set b := Just 0 ;
+	      error "Fail"
 	  let (!(A2P (Open y')), frZ) = rd frZ in
-	    wr Open $->$ toP
+	    !(wr Open $->$ toP)
     | CruptQ $=>$
       let (!GetCRS, frZ) = rd frZ in
 	wr (X2Z (PublicStrings $\sigma$ $\mathsf{pk}_0$ $\mathsf{pk}_1$)) $->$ toZ ;  
@@ -28,7 +28,7 @@ let simulator !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !r =
 	  wr (X2Z (Commit' y)) $->$ toZ ;
 	  let (!(Opened b'), frQ) = rd frQ in
 	    if (b' == 0) then
-	      wr (X2Z (Opened' $\mathsf{r}_0$)) $->$ toZ
+	      !(wr (X2Z (Opened' $\mathsf{r}_0$)) $->$ toZ)
 	    else
-	      wr (X2Z (Opened' $\mathsf{r}_1$)) $->$ toZ
+	      !(wr (X2Z (Opened' $\mathsf{r}_1$)) $->$ toZ)
     | CruptNone $=>$ error "Fail"
