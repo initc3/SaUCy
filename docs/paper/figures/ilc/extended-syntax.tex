@@ -40,20 +40,20 @@
     expression~$e_1$ reduces to~$\Store_2 ; e_2$.}
   \begin{mathpar}
   \Infer{kgen}
-  {\keyword{\textbf{Gen}}(v_n, v_r) = (v_{pk}, v_{td}) \\ v_{k}, v_{td} \in \{0,1\}^{v_n}}
-  { \Store ; \eKGen{v_n}{v_r} ---> \Store ; (v_{pk}, v_{td})}
+  {\keyword{\textbf{Gen}}(v_k, v_r) = (v_{pk}, v_{td}) \\ v_{k}, v_{td} \in \{0,1\}^{v_n}}
+  { \Store ; \eKGen{v_k}{v_r} ---> \Store ; (v_{pk}, v_{td})}
   \and
   \Infer{tdp}
-  {\mathbf{f}({v_{pk}},v_{in}) = v_{out} \\ \mathbf{f} \colon \{0,1\}^n -> \{0,1\}^n -> \{0,1\}^n}
+  {\mathbf{f}({v_{pk}},v_{in}) = v_{out} \\ \mathbf{f} \colon \{0,1\}^k -> \{0,1\}^k -> \{0,1\}^k}
   { \Store ; \eTdp{v_{pk}}{v_{in}} ---> \Store ; v_{out} }
   \and
   \Infer{inv}
-  {\mathbf{Inv}((v_{pk}, v_{td}), v_{in}) = v_{out} \\ \mathbf{Inv} \colon \{0,1\}^n \times
-    \{0,1\}^n -> \{0,1\}^n -> \{0,1\}^n}
+  {\mathbf{Inv}((v_{pk}, v_{td}), v_{in}) = v_{out} \\ \mathbf{Inv} \colon \{0,1\}^k \times
+    \{0,1\}^k -> \{0,1\}^k -> \{0,1\}^k}
   { \Store ; \eInv{(v_{pk}, v_{td})}{v_{in}} ---> \Store ; v_{out} }
   \and
   \Infer{hc}
-  {\keyword{\textbf{Hc}}_{\mathbf{f}}(v_{pk}) = v \\ \keyword{\textbf{Hc}}_{\mathbf{f}} \colon \{0,1\}^n
+  {\keyword{\textbf{Hc}}_{\mathbf{f}}(v_{pk}) = v \\ \keyword{\textbf{Hc}}_{\mathbf{f}} \colon \{0,1\}^k
     -> \{0, 1\}}
   { \Store ; \eHc{v_{pk}} ---> \Store ; v}
   \end{mathpar}

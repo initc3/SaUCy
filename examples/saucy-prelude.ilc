@@ -25,6 +25,18 @@ let xors as bs =
 {- G_k : {0,1}^n -> {0,1}^4n -}
 let prg k bits = foldl (lam x . lam acc . x ++ acc) [] (replicate 4 bits)
 
+let tdp k bits = foldl (lam x . lam acc . x ++ acc) [] (replicate 4 bits)
+
+let hc r = S
+
+letrec prg' pk r k =
+  if k <= 0 then [hc r]
+  else hc (iterate k (tdp pk) r) : prg' pk r (k - 1)
+
+let prgg pk r k =
+  let n = 3 * k in
+    iterate n (tdp pk) r ++ prg' pk r (n - 1)
+
 {- KGen(1^n) : (td,pk) where td is a trapdoor and pk is a random public key -}
 let kgen k = (replicate k Z, replicate k S)
 
