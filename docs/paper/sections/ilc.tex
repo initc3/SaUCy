@@ -31,7 +31,7 @@ Figure~\ref{fig:mode-composition}.
 
 \todo{Discuss store, process pool, and channel typings.}
 
-The expressions for variables ($x$), unit, products, sums, references, intuitionistic
+The expressions for variables, unit, products, sums, references, intuitionistic
 fixed points, intuitionistic functions, and intuitionistic let binding are
 standard. Expressions related to affinity are more interesting: Lollipops are
 introduced by $\eLAM{x}{e}$ and eliminated by
@@ -83,7 +83,7 @@ intuitionistic typing judgement $\Delta ; \Gamma |- e : A |> m$ should be read a
   has intuitionistic type $A$ and mode $m$.
 \end{quote}
 \endgroup
-\noindent The affine typing judgement follows similarly. Importantly, the type
+\noindent (The affine typing judgement follows similarly.) Importantly, the type
   system maintains these invariants:
 
 \begin{comment}
@@ -158,9 +158,7 @@ mode of the bound expression with the mode of the body.
 The rules for message passing concurrency are more interesting. The nu rule adds
 the read-end of a channel $x_1: \tyRd{A}$ to the affine context $\Delta$ and its
 corresponding write-end $x_2 : \tyWr{A}$ to the intuitionistic context $\Gamma$
-before checking its body. We do not recap the wr and letrd rules here, but
-recall that the wr rule derives the mode $\Wm$ and the read rule derives the
-rule $\Rm$ as expected.
+before checking its body. We do not recap the wr and letrd rules here.
 
 The fork rule says that that if we can appropriately split the affine context
 such that the child process $e_1$ has type $A$ and mode $m_1$ and the

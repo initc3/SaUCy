@@ -54,10 +54,10 @@ operations~\cite{milner1999communicating}. Importantly, they introduced
 techniques for proving (symbolic) security via a notion of observational
 equivalence.
 
-\paragraph{With computational semantics.}  Naturally, ensuing work has turned to bridging the gap between this PL-style of
+\paragraph{With computational semantics.}
+Naturally, ensuing work has turned to bridging the gap between this PL-style of
 formalization and the computational model of cryptography by outfitting these
-calculi with a computational semantics that considers issues of complexity and
-probability.
+calculi with a computational semantics.
 
 %The spi calculus extends the
 %$\pi$-calculus with constructs for encryption and decryption, and introduces a
@@ -98,21 +98,18 @@ to it by users.
 %$B[\cdot]$. Compositionality follows naturally: A process that uses $Q$ can also use
 %$P$ as a secure implementation of $Q$.
 
-\paragraph{With confluence.} The absence of nondeterminism is a prominent distinction for calculi with
-computational semantics. This is the same in ILC, and the means of achieving
-this is via confluence. Here are a sample of other calculi that also enjoy
-confluence.
-
-Berger \etal~\cite{berger2001sequentiality} describe a type system for capturing
+\paragraph{With confluence.}
+There are a number of other process calculi that enjoy confluence.  Berger
+\etal~\cite{berger2001sequentiality} describe a type system for capturing
 deterministic (sequential) computation in the $\pi$-calculus. The type system uses
 affineness and stateless replication to achieve deterministic computation.
-
 Fowler \etal~\cite{fowler2018session} present a core linear lambda calculus with
 (binary) session-typed channels and exception handling that enjoys confluence
-and termination. Confluence is due to linearity of communication endpoints, so
-communication actions on different channels can be performed in any order. The
-calculus only considers two-party protocols, so for our multiparty setting, we
-require a more sophisticated type system to achieve confluence.
+and termination.
+%Confluence is due to linearity of communication endpoints, so
+%communication actions on different channels can be performed in any order.
+The calculus only considers two-party protocols, so for our multiparty setting,
+ILC requires a sophisticated type system to achieve confluence.
 
 \subsection{Tools for Cryptographic Analysis}
 \label{subsec:tools}

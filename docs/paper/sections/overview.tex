@@ -34,7 +34,7 @@ give a tour of ILC and SaUCy.
 \subsection{Background on Universal Composability}
 \label{subsec:background-uc}
 
-In a nutshell, security proofs in the UC framework follow the real/ideal
+Security proofs in the UC framework follow the real/ideal
 paradigm~\cite{goldreich1987play}. To carry out some cryptographic task in the
 real world, we define a distributed protocol that achieves the task across
 \emph{many untrusted processes}. Then, to show that it is secure, we compare it
@@ -244,7 +244,7 @@ should satisfy a third subtle property:
 \end{itemize}
 
 We can capture all three of these properties at once using an ideal
-functionality. On the left side of Figure~\ref{func:com}, we show
+functionality. In Figure~\ref{func:com} (left), we show
 $\Func_{\textsc{com}}$, an ideal functionality for one-time bit commitment, as
 it would appear in the cryptography
 literature~\cite{canetti2001commitments}. The functionality simply waits for the
@@ -253,10 +253,10 @@ taken place, and reveals $b$ to $B$ upon request by $A$. Notice that $B$ never
 actually sees a commitment to $b$ (only the (\textsf{Receipt}) message), so the
 three properties hold trivially.
 
-On the right side of Figure~\ref{func:com}, we define $\Func_{\textsc{com}}$ in
-ILC to highlight some key features of the language, such as its affine and modal
-type system. Keep in mind that many of our design choices are artifacts of
-achieving for \emph{confluence}, the overarching feature of ILC.\smallskip
+In Figure~\ref{func:com} (right), we define $\Func_{\textsc{com}}$ in ILC to
+highlight some key features of the language, such as its affine and modal type
+system. Keep in mind that the overarching feature of ILC is confluence, so many
+of our design choices are for achieving this.\smallskip
 
 \myheader{Affine types.}
 %The role of affine types is to restrict the dataflow of
