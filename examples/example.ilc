@@ -20,12 +20,27 @@ data Z2A = A2F a | A2P a | X2Z a
 {- If P is corrupted, then Z shouldn't be able to write to P, messages from F
 are forwarded to A, and messages from A are forwarded to F. Otherwise, spawn P
 as normal. -}
-let wrapper p crupt toZ frZ toF frF toA frA toP frP k bits =
+let wrapperP p crupt toZ frZ toF frF toA frA toP frP k bits =
   let! crupt' = crupt in
   let! toZ' = toZ in
   let! toF' = toF in
   let! toP' = toP in  
-    if crupt' then
+    if crupt' == CruptP then
+        print "Crupted" ;
+        loop frZ !(lam _ . error "fail")
+      |> fwd frF toA
+      |> fwd frA toF
+      |> fwd frP toA
+    else
+      print "Not crupted" ;
+      p toZ frZ toF frF toP frP k bits
+
+let wrapperQ p crupt toZ frZ toF frF toA frA toP frP k bits =
+  let! crupt' = crupt in
+  let! toZ' = toZ in
+  let! toF' = toF in
+  let! toP' = toP in  
+    if crupt' == CruptQ then
         print "Crupted" ;
         loop frZ !(lam _ . error "fail")
       |> fwd frF toA
@@ -247,12 +262,11 @@ let execUC z p q f a k r crupt =
   , (rP2Q, wP2Q), (rQ2P, wQ2P)  
   . print "Initialized" ;
     let! r' = r in
-    let! crupt' = crupt in    
     let (rf,ra,rp,rq,rz) = splitBits5 r' in
 	f crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F k !rf
       |> a crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A !wP2Q !wQ2P k !ra
-      |> wrapper p !(crupt' == CruptP) !wP2Z rZ2P !wP2F rF2P !wP2A rA2P !wP2Q rQ2P k !rp
-      |> wrapper q !(crupt' == CruptQ) !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q !wQ2P rP2Q k !rq
+      |> wrapperP p crupt !wP2Z rZ2P !wP2F rF2P !wP2A rA2P !wP2Q rQ2P k !rp
+      |> wrapperQ q crupt !wQ2Z rZ2Q !wQ2F rF2Q !wQ2A rA2Q !wQ2P rP2Q k !rq
       |> z !wZ2P rP2Z !wZ2Q rQ2Z !wZ2A rA2Z k !rz
 
 let testBits = ![S,Z,Z,S,S,Z,Z,S,S,Z,Z,S,S,Z,Z,S]

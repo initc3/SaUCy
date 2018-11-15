@@ -44,7 +44,7 @@ The details require some careful programming, since the adversary gets to send m
 The function \textsf{execUC} is parameterized by an environment \textsf{z},
 protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a}, an ideal
 functionality \textsf{f}, a security parameter \textsf{k}, a random bitstring
-\textsf{r}, and a static corruption model \textsf{crupt :: Crupt}. The
+\textsf{r}, and a static corruption model \textsf{crupt :: !Crupt}. The
 \textsf{Crupt} datatype is defined below, with its variants denoting the cases
 when party \textsf{p} is corrupt, party \textsf{q} is corrupt, or no party is
 corrupt, respectively.
@@ -54,9 +54,9 @@ corrupt, respectively.
 \noindent It first allocates the required channels (see
 Figure~\ref{fig:execUC-diagram}), and then splits a random bitstring,
 distributing pieces to each of the parties as they are run.  Note that each
-protocol party is run in a \textsf{wrapper} function, which alters its behavior
-based on whether or not it is corrupted. If a party is corrupted, then the
-adversary masquerades as the party.
+protocol party is run in a wrapper function, which determines its behavior based
+on whether or not it is corrupted. If a party is corrupted, then the adversary
+masquerades as the party.
 
 Note that for space and readability, we elide channel allocation
 and distribution (with ellipses) and abbreviate the type signature (e.g.,
