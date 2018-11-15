@@ -4,36 +4,29 @@
 Using ILC, we build a concrete, executable implementation of the UC framework,
 dubbed SaUCy. Then, we demonstrate the versatility of SaUCy in three ways:
 \begin{enumerate}[leftmargin=*]
-\item We develop a composition operator.
+\item We define a protocol composition operator and its associated composition theorem.
 \item We walk through an instantiation of UC commitments.
-\item We reexamine a subtle issue that shows up in UC definitions.
+\item We use ILC's type system to reason about ``reentrancy,'' a subtle definitional issue in UC that has only recently been studied.
 \end{enumerate}
 
 \subsection{The UC Framework, Concretely}
 \label{subsec:concrete-uc}
+The first challenge in SaUCy is to define the UC execution model in ILC.
+In principle, this is simple and routes messages as illustrated:
 
-We build a concrete implementation of the UC execution model in ILC, dubbed
-SaUCy, which is defined (roughly) as follows:
+\todo{insert execUC illustration}
 
+For demonstration, we only show the case of two-party protocols (\`{a}
+la Simplified UC~\cite{canetti2015simpler}), which will suffice later for our example
+instantiating universally composable commitments.
+Also, we will only aim to show the case of \emph{static} corruptions, in which
+parties are corrupted at the onset of the execution. This is in contrast to
+\emph{adaptive} corruptions, in which parties can be corrupted as the
+execution proceeds.
+
+The details require some careful programming, since the adversary gets to send messages on behalf of corrupted parties.
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
-
-\noindent Before we unpack what is going on here, note several things:
-
-\begin{itemize}[leftmargin=*]
-  \item It turns out that implementing the UC execution model requires hooking
-    up lots of channels. For space and readability, we elide channel allocation
-    and distribution (with ellipses) and abbreviate the type signature (e.g.,
-    $X_{\mathsf{z}}$ is the type of \textsf{z}), but more details can be found
-    in Appendix~\ref{sec:full-execUC}.
-  \item For demonstration, we only show the case of two-party protocols (\`{a}
-    la Simplified UC~\cite{canetti2015simpler}), which will be sufficient for
-    instantiating universally composable commitments later.
-  \item Also, we only show the case of \emph{static} corruptions, in which
-    parties are corrupted at the onset of the execution. This is in contrast to
-    \emph{adaptive} corruptions, in which parties can be corrupted as the
-    execution proceeds.
-\end{itemize}
-
+\noindent
 The function \textsf{execUC} is parameterized by an environment \textsf{z},
 protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a}, an ideal
 functionality \textsf{f}, a security parameter \textsf{k}, a random bitstring
@@ -49,6 +42,11 @@ and then splits a random bitstring, distributing pieces to each of the parties
 as they are run.  Note that each protocol party is run in a \textsf{wrapper}
 function, which alters its behavior based on whether or not it is corrupted. If
 a party is corrupted, then the adversary masquerades as the party.
+
+Note that for space and readability, we elide channel allocation
+and distribution (with ellipses) and abbreviate the type signature (e.g.,
+$X_{\mathsf{z}}$ is the type of \textsf{z}), but more details can be found
+in Appendix~\ref{sec:full-execUC}.
 
 %$\{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}} || (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R} || \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}_{\mathsf{e}}}\}$
 
@@ -91,11 +89,12 @@ a party is corrupted, then the adversary masquerades as the party.
 %good, the environment should not be able to distinguish which of the executions
 %it is interacting with.
 
-\subsection{Defining UC Security in ILC}
-\label{subsec:uc}
-
-The typing rules do not guarantee termination, let alone polynomial time
-normalization, so we define this additional notion.
+\subsection{Probabilistic Polynomial Time in ILC}
+\label{subsec:ppt}
+The goal of cryptography reduction is to relate every bad event in the protocol to a \emph{probabilistic polynomial time computation} that solves a hard problem.
+The ILC typing rules do not guarantee termination, let alone polynomial time normalization, so we must tackle this in metatheory.
+Also, since ILC is effectively deterministic (confluent), we will need to allow random choices.
+To meet these needs we define a judgment about ILC terms that take a security parameter.
 
 \begin{definition}[Polynomial time normalization]
   \begin{comment}
@@ -111,18 +110,18 @@ normalization, so we define this additional notion.
   \textsf{k}, the term \textsf{e k r} normalizes to a value \textsf{v} in a
   polynomial (in \textsf{k}) number of steps.
   \end{comment}
-  The poly judgement is defined as follows.
+  The judgment that \textsf{e} is polynomial time normalizable, written \textsf{PPT e}, is defined as follows:
   \begin{mathpar}
-    \Infer{poly}
-    {\emptyctxt ; \emptyctxt |- e : \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} {\multimap}_{m}
+    \Infer{ppt}
+    {\emptyctxt ~; \emptyctxt |- e : \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} {\multimap}_{m}
       \tyBang{\tyBit}\\
     \forall~\mathsf{k} \in \tyNat.~\forall~r \in {[\tyBit]}^{(poly(\mathsf{k}))}.~\mathsf{e~!k~!r}~{->}^{poly(\mathsf{k})}~\mathsf{v}}
-    {\keyword{poly}(\mathsf{e})}
+    {\keyword{PPT}~ \mathsf{e} }
   \end{mathpar}
-  It says that if for all security parameters \textsf{k} and all bitstrings
+  This says that if for all security parameters \textsf{k} and all bitstrings
   \textsf{r} with length polynomial in \textsf{k} the term \textsf{e~!k~!r}
-  normalizes to a value \textsf{v} in $poly(\mathsf{k})$ steps, then \textsf{e}
-  is polynomial time normalizable, written \textsf{poly(e)}.
+  normalizes to a value \textsf{v} in $poly(\mathsf{k})$ steps.
+  % Note that the normalization is polynomial time for all $\amthsf{r}$.
 \end{definition}
 
 \begin{definition}[Value Distribution] 
@@ -136,60 +135,63 @@ D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\
 \]
 \end{definition}
 
-\begin{comment}
-\begin{definition}[Polynomial time in UC]
-  The judgement polyUC is defined as  follows.
+\begin{definition}[Indistinguishable]
+ Finally, we will need a notion of indistinguishability, which roughly corresponds to statistical indistinguishability of value distributions $D(\mathsf{e}_1) \sim D(\mathsf{e}_2)$. However, we need to take care with whether being polynomial time is an assumption or an obligation.
+  To simplify later, we define the partial order $\mathsf{e}_1 \le \mathsf{e}_2$, to capture that $e_2$ must be PPT if $e_1$ is PPT, and if so, that their value distributions are similar
   \begin{mathpar}
-    \Infer{polyUC}
-    {\Delta ; \emptyctxt |-
-      \keyword{poly}(\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}) : \tyBit}
-    {\emptyctxt ; \emptyctxt |- \keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
+    \Infer{indist}
+    {\keyword{PPT}~ \mathsf{e}_1 \implies (\keyword{PPT}~ \mathsf{e}_2 ~~\keyword{and}~~
+    {D(\mathsf{e}_1) \sim D(\mathsf{e}_2)})}
+    {   \qquad \mathsf{e}_1 \le \mathsf{e}_2 }
   \end{mathpar}
-  where $\Delta = \mathsf{k} : \tyBang{\tyNat}, \mathsf{r} : \tyBang{[\tyBit]}$. It
-  says that the term
-  \[\keyword{execUC}\ \mc{F}\ \mc{Z}\ \pi\ \mc{A}\ \mc{F}\]
-  is a polynomial time normalizing term.
-\end{definition}
-\end{comment}
-
-\begin{definition}[Polynomial time in UC]
-  The judgement polyUC is defined as  follows.
-  \begin{mathpar}
-    \Infer{polyUC}
-    {\keyword{poly}(\keyword{execUC}~\mc{Z}~\pi~\mc{F}~\mc{A})}
-    {\keyword{polyUC}(\mc{Z}, \pi, \mc{F}, \mc{A})}
-  \end{mathpar}
-
-  \noindent It says that if the term
-  \[\keyword{execUC}~\mc{F}~\mc{Z}~\pi~\mc{A}\]
-  is polynomial time normalizing, then the parties that comprise the execution
-  are all polynomial time in UC. \todo{Explain better?}
 \end{definition}
 
-Protocol emulation defines what it means for a protocol to emulate an idealized
-version of itself, which relies on an ideal functionality to do all the
-work. Stated informally, we say that a protocol $\pi$ emulates a protocol $\phi$ if no
-environment $\mc{Z}$ can distinguish between interactions with a known adversary
-$\mc{A}$ and $\pi$ versus a simulated adversary $\mc{S}$ and $\phi$. Stated in SaUCy,
-the definition is this:
-\begin{definition}[Emulation]
-  The protocol-functionality pair $(\pi_0, \mc{F}_0)$ emulates $(\pi_1, \mc{F}_1)$
-  (written $(\pi_0, \mc{F}_0) \approx (\pi_1, \mc{F}_1)$)
-  if for all adversaries $\mc{A}$, there exists a simulator $\mc{S}$ such that
-  for all environments $\mc{Z}$, 
-  if $\keyword{polyUC}(\mc{Z}, \pi_0, \mc{F}_0, \mc{A})$, then
-  $\keyword{polyUC}(\mc{Z}, \pi_1, \mc{F}_1, \mc{S})$, and
-  \[ D(\mathsf{execUC}\ \mc{Z}\ \pi_0\ \mc{F}_0\ \mc{A}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_1\ \mc{F}_1\ \mc{S}).\]
+\subsection{Defining UC Security in ILC}
+\label{subsec:uc}
+What remains is for us to give a precise definition of secure protocol emulation.
+We roughly want to say a protocol $\pi$ emulates $\phi$ if the environment cannot distinguish between the two.
+In SaUCy notation we make the functionality explicit, so emulation is actually defined as a relationship between protocol-functionality pairs. Furthermore we make the simulator $\mc{S}$ explicit, so overall we will define a judgment of the form
+\[
+(\pi, \mc{F}_1) \overset{\mc{S}}\approx (\phi, \mc{F}_2)
+\]
+%\[
+%S ~\keyword{proves}~ (\pi, \mc{F}_1) ~\keyword{emulates}~ (\phi, \mc{F}_2).
+%  \]
+%  Since the simulator tranlates attacks $\mc{A}$ to the real world, we treat $\mc{S}$ as a function, so $\mc{S A}$ is the ideal world adversary simulating $\mc{A}$.
+Since emulation  means that any attack on $\pi$ is also on $\phi$.
+We have to translate attacker behaviors of an arbitrary from the real world $\mc{A}$ to a simulated adversary $\mc{(S~A)}$ in the ideal world.
+A first attempt to define this would be
+\begin{mathpar}
+  \Infer{\st{emulate}}
+        {\forall~\mc{A}~\mc{Z}.~ 
+         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mc{A} \le
+         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ (\mc{S}~\mc{A})}
+    {(\pi, \mc{F}_1) \overset{\mc{S}}\approx (\phi, \mc{F}_2)}
+  \end{mathpar}
 
-  \todo{Use judgement form?}
+\noindent However this definition is vacuous: a degenerate protocol $\pi$ can realize every protocol by simply failing to be $\keyword{PPT}$, e.g. by diverging. To put it another way, the problem is the definition imposes a proof obligation on the simulator $\mc{S}$ but not on $\pi$. What we want to say is that the protocol $(\pi, \mc{F}_1)$ is well behaved whenever  $(\phi, \mc{F}_2)$ is. To help express this, we define a judgment $\keyword{Good}$ that describes environments that are well behaved in the ideal world:
+\begin{mathpar}
+  \Infer{good}
+        {\keyword{PPT}~(\mathsf{execUC}~\mc{Z}~\phi~1_\mc{A}~\mc{F}_2)}
+        {\keyword{Good}~\phi~\mc{F}_2~\mc{Z}}
+\end{mathpar}
+
+Notice that this constraint has the dummy adversary $1_\mc{A}$, even though it is written for the ideal world, unlike in the dummy lemma. This is without loss of generality in the sense that $\keyword{Good}~\phi~\mc{F}_2~Z$ implies that for any $\mc{A}$, we could have a $\mc{Z'}$ such that
+\[
+\mathsf{execUC}~\mc{Z} ~\phi  ~\mc{A}~\mc{F}_2 \le
+\mathsf{execUC}~\mc{Z'}~\phi~1_\mc{A}~\mc{F}_2
+\]
+
+We can now repair the emulation definition by adding this condition in the right place.
+
+\begin{definition}[Protocol Emulation]
+  The judgment that one protocol-functionality pair $(\pi, \mc{F}_1)$  securely emulates another $(\phi, \mc{F}_2)$ (as proven the simulator $\mc{S}$) is defined as follows:
   \begin{mathpar}
-    \Infer{emulate}
-    {\forall~\mc{A}.~\exists~\mc{S}.~\forall~\mc{Z}.~\keyword{polyUC}(\mc{Z},\pi_0,\mc{F}_0,\mc{A})
-      =>\\\\
-     (\keyword{polyUC}(\mc{Z},\pi_1,\mc{F}_1,\mc{S}) \land\\\\
-      D(\mathsf{execUC}\ \mc{Z}\ \pi_0\ \mc{F}_0\ \mc{A}) \approx
-      D(\mathsf{execUC}\ \mc{Z}\ \pi_1\ \mc{F}_1\ \mc{S}))}
-    {(\pi_0, \mc{F}_0) \approx (\pi_1, \mc{F}_1)}
+  \Infer{{emulate}}
+        {\forall~\mc{A}~\mc{Z}.~ \keyword{Good}~\phi~\mc{F}_2~\mc{Z} =>\\\\
+         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mc{A} \le
+         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ (\mc{S}~\mc{A})}
+        {(\pi, \mc{F}_1) \overset{\mc{S}}\approx (\phi, \mc{F}_2)}
   \end{mathpar}
 \end{definition}
 
@@ -213,19 +215,26 @@ composition operators, simplifying lemmas, and notation. For brevity, we pack
 several notions from UC into a single alternate definition: UC-realizes.
 
 \begin{definition}[UC-realizes]
-  Protocol $\pi$ with $\mc{F}_0$ realizes $\mc{F}_1$, written $\mc{F}_0
-  \yrightarrow{$\pi$} \mc{F}_1$, if for all environments $\mc{Z}$, if $|-
-  \keyword{polyUC}(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
-  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$, and the
-  following statistical indistinguishability relation holds
-  \[ D(\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_0\ \mc{A}_{\mathbbm{1}}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_{\mathbbm{1}}\ \mc{F}_1\ \mc{S}).\]
+  Protocol $\pi$ with $\mc{F}_0$ realizes $\mc{F}_1$, written
+  $\mc{F}_0 \yrightarrow{$\pi$} \mc{F}_1$, if for all environments $\mc{Z}$,
+%  if $\keyword(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
+%  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$, and the
+  %  following statistical indistinguishability relation holds
+
+  \begin{mathpar}
+    \Infer{realizes}
+          {\forall~\mc{Z}.~ \keyword{Good}~\phi~\mc{F}_2~\mc{Z} =>\\\\
+            \mathsf{execUC}\ \mc{Z}\ \pi\  \mc{F}_1\ 1_\mc{A} \le
+            \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mc{S}}
+          {\mc{F}_0 \yrightarrow{$\pi$} \mc{F}_1}
+  \end{mathpar}
 \end{definition}
 
-\todo{The idea is that the environment can arbitrarily and adaptively choose
-  inputs to the protocol $\phi$. So when we compose with an arbitrary other
-  protocol $\rho$, it is not any worse than what the environment could have
-  done. It essentially creates a proof obligation to ensure isolation of the
-  protocols.}  While the intended use of universal composition is to replace an
+The idea is that the environment can arbitrarily and adaptively choose
+inputs to the protocol $\phi$. So when we compose with an arbitrary other
+protocol $\rho$, it is not any worse than what the environment could have
+done. It essentially creates a proof obligation to ensure isolation of the
+protocols.}  While the intended use of universal composition is to replace an
 ideal functionality with a protocol that securely realizes it, we define
 protocol composition \todo{Let's just call it protocol composition, not
   universal composition. It's not really universal.} more generally in terms of
