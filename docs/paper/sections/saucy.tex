@@ -295,10 +295,11 @@ The functionality FCom has already been defined.
 \todo{Recap the proof obligation}
 
 \paragraph{Extending ILC with cryptographic primitives.}
-UC Commitments are realized from cryptographic primitives, such as pseudorandom
-trapdoor permutations. This requires us to extend the syntax. The semantics are
-written in terms of the cryptographic objects themselves, and we still arrive at
-a computational reduction for our security proof.
+\todo{Still lots of changes to make here.} UC Commitments are realized from
+cryptographic primitives, such as pseudorandom trapdoor permutations. This
+requires us to extend the syntax. The semantics are written in terms of the
+cryptographic objects themselves, and we still arrive at a computational
+reduction for our security proof.
 
 The new syntactic forms are \textsf{kgen}, \textsf{tdp}, \textsf{inv}, and
 \textsf{hc} with the static and dynamic semantics shown in
@@ -311,9 +312,9 @@ $f_{v_k}$.
 
 \input{figures/ilc/extended-syntax}
 
-\lstinputlisting[style=myilc]{listings/prg.ilc}
-
 \[ G_{pk}(r) = \big(f_{pk}^{(3n)}(r), B(f_{pk}^{(3n-1)}(r)), \ldots, B(f_{pk}(r)), B(r)\big)\]
+
+\lstinputlisting[style=myilc]{listings/prg.ilc}
 
 \begin{algorithm}
 \SetAlgorithmName{Protocol}{protocol}{List of Protocols}
