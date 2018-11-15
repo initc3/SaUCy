@@ -108,8 +108,8 @@ in Appendix~\ref{sec:full-execUC}.
 \label{subsec:ppt}
 The goal of cryptography reduction is to relate every bad event in the protocol to a \emph{probabilistic polynomial time computation} that solves a hard problem.
 The ILC typing rules do not guarantee termination, let alone polynomial time normalization, so we must tackle this in metatheory.
-Also, since ILC is effectively deterministic (confluent), we will need to allow random choices.
-To meet these needs we define a judgment about ILC terms that take a security parameter.
+Also, since ILC is effectively deterministic (confluent), we will need to express random choices some other way.
+To meet these needs we define a judgment about ILC terms that take a security parameter and a  stream of random bits.
 
 \begin{definition}[Polynomial time normalization]
   \begin{comment}
@@ -136,7 +136,7 @@ To meet these needs we define a judgment about ILC terms that take a security pa
   This says that if for all security parameters \textsf{k} and all bitstrings
   \textsf{r} with length polynomial in \textsf{k} the term \textsf{e~!k~!r}
   normalizes to a value \textsf{v} in $poly(\mathsf{k})$ steps.
-  % Note that the normalization is polynomial time for all $\amthsf{r}$.
+  Note that the normalization is polynomial time for all $\mathsf{r}$.
 \end{definition}
 
 \begin{definition}[Value Distribution] 
@@ -151,8 +151,8 @@ D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\
 \end{definition}
 
 \begin{definition}[Indistinguishable]
- Finally, we will need a notion of indistinguishability, which roughly corresponds to statistical indistinguishability of value distributions $D(\mathsf{e}_1) \sim D(\mathsf{e}_2)$. However, we need to take care with whether being polynomial time is an assumption or an obligation.
-  To simplify later, we define the partial order $\mathsf{e}_1 \le \mathsf{e}_2$, to capture that $e_2$ must be PPT if $e_1$ is PPT, and if so, that their value distributions are similar
+ Finally, we will often need a notion of indistinguishability, roughly corresponding to statistical indistinguishability of value distributions ${D(\mathsf{e}_1) \sim D(\mathsf{e}_2)}$. However, we need to be clear on when polynomial time normalization is an assumption or a proof obligation.
+  To simplify things later, we define a partial order $\mathsf{e}_1 \le \mathsf{e}_2$, which captures that $e_2$ must be PPT if $e_1$ is PPT, and if so, that their value distributions are similar.
   \begin{mathpar}
     \Infer{indist}
     {\keyword{PPT}~ \mathsf{e}_1 \implies (\keyword{PPT}~ \mathsf{e}_2 ~~\keyword{and}~~
@@ -174,7 +174,7 @@ In SaUCy notation we make the functionality explicit, so emulation is actually d
 %  \]
 %  Since the simulator tranlates attacks $\mc{A}$ to the real world, we treat $\mc{S}$ as a function, so $\mc{S A}$ is the ideal world adversary simulating $\mc{A}$.
 Since emulation  means that any attack on $\pi$ is also on $\phi$.
-We have to translate attacker behaviors of an arbitrary from the real world $\mc{A}$ to a simulated adversary $\mc{(S~A)}$ in the ideal world.
+We have to translate attacker behaviors of an arbitrary real world adversary $\mc{A}$ to a simulated adversary $\mc{(S~A)}$ in the ideal world.
 A first attempt to define this would be
 \begin{mathpar}
   \Infer{\st{emulate}}
@@ -184,21 +184,21 @@ A first attempt to define this would be
     {(\pi, \mc{F}_1) \overset{\mc{S}}\approx (\phi, \mc{F}_2)}
   \end{mathpar}
 
-\noindent However this definition is vacuous: a degenerate protocol $\pi$ can realize every protocol by simply failing to be $\keyword{PPT}$, e.g. by diverging. To put it another way, the problem is the definition imposes a proof obligation on the simulator $\mc{S}$ but not on $\pi$. What we want to say is that the protocol $(\pi, \mc{F}_1)$ is well behaved whenever  $(\phi, \mc{F}_2)$ is. To help express this, we define a judgment $\keyword{Good}$ that describes environments that are well behaved in the ideal world:
+\noindent However this definition is vacuous: a degenerate protocol $\pi$ can emulate anything simply failing to be $\keyword{PPT}$, e.g. by diverging. To put it another way, the problem is the definition imposes a proof obligation on the simulator $\mc{S}$ but not on $\pi$. What we want to say is that the \emph{real world} protocol $(\pi, \mc{F}_1)$ must be well behaved whenever the \emph{ideal world} $(\phi, \mc{F}_2)$ is.
+However, even a reasonable protocol can result in non-PPT executions if paired with a divergent environment. We therefore need to express a judgment $\keyword{Good}$ to describe environments that are well behaved in the ideal world:
 \begin{mathpar}
   \Infer{good}
         {\keyword{PPT}~(\mathsf{execUC}~\mc{Z}~\phi~1_\mc{A}~\mc{F}_2)}
         {\keyword{Good}~\phi~\mc{F}_2~\mc{Z}}
 \end{mathpar}
-
-Notice that this constraint has the dummy adversary $1_\mc{A}$, even though it is written for the ideal world, unlike in the dummy lemma. This is without loss of generality in the sense that $\keyword{Good}~\phi~\mc{F}_2~Z$ implies that for any $\mc{A}$, we could have a $\mc{Z'}$ such that
+\noindent Notice that this constraint has the dummy adversary $1_\mc{A}$.
+%, even though it is written for the ideal world, unlike in the dummy lemma.
+This is without loss of generality in the sense that $\keyword{Good}~\phi~\mc{F}_2~Z$ implies that for any $\mc{A}$, we could have a $\mc{Z'}$ such that
 \[
 \mathsf{execUC}~\mc{Z} ~\phi  ~\mc{A}~\mc{F}_2 \le
 \mathsf{execUC}~\mc{Z'}~\phi~1_\mc{A}~\mc{F}_2
 \]
-
-We can now repair the emulation definition by adding this condition in the right place.
-
+\noindent We can now repair the emulation definition using this constraint.
 \begin{definition}[Protocol Emulation]
   The judgment that one protocol-functionality pair $(\pi, \mc{F}_1)$  securely emulates another $(\phi, \mc{F}_2)$ (as proven the simulator $\mc{S}$) is defined as follows:
   \begin{mathpar}
