@@ -121,6 +121,7 @@ they hold relevance for certain typing rules. Moreover, we elide value mode
 derivations to avoid clutter, so a judgement of the form $\Delta ; \Gamma |- e : A$ really
 means $\Delta ; \Gamma |- e : A |> \Vm$.
 
+\paragraph{Intuitionistic rules.}
 The rules for intuitionistic variable lookup (var), unit (unit), and references
 (ref, get, set) are standard, as are the introduction rules for products (pair)
 and sums (inj). Notice that because these are all value mode expressions,
@@ -173,7 +174,7 @@ Finally, the choice rule says that if we can appropriately split the affine
 context such that both subexpressions $A$ and mode $R$, then the whole
 expression follows exactly.
 
-\todo{Linear rules.}
+\paragraph{Affine rules.}
 
 \subsection{Dynamic Semantics}
 \label{subsec:semantics}

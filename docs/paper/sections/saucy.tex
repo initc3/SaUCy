@@ -14,7 +14,12 @@ dubbed SaUCy. Then, we demonstrate the versatility of SaUCy in three ways:
 The first challenge in SaUCy is to define the UC execution model in ILC.
 In principle, this is simple and routes messages as illustrated:
 
-\todo{insert execUC illustration}
+\begin{figure}
+  \centering
+  \includegraphics[width=0.4\linewidth]{graphics/execUC}
+  \caption{UC execution.}
+  \label{fig:execUC}
+\end{figure}
 
 For demonstration, we only show the case of two-party protocols (\`{a}
 la Simplified UC~\cite{canetti2015simpler}), which will suffice later for our example
@@ -23,6 +28,7 @@ Also, we will only aim to show the case of \emph{static} corruptions, in which
 parties are corrupted at the onset of the execution. This is in contrast to
 \emph{adaptive} corruptions, in which parties can be corrupted as the
 execution proceeds.
+\lstinputlisting[style=myilc]{listings/simp-suc.ilc}
 
 The details require some careful programming, since the adversary gets to send messages on behalf of corrupted parties.
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
@@ -295,6 +301,10 @@ predicate function \textsf{hc} generates, on input trapdoor permutation
 $f_{v_k}$.
 
 \input{figures/ilc/extended-syntax}
+
+\lstinputlisting[style=myilc]{listings/prg.ilc}
+
+\[ G_{pk}(r) = \big(f_{pk}^{(3n)}(r), B(f_{pk}^{(3n-1)}(r)), \ldots, B(f_{pk}(r)), B(r)\big)\]
 
 \begin{algorithm}
 \SetAlgorithmName{Protocol}{protocol}{List of Protocols}

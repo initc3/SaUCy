@@ -155,3 +155,6 @@ letrec sort lst =
   match lst with
   | []   => []
   | x:xs => insert x (sort xs)
+
+letrec iterate n f acc =
+  if n <= 0 then acc else iterate (n - 1) f (f acc)
