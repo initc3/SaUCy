@@ -18,8 +18,9 @@ let simulator !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !r =
 	      wr (Commit 1) $->$ toF ; set b := Just 1
 	    else
 	      error "Fail"
-	  let (!(A2P (Open y')), frZ) = rd frZ in
-	    !(wr Open $->$ toP)
+	  let (!(A2P (Open b' y')), frZ) = rd frZ in
+	    if y == y' && Just b' == @b then wr Open $->$ toP
+	    else error "TODO: Decommit incorrectly"
     | CruptQ $=>$
       let (!GetCRS, frZ) = rd frZ in
 	wr (X2Z (PublicStrings $\sigma$ $\mathsf{pk}_0$ $\mathsf{pk}_1$)) $->$ toZ ;  
