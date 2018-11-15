@@ -1,5 +1,5 @@
 execUC :: $\forall$ ... . $X_{\mathsf{z}} \multimap X_{\mathsf{p}} \otimes X_{\mathsf{q}} \multimap X_{\mathsf{f}} \multimap X_{\mathsf{a}}$
-        $\multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} \multimap \tyBang{\keyword{Crupt}} \multimap_{\mathsf{m}_{\mathsf{e}}} \tyBang{\tyBit} $ 
+        $\multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} \multimap \tyBang{\keyword{Crupt}} \multimap_{m} \tyBang{\tyBit} $ 
 let execUC z (p,q) f a k !r !crupt =
   $\nu$ ... . let (rf,ra,rp,rq,rz) = splitBits5 r in
 	 $\ \ \ \,$ f !crupt ... k !rf

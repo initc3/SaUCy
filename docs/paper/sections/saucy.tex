@@ -9,26 +9,34 @@ dubbed SaUCy. Then, we demonstrate the versatility of SaUCy in three ways:
 \item We use ILC's type system to reason about ``reentrancy,'' a subtle definitional issue in UC that has only recently been studied.
 \end{enumerate}
 
+
+%\begin{figure}
+%  \centering
+%  \includegraphics[width=0.4\linewidth]{graphics/execUC}
+%  \caption{UC execution.}
+%  \label{fig:execUC}
+%\end{figure}
+
 \subsection{The UC Framework, Concretely}
 \label{subsec:concrete-uc}
-The first challenge in SaUCy is to define the UC execution model in ILC.
-In principle, this is simple and routes messages as illustrated:
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.4\linewidth]{graphics/execUC}
-  \caption{UC execution.}
-  \label{fig:execUC}
-\end{figure}
-
-For demonstration, we only show the case of two-party protocols (\`{a}
-la Simplified UC~\cite{canetti2015simpler}), which will suffice later for our example
-instantiating universally composable commitments.
-Also, we will only aim to show the case of \emph{static} corruptions, in which
-parties are corrupted at the onset of the execution. This is in contrast to
-\emph{adaptive} corruptions, in which parties can be corrupted as the
-execution proceeds.
-\lstinputlisting[style=myilc]{listings/simp-suc.ilc}
+\setlength\intextsep{0pt}
+\setlength{\columnsep}{10pt}
+\begin{wrapfigure}{R}{0.15\textwidth}
+\centering
+\includegraphics[width=0.15\textwidth]{graphics/execUC}
+\caption{\textsf{execUC}.}
+\label{fig:execUC-diagram}
+\end{wrapfigure}
+The first challenge in SaUCy is to define the UC execution model in ILC.  In
+principle, this is simple and routes messages as illustrated in
+Figure~\ref{fig:execUC-diagram} to the right. For demonstration, we only show
+the case of two-party protocols (\`{a} la Simplified
+UC~\cite{canetti2015simpler}), which will suffice for our example of
+instantiating universally composable commitments.  Also, we will only aim to
+show the case of \emph{static} corruptions, in which parties are corrupted at
+the onset of the execution. This is in contrast to \emph{adaptive} corruptions,
+in which parties can be corrupted as the execution proceeds.
 
 The details require some careful programming, since the adversary gets to send messages on behalf of corrupted parties.
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
@@ -43,11 +51,12 @@ corrupt, respectively.
 
 \lstinputlisting[style=myilc]{listings/crupt.ilc}
 
-The function proceeds by first allocating the required channels (see Figure),
-and then splits a random bitstring, distributing pieces to each of the parties
-as they are run.  Note that each protocol party is run in a \textsf{wrapper}
-function, which alters its behavior based on whether or not it is corrupted. If
-a party is corrupted, then the adversary masquerades as the party.
+The function proceeds by first allocating the required channels (see
+Figure~\ref{fig:execUC-diagram}), and then splits a random bitstring,
+distributing pieces to each of the parties as they are run.  Note that each
+protocol party is run in a \textsf{wrapper} function, which alters its behavior
+based on whether or not it is corrupted. If a party is corrupted, then the
+adversary masquerades as the party.
 
 Note that for space and readability, we elide channel allocation
 and distribution (with ellipses) and abbreviate the type signature (e.g.,
@@ -240,7 +249,7 @@ The idea is that the environment can arbitrarily and adaptively choose
 inputs to the protocol $\phi$. So when we compose with an arbitrary other
 protocol $\rho$, it is not any worse than what the environment could have
 done. It essentially creates a proof obligation to ensure isolation of the
-protocols.}  While the intended use of universal composition is to replace an
+protocols.  While the intended use of universal composition is to replace an
 ideal functionality with a protocol that securely realizes it, we define
 protocol composition \todo{Let's just call it protocol composition, not
   universal composition. It's not really universal.} more generally in terms of
