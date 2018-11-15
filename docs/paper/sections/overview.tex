@@ -295,24 +295,30 @@ communications.\smallskip
 (write mode), $\Rm$ (read mode), or $\Vm$ (value mode). Modes can be composed
 either sequentially or in parallel to yield new modes.
 
-To give a few examples, suppose expressions $e_1$ and $e_2$ have modes $m_1$ and
-$m_2$, respectively. Sequential mode composition shows up in the obvious case of
-sequentially evaluating the two expressions, so the mode of the expression
-$\eSeq{e_1}{e_2}$ is $m1 ;; m2 => m3$.\footnote{The expression $\eSeq{e_1}{e_2}$
-  is syntactic sugar for $\eLet{\eUnit}{e_1}{e_2}$.} Parallel mode composition
-shows up when one process forks a second process, so the mode of the expression
-$\eFork{e_1}{e_2}$ (fork a process $e_1$ and continue as $e_2$) is $m_1 || m_2
-=> m_3$. The rules for mode composition are discussed in Section~\ref{sec:ilc}.
+To give the high-level idea, suppose expressions $e_1$ and $e_2$ have modes
+$m_1$ and $m_2$, respectively. Sequential mode composition shows up in the
+obvious case of sequentially evaluating the two expressions, so the mode of
+$\eSeq{e_1}{e_2}$ is derived as $m1 ;; m2 => m3$.\footnote{The expression
+  $\eSeq{e_1}{e_2}$ is syntactic sugar for $\eLet{\eUnit}{e_1}{e_2}$.} Parallel
+mode composition shows in the case of forking a child process, so the mode of
+$\eFork{e_1}{e_2}$ (fork a process $e_1$ and continue as $e_2$) is derived as
+$m_1 || m_2 => m_3$. The rules for mode composition are discussed in
+Section~\ref{sec:ilc}.
 
 The main takeaway of the modal type system is this: Parallel composition of
 write mode processes is \emph{not allowed}, i.e., $\Wm || \Wm => p$ is not
-derivable for any mode $p$. Recall that in the ITM model, execution is
-essentially single-threaded, so this ensures that no confusion arises as to
-which process is currently writing, or put another way, which process is
-currently active.\smallskip
+derivable for any mode $p$. This ensures that no confusion arises as to which
+process is currently writing, or put another way, which process is currently
+active.\smallskip
+
+%Recall that in the ITM model, execution is
+%essentially single-threaded, so this ensures that no confusion arises as to
+%which process is currently writing, or put another way, which process is
+%currently active.\smallskip
 
 \myheader{Putting it all together.} The function body of \textsf{fCom} closely
 follows $\Func_{\textsc{com}}$, but there are several points worth mentioning.
+
 First, we introduce the letrd and wr typing rules. Typing judgements have the
 form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is an affine typing context, $\Gamma$ is an
 intuitionistic typing context, and $m$ is a mode.
