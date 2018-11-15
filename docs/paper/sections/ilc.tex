@@ -174,7 +174,14 @@ Finally, the choice rule says that if we can appropriately split the affine
 context such that both subexpressions $A$ and mode $R$, then the whole
 expression follows exactly.
 
-\paragraph{Affine rules.}
+\paragraph{Affine rules.} The affine typing rules are, for the most part, analagous to their
+intuitionistic counterparts. Two differences bear mentioning. First, the bang!
+rule only lifts intuitionistically typed expressions that are closed with
+respect to affine variables into an affinely typed expression. Otherwise, one
+could wrap an intuitionistically typed expression with free affine variables in
+a bang! and use it in an unrestricted manner. Second, in contrast with the abs
+rule, the lollipop rule does not require function bodies to be free with respect
+to affine variables.
 
 \subsection{Dynamic Semantics}
 \label{subsec:semantics}
