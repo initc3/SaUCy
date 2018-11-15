@@ -1,18 +1,5 @@
 \begin{figure*}[t]
   \begin{grammar}
-    Expressions
-    & $e$
-        &$\bnfas$&
-        $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2} \bnfalt \eInj{i}{e}
-    \bnfalt \eRef{e} \bnfalt \eSplit{e_1}{x_1}{x_2}{e_2} \bnfalt
-    \eCase{e}{x_1}{e_1}{x_2}{e_2}$
-    \\ &&& $\bnfaltbrk \eGet{e} \bnfalt \eSet{e_1}{e_2} \bnfalt \eFix{x}{e}
-    \bnfalt \eLet{x}{e_1}{e_2} \bnfalt \eLetBang{x}{e_1}{e_2} \bnfalt \eBang{e}$
-    \\ &&& $\bnfaltbrk \eLam{x}{e} \bnfalt \eApp{e_1}{e_2} \bnfalt \eNu{(x_1,
-      x_2)}{e} \bnfalt \eWr{e_1}{e_2} \bnfalt \eLetRd{x_1}{x_2}{e_1}{e_2}$
-    \\ &&& $\bnfaltbrk \eFork{e_1}{e_2} \bnfalt \eChoice{e_1}{e_2}$
-  \end{grammar}
-  \begin{grammar}
     Intuitionistic types
     & $A,B$
     &$\bnfas$& $\tyUnit \bnfalt \tyProd{A}{B} \bnfalt \tySum{A}{B} \bnfalt
@@ -48,6 +35,19 @@
     & $\ChTy$
     &$\bnfas$& $\emptyctxt \bnfalt \ChTy,c:A \bnfalt \ChTy,c:X$
   \end{grammar}
-  \caption{Syntax of ILC.}
+  \begin{grammar}
+    Expressions
+    & $e$
+        &$\bnfas$&
+        $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2} \bnfalt \eInj{i}{e}
+    \bnfalt \eRef{e} \bnfalt \eSplit{e_1}{x_1}{x_2}{e_2} \bnfalt
+    \eCase{e}{x_1}{e_1}{x_2}{e_2}$
+    \\ &&& $\bnfaltbrk \eGet{e} \bnfalt \eSet{e_1}{e_2} \bnfalt \eFix{x}{e}
+    \bnfalt \eLet{x}{e_1}{e_2} \bnfalt \eLetBang{x}{e_1}{e_2} \bnfalt \eBang{e}$
+    \\ &&& $\bnfaltbrk \eLam{x}{e} \bnfalt \eApp{e_1}{e_2} \bnfalt \eLAM{x}{e} \bnfalt \eNu{(x_1,
+      x_2)}{e} \bnfalt \eWr{e_1}{e_2} \bnfalt \eLetRd{x_1}{x_2}{e_1}{e_2}$
+    \\ &&& $\bnfaltbrk \eFork{e_1}{e_2} \bnfalt \eChoice{e_1}{e_2}$
+  \end{grammar}
+  \caption{Syntax of ILC. \todo{Affine application, tensors intro and elim.}}
   \label{fig:ilc-syntax}
 \end{figure*}

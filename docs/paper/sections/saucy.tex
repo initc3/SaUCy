@@ -174,12 +174,14 @@ $\mc{A}$ and $\pi$ versus a simulated adversary $\mc{S}$ and $\phi$. Stated in S
 the definition is this:
 \begin{definition}[Emulation]
   The protocol-functionality pair $(\pi_0, \mc{F}_0)$ emulates $(\pi_1, \mc{F}_1)$
-  if for all adversaries $\mc{A}$, there exists a simulator $\mc{S}$
-  such that for all environments $\mc{Z}$, if $\keyword{polyUC}(\mc{Z}, \pi_0,
-  \mc{F}_0, \mc{A})$ then $\keyword{polyUC}(\mc{Z}, \pi_1, \mc{F}_1, \mc{S})$,
-  and
+  (written $(\pi_0, \mc{F}_0) \approx (\pi_1, \mc{F}_1)$)
+  if for all adversaries $\mc{A}$, there exists a simulator $\mc{S}$ such that
+  for all environments $\mc{Z}$, 
+  if $\keyword{polyUC}(\mc{Z}, \pi_0, \mc{F}_0, \mc{A})$, then
+  $\keyword{polyUC}(\mc{Z}, \pi_1, \mc{F}_1, \mc{S})$, and
   \[ D(\mathsf{execUC}\ \mc{Z}\ \pi_0\ \mc{F}_0\ \mc{A}) \approx D(\mathsf{execUC}\ \mc{Z}\ \pi_1\ \mc{F}_1\ \mc{S}).\]
 
+  \todo{Use judgement form?}
   \begin{mathpar}
     \Infer{emulate}
     {\forall~\mc{A}.~\exists~\mc{S}.~\forall~\mc{Z}.~\keyword{polyUC}(\mc{Z},\pi_0,\mc{F}_0,\mc{A})
