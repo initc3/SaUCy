@@ -243,20 +243,21 @@ should satisfy a third subtle property:
   related in any way.
 \end{itemize}
 
-We can capture all three of these properties at once using an ideal
-functionality. In Figure~\ref{func:com} (left), we show
-$\Func_{\textsc{com}}$, an ideal functionality for one-time bit commitment, as
-it would appear in the cryptography
+\todo{Rename $A, B$ to $P, Q$ instead.} We can capture all three of these
+properties at once using an ideal functionality. In Figure~\ref{func:com}
+(left), we show $\Func_{\textsc{com}}$, an ideal functionality for one-time bit
+commitment, as it would appear in the cryptography
 literature~\cite{canetti2001commitments}. The functionality simply waits for the
 committer $A$ to commit to some bit $b$, notifies the receiver $B$ that it has
 taken place, and reveals $b$ to $B$ upon request by $A$. Notice that $B$ never
 actually sees a commitment to $b$ (only the (\textsf{Receipt}) message), so the
 three properties hold trivially.
 
-In Figure~\ref{func:com} (right), we define $\Func_{\textsc{com}}$ in ILC to
-highlight some key features of the language, such as its affine and modal type
-system. Keep in mind that the overarching feature of ILC is confluence, so many
-of our design choices are for achieving this.\smallskip
+In Figure~\ref{func:com} (right), we define a simplified version of
+$\Func_{\textsc{com}}$ in ILC to highlight some key features of the language,
+such as its affine and modal type system. Keep in mind that the overarching
+feature of ILC is confluence, so many of our design choices are for achieving
+this.\smallskip
 
 \myheader{Affine types.}
 %The role of affine types is to restrict the dataflow of
