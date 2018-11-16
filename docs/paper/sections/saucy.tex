@@ -49,8 +49,7 @@ To meet these needs we define a judgment about ILC terms that take a security pa
   \end{mathpar}
   This says that if for all security parameters \textsf{k} and all bitstrings
   \textsf{r} with length polynomial in \textsf{k} the term \textsf{e~!k~!r}
-  normalizes to a value \textsf{v} in $poly(\mathsf{k})$ steps.
-  Note that the normalization is polynomial time for all $\mathsf{r}$.
+  normalizes to a value \textsf{v} in $poly(\mathsf{k})$ steps.\footnote{Note that the normalization must be polynomial time for all $\mathsf{r}$, though we could have defined it to hold with high probability.}
 \end{definition}
 
 \begin{definition}[Value Distribution] 
@@ -78,7 +77,6 @@ What remains is to define a notion of indistinguishability for value distributio
 
 \subsection{The UC Framework, Concretely}
 \label{subsec:concrete-uc}
-
 \setlength\intextsep{0pt}
 \setlength{\columnsep}{10pt}
 \begin{wrapfigure}{R}{0.15\textwidth}
@@ -87,7 +85,8 @@ What remains is to define a notion of indistinguishability for value distributio
 \caption{\textsf{execUC}.}
 \label{fig:execUC-diagram}
 \end{wrapfigure}
-The implementation of SaUCy is centered around a definition of UC execution model in ILC.
+The implementation of SaUCy
+ is centered around a definition of UC execution model in ILC.
 For the most part, this just involves connecting channels as illustrated in
 Figure~\ref{fig:execUC-diagram} to the right. For demonstration, we only show
 the case of two-party protocols (\`{a} la Simplified
@@ -96,10 +95,8 @@ instantiating universally composable commitments.  Also, we will only aim to
 show the case of \emph{static} corruptions, in which parties are corrupted at
 the onset of the execution. This is in contrast to \emph{adaptive} corruptions,
 in which parties can be corrupted as the execution proceeds.
-
-\todo{Inline wrappers.} The details require some careful programming, since the
-adversary gets to send messages on behalf of corrupted parties.
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
+
 \noindent
 The function \textsf{execUC} is parameterized by an environment \textsf{z},
 protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a}, an ideal
@@ -108,6 +105,10 @@ functionality \textsf{f}, a security parameter \textsf{k}, a random bitstring
 \textsf{Crupt} datatype is defined below, with its variants denoting the cases
 when party \textsf{p} is corrupt, party \textsf{q} is corrupt, or no party is
 corrupt, respectively.
+Some careful programming is needed to handle the cases
+when the adversary sends messages on behalf of corrupted parties; this is 
+captured by \textsf{wrapper\{P,Q\}} (shown in the Appendix).
+
 
 \lstinputlisting[style=myilc]{listings/crupt.ilc}
 
@@ -295,7 +296,7 @@ This notation is convenient because it suggests a categorical approach to compos
   \end{mathpar}
 \end{theorem}
 
-The idea is that the $\rho \circ \pi$ can be defined in a natural way, where the ideal
+\noindent The idea is that the $\rho \circ \pi$ can be defined in a natural way, where the ideal
 functionality channel of $\rho$ is connected to the environment channel of $\pi$, as
 illustrated and defined in Figure~\ref{fig:composition-operator}.
 \begin{figure}
