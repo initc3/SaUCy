@@ -8,16 +8,16 @@ give a tour of ILC and SaUCy.
 \centering
 \begin{tabular}{c|c}
 \begin{subfigure}{.575\textwidth}
-    $\Func_{\textsc{com}}$ proceeds as follows, running with parties $A$ and
-  $B$.
+    $\Func_{\textsc{com}}$ proceeds as follows, running with parties $P$ and
+  $Q$.
     \begin{enumerate}
-        \item Upon receiving a message $(\mathsf{Commit}, b)$ from $A$, where $b
+        \item Upon receiving a message $(\mathsf{Commit}, b)$ from $P$, where $b
           \in \{ 0, 1 \}$, record the value $b$ and send the message
-          $(\mathsf{Receipt})$ to $B$. Ignore any subsequent \textsf{Commit}
+          $(\mathsf{Receipt})$ to $Q$. Ignore any subsequent \textsf{Commit}
           messages.
-        \item Upon receiving a message $(\mathsf{Open})$ from $A$, proceed as
+        \item Upon receiving a message $(\mathsf{Open})$ from $P$, proceed as
           follows: If some value $b$ was previously recorded, then send the
-          message $(\mathsf{Open}, b)$ to $B$ and halt. Otherwise, halt.
+          message $(\mathsf{Open}, b)$ to $Q$ and halt. Otherwise, halt.
     \end{enumerate}
 \label{func:com}
 \end{subfigure}\hspace{0.02\textwidth}
@@ -243,13 +243,13 @@ should satisfy a third subtle property:
   related in any way.
 \end{itemize}
 
-\todo{Rename $A, B$ to $P, Q$ instead.} We can capture all three of these
+We can capture all three of these
 properties at once using an ideal functionality. In Figure~\ref{func:com}
 (left), we show $\Func_{\textsc{com}}$, an ideal functionality for one-time bit
 commitment, as it would appear in the cryptography
 literature~\cite{canetti2001commitments}. The functionality simply waits for the
-committer $A$ to commit to some bit $b$, notifies the receiver $B$ that it has
-taken place, and reveals $b$ to $B$ upon request by $A$. Notice that $B$ never
+committer $P$ to commit to some bit $b$, notifies the receiver $Q$ that it has
+taken place, and reveals $b$ to $Q$ upon request by $P$. Notice that $Q$ never
 actually sees a commitment to $b$ (only the (\textsf{Receipt}) message), so the
 three properties hold trivially.
 
@@ -264,9 +264,9 @@ this.\smallskip
 %read channels so that no confusion arises at the receiving ends of
 %communications.
 Let us first examine the function signature of \textsf{fCom}, which (glossing
-over some details) takes as arguments two channels, a read channel \textsf{frA}
-(reads message from $A$) and a write channel \textsf{toB} (writes messages to
-$B$), and returns \textsf{Unit}. There are a number of things to unpack here:
+over some details) takes as arguments two channels, a read channel \textsf{frP}
+(reads message from $P$) and a write channel \textsf{toQ} (writes messages to
+$Q$), and returns \textsf{Unit}. There are a number of things to unpack here:
 
 \begin{itemize}[leftmargin=*]
   \item The signature consists of affine arrows $\multimap$ (or ``lollipops''), which
@@ -276,7 +276,7 @@ $B$), and returns \textsf{Unit}. There are a number of things to unpack here:
     one of three values: either write $\Wm$, read $\Rm$, or value $\Vm$.  In the
     example, the left lollipop has mode $\Vm$, which we elide, and the right
     lollipop has mode $\Rm$. We have more to say about modes later.
-%  \item Channels are typed. Both \textsf{frA} and \textsf{toB} communicate
+%  \item Channels are typed. Both \textsf{frP} and \textsf{toQ} communicate
 %    values inhabiting the sum type \textsf{Msg}.
   \item Read channels are affinely typed to protect them from duplication.
   \item Write channels and the unit value are intuitionistically typed. Hence,
@@ -346,7 +346,7 @@ mode $\Rm$. Notice several things:
   \item The read channel itself is rebound as the second tensor element, so that
     it may be used again.
   \item Pattern matching with the ! operator unpacks affine values, so the value
-    bound to $b$ in the first read from \textsf{frA} has an intuitionistic type.
+    bound to $b$ in the first read from \textsf{frP} has an intuitionistic type.
 \end{itemize}
 \begin{mathpar}
 \Infer{wr}

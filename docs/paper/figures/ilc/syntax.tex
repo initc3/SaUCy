@@ -44,10 +44,13 @@
     \eCase{e}{x_1}{e_1}{x_2}{e_2}$
     \\ &&& $\bnfaltbrk \eGet{e} \bnfalt \eSet{e_1}{e_2} \bnfalt \eFix{x}{e}
     \bnfalt \eLet{x}{e_1}{e_2} \bnfalt \eLetBang{x}{e_1}{e_2} \bnfalt \eBang{e}$
-    \\ &&& $\bnfaltbrk \eLam{x}{e} \bnfalt \eApp{e_1}{e_2} \bnfalt \eLAM{x}{e} \bnfalt \eNu{(x_1,
-      x_2)}{e} \bnfalt \eWr{e_1}{e_2} \bnfalt \eLetRd{x_1}{x_2}{e_1}{e_2}$
-    \\ &&& $\bnfaltbrk \eFork{e_1}{e_2} \bnfalt \eChoice{e_1}{e_2}$
+    \\ &&& $\bnfaltbrk \eLam{x}{e} \bnfalt \eApp{e_1}{e_2} \bnfalt \eLAM{x}{e}
+    \bnfalt \eLapp{e_1}{e_2} \bnfalt \ePair{e_1}{e_2} \bnfalt
+    \eLsplit{e_1}{x_1}{x_2}{e_2} \bnfalt \eLfix{x}{e}$
+    \\ &&& $\bnfaltbrk \eNu{(x_1,x_2)}{e} \bnfalt \eWr{e_1}{e_2}
+    \bnfalt \eLetRd{x_1}{x_2}{e_1}{e_2} \bnfalt \eFork{e_1}{e_2} \bnfalt \eChoice{e_1}{e_2}$
   \end{grammar}
-  \caption{Syntax of ILC. \todo{Affine application, tensors intro and elim.}}
+  \caption{Syntax of ILC. \todo{Distinguish affine vs. non-affine application?
+      What about tensors vs. pairs?}}
   \label{fig:ilc-syntax}
 \end{figure*}

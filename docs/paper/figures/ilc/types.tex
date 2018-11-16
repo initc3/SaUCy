@@ -145,7 +145,7 @@
 \judgbox{\Delta ; \Gamma |- e : X |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has affine
   type $X$ and mode $m$.}
 \begin{mathpar}
-\Infer{lvar}
+\Infer{avar}
 {\Delta(x) = X}
 {\Delta; \Gamma |- x: X}
 %
@@ -164,29 +164,29 @@
 %
 \and
 %
-\Infer{lsplit}
+\Infer{asplit}
 {\Delta_1; \Gamma |- e_1 : X_1 \times X_2\\\\
 \Delta_2,x_1:X_1,x_2:X_2; \Gamma |- e_2 : Y |> m}
 {\Delta_1, \Delta_2; \Gamma |- \eLsplit{e_1}{x_1}{x_2}{e_2} : Y |> m}
 %
 \and
 %
-\Infer{lfix}
+\Infer{afix}
 {\Delta, x : \tyLolli{X}{\footnotesize m}{X}; \Gamma |- e : \tyLolli{X}{\footnotesize m}{X}}
 {\Delta; \Gamma |- \eLfix{x}{e} : \tyLolli{X}{\footnotesize m}{X}}
 %
 \and
 \Infer{lolli}
-{\varphi(\Delta),x:X ; \Gamma |- e : Y |> m}
+{\Delta,x:X ; \Gamma |- e : Y |> m}
 {\Delta ; \Gamma |- \eLAM{x}{e} : \tyLolli{X}{\footnotesize m}{Y}}
 %
 \and
 %
-\Infer{lapp}
+\Infer{aapp}
 {\Delta_1 ; \Gamma |- e_2 : Y\\\\
 \Delta_2 ; \Gamma |- e_1 : \tyLolli{X}{\footnotesize m}{Y}}
-{\Delta_1, \Delta_2 ; \Gamma |- \eApp{e_1}{e_2} : Y |> m}
+{\Delta_1, \Delta_2 ; \Gamma |- \eLapp{e_1}{e_2} : Y |> m}
 \end{mathpar}
-\caption{Typing rules. \todo{Syntactically distinguish affine application?}}
+\caption{Typing rules.}
 \label{fig:type-expressions}
 \end{figure*}
