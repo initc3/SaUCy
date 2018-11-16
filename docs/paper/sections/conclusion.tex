@@ -1,3 +1,15 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
+The universal composability (UC) framework is widely used in cryptography to
+demonstrate that a protocol ``does its job securely.'' Unfortunately, analysis
+is traditionally done informally and on paper, so proofs of security often do
+not instill within us the confidence we desire.
+
+In this work, we have taken the first steps towards putting UC on a proper
+footing by building a concrete, executable implementation of the framework
+called SaUCy. We set apart our work from previous work in a major way: We
+implement SaUCy in a newly designed process calculus called the Interactive
+Lambda Calculus (ILC). Importantly, ILC faithfully abstracts interactive Turing
+machines, the computational model underlying UC, which grants the compelling
+benefit of computational security analysis. \todo{Finish later.}

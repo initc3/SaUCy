@@ -34,7 +34,7 @@ give a tour of ILC and SaUCy.
 \subsection{Background on Universal Composability}
 \label{subsec:background-uc}
 
-In a nutshell, security proofs in the UC framework follow the real/ideal
+Security proofs in the UC framework follow the real/ideal
 paradigm~\cite{goldreich1987play}. To carry out some cryptographic task in the
 real world, we define a distributed protocol that achieves the task across
 \emph{many untrusted processes}. Then, to show that it is secure, we compare it
@@ -136,11 +136,11 @@ and suppose a protocol $\rho$, which uses $\mc{F}$ as a subroutine, emulates a
 functionality $\mc{G}$.  Then, the protocol $\rho^{\mc{F} -> \pi}$, in which calls to
 $\mc{F}$ are replaced by calls to $\pi$, also emulates $\mc{G}$!
 
-This may seem a bit odd---the protocol $\pi$ lives in the real world and $\mc{F}$
-lives in the ideal world. Indeed, we call this the \emph{$\mc{F}$-hybrid world},
-and therein lies the power of UC. Instead of analyzing the composite protocol
-consisting of $\rho$ and $\pi$, it suffices to analyze the security of $\rho$ by itself
-in the much simpler $\mc{F}$-hybrid world, where it can make calls to
+This may seem a bit odd---the protocol $\pi$ lives in the real world, but $\mc{F}$
+lives in the ideal world. Indeed, this is called the \emph{$\mc{F}$-hybrid
+  world}, which therein lies the power of UC. Instead of analyzing the composite
+protocol consisting of $\rho$ and $\pi$, it suffices to analyze the security of $\rho$
+by itself in the much simpler $\mc{F}$-hybrid world, where it can make calls to
 $\mc{F}$. If we can show that $\rho$ emulates $\mc{G}$ in the $\mc{F}$-hybrid
 world, then we can later substitute for $\mc{F}$ any protocol that emulates it
 without fear of something going wrong.
@@ -219,11 +219,13 @@ $\Func_{\textsc{com}}$.
 \subsection{ILC By Example}
 \label{subsec:ilc-flavored}
 
-\emph{Commitment} is an essential building block in many cryptographic
-protocols~\cite{brassard1988minimum}. The idea is simple: A \emph{committer}
-provides a \emph{receiver} with the digital equivalent of a ``sealed envelope''
-containing some value that can be later revealed. Formalizing the security
-of this basic primitive, however, is nontrivial.
+We make the above more concrete by running through an example of
+\emph{commitment}, an essential building block in many cryptographic
+protocols~\cite{brassard1988minimum}. The idea behind commitment is simple: A
+\emph{committer} provides a \emph{receiver} with the digital equivalent of a
+``sealed envelope'' containing some value that can later be
+revealed. Formalizing the security of this basic primitive, however, is
+nontrivial.
 
 To obtain security in the standalone setting or under sequential composition, a
 commitment should satisfy two basic properties:
@@ -241,21 +243,21 @@ should satisfy a third subtle property:
   related in any way.
 \end{itemize}
 
-We can capture all three of these properties at once using an ideal
-functionality. On the left side of Figure~\ref{func:com}, we define
-$\Func_{\textsc{com}}$, an ideal functionality for one-time bit commitment, as
-it would appear in the cryptography
+\todo{Rename $A, B$ to $P, Q$ instead.} We can capture all three of these
+properties at once using an ideal functionality. In Figure~\ref{func:com}
+(left), we show $\Func_{\textsc{com}}$, an ideal functionality for one-time bit
+commitment, as it would appear in the cryptography
 literature~\cite{canetti2001commitments}. The functionality simply waits for the
 committer $A$ to commit to some bit $b$, notifies the receiver $B$ that it has
 taken place, and reveals $b$ to $B$ upon request by $A$. Notice that $B$ never
 actually sees a commitment to $b$ (only the (\textsf{Receipt}) message), so the
 three properties hold trivially.
 
-On the right side of Figure~\ref{func:com}, we define $\Func_{\textsc{com}}$ in
-ILC to highlight some key features of the language, such as its affine and modal
-type system. Keep in mind that the overarching feature of ILC is confluence, so
-many of our design choices are artifacts of reaching for this
-quality. \todo{Sequential activation order?}\smallskip
+In Figure~\ref{func:com} (right), we define a simplified version of
+$\Func_{\textsc{com}}$ in ILC to highlight some key features of the language,
+such as its affine and modal type system. Keep in mind that the overarching
+feature of ILC is confluence, so many of our design choices are for achieving
+this.\smallskip
 
 \myheader{Affine types.}
 %The role of affine types is to restrict the dataflow of
@@ -274,8 +276,8 @@ $B$), and returns \textsf{Unit}. There are a number of things to unpack here:
     one of three values: either write $\Wm$, read $\Rm$, or value $\Vm$.  In the
     example, the left lollipop has mode $\Vm$, which we elide, and the right
     lollipop has mode $\Rm$. We have more to say about modes later.
-  \item Channels are typed. Both \textsf{frA} and \textsf{toB} communicate
-    values inhabiting the sum type \textsf{Msg}.
+%  \item Channels are typed. Both \textsf{frA} and \textsf{toB} communicate
+%    values inhabiting the sum type \textsf{Msg}.
   \item Read channels are affinely typed to protect them from duplication.
   \item Write channels and the unit value are intuitionistically typed. Hence,
     their types require the ! operator (pronounced ``bang!'') to be lifted into
@@ -294,24 +296,30 @@ communications.\smallskip
 (write mode), $\Rm$ (read mode), or $\Vm$ (value mode). Modes can be composed
 either sequentially or in parallel to yield new modes.
 
-To give a few examples, suppose expressions $e_1$ and $e_2$ have modes $m_1$ and
-$m_2$, respectively. Sequential mode composition shows up in the obvious case of
-sequentially evaluating the two expressions, so the mode of the expression
-$\eSeq{e_1}{e_2}$ is $m1 ;; m2 => m3$.\footnote{The expression $\eSeq{e_1}{e_2}$
-  is syntactic sugar for $\eLet{\eUnit}{e_1}{e_2}$.} Parallel mode composition
-shows up when one process forks a second process, so the mode of the expression
-$\eFork{e_1}{e_2}$ (fork a process $e_1$ and continue as $e_2$) is $m_1 || m_2
-=> m_3$. The rules for mode composition are discussed in Section~\ref{sec:ilc}.
+To give the high-level idea, suppose expressions $e_1$ and $e_2$ have modes
+$m_1$ and $m_2$, respectively. Sequential mode composition shows up in the
+obvious case of sequentially evaluating the two expressions, so the mode of
+$\eSeq{e_1}{e_2}$ is derived as $m1 ;; m2 => m3$.\footnote{The expression
+  $\eSeq{e_1}{e_2}$ is syntactic sugar for $\eLet{\eUnit}{e_1}{e_2}$.} Parallel
+mode composition shows in the case of forking a child process, so the mode of
+$\eFork{e_1}{e_2}$ (fork a process $e_1$ and continue as $e_2$) is derived as
+$m_1 || m_2 => m_3$. The rules for mode composition are discussed in
+Section~\ref{sec:ilc}.
 
-The main takeaway of the modal type system is this: The parallel composition of
+The main takeaway of the modal type system is this: Parallel composition of
 write mode processes is \emph{not allowed}, i.e., $\Wm || \Wm => p$ is not
-derivable for any mode $p$. Recall that in the ITM model, execution is
-essentially single-threaded, so this ensures that no confusion arises as to
-which process is currently writing, or equivalently, which process is currently
+derivable for any mode $p$. This ensures that no confusion arises as to which
+process is currently writing, or put another way, which process is currently
 active.\smallskip
+
+%Recall that in the ITM model, execution is
+%essentially single-threaded, so this ensures that no confusion arises as to
+%which process is currently writing, or put another way, which process is
+%currently active.\smallskip
 
 \myheader{Putting it all together.} The function body of \textsf{fCom} closely
 follows $\Func_{\textsc{com}}$, but there are several points worth mentioning.
+
 First, we introduce the letrd and wr typing rules. Typing judgements have the
 form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is an affine typing context, $\Gamma$ is an
 intuitionistic typing context, and $m$ is a mode.

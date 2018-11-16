@@ -22,8 +22,7 @@ types include unit ($\tyUnit$), products ($\tyProd{A}{B}$), sums
 write channels ($\tyWr{A}$) and arrows ($\tyArr{A}{\footnotesize m}{B}$), which
 importantly carry a mode. Affine types include read channels ($\tyRd{A}$),
 bang! types ($\tyBang{A}$), tensors ($\tyTensor{X}{Y}$), and lollipops
-($\tyLolli{X}{\footnotesize m}{Y}$). Notice that only intuitionistically typed
-values can be wrapped in a bang! or sent over a channel.
+($\tyLolli{X}{\footnotesize m}{Y}$).
 
 Modes consist of $\Wm$ (write mode), $\Rm$ (read mode), and $\Vm$ (value
 mode). The rules for sequential and parallel composition of modes are given in
@@ -31,7 +30,7 @@ Figure~\ref{fig:mode-composition}.
 
 \todo{Discuss store, process pool, and channel typings.}
 
-The expressions for variables ($x$), unit, products, sums, references, intuitionistic
+The expressions for variables, unit, products, sums, references, intuitionistic
 fixed points, intuitionistic functions, and intuitionistic let binding are
 standard. Expressions related to affinity are more interesting: Lollipops are
 introduced by $\eLAM{x}{e}$ and eliminated by
@@ -83,7 +82,7 @@ intuitionistic typing judgement $\Delta ; \Gamma |- e : A |> m$ should be read a
   has intuitionistic type $A$ and mode $m$.
 \end{quote}
 \endgroup
-\noindent The affine typing judgement follows similarly. Importantly, the type
+\noindent (The affine typing judgement follows similarly.) Importantly, the type
   system maintains these invariants:
 
 \begin{comment}
@@ -158,9 +157,7 @@ mode of the bound expression with the mode of the body.
 The rules for message passing concurrency are more interesting. The nu rule adds
 the read-end of a channel $x_1: \tyRd{A}$ to the affine context $\Delta$ and its
 corresponding write-end $x_2 : \tyWr{A}$ to the intuitionistic context $\Gamma$
-before checking its body. We do not recap the wr and letrd rules here, but
-recall that the wr rule derives the mode $\Wm$ and the read rule derives the
-rule $\Rm$ as expected.
+before checking its body. We do not recap the wr and letrd rules here.
 
 The fork rule says that that if we can appropriately split the affine context
 such that the child process $e_1$ has type $A$ and mode $m_1$ and the
@@ -174,7 +171,14 @@ Finally, the choice rule says that if we can appropriately split the affine
 context such that both subexpressions $A$ and mode $R$, then the whole
 expression follows exactly.
 
-\paragraph{Affine rules.}
+\paragraph{Affine rules.} The affine typing rules are, for the most part, analagous to their
+intuitionistic counterparts. Two differences bear mentioning. First, the bang!
+rule only lifts intuitionistically typed expressions that are closed with
+respect to affine variables into an affinely typed expression. Otherwise, one
+could wrap an intuitionistically typed expression with free affine variables in
+a bang! and use it in an unrestricted manner. Second, in contrast with the abs
+rule, the lollipop rule does not require function bodies to be free with respect
+to affine variables.
 
 \subsection{Dynamic Semantics}
 \label{subsec:semantics}
