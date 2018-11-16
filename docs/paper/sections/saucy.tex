@@ -263,12 +263,12 @@ In any case, the benefit is this simplifies the polynomial time notion: vacuous 
 \subsection{A composition theorem in SaUCy}
 \label{subsec:composition}
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.75\linewidth]{graphics/protocol-composition}
-  \caption{Protocol composition diagram.}
-  \label{fig:protocol-composition}
-\end{figure}
+%\begin{figure}
+%  \centering
+%  \includegraphics[width=0.75\linewidth]{graphics/protocol-composition}
+%  \caption{Protocol composition diagram.}
+%  \label{fig:protocol-composition}
+%\end{figure}
 
 As a first demonstration of SaUCy, we work through the development of a composition
 operator, and give a theorem explaining its use.
@@ -295,8 +295,11 @@ This notation is convenient because it suggests a categorical approach to compos
   \end{mathpar}
 \end{theorem}
 
-The idea is that the $\rho \circ \pi$ can be defined in a natural way, where the ideal functionality channel of $\rho$ is connected to the environment channel of $\pi$, as illustrated in illustrated in Figure~\ref{fig:protocol-composition} and given in Figure~\ref{fig:composition-operator}.
+The idea is that the $\rho \circ \pi$ can be defined in a natural way, where the ideal
+functionality channel of $\rho$ is connected to the environment channel of $\pi$, as
+illustrated and defined in Figure~\ref{fig:composition-operator}.
 \begin{figure}
+\includegraphics[width=0.75\linewidth]{graphics/protocol-composition}
 \lstinputlisting[style=myilc]{listings/compose.ilc}
 \caption{Protocol composition operator.}
 \label{fig:composition-operator}
@@ -433,7 +436,7 @@ Fischlin~\cite{canetti2001commitments}.
   \begin{align*}
     D_{\mc{R}} &= D(\mathsf{execUC~\mc{Z}~(committer, receiver)~fCrs~dummyA})\\
     D_{\mc{R}}' &= D(\mathsf{execUC~\mc{Z}~(committer, receiver)~bCrs~dummyA})\\
-    D_{\mc{I}} &= D(\mathsf{execUC~\mc{Z}~(dummyP, dummyP)~fCom~simI})
+    D_{\mc{I}} &= D(\mathsf{execUC~\mc{Z}~(dummyP, dummyQ)~fCom~simI})
   \end{align*}
   \noindent The ensemble $D_{\mc{R}}$ is over the output of $\mc{Z}$ in a real
   world execution. The ensemble $D_{\mc{R}}'$ is similar, except $\mc{Z}$ runs
@@ -443,12 +446,11 @@ Fischlin~\cite{canetti2001commitments}.
   D_{\mc{I}}$.
   
   The proof proceeds by first showing that distinguishing between $D_{\mc{R}}$
-  and $D_{\mc{R}}'$ reduces to breaking the pseudorandomness of \textsf{prg}
+  and $D_{\mc{R}}'$ reduces to breaking the pseudorandomness of \textsf{tdp}
   (hence, $D_{\mc{R}} \sim D_{\mc{R}}'$), and then by showing that distinguishing
   between $D_{\mc{R}}'$ and $D_{\mc{I}}$ also reduces to breaking the
-  pseudorandomness of \textsf{prg} (hence, $D_{\mc{R}}' \sim D_{\mc{I}}$). By the
-  transitivity of indistinguishability, $D_{\mc{R}} \sim D_{\mc{I}}$. \todo{Relate
-    to ILC.}
+  pseudorandomness of \textsf{tdp} (hence, $D_{\mc{R}}' \sim D_{\mc{I}}$). By the
+  transitivity of indistinguishability, $D_{\mc{R}} \sim D_{\mc{I}}$.
 \end{sketch}
 
 \subsection{Reentrancy in SaUCy}
