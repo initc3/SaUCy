@@ -1,11 +1,11 @@
 \appendix
 
-\section{Algorithmic Type Checking}
+\onecolumn
+\section{Algorithmic Typing Rules}
 \label{sec:algo-type-check}
+\ \\
 
-Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
-
-\begin{figure*}
+\begin{figure*}[h]
 \centering
 \judgbox{\Delta_{in} ; \Gamma_1 |- e : \Delta_{out}; \Gamma_2; A}{~~Under $\Delta_{in}$ and
   $\Gamma_1$, expression~$e$ results $\Delta_{out}$ and $\Gamma_2$ and has intuitionistic type $A$.}
@@ -185,6 +185,7 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \label{fig:alg-type-check}
 \end{figure*}
 
+\twocolumn
 \section{\textsf{execUC}}
 \label{sec:full-execUC}
 
@@ -253,9 +254,11 @@ environment and the functionality.}
 \label{fig:simR}
 \end{figure*}
 
-\section{Cryptography Definitions}
 
 \begin{comment}
+\section{Cryptography Definitions}
+
+
 \subsection{Brain Dump}
 
 \begin{definition}[Protocol Emulation]
@@ -393,9 +396,6 @@ of the input to the adversary.
 \end{definition}
 
 Environment should activate the adversary to allow sending of messages.
-\end{comment}
-
-
 
 \begin{definition}[Interactive Turing Machine]
 \end{definition}
@@ -420,6 +420,8 @@ Environment should activate the adversary to allow sending of messages.
   x$.
   \end{itemize}
 \end{definition}
+
+\end{comment}
 
 \section{Universally Composable Commitment Protocol}
 \begin{algorithm}
