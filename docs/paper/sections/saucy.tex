@@ -221,15 +221,14 @@ We define protocol emulation by requiring a simulation in both directions, so ev
   \Infer{{emulate}}
         {\forall~\mc{Z}.~ 
          \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mathbbm{1}_\mc{A} \le
-         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ (\mc{S_\mc{R}}) \\\\
+         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mc{S_\mc{R}} \\\\
          \ \ \ \ \ \ \ \ ~\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mathbbm{1}_\mc{A} \le
-         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ (\mc{S}_\mc{I})}
+         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mc{S}_\mc{I}}
     {\mc{S_\mc{R},S_\mc{I}} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
 \end{mathpar}
 \end{definition}
-We remark that this definition goes against the usual UC convention of requiring simulation in one direction only. Requiring one direction is preferred intuitively because it should be OK if the protocol is even more secure than its specification. Requiring both could be too restrictive.
-However, the benefit is this simplifies the polynomial time notion: vacuous protocols are clearly ruled out by the top condition, and both simulations are only required to be \keyword{PPT} when $\mc{Z}$ is.
-Furthermore, we have not found it too restrictive.
+We remark that this definition goes against the usual UC convention of requiring simulation in one direction only. Requiring one direction is preferred intuitively because it should be OK if the protocol is even more secure than its specification. Requiring both could be too restrictive, although we have not encountered such problem in our examples.
+However, the benefit is this simplifies the polynomial time notion: vacuous protocols are clearly ruled out by the top condition, and both simulations are only required to be \keyword{PPT} if $\mc{Z}$ is. 
 
 %%   \begin{mathpar}
 %%   \Infer{\st{emulate}}
@@ -273,45 +272,45 @@ Furthermore, we have not found it too restrictive.
 As a first demonstration of SaUCy, we work through the development of a composition
 operator, and give a theorem explaining its use.
 \begin{definition}[UC realizes]
-To set out, we introduce the notation of ``realizes,'' which views a protocol as a way of realizing a specification functionality $\mc{F}_{2}$ from a setup assumption functionality $\mc{F}_1$.
+To set out, we introduce the notation of ``realizes,'' which views a protocol as a way of instantiating a specification functionality $\mc{F}_{2}$ from a setup assumption functionality $\mc{F}_1$.
 %  if $\keyword(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
 %  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$, and the
   %  following statistical indistinguishability relation holds
 \begin{mathpar}
   \Infer{realizes}
-  {(\pi,~\mc{F}_1) \approx (\mathbbm{1}_\pi, \mc{F}_2)}
+  {(\pi,~\mc{F}_1) \approx (\mathsf{id}_\pi, \mc{F}_2)}
   {\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2}
   \end{mathpar}
 \end{definition}
-This notation is convenient because it suggests a categorical approach to defining the composition theorem.
+This notation is convenient because we can follow a categorical approach to composition:
 
 \begin{theorem}[Composition Theorem]
   \begin{mathpar}
-  \Infer{realizes}
+  \Infer{}
   {\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2 \\ 
-  \mc{F}_2 \yrightarrow{$\phi$} \mc{F}_3}
-  {\mc{F}_1 \yrightarrow{$\phi \circ \pi$} \mc{F}_3}
+  \mc{F}_2 \yrightarrow{$\rho$} \mc{F}_3}
+  {\mc{F}_1 \yrightarrow{$\rho \circ \pi$} \mc{F}_3}
   \end{mathpar}
 \end{theorem}
 
-The idea is that the $\pi \circ \rho$ can be defined in a natural way, where the ideal functionality channel of $\pi$ is connected to the environment channel of $\rho$, as illustrated in illustrated in Figure~\ref{fig:protocol-composition} and given in Figure~\ref{fig:composition-operator}.
+The idea is that the $\rho \circ \pi$ can be defined in a natural way, where the ideal functionality channel of $\rho$ is connected to the environment channel of $\pi$, as illustrated in illustrated in Figure~\ref{fig:protocol-composition} and given in Figure~\ref{fig:composition-operator}.
 \begin{figure}
 \lstinputlisting[style=myilc]{listings/compose.ilc}
 \caption{Protocol composition operator.}
 \label{fig:composition-operator}
 \end{figure}
 
-\noindent To prove the theorem we construct the simulators $S_{\mc{R},\pi} \circ S_{\mc{R},\phi}$ (respectively $S_{\mc{I},\pi} \circ S_{\mc{I,\phi}}$) in the natural way as well (given in the Appendix).
+\noindent To prove the theorem we construct the simulators $S_{\mc{R},\rho} \circ S_{\mc{R},\pi}$ (respectively $S_{\mc{I},\rho} \circ S_{\mc{I,\pi}}$) in the natural way as well (given in the Appendix).
 Our proof obligation is to introduce an arbtirary environment $\mc{Z}$ and conclude
-\[  \keyword{execUC}~\mc{Z} ~(\phi \circ \pi)~\mc{F}_1 ~\mathbbm{1}_\mc{A}
-\le \keyword{execUC}~\mc{Z} ~\mathbbm{1}_\mc{\pi} ~\mc{F}_3 ~(\mc{S}_{\mc{I},\pi} \circ \mc{S}_{\mc{I},\phi})
+\[  \keyword{execUC}~\mc{Z} ~(\rho \circ \pi)~\mc{F}_1 ~\mathbbm{1}_\mc{A}
+\le \keyword{execUC}~\mc{Z} ~\mathbbm{1}_\mc{\pi} ~\mc{F}_3 ~(\mc{S}_{\mc{I},\rho} \circ \mc{S}_{\mc{I},\pi})
 \]
-\noindent (and respectively for $\mc{S}_{\mc{R},\pi}, \mc{S}_{\mc{R},\phi}$).
-
-The main idea is to notice that that we can move $\phi$ from the composed protocol into the environment $(\mc{Z}\circ \phi)$, reflecting the fact that the environment is meant to represent arbitrary outer protocols. The following equivalence is clear:
+\noindent (as well as a similar conclusion for $\mc{S}_{\mc{R},\rho} \circ \mc{S}_{\mc{R},\pi}$).
+%
+The main idea is to notice that that we can move $\rho$ from the composed protocol into the environment $(\mc{Z}\circ \rho)$, reflecting the fact that the environment is meant to represent arbitrary outer protocols. The following equivalence is clear:
 \begin{equation}
-   \keyword{execUC}~\mc{Z}~(\phi \circ \pi)~\mc{F}_1~ \mathbbm{1}_\mc{A} =
-   \keyword{execUC}~(\mc{Z}\circ \pi)~\phi~\mc{F}_1~ \mathbbm{1}_\mc{A}
+   \keyword{execUC}~\mc{Z}~(\rho \circ \pi)~\mc{F}_1~ \mathbbm{1}_\mc{A} =
+   \keyword{execUC}~(\mc{Z}\circ \pi)~\rho~\mc{F}_1~ \mathbbm{1}_\mc{A}
 \end{equation}
 
 %% (1) Notice that by code path tracing equality:
@@ -320,36 +319,46 @@ The main idea is to notice that that we can move $\phi$ from the composed protoc
 
 Next, from $\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2$ we know %
 \begin{equation}
-  \keyword{execUC}~(\mc{Z}\circ \phi)~\pi~\mc{F}_1 ~ \mathbbm{1}_\mc{A} \le
-  \keyword{execUC}~(\mc{Z}\circ \phi)~\mathbbm{1}_\pi ~\mc{F}_2~ \mc{S}_{\mc{I},\phi}
+  \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1 ~ \mathbbm{1}_\mc{A} \le
+  \keyword{execUC}~(\mc{Z}\circ \rho)~\mathsf{id}_\pi ~\mc{F}_2~ \mc{S}_{\mc{I},\rho}
 \end{equation}
 %% (2) Load (A) to have
 %% execUC (Z φ) π F1 1 ≤ execUC (Z φ) 1 F2 SI1
 
 Again by equality, we can see:
 \begin{equation}
-  \keyword{execUC}~(\mc{Z}\circ \phi)~\mathbbm{1}_\pi~\mc{F}_2 ~ \mc{S}_{\mc{I},\pi} =
-  \keyword{execUC}~(\mc{S}_{\mc{I}_1}\circ \mc{Z})~\phi ~\mc{F}_2~ \mathbbm{1}_\mc{A}
+  \keyword{execUC}~(\mc{Z}\circ \rho)~\mathsf{id}_\pi~\mc{F}_2 ~ \mc{S}_{\mc{I},\pi} =
+  \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ \mc{Z})~\rho ~\mc{F}_2~ \mathbbm{1}_\mc{A}
 \end{equation}
 %% (3) Notice that by code path tracing equality:
 %% execUC (Z φ) 1 F2 SI1 =
 %% execUC (SI1 Z) φ F2 1
 
+Next, from $\mc{F}_2 \yrightarrow{$\rho$} \mc{F}_3$ we know %
+\begin{equation}
+   \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ\mc{Z})~\rho~ \mc{F}_2~\mathbbm{1}_\mc{A}
+\le\keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ\mc{Z})~\mathsf{id}_\pi~\mc{F}_3~\mc{S}_{\mc{I},\rho}
+\end{equation}
 %% (4) Load (B) to have
 %% execUC (SI1 Z) φ F2 1 ≤ execUC (SI1 Z) 1 F3 SI2
+
+Finally, again by equality:
+\begin{equation}
+  \keyword{execUC}~(\mc{S}_{\mc{I},\pi}~\mc{Z})~\mathsf{id}_\pi~\mc{F}_3~\mc{S}_{\mc{I},\rho} =\keyword{execUC}~\mc{Z}~ \mathsf{id}_\pi~ \mc{F}_3~ (\mc{S}_{\mc{I},\pi} \circ \mc{S}_{\mc{I},\rho})
+\end{equation}
 
 %% (5) By equality:
 %% execUC (SI1 Z) 1 F3 SI2 =
 %% execUC Z 1 F3 (SI1 o SI2)
 
 
-%What remains is a reduction proof. Given an environment $\mc{Z}$ that can distinguish $(\pi \circ \phi, \mc{F}_1)$ from $(1_\pi, \mc{F}_3)$, we must construct $\mc{Z}^{*}$ that distinguishes either
+%What remains is a reduction proof. Given an environment $\mc{Z}$ that can distinguish $(\pi \circ \rho, \mc{F}_1)$ from $(1_\pi, \mc{F}_3)$, we must construct $\mc{Z}^{*}$ that distinguishes either
 %$(\pi,\mc{F}_1)$ from $(1_\pi,\mc{F}_2)$ or
-%$(\phi,\mc{F}_2)$ from $(1_\pi,\mc{F}_3)$.
+%$(\rho,\mc{F}_2)$ from $(1_\pi,\mc{F}_3)$.
 
 \todo{Move to appendix}
 
-The main idea behind the proof is to observe that the protocol $\pi$ can be folded into the definition of an environment.% $\mc{Z}^{*}[\pi]$ on one hand \todo{finish} and this is an adequate environment for  represents arbitrary other protocols that may provide inputs to $\phi$ as a subroutine.
+The main idea behind the proof is to observe that the protocol $\pi$ can be folded into the definition of an environment.% $\mc{Z}^{*}[\pi]$ on one hand \todo{finish} and this is an adequate environment for  represents arbitrary other protocols that may provide inputs to $\rho$ as a subroutine.
 
 \paragraph{Other notions of composition}
 Other composition operators can be built in a similar way.
