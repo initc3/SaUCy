@@ -1,11 +1,8 @@
 let $(\circ)$ ($\pi_P$, $\pi_Q$) ($\rho_P$, $\rho_Q$)
-    	    ${\color{red}\sf w{\pi_P}Z~rZ2{\pi_P}~w{\pi_Q}2Z~rZ2{\pi_Q}}$
+    	    ${\color{red}\sf w{\pi_P}2Z~rZ2{\pi_P}~w{\pi_Q}2Z~rZ2{\pi_Q}}$
 	    ${\color{Green}\sf w{\pi_P}2F~rF2{\pi_P}~w{\pi_Q}2F~rF2{\pi_Q}}$
 	    ${\color{blue}\sf w{\pi_P}2{\pi_Q}~r{\pi_Q}2{\pi_P}~w{\pi_Q}2{\pi_P}~r{\pi_P}2{\pi_Q}}$ =
-  $\nu$ (${\color{orange}\sf r{\rho_P}2{\pi_P}}$, ${\color{orange}\sf w{\rho_P}2{\pi_P}}$), (${\color{orange}\sf r{\pi_P}2{\rho_P}}$, ${\color{orange}\sf w{\pi_P}2{\rho_P}}$)
-  , (${\color{orange}\sf r{\rho_Q}2{\pi_Q}}$, ${\color{orange}\sf w{\rho_Q}2{\pi_Q}}$), (${\color{orange}\sf r{\pi_Q}2{\rho_Q}}$, ${\color{orange}\sf w{\pi_Q}2{\rho_Q}}$)
-  , (${\color{blue}\sf r{\rho_P}2{\rho_Q}}$, ${\color{blue}\sf w{\rho_Q}2{\rho_Q}}$), (${\color{blue}\sf r{\rho_Q}2{\rho_P}}$, ${\color{blue}\sf w{\rho_Q}2{\rho_Q}}$)		      
-  . $\ \ \ \ \ $ $\rho_P$ ${\color{orange}\sf w{\rho_P}2{\pi_P}~r{\pi_P}2{\rho_P}}~{\color{Green}\sf w{\pi_P}2F~rF2{\pi_P}}~{\color{blue}\sf w{\rho_P}2{\rho_Q}~r{\rho_Q}2{\rho_P}}$
+  $\nu$ $\ldots$ . $\rho_P$ ${\color{orange}\sf w{\rho_P}2{\pi_P}~r{\pi_P}2{\rho_P}}~{\color{Green}\sf w{\pi_P}2F~rF2{\pi_P}}~{\color{blue}\sf w{\rho_P}2{\rho_Q}~r{\rho_Q}2{\rho_P}}$
     $\xFork$ $\rho_Q$ ${\color{orange}\sf w{\rho_Q}2{\pi_Q}~r{\pi_Q}2{\rho_Q}}~{\color{Green}\sf w{\pi_Q}2F~rF2{\pi_Q}}~{\color{blue}\sf w{\rho_Q}2{\rho_P}~r{\rho_P}2{\rho_Q}}$
     $\xFork$ $\pi_P$ ${\color{red}\sf w{\pi_P}2Z~rZ2{\pi_P}}~{\color{orange}\sf w{\pi_P}2{\rho_P}~r{\rho_P}2{\pi_P}}~{\color{blue}\sf w{\pi_P}2{\pi_Q}~r{\pi_Q}2{\pi_P}}$
     $\xFork$ $\pi_Q$ ${\color{red}\sf w{\pi_Q}2Z~rZ2{\pi_Q}}~{\color{orange}\sf w{\pi_Q}2{\rho_Q}~r{\rho_Q}2{\pi_Q}}~{\color{blue}\sf w{\pi_Q}2{\pi_P}~r{\pi_P}2{\pi_Q}}$

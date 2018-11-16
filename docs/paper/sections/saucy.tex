@@ -264,7 +264,7 @@ However, the benefit is this simplifies the polynomial time notion: vacuous prot
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.5\linewidth]{graphics/protocol-composition}
+  \includegraphics[width=0.75\linewidth]{graphics/protocol-composition}
   \caption{Protocol composition diagram.}
   \label{fig:protocol-composition}
 \end{figure}
@@ -272,7 +272,7 @@ However, the benefit is this simplifies the polynomial time notion: vacuous prot
 As a first demonstration of SaUCy, we work through the development of a composition
 operator, and give a theorem explaining its use.
 \begin{definition}[UC realizes]
-To set out, we introduce the notation of ``realizes,'' which views a protocol as a way of instantiating a specification functionality $\mc{F}_{2}$ from a setup assumption functionality $\mc{F}_1$.
+To set out, we introduce the notation of ``realizes,'' which views a protocol as a way of instantiating a specification functionality $\mc{F}_{2}$ from a setup assumption functionality $\mc{F}_1$
 %  if $\keyword(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
 %  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$, and the
   %  following statistical indistinguishability relation holds
@@ -282,7 +282,8 @@ To set out, we introduce the notation of ``realizes,'' which views a protocol as
   {\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2}
   \end{mathpar}
 \end{definition}
-This notation is convenient because we can follow a categorical approach to composition:
+where $\mathsf{id}_\pi$ is the \emph{dummy protocol}, which simply relays messages between the environment and the functionality.
+This notation is convenient because we can follow a categorical approach to composition.
 
 \begin{theorem}[Composition Theorem]
   \begin{mathpar}
@@ -298,9 +299,14 @@ The idea is that the $\rho \circ \pi$ can be defined in a natural way, where the
 \lstinputlisting[style=myilc]{listings/compose.ilc}
 \caption{Protocol composition operator.}
 \label{fig:composition-operator}
+% The following is the nu block
+  % (${\color{orange}\sf r{\rho_P}2{\pi_P}}$, ${\color{orange}\sf w{\rho_P}2{\pi_P}}$), (${\color{orange}\sf r{\pi_P}2{\rho_P}}$, ${\color{orange}\sf w{\pi_P}2{\rho_P}}$)
+  % , (${\color{orange}\sf r{\rho_Q}2{\pi_Q}}$, ${\color{orange}\sf w{\rho_Q}2{\pi_Q}}$), (${\color{orange}\sf r{\pi_Q}2{\rho_Q}}$, ${\color{orange}\sf w{\pi_Q}2{\rho_Q}}$)
+  % , (${\color{blue}\sf r{\rho_P}2{\rho_Q}}$, ${\color{blue}\sf w{\rho_Q}2{\rho_Q}}$), (${\color{blue}\sf r{\rho_Q}2{\rho_P}}$, ${\color{blue}\sf w{\rho_Q}2{\rho_Q}}$)		  
+
 \end{figure}
 
-\noindent To prove the theorem we construct the simulators $S_{\mc{R},\rho} \circ S_{\mc{R},\pi}$ (respectively $S_{\mc{I},\rho} \circ S_{\mc{I,\pi}}$) in the natural way as well (given in the Appendix).
+\noindent \proof To prove the theorem we construct the simulators $S_{\mc{R},\rho} \circ S_{\mc{R},\pi}$ (respectively $S_{\mc{I},\rho} \circ S_{\mc{I,\pi}}$) in the natural way as well (given in the Appendix).
 Our proof obligation is to introduce an arbtirary environment $\mc{Z}$ and conclude
 \[  \keyword{execUC}~\mc{Z} ~(\rho \circ \pi)~\mc{F}_1 ~\mathbbm{1}_\mc{A}
 \le \keyword{execUC}~\mc{Z} ~\mathbbm{1}_\mc{\pi} ~\mc{F}_3 ~(\mc{S}_{\mc{I},\rho} \circ \mc{S}_{\mc{I},\pi})
@@ -374,17 +380,15 @@ standard cryptographic assumptions, for example the RSA
 problem~\cite{lindell2014introduction}.  They also rely on a ``trusted setup,''
 or common reference string, which are essentially public parameters generated
 ahead of time (modeled as an ideal functionality $\Func_{\textsc{crs}}$).
-
-Instantiation proofs in UC follow a standard rhythm. We start with a security
-definition as an ideal functionality, give the protocol, construct a simulator,
-and finally complete the relational analysis on paper.  UC commitments are
-reasoned to be secure assuming a common reference string is suitably generated.
-To model the cryptography we extend ILC with additional syntax.
-
-The functionality FCom has already been defined.
-\todo{Recap the proof obligation}
+%
+Instantiation proofs in SaUCy follow the same rhythm as in UC. We start with a security
+definition as an ideal functionality (such as $\Func_{\textsc{Com}}$), give the protocol, construct a simulator,
+and finally complete the relational analysis on paper.
+%UC commitments are
+%reasoned to be secure assuming a common reference string is suitably generated.
 
 \paragraph{Extending ILC with cryptographic primitives.}
+%To model the cryptographic assumptions we extend ILC with additional syntax.
 UC Commitments are realized from cryptographic primitives, such as trapdoor
 permutations, which require extensions to ILC. The new syntactic forms are
 \textsf{kgen}, \textsf{tdp}, \textsf{inv}, and \textsf{hc} with the static and
