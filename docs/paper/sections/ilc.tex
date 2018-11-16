@@ -30,13 +30,13 @@ Figure~\ref{fig:mode-composition}.
 
 \todo{Discuss store, process pool, and channel typings.}
 
-The expressions for variables, unit, products, sums, references, intuitionistic
-fixed points, intuitionistic functions, and intuitionistic let binding are
-standard. Expressions related to affinity are more interesting: Lollipops are
-introduced by $\eLAM{x}{e}$ and eliminated by
-\todo{}, bang! types are introduced by $\eBang{e}$ and eliminated by
-$\eLetBang{x}{e_1}{e_2}$, and the expressions for message-passing and
-concurrency are these:
+The intuitionistic portion of ILC supports a fairly standard feature set. The
+more interesting expressions are those related to affinity and message-passing
+concurrency. Bang! types have introduction form $\eBang{e}$ and elimination form
+$\eLetBang{x}{e_1}{e_2}$, lollipops have introduction form $\eLAM{x}{e}$ and
+elimination form $\eLapp{e_1}{e_2}$, tensors have introduction form
+$\eLPair{e_1}{e_2}$ and elimination form $\eLsplit{e_1}{x_1}{x_2}{e_2}$, and
+the expressions for message-passing concurrency are these:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     a corresponding write channel $x_2$ in $e$.
@@ -116,9 +116,8 @@ programs are expressible as ITMs}:
 Before we jump into the typing rules, we point out that the mode composition
 rules are given in Figure~\ref{fig:mode-composition}, which includes both
 sequential and parallel mode composition. We will refer back to these later when
-they hold relevance for certain typing rules. Moreover, we elide value mode
-derivations to avoid clutter, so a judgment of the form $\Delta ; \Gamma |- e : A$ really
-means $\Delta ; \Gamma |- e : A |> \Vm$.
+they hold relevance for certain typing rules. We also want to point out that we
+elide value mode derivations and ordinary type polymorphism to avoid clutter.
 
 \paragraph{Intuitionistic rules.}
 The rules for intuitionistic variable lookup (var), unit (unit), and references
