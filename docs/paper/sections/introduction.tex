@@ -22,7 +22,7 @@ ideal functionality $\mc{F}$ (i.e., it meets its specification) if every
 adversarial behavior in the real world can also be exhibited in the ideal world.
 \end{comment}
 %
-Thus the benefit of using UC is
+Thus, the benefit of using UC is
 modularity---it supports analyzing complex protocols by composing simpler
 building blocks.
 However the cost of UC is that security proofs tend to be quite
@@ -37,8 +37,8 @@ we find they run up against challenges when importing the existing
 body of UC theory.
 Either they do not support
 computational reasoning (which considers issues of probability and computational
-complexity)~\cite{bohl2016symbolic}, do not support message-passing concurrency for distributed protocols~\cite{easycrypt},
-or are too expressive (allow for expressing nondeterminsm with no computational interpretation)~\cite{abadi1999calculus}.
+complexity)~\cite{bohl2016symbolic}, do not support message-passing concurrency for distributed protocols~\cite{barthe2011computer},
+or are too expressive (allow for expressing nondeterminism with no computational interpretation)~\cite{abadi1999calculus}.
 
 Our observation is that these approaches diverge from UC at a low level:
 UC is defined atop the underlying computation model of
@@ -50,9 +50,9 @@ UC is defined atop the underlying computation model of
 %this make them error-prone and difficult to verify, but sometimes
 %protocols have been subtly underspecified or ill-specified~\cite{camenisch2016universal}.
 %
-The significance of ITMs is that they have a clear computational interpretation, so 
-it is straightforward to relate execution traces to
-to a probabilistic polynomial time computation, as is necessary for cryptographic reduction proofs.
+The significance of ITMs is that they have a clear computational interpretation,
+so it is straightforward to relate execution traces to a probabilistic
+polynomial time computation, as is necessary for cryptographic reduction proofs.
 %  that breaks a computational
 %hardness assumption with non-negligible
 %probability~\cite{lindell2014introduction}.
@@ -193,6 +193,5 @@ To summarize, our main contributions are these:
   \item We then use SaUCy to port over a sampling of theory from UC
 literature, including a composition theorem,
 an instantiation proof of UC commitments~\cite{canetti2001commitments},
-and to examine a subtle definitional issue involving reentrant concurrency~\cite{camenisch2016universal}.
-    
+and an examination of a subtle definitional issue involving reentrant concurrency~\cite{camenisch2016universal}.
 \end{itemize}
