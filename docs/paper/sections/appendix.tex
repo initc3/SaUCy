@@ -140,8 +140,8 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
   $\Gamma_1$, expression~$e$ results $\Delta_{out}$ and $\Gamma_2$ and has affine type $A$.}
 \begin{mathpar}
 \Infer{a-avar}
-{\Delta(x) = A}
-{\Delta; \Gamma |- x : \Delta ; \Gamma; A}
+{\Delta(x) = X}
+{\Delta; \Gamma |- x : \Delta ; \Gamma; X}
 %
 \and
 %
@@ -159,9 +159,9 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \and
 %  
 \Infer{a-asplit}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyProd{A_1}{A_2}\\\\
-\Delta_2; \Gamma,x_1:A_1, x_2: A_2 |- e : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eLsplit{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyTensor{X_1}{X_2}\\\\
+\Delta_2,x_1:X_1, x_2: X_2; \Gamma |- e : \Delta_3; \Gamma; Y}
+{\Delta_1; \Gamma |- \eLsplit{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; Y}
 %
 \and
 %
@@ -177,11 +177,11 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \and
 %
 \Infer{a-aapp}
-{\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma |- e_1 : \Delta_3; \Gamma; \tyArr{A}{\footnotesize m}{B}}
-{\Delta_1; \Gamma |- \eLapp{e_1}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; X\\\\
+\Delta_2; \Gamma |- e_1 : \Delta_3; \Gamma; \tyLolli{X}{\footnotesize m}{Y}}
+{\Delta_1; \Gamma |- \eLapp{e_1}{e_2} : \Delta_3; \Gamma; Y}
 \end{mathpar}
-\caption{Algorithmic typing rules. \todo{Update.}}
+\caption{Algorithmic typing rules.}
 \label{fig:alg-type-check}
 \end{figure*}
 
