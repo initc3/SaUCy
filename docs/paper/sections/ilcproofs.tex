@@ -1,0 +1,144 @@
+\section{ILC meta theory}
+
+\begin{lemma}[Non-progress]
+For all configurations $C$,
+store typings~$\StTy$,
+channel typings~$\ChTy$,
+and process typings~$\PrTy$,
+%
+if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
+and $\JCterm{C}$,
+then $\not\exists C'$ such that $\JCred{C}{C'}$.
+\begin{proof}
+  TODO
+\end{proof}
+\end{lemma}
+
+
+\begin{theorem}[Progress]
+For all configurations $C$,
+store typings~$\StTy$,
+channel typings~$\ChTy$,
+and process typings~$\PrTy$,
+%
+if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
+then 
+either $\JCterm{C}$,
+or $\exists C'$ such that $\JCred{C}{C'}$.
+\begin{proof}
+   TODO
+\end{proof}
+\end{theorem}
+
+\begin{theorem}[Preservation]
+For all configurations $C, C'$,
+store typings~$\StTy$,
+channel typings~$\ChTy$
+and process typings~$\PrTy$,
+\\
+%
+ if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
+and $\JCred{C}{C'}$ 
+then there exists 
+store typing extension $\StTy' \supseteq \StTy$
+channel typing extension $\ChTy' \supseteq \ChTy$
+and process typing extension $\PrTy' \supseteq \PrTy$
+such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
+\begin{proof}
+  TODO
+\end{proof}
+\end{theorem}
+
+
+\subsection{Confluence}
+
+%% ILC's type system enforces confluence 
+%% up to non-deterministic naming choices in 
+%% rules \Rule{ref}, \Rule{nu}, and \Rule{fork} (\Figref{fig:semantics}).
+%% %
+%% To account for different choices of dynamically-named
+%% store locations, channels and processes, respectively, 
+%% we state and prove confluence
+%% with respect to a renaming function~$f$, which consistently renames
+%% these choices in a related configuration:
+
+\begin{theorem}[Single-step confluence]
+For all well-typed configurations $C$,
+%
+ if $\JCred{C}{C_1}$ 
+and $\JCred{C}{C_2}$ 
+then 
+there exists renaming function~$f$ 
+such that either:
+\begin{enumerate}
+\item %$\JCterm{C_1}$ and 
+$C_1 = f(C_2)$,
+or
+\item $\exists C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
+\end{enumerate}
+\begin{proof}
+   By induction on the typing derivation for $C$.
+
+   TODO
+\end{proof}
+\end{theorem}
+
+By composing multiple uses of this theorem
+we prove multi-step confluence.
+However, to carry forth this composition, we need a more general
+notion of single-step confluence, which is parameteric in a renaming
+function for the initial configurations.
+
+\begin{theorem}[Single-step confluence, generalized]
+For all well-typed configurations $C$ 
+and renaming functions $f$,
+%
+ if $\JCred{C}{C_1}$ 
+and $\JCred{f(C)}{C_2}$ 
+then 
+there exists renaming function~$g$ 
+such that either:
+\begin{enumerate}
+\item %$\JCterm{C_1}$ and 
+$C_1 = g(C_2)$,
+or
+\item $\exists C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{g(C_2)}{C_3}$.
+\end{enumerate}
+\begin{proof}
+  (Analogous to first single-step confluence proof.)
+\end{proof}
+\end{theorem}
+
+We prove a full confluence theorem that is generalized similarly, by
+accepting a renaming function~$f$ to produce a new one~$g$:
+
+\begin{theorem}[Full confluence]
+For all well-typed configurations $C$,
+and renaming functions $f$,
+%
+ if $\JCredm{C}{C_1}$ 
+and $\JCredm{f(C)}{C_2}$ 
+and $\JCterm{C_1}$
+and $\JCterm{C_2}$
+then 
+there exists renaming function~$g$ 
+such that $C_1 = g(C_2)$.
+\begin{proof}
+  By induction on the reduction sequence pair
+  $\left< \JCredm{C}{C_1} , \JCredm{f(C)}{C_2} \right>$.
+  Because of single-step confluence, we know that if
+  if either reduction sequence is empty, then the other must be empty,
+  and that
+  if either takes a step, the other must take a step.
+  
+  \emph{Empty case:}
+  When empty, we have the resulting renaming function~$g$ via single-step confluence.
+
+  \emph{Step case:}
+  We consider the case where each reduction consists of at least one step:
+  $\JCred{C}{C_1'}$ and $\JCredm{C_1'}{C_1}$ and
+  $\JCred{f(C)}{C_2'}$ and $\JCredm{C_2'}{C_2}$.
+  By single-step confluence, we have that there exists $g_0$ such that $g_0(C_2') = C_1'$.
+  By the inductive hypothesis, we have that there exists $g$ such that $C_1 = g(C_2)$.  
+\end{proof}
+\end{theorem}
