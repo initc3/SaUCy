@@ -20,7 +20,7 @@ dubbed SaUCy. Then, we demonstrate the versatility of SaUCy in three ways:
 
 \subsection{Probabilistic Polynomial Time in ILC}
 \label{subsec:ppt}
-The goal of cryptography reduction is to relate every bad event in the protocol to a \emph{probabilistic polynomial time computation} that solves a hard problem.
+The goal of cryptography reduction is to relate every bad event in a protocol to a \emph{probabilistic polynomial time computation} that solves a hard problem.
 The ILC typing rules do not guarantee termination, let alone polynomial time normalization, so we must tackle this in metatheory.
 Also, since ILC is effectively deterministic (confluent), we will need to express random choices some other way.
 To meet these needs we define a judgment about ILC terms that take a security parameter and a  stream of random bits.
@@ -56,17 +56,18 @@ To meet these needs we define a judgment about ILC terms that take a security pa
 \begin{definition}[Value Distribution] 
   Because processes are confluent, we know that if $\mathsf{e~!k~!r}~{->}^{*}~\mathsf{v}$
   then the value $\mathsf{v}$ is unique.  We can therefore define the
-  probability distribution ensemble $D(\mathsf{e}) = \{ D_{\mathsf{e,k}}
-  \}_\mathsf{k}$ of values given a uniform distribution $U_k$ over
-  $\mathsf{k}$-bit strings $\mathsf{r}$, where
+  probability distribution ensemble
+  $D(\mathsf{e}) = \{ D_{\mathsf{e,k}}\}_\mathsf{k}$
+  based on a uniform distribution $U_k$ over
+  $\mathsf{k}$-bit strings $\mathsf{r}$, so the distribution $D_{\mathsf{e,k}}$ is given as
 \[
 D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~!k~!r}~{->}^{*}~\mathsf{v} \}.
 \]
 \end{definition}
 
-\begin{definition}[Indistinguishable]
-What remains is to define a notion of indistinguishability for value distributions. ${D(\mathsf{e}_1) \sim D(\mathsf{e}_2)}$. However, we need to be clear on when polynomial time normalization is an assumption or a proof obligation.
-  To simplify things later, we define a partial order $\mathsf{e}_1 \le \mathsf{e}_2$, which captures that $e_2$ must be PPT if $e_1$ is PPT, and if so, that their value distributions are similar.
+\begin{definition}[Indistinguishability]
+What remains is to define a notion of indistinguishability for value distributions. However, we need to clarify when polynomial time normalization is an assumption or a proof obligation.
+  To simplify things later, we define a partial order $\mathsf{e}_1 \le \mathsf{e}_2$, which captures that $\mathsf{e}_2$ must be $\mathsf{PPT}$ if $\mathsf{e}_1$ is $\mathsf{PPT}$, and if so, that their value distributions are statistically similar.
   \begin{mathpar}
     \Infer{indist}
     {\keyword{PPT}~ \mathsf{e}_1 \implies (\keyword{PPT}~ \mathsf{e}_2 ~~\keyword{and}~~
@@ -86,8 +87,8 @@ What remains is to define a notion of indistinguishability for value distributio
 \caption{\textsf{execUC}.}
 \label{fig:execUC-diagram}
 \end{wrapfigure}
-The first challenge in SaUCy is to define the UC execution model in ILC.  In
-principle, this is simple and routes messages as illustrated in
+The implementation of SaUCy is centered around a definition of UC execution model in ILC.
+For the most part, this just involves connecting channels as illustrated in
 Figure~\ref{fig:execUC-diagram} to the right. For demonstration, we only show
 the case of two-party protocols (\`{a} la Simplified
 UC~\cite{canetti2015simpler}), which will suffice for our example of
@@ -178,10 +179,10 @@ expressed in the ideal world:
          \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mc{S}}
     {\mc{S} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
 \end{mathpar}
-To note a few notation choices, we make the functionality explicit, so emulation
+To remark on a few notation choices: we make the functionality explicit, so emulation
 is a relationship between protocol-functionality pairs.  Here,
 $\mathbbm{1}_\mc{A}$ is the dummy adversary, which just relays messages between
-the environment and the parties. We elide the standard dummy lemma that shows
+the environment and the parties/functionality. We elide the standard dummy lemma that shows
 this is without loss of generality; the intuition is that whatever an adversary
 can do, the environment can achieve using $\mathbbm{1}_\mc{A}$.
 
@@ -211,8 +212,8 @@ polynomial, and that its running time is bounded if its total received input
 size is bounded~\cite{hofheinz2015gnuc}. This notion is composable as desired,
 although its use requires additional distinctions between ``invited'' and
 ``uninvited'' messages, which seems cluttered. RSIM makes analogous
-choices~\cite{backes2007reactive}. We think these could be applied as easily in
-ILC, but our goal here is to provide a simpler notion.
+choices~\cite{backes2007reactive}. While we think these could be equally applied to
+ILC, our goal here is to provide a simpler notion.
 
 We define protocol emulation by requiring a simulation in both directions, so every behavior in the ideal world must correspond to a behavior in the real world and vice versa.
 \begin{definition}[Protocol Emulation]
@@ -227,8 +228,8 @@ We define protocol emulation by requiring a simulation in both directions, so ev
     {\mc{S_\mc{R},S_\mc{I}} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
 \end{mathpar}
 \end{definition}
-We remark that this definition goes against the usual UC convention of requiring simulation in one direction only. Requiring one direction is preferred intuitively because it should be OK if the protocol is even more secure than its specification. Requiring both could be too restrictive, although we have not encountered such problem in our examples.
-However, the benefit is this simplifies the polynomial time notion: vacuous protocols are clearly ruled out by the top condition, and both simulations are only required to be \keyword{PPT} if $\mc{Z}$ is. 
+\noindent We remark this definition goes against the UC convention of requiring simulation in one direction only. One direction is preferable intuitively because it should be OK if the protocol is even more secure than its specification. Requiring both could be too restrictive, although we have not encountered such problem in our examples.
+In any case, the benefit is this simplifies the polynomial time notion: vacuous protocols are clearly ruled out by the top condition, and both simulations are only required to be \keyword{PPT} if $\mc{Z}$ is. 
 
 %%   \begin{mathpar}
 %%   \Infer{\st{emulate}}
@@ -272,7 +273,7 @@ However, the benefit is this simplifies the polynomial time notion: vacuous prot
 As a first demonstration of SaUCy, we work through the development of a composition
 operator, and give a theorem explaining its use.
 \begin{definition}[UC realizes]
-To set out, we introduce the notation of ``realizes,'' which views a protocol as a way of instantiating a specification functionality $\mc{F}_{2}$ from a setup assumption functionality $\mc{F}_1$
+To set out, we introduce the notation of ``realizes,'' which views a protocol as a way of instantiating a specification functionality $\mc{F}_{2}$ from a setup assumption functionality $\mc{F}_1$,
 %  if $\keyword(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
 %  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$, and the
   %  following statistical indistinguishability relation holds
@@ -282,8 +283,8 @@ To set out, we introduce the notation of ``realizes,'' which views a protocol as
   {\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2}
   \end{mathpar}
 \end{definition}
-where $\mathsf{id}_\pi$ is the \emph{dummy protocol}, which simply relays messages between the environment and the functionality.
-This notation is convenient because we can follow a categorical approach to composition.
+\noindent where $\mathsf{id}_\pi$ is the \emph{dummy protocol}, which simply relays messages between the environment and the functionality.
+This notation is convenient because it suggests a categorical approach to composition.
 
 \begin{theorem}[Composition Theorem]
   \begin{mathpar}
@@ -352,24 +353,16 @@ Finally, again by equality:
 \begin{equation}
   \keyword{execUC}~(\mc{S}_{\mc{I},\pi}~\mc{Z})~\mathsf{id}_\pi~\mc{F}_3~\mc{S}_{\mc{I},\rho} =\keyword{execUC}~\mc{Z}~ \mathsf{id}_\pi~ \mc{F}_3~ (\mc{S}_{\mc{I},\pi} \circ \mc{S}_{\mc{I},\rho})
 \end{equation}
-
+completing the proof.\qed
 %% (5) By equality:
 %% execUC (SI1 Z) 1 F3 SI2 =
 %% execUC Z 1 F3 (SI1 o SI2)
 
-
-%What remains is a reduction proof. Given an environment $\mc{Z}$ that can distinguish $(\pi \circ \rho, \mc{F}_1)$ from $(1_\pi, \mc{F}_3)$, we must construct $\mc{Z}^{*}$ that distinguishes either
-%$(\pi,\mc{F}_1)$ from $(1_\pi,\mc{F}_2)$ or
-%$(\rho,\mc{F}_2)$ from $(1_\pi,\mc{F}_3)$.
-
-\todo{Move to appendix}
-
-The main idea behind the proof is to observe that the protocol $\pi$ can be folded into the definition of an environment.% $\mc{Z}^{*}[\pi]$ on one hand \todo{finish} and this is an adequate environment for  represents arbitrary other protocols that may provide inputs to $\rho$ as a subroutine.
-
 \paragraph{Other notions of composition}
-Other composition operators can be built in a similar way.
-Normally UC features a built-in ``universal composition'' that does multiplexing by  session IDs. This can easily be defined for protocols. \todo{say we leave for future work}
-Joint state composition is a theorem pertaining to this.
+Our composition operator above is just a starting point.
+The so-called ``universal composition''~\cite{uc} operator essentially multiplexes sessions identified by unique tags (\emph{session ids}), while a joint state composition theorem collapses multiple subroutines into one~\cite{juc}.
+Despite its name, development in UC often involves defining additional composition operators, for which ILC provides a flexible framework.
+For example, interesting composition often happens ``in the functionality'' through higher order ``wrapper'' functionalities~\cite{hawk,katz2007universally} which we would express through abstraction.
 
 
 \subsection{Instantiating UC Commitments}
@@ -381,7 +374,7 @@ problem~\cite{lindell2014introduction}.  They also rely on a ``trusted setup,''
 or common reference string, which are essentially public parameters generated
 ahead of time (modeled as an ideal functionality $\Func_{\textsc{crs}}$).
 %
-Instantiation proofs in SaUCy follow the same rhythm as in UC. We start with a security
+Instantiation proofs in SaUCy follow a standard rhythm. We start with a security
 definition as an ideal functionality (such as $\Func_{\textsc{Com}}$), give the protocol, construct a simulator,
 and finally complete the relational analysis on paper.
 %UC commitments are
@@ -460,21 +453,20 @@ output in the ideal world.
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}
 
-The cryptography community has recently identified several subtleties in defining UC ideal functionalities that relate to reentrancy and the scheduling of concurrent code;
-because of these issues some functionalities in the literature are ambiguous as ITMs~\cite{camenisch2016universal}.
+The cryptography community has recently identified subtleties in defining UC ideal functionalities that relate to reentrancy and the scheduling of concurrent code, such that
+several functionalities in the literature are ambiguous as ITMs~\cite{camenisch2016universal}.
 Although concerning, these issues have no cryptographic flavor, but instead are better addressed from the PL viewpoint.
 To illustrate, consider the following fragment of (untyped) ILC syntax, which allows an adversary to control the delivery schedule of messages from $P$ to $Q$ (an asynchronous channel):
 \lstinputlisting[style=myilc]{listings/reentrant.ilc}
 After receiving input from party $P$, it
 notifies the adversary, then forks a background thread to wait for \textsf{OK} before
 delivering the message.
-This introduces a race condition: suppose input message $m_1$ is sent by $P$, but then the adversary $\mathcal A$, before sending \textsf{OK}, instead returns control to $\mathcal Z$, which passes $P$ a second input $m_2$. Now there are two queued messages; which one gets delivered first when the adversary sends \textsf{OK}?
+This introduces a race condition: suppose input message $m_1$ is sent by $P$, but then the adversary $\mathcal A$, before sending \textsf{OK}, instead returns control to $\mathcal Z$, which passes $P$ a second input $m_2$. Now there are two queued messages. Which one gets delivered when the adversary sends \textsf{OK}?
 
-To resolve this paradox, notice that fragment is untypeable in ILC.
-The race condition occurs because of duplication of the read channel \textsf{frA}.
+To resolve this paradox, notice that this fragment is untypeable in ILC.
+The race condition occurs because the read channel \textsf{frA} is duplicated.
 Since \textsf{frA} is linear in the function body, the function would not be typeable as intuitionistic as required by the \textsf{loop} construct.
 Camenisch et al.~\cite{camenisch2016universal} identified several strategies for resolving this problem in UC, which in turn are expressible ILC. One approach is to make the process explicitly sequential, such that the arrival of a second message before the first is delivered causes execution to get stuck:
 \lstinputlisting[style=myilc]{listings/reentrant-seq.ilc}
-An alternative is to discard such messages arriving out of order, returning them to sender; this can be expressed in ILC using the external choice operator:
-operator,
+Alternatively, we may discard such messages arriving out of order, returning them to sender; we express this in ILC using the external choice operator,
 \lstinputlisting[style=myilc]{listings/reentrant-ignore.ilc}

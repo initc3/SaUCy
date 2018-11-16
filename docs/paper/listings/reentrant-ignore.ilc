@@ -7,6 +7,6 @@ letrec discardingF frP frA ... =
 	  iloop frP frA)
        $\oplus$ (let (!Ok, frA) = rd frA in
 	  wr m $->$ toQ;
-	  discardingF frA frP ...)
+	  discardingF frP frA ...)
      in iloop frP frA
 
