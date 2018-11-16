@@ -2,7 +2,7 @@
 \label{sec:overview}
 
 We first provide background on the universal composability framework and then
-give a tour of ILC and SaUCy.
+give a tour of ILC.
 
 \begin{figure*}[t]
 \centering
@@ -195,7 +195,7 @@ The commitment scheme must be \emph{hiding} in the sense that the commitment its
 reveals no information about the committed value, and \emph{binding} in the sense
 that the committer can only open the commitment to a single value.
 For security under composition, an additional \emph{non-malleability} property is required,
-which roughly prevents creating related commitments without knowing the value.
+which roughly prevents an attacker from using one commitment to derive another related one.
 %
 %% Formalizing the security of this basic primitive, however, is
 %% nontrivial.
@@ -339,33 +339,35 @@ that the right lollipop in the function signature carries a mode $\Rm$. Finally,
 because wr expressions return $\eUnit$, we wrap it inside a bang! to lift its
 type into the affine type \textsf{!Unit}.
 
+\begin{comment}
 \subsection{The UC Framework, Concretely}
 \label{subsec:uc-concretely}
 \todo{Need new subsection title.}
 \todo{Preview of SaUCy and UC metatheory.}
-
-\begin{comment}
-\subsection{UC composition}
-\label{subsec:composition}
-
-The advantage of security definitions in UC is that they satisfy strong
-composability guarantees, even under concurrent composition. Suppose that $\pi_1$
-is a protocol that securely realizes a functionality $\mc{F}_1$. If a protocol
-$\pi_2$, using $\mc{F}_1$ as a subroutine, securely realizes a functionality
-$\mc{F}_2$, then the protocol $[\pi_1 / \mc{F}_1]\pi_2$, in which calls to
-$\mc{F}_1$ are replaced by calls to $\pi_1$, also securely realizes
-$\mc{F}_2$. That way, it suffices to analyze the security of the standalone
-protocol $\pi_2$ in the $\mc{F}_1$-hybrid model, where parties run $\pi_2$ with
-access to $\mc{F}_1$, as opposed to the composite protocol of $\pi_2$ and
-$\pi_1$. Figure~\ref{fig:uc-composition} illustrates protocol composition. The
-setup on the left represents the $\mc{F}_1$-hybrid model, and the setup on the
-right represents the protocol substitution $[\pi_1 / \mc{F}_1]\pi_2$, which
-maintains security.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\linewidth]{graphics/composition}
-  \caption{UC protocol composition theorem.}
-  \label{fig:uc-composition}
-\end{figure}
 \end{comment}
+
+%% \begin{comment}
+%% \subsection{UC composition}
+%% \label{subsec:composition}
+
+%% The advantage of security definitions in UC is that they satisfy strong
+%% composability guarantees, even under concurrent composition. Suppose that $\pi_1$
+%% is a protocol that securely realizes a functionality $\mc{F}_1$. If a protocol
+%% $\pi_2$, using $\mc{F}_1$ as a subroutine, securely realizes a functionality
+%% $\mc{F}_2$, then the protocol $[\pi_1 / \mc{F}_1]\pi_2$, in which calls to
+%% $\mc{F}_1$ are replaced by calls to $\pi_1$, also securely realizes
+%% $\mc{F}_2$. That way, it suffices to analyze the security of the standalone
+%% protocol $\pi_2$ in the $\mc{F}_1$-hybrid model, where parties run $\pi_2$ with
+%% access to $\mc{F}_1$, as opposed to the composite protocol of $\pi_2$ and
+%% $\pi_1$. Figure~\ref{fig:uc-composition} illustrates protocol composition. The
+%% setup on the left represents the $\mc{F}_1$-hybrid model, and the setup on the
+%% right represents the protocol substitution $[\pi_1 / \mc{F}_1]\pi_2$, which
+%% maintains security.
+
+%% \begin{figure}
+%%   \centering
+%%   \includegraphics[width=\linewidth]{graphics/composition}
+%%   \caption{UC protocol composition theorem.}
+%%   \label{fig:uc-composition}
+%% \end{figure}
+%% \end{comment}
