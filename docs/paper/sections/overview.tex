@@ -190,27 +190,34 @@ We make the above more concrete by running through an example of
 protocols~\cite{brassard1988minimum}. The idea behind commitment is simple: A
 \emph{committer} provides a \emph{receiver} with the digital equivalent of a
 ``sealed envelope'' containing some value that can later be
-revealed. Formalizing the security of this basic primitive, however, is
-nontrivial.
+revealed.
+The commitment scheme must be \emph{hiding} in the sense that the commitment itself
+reveals no information about the committed value, and \emph{binding} in the sense
+that the committer can only open the commitment to a single value.
+For security under composition, an additional \emph{non-malleability} property is required,
+which roughly prevents creating related commitments without knowing the value.
+%
+%% Formalizing the security of this basic primitive, however, is
+%% nontrivial.
+%
+%% To obtain security in the standalone setting or under sequential composition, a
+%% commitment should satisfy two basic properties:
+%% \begin{itemize}[leftmargin=*]
+%% \item \emph{Hiding.} A commitment to a value should not reveal any information
+%%   about the value.
+%% \item \emph{Binding.} A commitment should only open to the originally committed value.
+%% \end{itemize}
 
-To obtain security in the standalone setting or under sequential composition, a
-commitment should satisfy two basic properties:
-\begin{itemize}[leftmargin=*]
-\item \emph{Hiding.} A commitment to a value should not reveal any information
-  about the value.
-\item \emph{Binding.} A commitment should only open to the originally committed value.
-\end{itemize}
-
-\noindent To obtain security under concurrent composition, however, a commitment
-should satisfy a third subtle property:
-\begin{itemize}[leftmargin=*]
-\item \emph{Non-malleability.} One should not be able to create a new commitment
-  $C'$ from an unopened commitment $C$ such that the committed values are
-  related in any way.
-\end{itemize}
-
-We can capture all three of these
-properties at once using an ideal functionality. In Figure~\ref{func:com}
+%% \noindent To obtain security under concurrent composition, however, a commitment
+%% should satisfy a third subtle property:
+%% \begin{itemize}[leftmargin=*]
+%% \item \emph{Non-malleability.} One should not be able to create a new commitment
+%%   $C'$ from an unopened commitment $C$ such that the committed values are
+%%   related in any way.
+%% \end{itemize}
+%
+All of these
+properties are captured at once using an ideal functionality. In Figure~\ref{func:com}
 (left), we show $\Func_{\textsc{com}}$, an ideal functionality for one-time bit
 commitment, as it would appear in the cryptography
 literature~\cite{canetti2001commitments}. The functionality simply waits for the
@@ -218,7 +225,7 @@ committer $P$ to commit to some bit $b$, notifies the receiver $Q$ that it has
 taken place, and reveals $b$ to $Q$ upon request by $P$. Notice that $Q$ never
 actually sees a commitment to $b$ (only the (\textsf{Receipt}) message), so the
 three properties hold trivially.
-
+%
 In Figure~\ref{func:com} (right), we define a simplified version of
 $\Func_{\textsc{com}}$ in ILC to highlight some key features of the language,
 such as its affine and modal type system. Keep in mind that the overarching
