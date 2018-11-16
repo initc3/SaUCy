@@ -151,7 +151,7 @@ D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\
 \end{definition}
 
 \begin{definition}[Indistinguishable]
- Finally, we will often need a notion of indistinguishability, roughly corresponding to statistical indistinguishability of value distributions ${D(\mathsf{e}_1) \sim D(\mathsf{e}_2)}$. However, we need to be clear on when polynomial time normalization is an assumption or a proof obligation.
+What remains is to define a notion of indistinguishability for value distributions. ${D(\mathsf{e}_1) \sim D(\mathsf{e}_2)}$. However, we need to be clear on when polynomial time normalization is an assumption or a proof obligation.
   To simplify things later, we define a partial order $\mathsf{e}_1 \le \mathsf{e}_2$, which captures that $e_2$ must be PPT if $e_1$ is PPT, and if so, that their value distributions are similar.
   \begin{mathpar}
     \Infer{indist}
@@ -163,52 +163,80 @@ D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\
 
 \subsection{Defining UC Security in ILC}
 \label{subsec:uc}
-What remains is for us to give a precise definition of secure protocol emulation.
-We roughly want to say a protocol $\pi$ emulates $\phi$ if the environment cannot distinguish between the two.
-In SaUCy notation we make the functionality explicit, so emulation is actually defined as a relationship between protocol-functionality pairs. Furthermore we make the simulator $\mc{S}$ explicit, so overall we will define a judgment of the form
-\[
-(\pi, \mc{F}_1) \overset{\mc{S}}\approx (\phi, \mc{F}_2)
-\]
+The central security definition in UC is protocol emulation.
+The guiding principle is that $\pi$ emulates $\phi$ if the environment cannot distinguish between the two protocols. 
+Our first attempt is the following, where $\mc{S}$ is the simulator that translates every attack in the real world into an attack expressed in the ieal world:
+\begin{mathpar}
+  \Infer{\st{emulate}}
+        {\forall~\mc{Z}.~ 
+         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ {1}_\mc{A} \le
+         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mc{S}}
+    {\mc{S} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
+\end{mathpar}
+To note a few notation choices, we make the functionality explicit, so emulation is a relationship between protocol-functionality pairs.
+Here $1_\mc{A}$ is the dummy adversary, which just relays messages between the environment and the parties. We elide the standard dummy lemma that shows this is without loss of generality; the intuition is that whatever an adversary can do, the environment can achieve using $1_\mc{A}$.
+
+%\[
+%(\pi, \mc{F}_1) \overset{\mc{S}} \le (\phi, \mc{F}_2)
+%\]
 %\[
 %S ~\keyword{proves}~ (\pi, \mc{F}_1) ~\keyword{emulates}~ (\phi, \mc{F}_2).
 %  \]
 %  Since the simulator tranlates attacks $\mc{A}$ to the real world, we treat $\mc{S}$ as a function, so $\mc{S A}$ is the ideal world adversary simulating $\mc{A}$.
-Since emulation  means that any attack on $\pi$ is also on $\phi$.
-We have to translate attacker behaviors of an arbitrary real world adversary $\mc{A}$ to a simulated adversary $\mc{(S~A)}$ in the ideal world.
-A first attempt to define this would be
-\begin{mathpar}
-  \Infer{\st{emulate}}
-        {\forall~\mc{A}~\mc{Z}.~ 
-         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mc{A} \le
-         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ (\mc{S}~\mc{A})}
-    {(\pi, \mc{F}_1) \overset{\mc{S}}\approx (\phi, \mc{F}_2)}
-  \end{mathpar}
 
-\noindent However this definition is vacuous: a degenerate protocol $\pi$ can emulate anything simply failing to be $\keyword{PPT}$, e.g. by diverging. To put it another way, the problem is the definition imposes a proof obligation on the simulator $\mc{S}$ but not on $\pi$. What we want to say is that the \emph{real world} protocol $(\pi, \mc{F}_1)$ must be well behaved whenever the \emph{ideal world} $(\phi, \mc{F}_2)$ is.
-However, even a reasonable protocol can result in non-PPT executions if paired with a divergent environment. We therefore need to express a judgment $\keyword{Good}$ to describe environments that are well behaved in the ideal world:
-\begin{mathpar}
-  \Infer{good}
-        {\keyword{PPT}~(\mathsf{execUC}~\mc{Z}~\phi~1_\mc{A}~\mc{F}_2)}
-        {\keyword{Good}~\phi~\mc{F}_2~\mc{Z}}
-\end{mathpar}
-\noindent Notice that this constraint has the dummy adversary $1_\mc{A}$.
-%, even though it is written for the ideal world, unlike in the dummy lemma.
-This is without loss of generality in the sense that $\keyword{Good}~\phi~\mc{F}_2~Z$ implies that for any $\mc{A}$, we could have a $\mc{Z'}$ such that
-\[
-\mathsf{execUC}~\mc{Z} ~\phi  ~\mc{A}~\mc{F}_2 \le
-\mathsf{execUC}~\mc{Z'}~\phi~1_\mc{A}~\mc{F}_2
-\]
-\noindent We can now repair the emulation definition using this constraint.
+%% Since emulation means that any attack on $\pi$ is also on $\phi$.
+%% We have to translate \emph{attacker behaviors} of an arbitrary real world adversary $\mc{A}$ to a simulated adversary $\mc{(S~A)}$ in the ideal world.
+
+Unfortunately this simple definition turns out to be vacuous: a degenerate protocol $\pi$ can emulate anything simply failing to be $\keyword{PPT}$, e.g. by diverging. To put it another way, the problem is the definition imposes a proof obligation on the simulator $\mc{S}$ but not on $\pi$.
+What we want to say is that the \emph{real world} protocol $(\pi, \mc{F}_1)$ must be well behaved whenever the \emph{ideal world} $(\phi, \mc{F}_2)$ is.
+However, even a reasonable protocol can result in non-PPT executions if paired with a divergent environment.
+In fact, giving a precise but composable notion of polynomial-time for interactive processes has been an ongoing challenge in UC. In GNUC the approach is to define a well behaved environment, independently of its execution context --- roughly that the total size of its outgoing messages is bounded by a polynomial, and that its running time is bounded if its total received input size is bounded. This notion is composable as desired, although its use requires additional distinctions between ``invited'' and ``uninvited'' messages, which seems cluttered. RSIM makes analogous choices. We think these could be applied as easily in ILC, but our goal here is to provide a simpler notion.
+
+We define protocol emulation by requiring a simulation in both directions, so every behavior in the ideal world must correspond to a behavior in the real world and vice versa.
 \begin{definition}[Protocol Emulation]
-  The judgment that one protocol-functionality pair $(\pi, \mc{F}_1)$  securely emulates another $(\phi, \mc{F}_2)$ (as proven the simulator $\mc{S}$) is defined as follows:
-  \begin{mathpar}
+  The judgment that one protocol-functionality pair $(\pi, \mc{F}_1)$  securely emulates another $(\phi, \mc{F}_2)$ (as proven the simulators $\mc{S}_\mc{R},\mc{S}_\mc{I}$) is defined as
+\begin{mathpar}
   \Infer{{emulate}}
-        {\forall~\mc{A}~\mc{Z}.~ \keyword{Good}~\phi~\mc{F}_2~\mc{Z} =>\\\\
-         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mc{A} \le
-         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ (\mc{S}~\mc{A})}
-        {(\pi, \mc{F}_1) \overset{\mc{S}}\approx (\phi, \mc{F}_2)}
-  \end{mathpar}
+        {\forall~\mc{Z}.~ 
+         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ 1_\mc{A} \le
+         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ (\mc{S_\mc{R}}) \\\\
+         \ \ \ \ \ \ \ \ ~\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ 1_\mc{A} \le
+         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ (\mc{S}_\mc{I})}
+    {\mc{S_\mc{R},S_\mc{I}} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
+\end{mathpar}
 \end{definition}
+We remark that this definition goes against the usual UC convention of requiring simulation in one direction only. Requiring one direction is preferred intuitively because it should be OK if the protocol is even more secure than its specification. Requiring both could be too restrictive.
+However, the benefit is this simplifies the polynomial time notion: vacuous protocols are clearly ruled out by the top condition, and both simulations are only required to be \keyword{PPT} when $\mc{Z}$ is.
+Furthermore, we have not found it too restrictive.
+
+%%   \begin{mathpar}
+%%   \Infer{\st{emulate}}
+%%         {\forall~\mc{A}~\mc{Z}.~ \keyword{PPT}~(\mathsf{execUC}~\mc{Z}~\phi~1_\mc{A}~\mc{F}_2) => \\\\
+%%   \keyword{PPT}~(\mathsf{execUC}~\mc{Z}~\pi~\mc{S_\mc{R}}~\mc{F}_1)
+%% \\\\
+%%          \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mc{A} \le
+%%          \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ (\mc{S}~\mc{A})}
+%%         {(\pi, \mc{F}_1) \overset{\mc{S}}\le (\phi, \mc{F}_2)}
+%%   \end{mathpar}
+  
+
+%
+%
+%We therefore need to express a judgment $\keyword{Good}$ to describe environments that are well behaved in the ideal world:
+%\begin{mathpar}
+%  \Infer{good}
+%        {\keyword{PPT}~(\mathsf{execUC}~\mc{Z}~\phi~1_\mc{A}~\mc{F}_2)}
+%        {\keyword{Good}~\phi~\mc{F}_2~\mc{Z}}
+%\end{mathpar}
+%% To resolve this concern, we say that every \emph{benign behavior} in the ideal world must translate to. We require an additional simulator in the real world $\mc{S_\mc{R}}$      says that every benign behavior in the ideal world must correspond to a benign environment in the real world. To characteris
+%% \noindent Notice that this constraint has the dummy adversary $1_\mc{A}$.
+%% %, even though it is written for the ideal world, unlike in the dummy lemma.
+%% This is without loss of generality in the sense that $\keyword{Good}~\phi~\mc{F}_2~Z$ implies that for any $\mc{A}$, we could have a $\mc{Z'}$ such that
+%% \[
+%% \mathsf{execUC}~\mc{Z} ~\phi  ~\mc{A}~\mc{F}_2 \le
+%% \mathsf{execUC}~\mc{Z'}~\phi~1_\mc{A}~\mc{F}_2
+%% \]
+
 
 \subsection{A composition theorem in SaUCy}
 \label{subsec:composition}
@@ -220,62 +248,41 @@ This is without loss of generality in the sense that $\keyword{Good}~\phi~\mc{F}
   \label{fig:protocol-composition}
 \end{figure}
 
-As a first usage of SaUCy, work through the development of a composition
-operator, and give a composition theorem explaining its use.
-
-\todo{Explain more the importance of composition operators}
-
-Essentially, our operator is the notion of UC-realizes. We can now state useful
-composition operators, simplifying lemmas, and notation. For brevity, we pack
-several notions from UC into a single alternate definition: UC-realizes.
-
-\begin{definition}[UC-realizes]
-  Protocol $\pi$ with $\mc{F}_0$ realizes $\mc{F}_1$, written
-  $\mc{F}_0 \yrightarrow{$\pi$} \mc{F}_1$, if for all environments $\mc{Z}$,
+As a first demonstration of SaUCy, we work through the development of a composition
+operator, and give a theorem explaining its use.
+\begin{definition}[UC realizes]
+To set out, we introduce the notation of ``realizes,'' which views a protocol as a way of realizing a specification functionality $\mc{F}_{2}$ from a setup assumption functionality $\mc{F}_1$.
 %  if $\keyword(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
 %  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$, and the
   %  following statistical indistinguishability relation holds
-
-  \begin{mathpar}
-    \Infer{realizes}
-          {\forall~\mc{Z}.~ \keyword{Good}~\phi~\mc{F}_2~\mc{Z} =>\\\\
-            \mathsf{execUC}\ \mc{Z}\ \pi\  \mc{F}_1\ 1_\mc{A} \le
-            \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mc{S}}
-          {\mc{F}_0 \yrightarrow{$\pi$} \mc{F}_1}
+\begin{mathpar}
+  \Infer{realizes}
+  {(\pi,~\mc{F}_1) \approx (1_\pi, \mc{F}_2)}
+  {\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2}
   \end{mathpar}
 \end{definition}
+This notation is convenient because it suggests a categorical approach to defining the composition theorem.
 
-The idea is that the environment can arbitrarily and adaptively choose
-inputs to the protocol $\phi$. So when we compose with an arbitrary other
-protocol $\rho$, it is not any worse than what the environment could have
-done. It essentially creates a proof obligation to ensure isolation of the
-protocols.  While the intended use of universal composition is to replace an
-ideal functionality with a protocol that securely realizes it, we define
-protocol composition \todo{Let's just call it protocol composition, not
-  universal composition. It's not really universal.} more generally in terms of
-replacing one subroutine protocol with another. Given a protocol $\phi$, a protocol
-$\rho$ that makes calls to $\phi$, \todo{instead of ``makes calls'', specify that the
-  \textsf{toF} channel of $\rho$ is connected to the \textsf{fromZ} channel of
-  $\phi$. } and a protocol $\pi$ that emulates $\phi$, then $\rho^{\phi -> \pi}$ is identical to
-$\rho$ with the following modifications:
-\begin{itemize}[leftmargin=*]
-  \item When $\rho$ writes to $\phi$, $\rho^{\phi -> \pi}$ writes to $\pi$.
-  \item When $\rho^{\phi -> \pi}$ receives a message from $\pi$, proceed as $\rho$ would when
-    it receives the same message from $\phi$.
-\end{itemize}
+\begin{theorem}[Composition Theorem]
+  \begin{mathpar}
+  \Infer{realizes}
+  {\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2 \\ 
+  \mc{F}_2 \yrightarrow{$\phi$} \mc{F}_3}
+  {\mc{F}_1 \yrightarrow{$\pi \circ \phi$} \mc{F}_3}
+  \end{mathpar}
+\end{theorem}
 
+The idea is that the $\pi \circ \rho$ can be defined in a natural way, where the ideal functionality channel of $\pi$ is connected to the environment channel of $\rho$, as illustrated in illustrated in Figure~\ref{fig:protocol-composition} and given in Figure~\ref{fig:composition-operator}.
 \begin{figure}
 \lstinputlisting[style=myilc]{listings/compose.ilc}
 \caption{Protocol composition operator.}
 \label{fig:composition-operator}
 \end{figure}
-
-From UC-realizes, we can conclude the original UC formulation for arbitrary
-composition:
-\begin{theorem}[Composition Theorem]
-  If $\mc{F}_0 \yrightarrow{$\pi$} \mc{F}_1$, then for all $\rho$ we
-  have that $(\rho^{\pi}, \mc{F}_0)$ emulates $(\rho, \mc{F}_1)$.
-\end{theorem}
+\noindent To prove the theorem we construct the simulators $S_\pi \circ S_\phi$ in the natural way as well (given in the Appendix).
+What remains is a reduction proof. Given an environment $\mc{Z}$ that can distinguish $(\pi \circ \phi, \mc{F}_1)$ from $(1_\pi, \mc{F}_3)$, we must construct either $\mc{Z'}$ that distinguishes either
+$(\pi,\mc{F}_1)$ from $(1_\pi,\mc{F}_2)$ or
+$(\phi,\mc{F}_2)$ from $(1_\pi,\mc{F}_3)$.
+\todo{Give the ZBad definition in ILC}
 
 \subsection{Instantiating UC Commitments}
 \label{subsec:example}
