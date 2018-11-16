@@ -114,9 +114,8 @@ programs are expressible as ITMs}:
 \end{comment}
 
 Before we go through a quick tour of the typing rules, we point out a few
-things: the mode composition rules are given in
-Figure~\ref{fig:mode-composition}, and value mode derivations and ordinary type
-polymorphism are omitted to avoid clutter.
+things: Value mode derivations and ordinary type polymorphism are omitted to
+avoid clutter, and algorithmic typing rules are given in Appendix \todo{}.
 
 \paragraph{Rules for preventing read nondeterminism.}
 To protect read channels from duplication, the nu rule binds read channels in
@@ -130,9 +129,7 @@ violate the affinity of read channels.\smallskip
 The mode composition rules given in Figure~\ref{fig:mode-composition} prevent
 write mode processes from being composed in parallel. This is reflected in the
 fork rule, which derives the mode of $\eFork{e_1}{e_2}$ as the parallel
-composition of the mode of $e_1$ and the mode of $e_2$. \todo{Something about
-sequential composition, and maybe something about sequential writes getting
-stuck but we don't care.}
+composition of the mode of $e_1$ and the mode of $e_2$.
 
 \begin{comment}
 \paragraph{Intuitionistic rules.}
