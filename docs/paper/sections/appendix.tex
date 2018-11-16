@@ -71,8 +71,8 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \and
 %
 \Infer{a-fix}
-{\Delta_1; \Gamma,x : \tyArr{A}{\footnotesize m}{A} |- e : \Delta_2; \Gamma; \tyArr{A}{\footnotesize m}{A}}
-{\Delta_1; \Gamma |- \eFix{x}{e} : \Delta_2; \Gamma; \tyArr{A}{\footnotesize m}{A}}
+{\emptyctxt; \Gamma,x : \tyArr{A}{\footnotesize m}{A} |- e : \emptyctxt; \Gamma; \tyArr{A}{\footnotesize m}{A}}
+{\Delta; \Gamma |- \eFix{x}{e} : \Delta; \Gamma; \tyArr{A}{\footnotesize m}{A}}
 %
 \and
 %
@@ -91,8 +91,8 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \and
 %
 \Infer{a-abs}
-{\Delta_1 ; \Gamma, x:A |- e : \Delta_2; \Gamma; B}
-{\Delta_1 ; \Gamma |- \eLam{x}{e} : \Delta_2; \Gamma; \tyArr{A}{\footnotesize m}{B}}
+{\emptyctxt ; \Gamma, x:A |- e : \emptyctxt; \Gamma; B}
+{\Delta ; \Gamma |- \eLam{x}{e} : \Delta; \Gamma; \tyArr{A}{\footnotesize m}{B}}
 %
 \and
 %
@@ -139,26 +139,33 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \judgbox{\Delta_{in} ; \Gamma_1 |- e : \Delta_{out}; \Gamma_2; A}{~~Under $\Delta_{in}$ and
   $\Gamma_1$, expression~$e$ results $\Delta_{out}$ and $\Gamma_2$ and has affine type $A$.}
 \begin{mathpar}
-\Infer{a-lvar}
+\Infer{a-avar}
 {\Delta(x) = A}
 {\Delta; \Gamma |- x : \Delta ; \Gamma; A}
+%
+\and
+%
+\Infer{a-bang}
+{\emptyctxt ; \Gamma |- e : \emptyctxt ; \Gamma ; A}
+{\Delta ; \Gamma |- \eBang{e} : \Delta ; \Gamma ; \tyBang{A}}
 %
 \and
 %
 \Infer{a-tensor}
 {\Delta_1; \Gamma |- e_1 : \Delta_2 ; \Gamma ; X_1\\\\
 \Delta_2; \Gamma |- e_2 : \Delta_3 ; \Gamma ; X_2}
-{\Delta_1, \Delta_2; \Gamma |- \ePair{e_1}{e_2} : \Delta_3 ; \Gamma ; \tyTensor{X_1}{X_2}}
+{\Delta_1, \Delta_2; \Gamma |- \eLPair{e_1}{e_2} : \Delta_3 ; \Gamma ; \tyTensor{X_1}{X_2}}
+%
+\and
+%  
+\Infer{a-asplit}
+{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyProd{A_1}{A_2}\\\\
+\Delta_2; \Gamma,x_1:A_1, x_2: A_2 |- e : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- \eLsplit{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
 %
 \and
 %
-\Infer{a-bang}
-{\Delta_1 ; \Gamma |- e : \Delta_2 ; \Gamma ; A }
-{\Delta_1 ; \Gamma |- \eBang{e} : \Delta_2 ; \Gamma ; \tyBang{A}}
-%
-\and
-%
-\Infer{a-lfix}
+\Infer{a-afix}
 {\Delta_1, x : \tyLolli{X}{\footnotesize m}{X}; \Gamma |- e : \Delta_ 2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{X}}
 {\Delta_1; \Gamma |- \eLfix{x}{e} : \Delta_2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{X}}
 %
@@ -166,6 +173,13 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \Infer{a-lolli}
 {\Delta_1,x:X ; \Gamma |- e : \Delta_2 ; \Gamma ; Y}
 {\Delta_1 ; \Gamma |- \eLAM{x}{e} : \Delta_2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{Y}}
+%
+\and
+%
+\Infer{a-aapp}
+{\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; A\\\\
+\Delta_2; \Gamma |- e_1 : \Delta_3; \Gamma; \tyArr{A}{\footnotesize m}{B}}
+{\Delta_1; \Gamma |- \eLapp{e_1}{e_2} : \Delta_3; \Gamma; B}
 \end{mathpar}
 \caption{Algorithmic typing rules. \todo{Update.}}
 \label{fig:alg-type-check}
