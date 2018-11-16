@@ -1,4 +1,4 @@
-dummy :: $\forall$ ... . $\tyBang{\keyword{Crupt} \multimap ... \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}}$
+dummy :: $\forall$ a ... . $\tyBang{\keyword{Crupt} \multimap \cdots \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}} \multimap$ a
 let dummyA !crupt !toZ frZ !toF frF !toP frP toQ frQ !toQasP toPasQ k r =
   let fwd2Z c = loop c !($\lambda$ m . wr (X2Z m) $->$ toZ) in
        loop frZ !($\lambda$ x . match x with
