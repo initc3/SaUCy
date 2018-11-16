@@ -315,12 +315,26 @@ Our proof obligation is to introduce an arbtirary environment $\mc{Z}$ and concl
 \[  \keyword{execUC}~\mc{Z} ~(\rho \circ \pi)~\mc{F}_1 ~\mathbbm{1}_\mc{A}
 \le \keyword{execUC}~\mc{Z} ~\mathbbm{1}_\mc{\pi} ~\mc{F}_3 ~(\mc{S}_{\mc{I},\rho} \circ \mc{S}_{\mc{I},\pi})
 \]
-\noindent (as well as a similar conclusion for $\mc{S}_{\mc{R},\rho} \circ \mc{S}_{\mc{R},\pi}$).
+\noindent
 %
-The main idea is to notice that that we can move $\rho$ from the composed protocol into the environment $(\mc{Z}\circ \rho)$, reflecting the fact that the environment is meant to represent arbitrary outer protocols. The following equivalence is clear:
+The main idea is to notice that that we can bring $\rho$ from the composed protocol into the environment as $(\mc{Z}\circ \rho)$, reflecting the fact that the environment is meant to represent arbitrary outer protocols. The following derivation completes the proof:
+\begin{align*}
+    &~ \keyword{execUC}~\mc{Z}~(\rho \circ \pi)~\mc{F}_1~ \mathbbm{1}_\mc{A} & \\
+  = &~ \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1~ \mathbbm{1}_\mc{A} &
+  \textnormal{by inspection} \\
+\le&~ \keyword{execUC}~(\mc{Z}\circ \rho)~\mathsf{id}_\pi ~\mc{F}_2~ \mc{S}_{\mc{I},\pi} & \textnormal{from}~ \mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2 \\
+ = &~ \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ \mc{Z})~\rho ~\mc{F}_2~ \mathbbm{1}_\mc{A} &  \textnormal{by inspection} \\
+\le&~ \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ\mc{Z})~\mathsf{id}_\pi~\mc{F}_3~\mc{S}_{\mc{I},\rho} &
+\textnormal{from}~ \mc{F}_2 \yrightarrow{$\rho$} \mc{F}_3 \\
+= &~ \keyword{execUC}~\mc{Z}~ \mathsf{id}_\pi~ \mc{F}_3~ (\mc{S}_{\mc{I},\pi} \circ \mc{S}_{\mc{I},\rho}) &
+\textnormal{by inspection}
+\end{align*}
+The remaining case for $\mc{S}_{\mc{R},\rho} \circ \mc{S}_{\mc{R},\pi}$ is symmetric.\qed
+\begin{comment}
+The following equivalence is clear:
 \begin{equation}
    \keyword{execUC}~\mc{Z}~(\rho \circ \pi)~\mc{F}_1~ \mathbbm{1}_\mc{A} =
-   \keyword{execUC}~(\mc{Z}\circ \pi)~\rho~\mc{F}_1~ \mathbbm{1}_\mc{A}
+   \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1~ \mathbbm{1}_\mc{A}
 \end{equation}
 
 %% (1) Notice that by code path tracing equality:
@@ -330,7 +344,7 @@ The main idea is to notice that that we can move $\rho$ from the composed protoc
 Next, from $\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2$ we know %
 \begin{equation}
   \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1 ~ \mathbbm{1}_\mc{A} \le
-  \keyword{execUC}~(\mc{Z}\circ \rho)~\mathsf{id}_\pi ~\mc{F}_2~ \mc{S}_{\mc{I},\rho}
+  \keyword{execUC}~(\mc{Z}\circ \rho)~\mathsf{id}_\pi ~\mc{F}_2~ \mc{S}_{\mc{I},\pi}
 \end{equation}
 %% (2) Load (A) to have
 %% execUC (Z φ) π F1 1 ≤ execUC (Z φ) 1 F2 SI1
@@ -356,16 +370,16 @@ Finally, again by equality:
 \begin{equation}
   \keyword{execUC}~(\mc{S}_{\mc{I},\pi}~\mc{Z})~\mathsf{id}_\pi~\mc{F}_3~\mc{S}_{\mc{I},\rho} =\keyword{execUC}~\mc{Z}~ \mathsf{id}_\pi~ \mc{F}_3~ (\mc{S}_{\mc{I},\pi} \circ \mc{S}_{\mc{I},\rho})
 \end{equation}
-completing the proof.\qed
+\end{comment}
 %% (5) By equality:
 %% execUC (SI1 Z) 1 F3 SI2 =
 %% execUC Z 1 F3 (SI1 o SI2)
 
 \paragraph{Other notions of composition}
 Our composition operator above is just a starting point.
-The so-called ``universal composition''~\cite{uc} operator essentially multiplexes sessions identified by unique tags (\emph{session ids}), while a joint state composition theorem collapses multiple subroutines into one~\cite{juc}.
+The ``universal composition''~\cite{canetti2001universally} operator essentially multiplexes sessions identified by unique tags (\emph{session ids}), while a joint state composition theorem collapses multiple subroutines into one~\cite{canetti2003universal}.
 Despite its name, development in UC often involves defining additional composition operators, for which ILC provides a flexible framework.
-For example, interesting composition often happens ``in the functionality'' through higher order ``wrapper'' functionalities~\cite{hawk,katz2007universally} which we would express through abstraction.
+For example, interesting composition often happens ``in the functionality'' through higher order ``wrapper'' functionalities~\cite{kosba2016hawk,katz2007universally} which we would express through abstraction.
 
 
 \subsection{Instantiating UC Commitments}
