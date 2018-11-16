@@ -1,6 +1,7 @@
+iterate :: $\forall$ a . Int $->$ (a $->$ a) $->$ a $->$ a
 prg :: [Bit] $->$ [Bit] $->$ Nat $->$ [Bit]
 let prg pk r k =
   letrec aux j =
     if j $\leq$ 0 then [hc r]
     else hc (iterate j (tdp pk) r) : aux pk r (j $-$ 1) in
-    iterate (3 * k) (tdp pk) r $\concat$ aux pk r (3 * k $-$ 1)
+  iterate (3 * k) (tdp pk) r $\concat$ aux pk r (3 * k $-$ 1)

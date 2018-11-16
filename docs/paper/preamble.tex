@@ -53,6 +53,9 @@
 % Functionality and ILC boxes
 \newcommand{\Func}{\mc{F}}
 
+\newenvironment{sketch}{%
+  \renewcommand{\proofname}{Proof Sketch}\proof}{\endproof}
+
 \newtcolorbox{func}[1][]{title={\textbf{Functionality}~{#1}},enhanced,
   coltitle=black,
   top=0.2in,

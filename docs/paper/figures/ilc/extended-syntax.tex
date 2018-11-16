@@ -32,7 +32,7 @@
   \and
   %
   \Infer{hc}
-  {\Delta; \Gamma |- e : \tyArr{[\tyBit]}{}{\tyArr{[\tyBit]}{}{[\tyBit]}}}
+  {\Delta; \Gamma |- e : \tyArr{[\tyBit]}{}{\tyBit}}
   {\Delta; \Gamma |- \eHc{e}: \tyBit}
   \end{mathpar}
   
@@ -40,7 +40,7 @@
     expression~$e_1$ reduces to~$\Store_2 ; e_2$.}
   \begin{mathpar}
   \Infer{kgen}
-  {\keyword{\textbf{Gen}}(v_k, v_r) = (v_{pk}, v_{td}) \\ v_{k}, v_{td} \in \{0,1\}^{v_n}}
+  {\keyword{\textbf{Gen}}(v_k, v_r) = (v_{pk}, v_{td}) \\ v_{k}, v_{td} \in \{0,1\}^{v_k}}
   { \Store ; \eKGen{v_k}{v_r} ---> \Store ; (v_{pk}, v_{td})}
   \and
   \Infer{tdp}
@@ -53,7 +53,7 @@
   { \Store ; \eInv{(v_{pk}, v_{td})}{v_{in}} ---> \Store ; v_{out} }
   \and
   \Infer{hc}
-  {\keyword{\textbf{Hc}}_{\mathbf{f}}(v_{pk}) = v \\ \keyword{\textbf{Hc}}_{\mathbf{f}} \colon \{0,1\}^k
+  {\keyword{\textbf{B}}(v_{pk}) = v \\ \keyword{\textbf{B}} \colon \{0,1\}^k
     -> \{0, 1\}}
   { \Store ; \eHc{v_{pk}} ---> \Store ; v}
   \end{mathpar}

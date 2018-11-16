@@ -315,11 +315,12 @@ Joint state composition is a theorem pertaining to this.
 
 \subsection{Instantiating UC Commitments}
 \label{subsec:example}
-We walk through the development of a UC instantiation for commitments.  UC
-commitments can be instantiated with standard cryptographic assumptions, for
-example the RSA problem.  Also rely on a ``trusted setup'', or common reference
-string, essentially public parameters generated ahead of time (modeled as an
-ideal functionality $\Func_{\textsc{crs}}$).
+We now walk through an instantiation of UC commitments (\`{a} la Canetti and
+Fischlin~\cite{canetti2001commitments}). UC commitments can be instantiated with
+standard cryptographic assumptions, for example the RSA
+problem~\cite{lindell2014introduction}.  They also rely on a ``trusted setup'',
+or common reference string, which are essentially public parameters generated
+ahead of time (modeled as an ideal functionality $\Func_{\textsc{crs}}$).
 
 Instantiation proofs in UC follow a standard rhythm. We start with a security
 definition as an ideal functionality, give the protocol, construct a simulator,
@@ -332,24 +333,33 @@ The functionality FCom has already been defined.
 
 \paragraph{Extending ILC with cryptographic primitives.}
 \todo{Still lots of changes to make here.} UC Commitments are realized from
-cryptographic primitives, such as pseudorandom trapdoor permutations. This
-requires us to extend the syntax. The semantics are written in terms of the
-cryptographic objects themselves, and we still arrive at a computational
-reduction for our security proof.
+cryptographic primitives, such as trapdoor permutations. This requires us to
+extend the syntax. The semantics are written in terms of the cryptographic
+objects themselves, and we still arrive at a computational reduction for our
+security proof.
 
 The new syntactic forms are \textsf{kgen}, \textsf{tdp}, \textsf{inv}, and
 \textsf{hc} with the static and dynamic semantics shown in
 Figure~\ref{fig:extended-ilc}. The key generation function \textsf{keygen}
-generates, on input $1^n$ (security parameter), a random public key $v_{pk}$ and
-a trapdoor $v_{td}$. The trapdoor permutation function \textsf{tdp} computes, on
-input key $v_k$ and bitstring $v_{in}$, a bitstring $v_{out}$. The hardcore
-predicate function \textsf{hc} generates, on input trapdoor permutation
-$f_{v_k}$.
+generates, given a security parameter, a random public key $v_{pk}$ and a
+trapdoor $v_{td}$. The trapdoor permutation function \textsf{tdp} computes, on
+input key $v_{pk}$ and bitstring $v_{in}$, a bitstring $v_{out}$. The hardcore
+predicate function \textsf{hc} generates, on input key $v_{pk}$, a single
+bit. \todo{Probably move these details to the appendix?}
 
 \input{figures/ilc/extended-syntax}
 
-\[ G_{pk}(r) = \big(f_{pk}^{(3n)}(r), B(f_{pk}^{(3n-1)}(r)), \ldots, B(f_{pk}(r)), B(r)\big)\]
+We need to use a special pseudorandom number generator $G_{pk} \colon \{0,1\}^k
+\to \{0,1\}^{4k}$ that has a trapdoor property:
 
+\[ G_{pk}(r) = \big(\mathbf{f}_{pk}^{(3n)}(r),
+\mathbf{B}(\mathbf{f}_{pk}^{(3n-1)}(r)), \ldots, \mathbf{B}(\mathbf{f}_{pk}(r)),
+\mathbf{B}(r)\big)\]
+
+\noindent Here, $\mathbf{f}_{pk}$ is a trapdoor permutation over $\{0,1\}^{k}$,
+with $\mathbf{f}_{pk}^{(i)}(r)$ denoting the $i^{\textnormal{th}}$-fold
+application of $\mathbf{f}_{pk}$, and $\mathbf{B}$ is a hardcore predicate for
+$\mathbf{f}_{pk}$. In ILC, this can be implemented as:
 \lstinputlisting[style=myilc]{listings/prg.ilc}
 
 \begin{algorithm}
@@ -391,7 +401,32 @@ We defer the protocol to the appendix.
 
 \paragraph{Defining the simulator.}
 
-\paragraph{Relational argument.}
+\paragraph{Relational argument.} The goal of the relational analysis is to show
+that the environment's output in the real world is indistinguishable from its
+output in the ideal world.
+
+\begin{sketch}
+  Consider the following ensembles:
+  \begin{align*}
+    D_{\mc{R}} &= D(\mathsf{execUC~\mc{Z}~(committer, receiver)~fCrs~dummyA})\\
+    D_{\mc{R}}' &= D(\mathsf{execUC~\mc{Z}~(committer, receiver)~bCrs~dummyA})\\
+    D_{\mc{I}} &= D(\mathsf{execUC~\mc{Z}~(dummyP, dummyP)~fCom~sim})
+  \end{align*}
+  \noindent The ensemble $D_{\mc{R}}$ is over the output of $\mc{Z}$ in a real
+  world execution. The ensemble $D_{\mc{R}}'$ is similar, except $\mc{Z}$ runs
+  with a bad functionality that computes fake public strings in the same way
+  that the simulator does. The ensemble $D_{\mc{I}}$ is over the output of
+  $\mc{Z}$ in an ideal world execution. The goal is to show that $D_{\mc{R}} \sim
+  D_{\mc{I}}$.
+  
+  Following Canetti and Fischlin~\cite{canetti2001commitments}, the proof
+  proceeds by first showing that distinguishing between $D_{\mc{R}}$ and
+  $D_{\mc{R}}'$ reduces to breaking the pseudorandomness of \textsf{prg} (hence,
+  $D_{\mc{R}} \sim D_{\mc{R}}'$), and then by showing that distinguishing between
+  $D_{\mc{R}}'$ and $D_{\mc{I}}$ also reduces to breaking the pseudorandomness
+  of \textsf{prg} (hence, $D_{\mc{R}}' \sim D_{\mc{I}}$). By the transitivity of
+  indistinguishability, $D_{\mc{R}} \sim D_{\mc{I}}$.
+\end{sketch}
 
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}
