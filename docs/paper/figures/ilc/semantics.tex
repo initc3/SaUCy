@@ -123,7 +123,7 @@ C_2' \equiv C_2
 ~\hspace*{4mm}
 \Infer{set}
 { }
-{ \Store ; \eSet{\ell}{v} ---> \Store[\ell := v]; \eUnit }
+{ \Store ; \eSet{\ell}{v} ---> \Store\{\ell := v\}; \eUnit }
 \end{mathpar}
 \caption{Reduction semantics.}
 \label{fig:semantics}
