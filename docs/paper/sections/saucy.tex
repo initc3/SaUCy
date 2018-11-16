@@ -318,7 +318,7 @@ Joint state composition is a theorem pertaining to this.
 We now walk through an instantiation of UC commitments (\`{a} la Canetti and
 Fischlin~\cite{canetti2001commitments}). UC commitments can be instantiated with
 standard cryptographic assumptions, for example the RSA
-problem~\cite{lindell2014introduction}.  They also rely on a ``trusted setup'',
+problem~\cite{lindell2014introduction}.  They also rely on a ``trusted setup,''
 or common reference string, which are essentially public parameters generated
 ahead of time (modeled as an ideal functionality $\Func_{\textsc{crs}}$).
 
@@ -332,25 +332,25 @@ The functionality FCom has already been defined.
 \todo{Recap the proof obligation}
 
 \paragraph{Extending ILC with cryptographic primitives.}
-\todo{Still lots of changes to make here.} UC Commitments are realized from
-cryptographic primitives, such as trapdoor permutations. This requires us to
-extend the syntax. The semantics are written in terms of the cryptographic
-objects themselves, and we still arrive at a computational reduction for our
-security proof.
+UC Commitments are realized from cryptographic primitives, such as trapdoor
+permutations, which require extensions to ILC. The new syntactic forms are
+\textsf{kgen}, \textsf{tdp}, \textsf{inv}, and \textsf{hc} with the static and
+dynamic semantics shown in Figure~\ref{fig:extended-ilc}. The semantics are
+written in terms of the cryptographic objects themselves.
 
-The new syntactic forms are \textsf{kgen}, \textsf{tdp}, \textsf{inv}, and
-\textsf{hc} with the static and dynamic semantics shown in
-Figure~\ref{fig:extended-ilc}. The key generation function \textsf{keygen}
-generates, given a security parameter, a random public key $v_{pk}$ and a
-trapdoor $v_{td}$. The trapdoor permutation function \textsf{tdp} computes, on
-input key $v_{pk}$ and bitstring $v_{in}$, a bitstring $v_{out}$. The hardcore
-predicate function \textsf{hc} generates, on input key $v_{pk}$, a single
-bit. \todo{Probably move these details to the appendix?}
+\todo{Probably move these details to the appendix?} The key generation function
+\textsf{keygen} takes as input a security parameter and outputs a random public
+key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor permutation function
+\textsf{tdp} takes as inputs a key $v_{pk}$ and a bitstring $v_{in}$ and outputs
+a bitstring $v_{out}$. The hardcore predicate function \textsf{hc} takes as
+input a key $v_{pk}$ and outputs a single bit.
 
 \input{figures/ilc/extended-syntax}
 
-We need to use a special pseudorandom number generator $G_{pk} \colon \{0,1\}^k
-\to \{0,1\}^{4k}$ that has a trapdoor property:
+We can use these to implement special pseudorandom number generator $G_{pk}
+\colon \{0,1\}^k \to \{0,1\}^{4k}$ that has a trapdoor property, i.e., it is easy
+to compute, but difficult to invert except with special information called the
+``trapdoor.''
 
 \[ G_{pk}(r) = \big(\mathbf{f}_{pk}^{(3n)}(r),
 \mathbf{B}(\mathbf{f}_{pk}^{(3n-1)}(r)), \ldots, \mathbf{B}(\mathbf{f}_{pk}(r)),
