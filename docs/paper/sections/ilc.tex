@@ -74,7 +74,7 @@ concurrency are these:
 %\input{figures/ilc/syntax-types}
 
 The type system of ILC is given in Figure~\ref{fig:type-expressions}. The
-intuitionistic typing judgement $\Delta ; \Gamma |- e : A |> m$ should be read as follows:
+intuitionistic typing judgment $\Delta ; \Gamma |- e : A |> m$ should be read as follows:
 \begingroup
 \addtolength\leftmargini{-.2in}
 \begin{quote}
@@ -82,11 +82,11 @@ intuitionistic typing judgement $\Delta ; \Gamma |- e : A |> m$ should be read a
   has intuitionistic type $A$ and mode $m$.
 \end{quote}
 \endgroup
-\noindent (The affine typing judgement follows similarly.) Importantly, the type
+\noindent (The affine typing judgment follows similarly.) Importantly, the type
   system maintains these invariants:
 
 \begin{comment}
-Judgements have the form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is an affine typing
+Judgments have the form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is an affine typing
 context, $\Gamma$ is an intuitionistic typing context, and $m \in \{\Wm, \Rm, \Vm\}$ is
 a mode (write, read, and value, respectively). Importantly, it maintains these
 invariants:
@@ -117,7 +117,7 @@ Before we jump into the typing rules, we point out that the mode composition
 rules are given in Figure~\ref{fig:mode-composition}, which includes both
 sequential and parallel mode composition. We will refer back to these later when
 they hold relevance for certain typing rules. Moreover, we elide value mode
-derivations to avoid clutter, so a judgement of the form $\Delta ; \Gamma |- e : A$ really
+derivations to avoid clutter, so a judgment of the form $\Delta ; \Gamma |- e : A$ really
 means $\Delta ; \Gamma |- e : A |> \Vm$.
 
 \paragraph{Intuitionistic rules.}
@@ -184,13 +184,13 @@ to affine variables.
 \label{subsec:semantics}
 
 \todo{Need some help explaining this subsection.} Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic semantics
-of ILC. The top-level judgement $C_1 -> C_2$ should be read as ``configuration
+of ILC. The top-level judgment $C_1 -> C_2$ should be read as ``configuration
 $C_1$ steps to configuration $C_2$,'' where a configuration $C$ consists of a
 set of communication channels $\Sigma$ (both read-ends and write-ends), a process
 pool $\pi$, and a store $\sigma$ (a finite map from locations $\ell$ to
-values). Configuration stepping uses an ancillary judgement for local stepping,
+values). Configuration stepping uses an ancillary judgment for local stepping,
 which covers cases in which the configuration does not change. The local
-stepping judgement $\sigma_1; \e_1 \longrightarrow \sigma_2; \e_2$ should be read as ``under store
+stepping judgment $\sigma_1; \e_1 \longrightarrow \sigma_2; \e_2$ should be read as ``under store
 $\sigma_1$, expression $e_1$ steps to store $\sigma_{2}$ and expression $e_2$.
 
 Local stepping has a standard call-by-value semantics. Configuration stepping is

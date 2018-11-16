@@ -163,18 +163,24 @@ What remains is to define a notion of indistinguishability for value distributio
 
 \subsection{Defining UC Security in ILC}
 \label{subsec:uc}
-The central security definition in UC is protocol emulation.
-The guiding principle is that $\pi$ emulates $\phi$ if the environment cannot distinguish between the two protocols. 
-Our first attempt is the following, where $\mc{S}$ is the simulator that translates every attack in the real world into an attack expressed in the ieal world:
+The central security definition in UC is protocol emulation.  The guiding
+principle is that $\pi$ emulates $\phi$ if the environment cannot distinguish between
+the two protocols.  Our first attempt is the following, where $\mc{S}$ is the
+simulator that translates every attack in the real world into an attack
+expressed in the ideal world:
 \begin{mathpar}
   \Infer{\st{emulate}}
         {\forall~\mc{Z}.~ 
-         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ {1}_\mc{A} \le
+         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ {\mathbbm{1}}_\mc{A} \le
          \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mc{S}}
     {\mc{S} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
 \end{mathpar}
-To note a few notation choices, we make the functionality explicit, so emulation is a relationship between protocol-functionality pairs.
-Here $1_\mc{A}$ is the dummy adversary, which just relays messages between the environment and the parties. We elide the standard dummy lemma that shows this is without loss of generality; the intuition is that whatever an adversary can do, the environment can achieve using $1_\mc{A}$.
+To note a few notation choices, we make the functionality explicit, so emulation
+is a relationship between protocol-functionality pairs.  Here,
+$\mathbbm{1}_\mc{A}$ is the dummy adversary, which just relays messages between
+the environment and the parties. We elide the standard dummy lemma that shows
+this is without loss of generality; the intuition is that whatever an adversary
+can do, the environment can achieve using $\mathbbm{1}_\mc{A}$.
 
 %\[
 %(\pi, \mc{F}_1) \overset{\mc{S}} \le (\phi, \mc{F}_2)
@@ -187,10 +193,23 @@ Here $1_\mc{A}$ is the dummy adversary, which just relays messages between the e
 %% Since emulation means that any attack on $\pi$ is also on $\phi$.
 %% We have to translate \emph{attacker behaviors} of an arbitrary real world adversary $\mc{A}$ to a simulated adversary $\mc{(S~A)}$ in the ideal world.
 
-Unfortunately this simple definition turns out to be vacuous: a degenerate protocol $\pi$ can emulate anything simply failing to be $\keyword{PPT}$, e.g. by diverging. To put it another way, the problem is the definition imposes a proof obligation on the simulator $\mc{S}$ but not on $\pi$.
-What we want to say is that the \emph{real world} protocol $(\pi, \mc{F}_1)$ must be well behaved whenever the \emph{ideal world} $(\phi, \mc{F}_2)$ is.
-However, even a reasonable protocol can result in non-PPT executions if paired with a divergent environment.
-In fact, giving a precise but composable notion of polynomial-time for interactive processes has been an ongoing challenge in UC. In GNUC the approach is to define a well behaved environment, independently of its execution context --- roughly that the total size of its outgoing messages is bounded by a polynomial, and that its running time is bounded if its total received input size is bounded. This notion is composable as desired, although its use requires additional distinctions between ``invited'' and ``uninvited'' messages, which seems cluttered. RSIM makes analogous choices. We think these could be applied as easily in ILC, but our goal here is to provide a simpler notion.
+Unfortunately this simple definition turns out to be vacuous: a degenerate
+protocol $\pi$ can emulate anything simply failing to be $\keyword{PPT}$, e.g. by
+diverging. To put it another way, the problem is the definition imposes a proof
+obligation on the simulator $\mc{S}$ but not on $\pi$.  What we want to say is
+that the \emph{real world} protocol $(\pi, \mc{F}_1)$ must be well behaved
+whenever the \emph{ideal world} $(\phi, \mc{F}_2)$ is.  However, even a reasonable
+protocol can result in non-PPT executions if paired with a divergent
+environment.  In fact, giving a precise but composable notion of polynomial-time
+for interactive processes has been an ongoing challenge in UC. In GNUC, the
+approach is to define a well behaved environment, independently of its execution
+context---roughly that the total size of its outgoing messages is bounded by a
+polynomial, and that its running time is bounded if its total received input
+size is bounded~\cite{hofheinz2015gnuc}. This notion is composable as desired,
+although its use requires additional distinctions between ``invited'' and
+``uninvited'' messages, which seems cluttered. RSIM makes analogous
+choices~\cite{backes2007reactive}. We think these could be applied as easily in
+ILC, but our goal here is to provide a simpler notion.
 
 We define protocol emulation by requiring a simulation in both directions, so every behavior in the ideal world must correspond to a behavior in the real world and vice versa.
 \begin{definition}[Protocol Emulation]
@@ -198,9 +217,9 @@ We define protocol emulation by requiring a simulation in both directions, so ev
 \begin{mathpar}
   \Infer{{emulate}}
         {\forall~\mc{Z}.~ 
-         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ 1_\mc{A} \le
+         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mathbbm{1}_\mc{A} \le
          \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ (\mc{S_\mc{R}}) \\\\
-         \ \ \ \ \ \ \ \ ~\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ 1_\mc{A} \le
+         \ \ \ \ \ \ \ \ ~\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mathbbm{1}_\mc{A} \le
          \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ (\mc{S}_\mc{I})}
     {\mc{S_\mc{R},S_\mc{I}} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
 \end{mathpar}
@@ -257,7 +276,7 @@ To set out, we introduce the notation of ``realizes,'' which views a protocol as
   %  following statistical indistinguishability relation holds
 \begin{mathpar}
   \Infer{realizes}
-  {(\pi,~\mc{F}_1) \approx (1_\pi, \mc{F}_2)}
+  {(\pi,~\mc{F}_1) \approx (\mathbbm{1}_\pi, \mc{F}_2)}
   {\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2}
   \end{mathpar}
 \end{definition}
@@ -279,9 +298,9 @@ The idea is that the $\pi \circ \rho$ can be defined in a natural way, where the
 \label{fig:composition-operator}
 \end{figure}
 \noindent To prove the theorem we construct the simulators $S_\pi \circ S_\phi$ in the natural way as well (given in the Appendix).
-What remains is a reduction proof. Given an environment $\mc{Z}$ that can distinguish $(\pi \circ \phi, \mc{F}_1)$ from $(1_\pi, \mc{F}_3)$, we must construct either $\mc{Z'}$ that distinguishes either
-$(\pi,\mc{F}_1)$ from $(1_\pi,\mc{F}_2)$ or
-$(\phi,\mc{F}_2)$ from $(1_\pi,\mc{F}_3)$.
+What remains is a reduction proof. Given an environment $\mc{Z}$ that can distinguish $(\pi \circ \phi, \mc{F}_1)$ from $(\mathbbm{1}_\pi, \mc{F}_3)$, we must construct either $\mc{Z'}$ that distinguishes either
+$(\pi,\mc{F}_1)$ from $(\mathbbm{1}_\pi,\mc{F}_2)$ or
+$(\phi,\mc{F}_2)$ from $(\mathbbm{1}_\pi,\mc{F}_3)$.
 \todo{Give the ZBad definition in ILC}
 
 \subsection{Instantiating UC Commitments}
@@ -290,7 +309,7 @@ We walk through the development of a UC instantiation for commitments.  UC
 commitments can be instantiated with standard cryptographic assumptions, for
 example the RSA problem.  Also rely on a ``trusted setup'', or common reference
 string, essentially public parameters generated ahead of time (modeled as an
-ideal functionality FCRS).
+ideal functionality $\Func_{\textsc{crs}}$).
 
 Instantiation proofs in UC follow a standard rhythm. We start with a security
 definition as an ideal functionality, give the protocol, construct a simulator,

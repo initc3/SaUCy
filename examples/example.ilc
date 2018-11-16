@@ -83,7 +83,6 @@ let simulator crupt toZ frZ toF frF toP frP toQ frQ toQasP toPasQ k bits =
   let r0 = sample 4 r in
   let r1 = sample 4 r in
   let sigma = xors (prg pk0 r0) (prg pk1 r1) in
-  let b = ref Nothing in
   if crupt' == CruptP then
     let (_, frZ) = rd frZ in
       wr (X2Z (PublicStrings sigma pk0 pk1)) -> toZ' ;
@@ -91,18 +90,19 @@ let simulator crupt toZ frZ toF frF toP frP toQ frQ toQasP toPasQ k bits =
     let! (A2P mm) = msg in
     let (Commit' y) = mm in    
       if (check td0 pk0 y == S) then
-        (wr (Commit 0) -> toP' ; (let b := Just 0))
+        wr (Commit 0) -> toP'
       else
         if (check td1 pk1 (xors y sigma) == S) then
-	  (wr (Commit 1) -> toF' ; (let b := Just 1))
+	  wr (Commit 1) -> toF'
 	else
 	  {- y is invalid -}
-          (wr (Commit 0) -> toP' ; (let b := Just 0)) ;
+          wr (Commit 0) -> toP' ;
     let (msgg, frZ) = rd frZ in
     let! (A2P yy) = msgg in
-    let (Open' b' y') = yy in
-      if y == y' && (Just b') == (@b) then wr Open -> toP'
-      else error "Decommit incorrectly" -- TODO
+    let (Open' b r') = yy in
+      if b == 0 && y == prg pk0 r' || b == 1 && y == xors (prg pk1 r') sigma
+      then wr Open -> toP'
+      else error "Fail"
   else
     let (_, frZ) = rd frZ in
       wr (X2Z (PublicStrings sigma pk0 pk1)) -> toZ' ;  
