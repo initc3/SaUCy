@@ -1,5 +1,29 @@
 \section{ILC meta theory}
 
+\subsection{Additional syntax}
+
+We define syntax for store, process and channel typings, which each
+map a kind of identifier (location, process name, or channel name) to its associated type:
+
+\begin{grammar}
+  Store typings
+    %(maps process names to their types)
+    & $\StTy$
+    &$\bnfas$& $\emptyctxt \bnfalt \StTy,\ell:A$
+    \\
+    Process pool typings
+    %(maps process names to their types)
+    & $\PrTy$
+    &$\bnfas$& $\emptyctxt \bnfalt \PrTy,p:A \bnfalt \PrTy,p:X$
+    \\
+    Channel pool typings
+    %(maps channel names to their types)
+    & $\ChTy$
+    &$\bnfas$& $\emptyctxt \bnfalt \ChTy,c:A \bnfalt \ChTy,c:X$
+\end{grammar}
+
+\subsection{Type soundness}
+
 \begin{lemma}[Non-progress]
 For all configurations $C$,
 store typings~$\StTy$,
@@ -52,16 +76,6 @@ such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 
 \subsection{Confluence}
 
-%% ILC's type system enforces confluence 
-%% up to non-deterministic naming choices in 
-%% rules \Rule{ref}, \Rule{nu}, and \Rule{fork} (\Figref{fig:semantics}).
-%% %
-%% To account for different choices of dynamically-named
-%% store locations, channels and processes, respectively, 
-%% we state and prove confluence
-%% with respect to a renaming function~$f$, which consistently renames
-%% these choices in a related configuration:
-
 \begin{theorem}[Single-step confluence]
 For all well-typed configurations $C$,
 %
@@ -77,9 +91,27 @@ or
 \item $\exists C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
 \end{enumerate}
 \begin{proof}
-   By induction on the typing derivation for $C$.
+   By induction on the pair of steps $\left< \JCred{C}{C_1} , \JCred{C}{C_2} \right>$.
+   We consider the following cases:
 
-   TODO
+   \emph{Case: congruence:} if either step uses \Rule{congr}, we apply the inductive hypothesis.
+   
+   \emph{Case: independent processes:} 
+     the two steps advance distinct processes, using any of the rules \Rule{local}, \Rule{fork} and \Rule{nu},
+     we produce $C_3$ by combining those two (independent) steps.     
+
+   \emph{Case: one process:}    
+   the two steps advance the same process, we show that this was
+   determinisitic (up to naming) by constructing the naming function
+   $f$ such that $C_2 = f(C_1)$.  Most cases are straightforward since
+   they perform no non-determinisitic choices.  The only source of
+   non-determinism is the name choices, in rules \Rule{nu},
+   \Rule{fork}, and \Rule{new}; in each case, we map the name choice
+   from the second step to that of the first step.
+
+   \emph{Case: read-write interaction:}
+     TODO
+
 \end{proof}
 \end{theorem}
 
