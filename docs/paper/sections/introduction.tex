@@ -49,9 +49,10 @@ Still, there are compelling reasons for sticking with ITMs as the model of
 choice. Most importantly, it ensures that whatever protocol we define in the
 model has a \emph{computational interpretation.} What, exactly, do we mean by
 this? We mean it in the following cryptographic sense: We should be able to
-prove its security by \emph{reduction}, i.e., by relating a bad execution trace
-to a computation that breaks a computational hardness assumption with
-non-negligible probability~\cite{lindell2014introduction}.
+prove its security by \emph{reduction}, i.e., by relating bad execution traces
+to a probabilistic polynomial time computation that breaks a computational
+hardness assumption with non-negligible
+probability~\cite{lindell2014introduction}.
 
 Were it not for ITMs, the presence of (non-probabilistic) nondeterminism due to
 concurrency would severely complicate the necessary probabilistic reasoning in

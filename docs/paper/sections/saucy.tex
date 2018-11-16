@@ -56,13 +56,13 @@ corrupt, respectively.
 Figure~\ref{fig:execUC-diagram}), and then splits a random bitstring,
 distributing pieces to each of the parties as they are run.  Note that each
 protocol party is run in a wrapper function, which determines its behavior based
-on whether or not it is corrupted. If a party is corrupted, then the adversary
-masquerades as the party.
+on whether or not it is corrupted (the adversary masquerades as a corrupted
+party).
 
-Note that for space and readability, we elide channel allocation
-and distribution (with ellipses) and abbreviate the type signature (e.g.,
-$X_{\mathsf{z}}$ is the type of \textsf{z}), but more details can be found
-in Appendix~\ref{sec:full-execUC}.
+Note that for space and readability, we elide channel allocation/distribution
+and wrapper definitions (with ellipses). We also abbreviate the type signature
+(e.g., $X_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
+Appendix~\ref{sec:full-execUC}.
 
 %$\{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}} || (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R} || \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}_{\mathsf{e}}}\}$
 

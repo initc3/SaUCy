@@ -138,12 +138,12 @@ $\mc{F}$ are replaced by calls to $\pi$, also emulates $\mc{G}$!
 
 This may seem a bit odd---the protocol $\pi$ lives in the real world, but $\mc{F}$
 lives in the ideal world. Indeed, this is called the \emph{$\mc{F}$-hybrid
-  world}, which therein lies the power of UC. Instead of analyzing the composite
-protocol consisting of $\rho$ and $\pi$, it suffices to analyze the security of $\rho$
-by itself in the much simpler $\mc{F}$-hybrid world, where it can make calls to
-$\mc{F}$. If we can show that $\rho$ emulates $\mc{G}$ in the $\mc{F}$-hybrid
-world, then we can later substitute for $\mc{F}$ any protocol that emulates it
-without fear of something going wrong.
+  world}. Instead of analyzing the composite protocol consisting of $\rho$ and $\pi$,
+it suffices to analyze the security of $\rho$ by itself in the much simpler
+$\mc{F}$-hybrid world, where it can make calls to $\mc{F}$. If we can show that
+$\rho$ emulates $\mc{G}$ in the $\mc{F}$-hybrid world, then we can later substitute
+for $\mc{F}$ any protocol that emulates it without fear of something going
+wrong.
 
 \begin{comment}
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of

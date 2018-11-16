@@ -19,7 +19,7 @@ let simulator !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
 	      error "Fail"
 	  let (!(A2P (Open' b r)), frZ) = rd frZ in
 	    if b == 0 && y == prg $\mathsf{pk}_0$ r ||
-	       b == 1 && y == xors (prg $\mathsf{pk}_1$ r) $\sigma$
+	      b == 1 && y == xors (prg $\mathsf{pk}_1$ r) $\sigma$
 	    then wr Open $->$ toP
 	    else error "Fail"
     | CruptQ $=>$

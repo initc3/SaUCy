@@ -185,7 +185,8 @@ parties. Then, the functionality, the adversary, and both protocol parties are
 spawned in a child process (given the appropriate channels and parameters), and
 the process continues as the environment process. Notice that parties are
 wrapped in a \textsf{wrapper} function, which takes an additional boolean
-parameter for whether or not the party is corrupted.}
+parameter for whether or not the party is corrupted. \todo{Update type
+signature, inline wrappers.}}
 \label{fig:execUC}
 \end{figure*}
 
@@ -196,7 +197,8 @@ process \textsf{p}, a boolean \textsf{crupt}, the process' associated
 communication channels, the security parameter, and a random bitstring. If the
 party is corrupted, then messages from the functionality or the other party are
 simply forwarded to the adversary, and messages from the adversary are forwarded
-to the functionality. Otherwise, the party runs as expected.}
+to the functionality. Otherwise, the party runs as expected. \todo{Update
+signature and body.}}
 \label{fig:wrapper}
 \end{figure*}
 
@@ -206,14 +208,14 @@ to the functionality. Otherwise, the party runs as expected.}
 environment to either the functionality (if the message has
 constructor \textsf{A2F}) or the party \textsf{p} (if the message has
 constructor \textsf{A2P}). Similarly, the dummy adversary forwards messages from
-the functionality or the procotol parties to the environment.}
+the functionality or the procotol parties to the environment. \todo{Update signature.}}
 \label{fig:dummy-adversary}
 \end{figure*}
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/dummyp.ilc}
 \caption{Dummy party. The dummy party simply relays information between the
-environment and the functionality.}
+environment and the functionality. \todo{Update signature.}}
 \label{fig:dummy-party}
 \end{figure*}
 
