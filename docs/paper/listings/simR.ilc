@@ -1,0 +1,17 @@
+let simR !crupt !toZ frZ !toF frF toP frP !toQ frQ toQasP toPasQ !k !bits =
+  match crupt with
+  | CruptP $=>$
+    let (!(Commit b), frZ) = rd frZ in
+      wr GetCRS $->$ toF ;
+      let (!(PublicStrings $\sigma$ $\mathsf{pk}_0$ $\mathsf{pk}_1$), frF) = rd frF in
+      let r = take k bits in 
+      let y = if b == 0 then prg $\mathsf{pk}_0$ r else xors (prg $\mathsf{pk}_0$ r) $\sigma$ in
+	wr (Commit' y) $->$ toQ ;
+	let (!(Open), frZ)= rd frZ in
+	  wr (Open' b r) $->$ toQ
+  | CruptQ $=>$
+    let (!(Commit' y), frQ) = rd frQ in
+      wr Receipt $->$ toZ ;
+      let (!(Open' b r), frQ) = rd frQ in
+        wr (Opened b) $->$ toZ
+  | CruptNone $=>$ error "Fail"
