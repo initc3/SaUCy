@@ -111,7 +111,6 @@ framework, dubbed SaUCy.
 %framework itself (SaUCy).
 
 \subsection{Interactive Lambda Calculus}
-
 Where have existing concurrency models fallen short with respect to ITMs? On the
 one hand, some existing process calculi, such as the standard
 $\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
@@ -126,7 +125,7 @@ communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 
 ILC fills this gap by adapting ITMs to a subset of the $\pi$-calculus through its
 type system. In other words, \emph{well-typed ILC programs are expressible as
-  ITMs}. To give a taste of the type system, it restricts the dataflow of read
+  ITMs}. To give a preview of the type system, it restricts the dataflow of read
 channels (via affine typing) and restricts the composition of write effects
 (forbidding write-mode parallel processes), with the net effect being
 confluence. Therefore, the only nondeterminism in an ILC program is due to
