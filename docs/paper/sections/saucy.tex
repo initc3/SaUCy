@@ -264,7 +264,7 @@ However, the benefit is this simplifies the polynomial time notion: vacuous prot
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.85\linewidth]{graphics/protocol-composition}
+  \includegraphics[width=0.5\linewidth]{graphics/protocol-composition}
   \caption{Protocol composition diagram.}
   \label{fig:protocol-composition}
 \end{figure}
@@ -414,34 +414,6 @@ with $\mathbf{f}_{pk}^{(i)}(r)$ denoting the $i^{\textnormal{th}}$-fold
 application of $\mathbf{f}_{pk}$, and $\mathbf{B}$ is a hardcore predicate for
 $\mathbf{f}_{pk}$. In ILC, this can be implemented as:
 \lstinputlisting[style=myilc]{listings/prg.ilc}
-
-\begin{algorithm}
-\SetAlgorithmName{Protocol}{protocol}{List of Protocols}
-\DontPrintSemicolon
-
-\SetKwBlock{Parameters}{\textnormal{\textsf{Public strings}:}}{}
-\Parameters{
-  $\sigma$: Random string in $\{0,1\}^{4n}$\;
-  ${pk}_0, {pk}_1$: Keys for generator $G_{k} \colon \{0,1\}^n \to \{0,1\}^{4n}$
-}\smallskip
-\SetKwBlock{Commit}{\textnormal{\textsf{Commit}($b$):}}{}
-\Commit{
-  $r \leftarrow \{0, 1\}^n$\;
-  $x \coloneqq G_{{pk}_b}(r)$\;
-  if $b=1$ then $x \coloneqq x \oplus \sigma$\;
-  Send $(\mathsf{Commit}, x)$ to receiver.\;
-  Upon receiving $(\mathsf{Commit}, x)$ from $A$, $B$ outputs $(\mathsf{Receipt})$.
-}\smallskip
-
-\SetKwBlock{Decommit}{\textnormal{\textsf{Decommit}($x$):}}{}
-\Decommit{
-  Send $(b, r)$ to receiver.\;
-  Receiver checks $x = G_{{pk}_b}(r)$ for $b = 0$, or $x = G_{{pk}_b}(r) \oplus \sigma$
-  for $b = 1$. If verification succeeds, then $B$ outputs $(\mathsf{Open}, b)$.
-}
-\caption{Universally Composable Commitment}
-\label{alg:com}
-\end{algorithm}
 
 \begin{figure}
 \lstinputlisting[style=myilc]{listings/ucc.ilc}

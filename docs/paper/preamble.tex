@@ -8,6 +8,7 @@
 \usepackage{bbm}
 \usepackage{boxedminipage}
 \usepackage{color}
+\usepackage{xcolor}
 \usepackage{comment}
 \usepackage{enumitem}
 \usepackage{joshuadunfield}
@@ -29,6 +30,8 @@
     \vbox to#1{\kern-0.75\ex@
     \hbox{$\scriptstyle#2$}\vss}}}}
 \makeatother
+
+\definecolor{Green}{rgb}{0.13, 0.55, 0.13}
 
 \newcommand{\mc}[1]{\mathcal{{#1}}}
 \newcommand{\todo}[1]{\emph{\hl{TODO:} {#1}}}
@@ -75,6 +78,8 @@
     mathescape=true,
     showstringspaces=false,
 }
+
+\newcommand{\mywr}[2]{\mathsf{w{#1}2{#2}}}
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[section]
