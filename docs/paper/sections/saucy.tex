@@ -298,11 +298,20 @@ The idea is that the $\pi \circ \rho$ can be defined in a natural way, where the
 \caption{Protocol composition operator.}
 \label{fig:composition-operator}
 \end{figure}
-\noindent To prove the theorem we construct the simulators $S_\pi \circ S_\phi$ in the natural way as well (given in the Appendix).
-What remains is a reduction proof. Given an environment $\mc{Z}$ that can distinguish $(\pi \circ \phi, \mc{F}_1)$ from $(\mathbbm{1}_\pi, \mc{F}_3)$, we must construct either $\mc{Z'}$ that distinguishes either
-$(\pi,\mc{F}_1)$ from $(\mathbbm{1}_\pi,\mc{F}_2)$ or
-$(\phi,\mc{F}_2)$ from $(\mathbbm{1}_\pi,\mc{F}_3)$.
-\todo{Give the ZBad definition in ILC}
+
+\noindent To prove the theorem we construct the simulators $S_{\mc{R},\pi} \circ S_{\mc{R},\phi}$ and $S_{\mc{I},\pi} \circ S_{\mc{I,\phi}}$ in the natural way as well (given in the Appendix).
+What remains is a reduction proof. Given an environment $\mc{Z}$ that can distinguish $(\pi \circ \phi, \mc{F}_1)$ from $(1_\pi, \mc{F}_3)$, we must construct $\mc{Z}^{*}$ that distinguishes either
+$(\pi,\mc{F}_1)$ from $(1_\pi,\mc{F}_2)$ or
+$(\phi,\mc{F}_2)$ from $(1_\pi,\mc{F}_3)$.
+The main idea behind the proof is to observe that the protocol $\pi$ can be folded into the definition of an environment.% $\mc{Z}^{*}[\pi]$ on one hand \todo{finish} and this is an adequate environment for  represents arbitrary other protocols that may provide inputs to $\phi$ as a subroutine.
+
+\todo{Proof sketch}
+
+\paragraph{Other notions of composition}
+Other composition operators can be built in a similar way.
+Normally UC features a built-in ``universal composition'' that does multiplexing by  session IDs. This can easily be defined for protocols. \todo{say we leave for future work}
+Joint state composition is a theorem pertaining to this.
+
 
 \subsection{Instantiating UC Commitments}
 \label{subsec:example}
@@ -387,10 +396,9 @@ We defer the protocol to the appendix.
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}
 
-The cryptography community has recently identified several subtleties in defining UC ideal functionalities that relate to ``reentrancy'' and scheduling of concurrent code;
-as a consequence, many functionalities in the literature turn out to be ill-defined~\cite{camenisch2016universal}.
-This subtle definitional issue, although important for the well-foundedness of security claims,
-is not ``cryptographic'' in nature, and is better addressed from the PL viewpoint.
+The cryptography community has recently identified several subtleties in defining UC ideal functionalities that relate to reentrancy and the scheduling of concurrent code;
+because of these issues some functionalities in the literature are ambiguous as ITMs~\cite{camenisch2016universal}.
+Although concerning, these issues have no cryptographic flavor, but instead are better addressed from the PL viewpoint.
 To illustrate, consider the following fragment of (untyped) ILC syntax, which allows an adversary to control the delivery schedule of messages from $P$ to $Q$ (an asynchronous channel):
 \lstinputlisting[style=myilc]{listings/reentrant.ilc}
 After receiving input from party $P$, it
