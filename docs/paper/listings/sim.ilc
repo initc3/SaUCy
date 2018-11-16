@@ -1,4 +1,4 @@
-let sim !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
+let simI !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
   let rbits = ref bits in
   let ($\mathsf{pk}_0$,$\mathsf{td}_0$) = kgen k in
   let ($\mathsf{pk}_1$,$\mathsf{td}_1$) = kgen k in  

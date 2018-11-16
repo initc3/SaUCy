@@ -425,14 +425,15 @@ We defer the protocol to the appendix.
 
 \paragraph{Relational argument.} The goal of the relational analysis is to show
 that the environment's output in the real world is indistinguishable from its
-output in the ideal world.
+output in the ideal world. The proof follows that in Canetti and
+Fischlin~\cite{canetti2001commitments}.
 
 \begin{sketch}
   Consider the following ensembles:
   \begin{align*}
     D_{\mc{R}} &= D(\mathsf{execUC~\mc{Z}~(committer, receiver)~fCrs~dummyA})\\
     D_{\mc{R}}' &= D(\mathsf{execUC~\mc{Z}~(committer, receiver)~bCrs~dummyA})\\
-    D_{\mc{I}} &= D(\mathsf{execUC~\mc{Z}~(dummyP, dummyP)~fCom~sim})
+    D_{\mc{I}} &= D(\mathsf{execUC~\mc{Z}~(dummyP, dummyP)~fCom~simI})
   \end{align*}
   \noindent The ensemble $D_{\mc{R}}$ is over the output of $\mc{Z}$ in a real
   world execution. The ensemble $D_{\mc{R}}'$ is similar, except $\mc{Z}$ runs
@@ -441,13 +442,13 @@ output in the ideal world.
   $\mc{Z}$ in an ideal world execution. The goal is to show that $D_{\mc{R}} \sim
   D_{\mc{I}}$.
   
-  Following Canetti and Fischlin~\cite{canetti2001commitments}, the proof
-  proceeds by first showing that distinguishing between $D_{\mc{R}}$ and
-  $D_{\mc{R}}'$ reduces to breaking the pseudorandomness of \textsf{prg} (hence,
-  $D_{\mc{R}} \sim D_{\mc{R}}'$), and then by showing that distinguishing between
-  $D_{\mc{R}}'$ and $D_{\mc{I}}$ also reduces to breaking the pseudorandomness
-  of \textsf{prg} (hence, $D_{\mc{R}}' \sim D_{\mc{I}}$). By the transitivity of
-  indistinguishability, $D_{\mc{R}} \sim D_{\mc{I}}$.
+  The proof proceeds by first showing that distinguishing between $D_{\mc{R}}$
+  and $D_{\mc{R}}'$ reduces to breaking the pseudorandomness of \textsf{prg}
+  (hence, $D_{\mc{R}} \sim D_{\mc{R}}'$), and then by showing that distinguishing
+  between $D_{\mc{R}}'$ and $D_{\mc{I}}$ also reduces to breaking the
+  pseudorandomness of \textsf{prg} (hence, $D_{\mc{R}}' \sim D_{\mc{I}}$). By the
+  transitivity of indistinguishability, $D_{\mc{R}} \sim D_{\mc{I}}$. \todo{Relate
+    to ILC.}
 \end{sketch}
 
 \subsection{Reentrancy in SaUCy}
