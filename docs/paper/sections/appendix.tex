@@ -197,10 +197,12 @@ denotes the read end of communications from the environment \textsf{z} to the
 party \textsf{p}. First, the random bitstring is split amongst each of the five
 parties. Then, the functionality, the adversary, and both protocol parties are
 spawned in a child process (given the appropriate channels and parameters), and
-the process continues as the environment process. Notice that parties are
-wrapped in a \textsf{wrapper} function, which takes an additional boolean
-parameter for whether or not the party is corrupted. \todo{Update type
-signature, inline wrappers.}}
+the process continues as the environment process. Notice that parties are run in
+wrapper functions, which alter their behavior depending on whether or not they
+are corrupted. If a party is corrupted, then the adversary masquerades as the
+party. The mode carried over the rightmost lollipop is $m \in \{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}}
+|| (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R}
+|| \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}_{\mathsf{e}}}\}$.}
 \label{fig:execUC}
 \end{figure*}
 

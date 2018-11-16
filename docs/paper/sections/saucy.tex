@@ -80,7 +80,7 @@ What remains is to define a notion of indistinguishability for value distributio
 The implementation of SaUCy
  is centered around a definition of UC execution model in ILC.
 For the most part, this just involves connecting channels as illustrated in
-Figure~\ref{fig:execUC-diagram} to the right. For demonstration, we only show
+Figure~\ref{fig:execUC-diagram}. For demonstration, we only show
 the case of two-party protocols (\`{a} la Simplified
 UC~\cite{canetti2015simpler}), which will suffice for our example of
 instantiating universally composable commitments.  Also, we will only aim to
@@ -125,8 +125,6 @@ Note that for space and readability, we elide channel allocation/distribution
 and wrapper definitions (with ellipses). We also abbreviate the type signature
 (e.g., $X_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
 Appendix~\ref{sec:full-execUC}.
-
-%$\{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}} || (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R} || \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}_{\mathsf{e}}}\}$
 
 \begin{comment}
 \begin{itemize}[leftmargin=*]
