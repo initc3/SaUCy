@@ -43,63 +43,26 @@ with an idealized protocol in which processes simply rely on a \emph{single
 trivially).
 
 The program for this single trusted process is called an \emph{ideal
-  functionality}, and it serves as a uniform way to describe all of the security
-properties we want from the protocol. Roughly speaking, we say that a protocol
-$\pi$ \emph{emulates} an ideal functionality $\mc{F}$ (i.e., it meets its
+  functionality} as it provides a uniform way to describe all the security
+properties we want from the protocol. Roughly speaking, we say a protocol
+$\pi$ \emph{realizes} an ideal functionality $\mc{F}$ (i.e., it meets its
 specification) if every adversarial behavior in the real world can also be
-exhibited in the ideal world. But because the ideal world is our security
-definition, whatever adversarial behavior can take place there does not
-translate to any insecurity in the real world.
+exhibited in the ideal world.
 
-\begin{comment}
-The security requirements of a given
-cryptographic task are defined as a program for a \emph{single trusted process}
-called an \emph{ideal functionality}, which runs in the ideal world. This serves
-as a specification of the desired security properties for a distributed protocol
-achieving the task across \emph{many unstrusted processes}, which runs in the
-real world. Roughly speaking, we say that a protocol $\pi$ \emph{emulates} an
-ideal functionality $\mc{F}$ (i.e., it meets its specification) if every
-adversarial behavior in the real world can also be exhibited in the ideal
-world. But because the ideal world is our definition of security, whatever
-adversarial behavior can take place in the ideal world does not lead to a break
-in security in the real world.
-\end{comment}
-
-\begin{comment}
-Security in the UC framework is based on the real/ideal
-paradigm~\cite{goldreich1987play}. To carry out some cryptographic task in the
-real world, a set of parties must execute a protocol for the task among
-themselves in a distributed fashion. In the ideal world, however, the parties
-securely access an \emph{ideal functionality} $\mc{F}$, which is imagined as an
-incorruptible trusted third party that securely (by construction) carries out
-the task to be achieved by the protocol. To do so, $\mc{F}$ obtains inputs from
-the parties, performs some local computation, and hands outputs back to the
-parties. Because $\mc{F}$ is trivially secure, it serves as a uniform way to
-describe the task's security requirements.
-
-Having defined security in the form of an ideal functionality, the next step is
-to prove that a protocol meets the definition. We say that a protocol $\pi$
-\emph{emulates} (or \emph{securely realizes}) an ideal functionality $\mc{F}$ if
-every adversarial behavior in the real world (running with $\pi$) can also be
-exhibited in the ideal world (running with $\mc{F}$). But because $\mc{F}$ is
-secure by construction, whatever adversarial behavior can take place in the
-ideal world does not lead to a break in security.
-\end{comment}
-
-Once we have defined $\pi$ and $\mc{F}$, proving emulation formally
+Once we have defined $\pi$ and $\mc{F}$, proving realization formally
 follows a standard rhythm:
 \begin{enumerate}[leftmargin=*]
-\item The first step is constructive: We must construct a \emph{simulator}
-  $\mc{S}$ that can simulate the attack of any adversary $\mc{A}$ on $\pi$, but
-  instead, on $\mc{F}$.
+\item The first step is a construction: We must provide a \emph{simulator}
+  $\mc{S}$ that translates any attack $\mc{A}$ on the protocol $\pi$ into
+  an attack on $\mc{F}$.
 \item The second step is a relational analysis: We must show that running $\pi$
   under attack by any adversary $\mc{A}$ (the real world) is
   \emph{indistinguishable} from running $\mc{F}$ under attack by $\mc{S}$ (the
   ideal world) to any distinguisher $\mc{Z}$ called the \emph{environment}.
 \end{enumerate}
-In particular, $\mc{Z}$ is an interactive distinguisher: It interacts with the
-real world and the ideal world in a well-defined manner, and the simulation is
-good if no $\mc{Z}$ can distinguish between the two.
+%In particular, $\mc{Z}$ is an adaptive distinguisher: It interacts with the
+%real world or the ideal world, and the simulation is
+%sound if no $\mc{Z}$ can distinguish between the two.
 
 \begin{comment}
 \begin{figure}
@@ -108,7 +71,7 @@ good if no $\mc{Z}$ can distinguish between the two.
   \caption{UC experiment with real world (left) and ideal world (right).}
   \label{fig:uc-experiment}
 \end{figure}
-All of this is indeed quite abstract, so it helps to visualize what the UC
+All of this is quite abstract so far, so it helps to visualize what the UC
 indistinguishability experiment looks like. Figure~\ref{fig:uc-experiment}
 illustrates the UC experiment with the real world on the left, the ideal world
 on the right, and with communication channels as connecting lines. There are
@@ -130,20 +93,23 @@ several things worth noting here:
 \end{itemize}
 \end{comment}
 
-So why bother going through all of this? The primary benefit is
-\emph{modularity.}  Suppose a protocol $\pi$ emulates a functionality $\mc{F}$,
-and suppose a protocol $\rho$, which uses $\mc{F}$ as a subroutine, emulates a
-functionality $\mc{G}$.  Then, the protocol $\rho^{\mc{F} -> \pi}$, in which calls to
-$\mc{F}$ are replaced by calls to $\pi$, also emulates $\mc{G}$!
-
-This may seem a bit odd---the protocol $\pi$ lives in the real world, but $\mc{F}$
-lives in the ideal world. Indeed, this is called the \emph{$\mc{F}$-hybrid
-  world}. Instead of analyzing the composite protocol consisting of $\rho$ and $\pi$,
-it suffices to analyze the security of $\rho$ by itself in the much simpler
-$\mc{F}$-hybrid world, where it can make calls to $\mc{F}$. If we can show that
-$\rho$ emulates $\mc{G}$ in the $\mc{F}$-hybrid world, then we can later substitute
-for $\mc{F}$ any protocol that emulates it without fear of something going
-wrong.
+As mentioned, the primary goal of this framework is
+\emph{compositionality.}
+Suppose a protocol $\pi$ is a protocol module that realizes a functionality $\mc{F}$ (a specification of the module),
+and suppose a protocol $\rho$, which relies on $\mc{F}$ as a subroutine, in turn realizes an application specification functionality $\mc{G}$.
+Then, the composed protocol $\rho \circ \pi$, in which calls to
+$\mc{F}$ are replaced by calls to $\pi$, also realizes $\mc{G}$.
+%
+%This may seem a bit odd---the protocol $\pi$ lives in the real world, but $\mc{F}$
+%lives in the ideal world. Indeed, this is called the \emph{$\mc{F}$-hybrid
+%  world}.
+Instead of analyzing the composite protocol consisting of $\rho$ and $\pi$,
+it suffices to analyze the security of $\rho$ itself in the simpler
+world with $\mc{F}$, the idealized version of $\pi$.
+%, where it can make calls to $\mc{F}$. If we can show that
+%$\rho$ emulates $\mc{G}$ in the $\mc{F}$-hybrid world, then we can later substitute
+%for $\mc{F}$ any protocol that emulates it without fear of something going
+%wrong.
 
 \begin{comment}
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
