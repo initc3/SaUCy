@@ -110,9 +110,10 @@
 
 \newcommand{\eBang}[1]{{!}\,{#1}}
 \newcommand{\eLAM}[2]{\Lambda{#1}.\,{#2}}
-\newcommand{\eLsplit}[4]{\keyword{asplit}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
-\newcommand{\eLfix}[2]{\keyword{afix}\Lparen{#1}.{#2}\Rparen}
-\newcommand{\eLapp}[2]{{#1}{\sim}{#2}}
+\newcommand{\eLsplit}[4]{\keyword{split}\langle{#1},{#2}.{#3}.{#4}\rangle}
+\newcommand{\eLfix}[2]{\keyword{fix}\langle{#1}.{#2}\rangle}
+\newcommand{\eLapp}[2]{\langle{#1}\,{#2}\rangle}
+\newcommand{\eLPair}[2]{\langle{#1},{#2}\rangle}
 
 % Extended ILC
 \newcommand{\eKGen}[2]{\keyword{kgen}\Lparen{#1},{#2}\Rparen}

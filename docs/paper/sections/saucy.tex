@@ -371,20 +371,18 @@ For example, interesting composition often happens ``in the functionality'' thro
 \subsection{Instantiating UC Commitments}
 \label{subsec:example}
 We now walk through an instantiation of UC commitments (\`{a} la Canetti and
-Fischlin~\cite{canetti2001commitments}). UC commitments can be instantiated with
-standard cryptographic assumptions, for example the RSA
-problem~\cite{lindell2014introduction}.  They also rely on a ``trusted setup,''
-or common reference string, which are essentially public parameters generated
-ahead of time (modeled as an ideal functionality $\Func_{\textsc{crs}}$).
-%
-Instantiation proofs in SaUCy follow a standard rhythm. We start with a security
-definition as an ideal functionality (such as $\Func_{\textsc{Com}}$), give the protocol, construct a simulator,
-and finally complete the relational analysis on paper.
-%UC commitments are
-%reasoned to be secure assuming a common reference string is suitably generated.
+Fischlin~\cite{canetti2001commitments}).  Instantiation proofs in SaUCy follow a
+standard rhythm. We start with a security definition as an ideal functionality
+(such as $\Func_{\textsc{Com}}$), give the protocol, construct a simulator, and
+finally complete the relational analysis on paper.
+
+UC commitments can be instantiated with standard cryptographic assumptions, for
+example the RSA problem~\cite{lindell2014introduction}.  They also rely on a
+``trusted setup,'' or common reference string, which are essentially public
+parameters generated ahead of time (modeled as an ideal functionality
+$\Func_{\textsc{crs}}$).
 
 \paragraph{Extending ILC with cryptographic primitives.}
-%To model the cryptographic assumptions we extend ILC with additional syntax.
 UC Commitments are realized from cryptographic primitives, such as trapdoor
 permutations, which require extensions to ILC. The new syntactic forms are
 \textsf{kgen}, \textsf{tdp}, \textsf{inv}, and \textsf{hc} with the static and
@@ -395,41 +393,41 @@ written in terms of the cryptographic objects themselves.
 \textsf{keygen} takes as input a security parameter and outputs a random public
 key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor permutation function
 \textsf{tdp} takes as inputs a key $v_{pk}$ and a bitstring $v_{in}$ and outputs
-a bitstring $v_{out}$. The hardcore predicate function \textsf{hc} takes as
-input a key $v_{pk}$ and outputs a single bit.
+a bitstring $v_{out}$. \todo{Inverse.} The hardcore predicate function
+\textsf{hc} takes as input a key $v_{pk}$ and outputs a single bit. \todo{These
+  require a bit of background...}
 
 \input{figures/ilc/extended-syntax}
 
-We can use these to implement special pseudorandom number generator $G_{pk}
+\todo{Give definition of PRG somwhere.} We can use these to implement a special
+pseudorandom number generator $G_{pk}
 \colon \{0,1\}^k \to \{0,1\}^{4k}$ that has a trapdoor property, i.e., it is easy
 to compute, but difficult to invert except with special information called the
 ``trapdoor.''
-
 \[ G_{pk}(r) = \big(\mathbf{f}_{pk}^{(3n)}(r),
 \mathbf{B}(\mathbf{f}_{pk}^{(3n-1)}(r)), \ldots, \mathbf{B}(\mathbf{f}_{pk}(r)),
 \mathbf{B}(r)\big)\]
-
 \noindent Here, $\mathbf{f}_{pk}$ is a trapdoor permutation over $\{0,1\}^{k}$,
 with $\mathbf{f}_{pk}^{(i)}(r)$ denoting the $i^{\textnormal{th}}$-fold
 application of $\mathbf{f}_{pk}$, and $\mathbf{B}$ is a hardcore predicate for
 $\mathbf{f}_{pk}$. In ILC, this can be implemented as:
 \lstinputlisting[style=myilc]{listings/prg.ilc}
 
-\begin{figure}
-\lstinputlisting[style=myilc]{listings/ucc.ilc}
-\caption{Universally composable commitment in ILC.}
-\label{fig:ucc}
-\end{figure}
-
 \paragraph{Commitment Protocol.}
-We defer the protocol to the appendix.
+The commitment protocol from Canetti and Fischlin~\cite{canetti2001commitments}
+is implemented in ILC as follows:
+\lstinputlisting[style=myilc]{listings/ucc.ilc}
 
 \paragraph{Defining the simulator.}
+The simulator $\mathsf{simI}$ translates every attack on $(\mathsf{committer},
+\mathsf{receiver})$ running with \textsf{fCrs} on $(\mathsf{dummyP},
+\mathsf{dummyQ})$ running with \textsf{fCom}. For space reasons, we leave the
+simulator definition to Appendix \todo{}.
 
-\paragraph{Relational argument.} The goal of the relational analysis is to show
-that the environment's output in the real world is indistinguishable from its
-output in the ideal world. The proof follows that in Canetti and
-Fischlin~\cite{canetti2001commitments}.
+\paragraph{Relational argument.}
+The goal of the relational analysis is to show that an environment's output in
+the real world is indistinguishable from its output in the ideal world. The
+proof follows the one in Canetti and Fischlin~\cite{canetti2001commitments}.
 
 \begin{sketch}
   Consider the following ensembles:
