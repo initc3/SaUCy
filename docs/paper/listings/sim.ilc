@@ -1,4 +1,4 @@
-let simulator !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
+let simI !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
   let rbits = ref bits in
   let ($\mathsf{pk}_0$,$\mathsf{td}_0$) = kgen k in
   let ($\mathsf{pk}_1$,$\mathsf{td}_1$) = kgen k in  
@@ -14,7 +14,7 @@ let simulator !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
 	    wr (Commit 0) $->$ toP
 	  else
 	    if check $\mathsf{td}_1$ $\mathsf{pk}_1$ (xors y $\sigma$) then
-	      wr (Commit 1) $->$ toF
+	      wr (Commit 1) $->$ toP
 	    else
 	      error "Fail"
 	  let (!(A2P (Open' b r)), frZ) = rd frZ in
