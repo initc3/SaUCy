@@ -1,17 +1,15 @@
 \section{Introduction}
 \label{sec:introduction}
 
-In cryptography, a proof of security in the universal composability (UC)
-framework is the gold standard for demonstrating that a protocol ``does its job
+In cryptography, a proof of security in the simulation-based universal composability (UC)
+framework is considered the gold standard for demonstrating that a protocol ``does its job
 securely''~\cite{canetti2001universally}. In particular, a UC-secure protocol
-enjoys the strongest notion of compositionality---it maintains its security
-properties when run \emph{concurrently} with arbitrary other protocols. This is
-in contrast with weaker notions that only guarantee security in the standalone
+enjoys the strongest notion of compositionality---it maintains all security
+properties even when run \emph{concurrently} with arbitrary other protocol instances.
+This is in contrast with weaker property-based notions that only guarantee security in a standalone
 setting~\cite{lindell2014introduction} or under sequential
-composition~\cite{goldreich1987play}. Of course, the big payoff of using UC is
-its modularity benefits---it allows analyzing complex protocols from simpler
-building blocks.
-
+composition~\cite{goldreich1987play}.
+%
 \begin{comment}
 In a nutshell, security proofs in UC follow the real/ideal
 paradigm~\cite{goldreich1987play}. The security requirements of a given task are
@@ -23,40 +21,45 @@ real world. Roughly speaking, we say that a protocol $\pi$ \emph{emulates} an
 ideal functionality $\mc{F}$ (i.e., it meets its specification) if every
 adversarial behavior in the real world can also be exhibited in the ideal world.
 \end{comment}
+%
+Thus the benefit of using UC is
+modularity---it supports analyzing complex protocols by composing simpler
+building blocks.
+However the cost of UC is that security proofs tend to be quite
+complicated.
+We believe that applying a PL-style of systemization to UC can help
+simplify its use, bring new clarity, and provide useful tooling.
+We envision a future where modularity of cryptographic protocol composition
+translates to modular implementation as well.
 
-\todo{Get to the point sooner.} While UC security proofs admit strong
-guarantees, this comes at the cost of their formalization being quite
-complicated. And because the UC framework only exists ``on paper,'' protocol
-descriptions, specifications, and other artifacts for proving security are
-traditionally written in a combination of prose and pseudocode. Not only does
-this make them error-prone and difficult to verify, but it is sometimes the case
-that proven-secure protocols are subtly underspecified or ill-specified, which
-leads to compositionality properties being lost or
-complicated~\cite{camenisch2016universal}.
-
-We believe that applying a PL-style of systemization to UC can help resolve
-these issues. Unfortunately, we find that previous works in the vein of applying
-PL-techniques to cryptography are not a good fit for describing
-\emph{interactive Turing machines} (ITMs), the computational model underlying
-UC.\footnote{One can think of interactive Turing machines as normal Turing
-  machines that can write on each other's tapes.} Either they do not support
+Revewing prior efforts to apply PL techniques to cryptography,
+we find they run up against challenges when importing the existing
+body of UC theory.
+Either they do not support
 computational reasoning (which considers issues of probability and computational
-complexity), are not well-suited to describing distributed protocols (cannot
-express message-passing concurrency), or are too expressive (allow describing a
-superset of ITMs).
+complexity)~\cite{symbolicuc}, do not support message-passing concurrency for distributed protocols~\cite{easycrypt},
+or are too expressive (allow for expressing nondeterminsm with no computational interpretation).
 
-Still, there are compelling reasons for sticking with ITMs as the model of
-choice. Most importantly, it ensures that whatever protocol we define in the
-model has a \emph{computational interpretation.} What, exactly, do we mean by
-this? We mean it in the following cryptographic sense: We should be able to
-prove its security by \emph{reduction}, i.e., by relating bad execution traces
-to a probabilistic polynomial time computation that breaks a computational
-hardness assumption with non-negligible
-probability~\cite{lindell2014introduction}.
-
-Were it not for ITMs, the presence of (non-probabilistic) nondeterminism due to
-concurrency would severely complicate the necessary probabilistic reasoning in
-reduction proofs. However, ITMs avoid this issue by having a deterministic
+Our observation is that these approaches diverge from UC at a low level:
+UC is defined atop the underlying computation model of
+\emph{interactive Turing machines} (ITMs).
+%
+%Because the UC framework most exists ``on paper,'' protocol
+%descriptions, specifications, and other proof components are
+%written in a combination of prose and pseudocode. Not only does
+%this make them error-prone and difficult to verify, but sometimes
+%protocols have been subtly underspecified or ill-specified~\cite{camenisch2016universal}.
+%
+The significance of ITMs is that they have a clear computational interpretation, so 
+it is straightforward to relate execution traces to
+to a probabilistic polynomial time computation, as is necessary for cryptographic reduction proofs.
+%  that breaks a computational
+%hardness assumption with non-negligible
+%probability~\cite{lindell2014introduction}.
+%
+The presence of (non-probabilistic) nondeterminism in alternative process calculi
+would frustrate such reduction proofs.
+ITMs avoid this issue by having a deterministic
 (modulo random coin tosses), single-threaded execution semantics. That is,
 processes pass control from one to another each time a message is sent so that
 \emph{exactly one process is active at any given time}, and, moreover, this
@@ -108,7 +111,6 @@ framework, dubbed SaUCy.
 %framework itself (SaUCy).
 
 \subsection{Interactive Lambda Calculus}
-
 Where have existing concurrency models fallen short with respect to ITMs? On the
 one hand, some existing process calculi, such as the standard
 $\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
@@ -123,7 +125,7 @@ communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 
 ILC fills this gap by adapting ITMs to a subset of the $\pi$-calculus through its
 type system. In other words, \emph{well-typed ILC programs are expressible as
-  ITMs}. To give a taste of the type system, it restricts the dataflow of read
+  ITMs}. To give a preview of the type system, it restricts the dataflow of read
 channels (via affine typing) and restricts the composition of write effects
 (forbidding write-mode parallel processes), with the net effect being
 confluence. Therefore, the only nondeterminism in an ILC program is due to
