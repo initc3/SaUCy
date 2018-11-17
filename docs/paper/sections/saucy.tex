@@ -302,7 +302,7 @@ illustrated and defined in Figure~\ref{fig:composition-operator}.
 \end{figure}
 
 \noindent \proof To prove the theorem we construct the simulators $S_{\mc{R},\rho} \circ S_{\mc{R},\pi}$ (respectively $S_{\mc{I},\rho} \circ S_{\mc{I,\pi}}$) in the natural way as well (given in the Appendix).
-Our proof obligation is to introduce an arbtirary environment $\mc{Z}$ and conclude
+Our proof obligation is to introduce an arbitrary environment $\mc{Z}$ and conclude
 \[  \keyword{execUC}~\mc{Z} ~(\rho \circ \pi)~\mc{F}_1 ~\mathbbm{1}_\mc{A}
 \le \keyword{execUC}~\mc{Z} ~\mathbbm{1}_\mc{\pi} ~\mc{F}_3 ~(\mc{S}_{\mc{I},\rho} \circ \mc{S}_{\mc{I},\pi})
 \]
@@ -398,7 +398,7 @@ implemented in ILC as follows:
 \lstinputlisting[style=myilc]{listings/ucc.ilc}
 To briefly summarize what is going on: The setup CRS functionality (given in the
 Appendix) samples a random string $\sigma$ and two trapdoor pseudorandom generators (prgs $\mathsf{pk}_0, \mathsf{pk}_1$).
-To commit to $b$, the commiter produces a string $y$ that is the result of applying one or the other of the prgs, and if $b=1$ additionally applying xor with $\sigma$.
+To commit to $b$, the committer produces a string $y$ that is the result of applying one or the other of the prgs, and if $b=1$ additionally applying xor with $\sigma$.
 The intuitive explanation why this is hiding is that without the trapdoor, it is difficult to tell whether a random $4k$-bit string is in the range of either prg. To open the commitment, the committer simply reveals the preimage and the receiver checks which of the two cases applies. The intuitive explanation why this is binding is that it is difficult to find a pair $y,y\oplus\sigma$ that are respectively in the range of both prgs.
 
 \paragraph{Defining the simulator.}
