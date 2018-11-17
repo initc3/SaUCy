@@ -249,60 +249,8 @@ application of $\mathbf{f}_{pk}$, and $\mathbf{B}$ is a hardcore predicate for
 $\mathbf{f}_{pk}$. In ILC, this can be implemented as:
 \lstinputlisting[style=myilc]{listings/prg.ilc}
 
-\begin{figure*}
-\lstinputlisting[style=myilc]{listings/dummy.ilc}
-\caption{Dummy adversary. The dummy adversary forwards messages from the
-environment to either the functionality (if the message has
-constructor \textsf{A2F}) or the party \textsf{p} (if the message has
-constructor \textsf{A2P}). Similarly, the dummy adversary forwards messages from
-the functionality or the procotol parties to the environment.}
-\label{fig:dummy-adversary}
-\end{figure*}
-
-\begin{figure*}
-\lstinputlisting[style=myilc]{listings/dummyp.ilc}
-\caption{Dummy party. The dummy party simply relays information between the
-environment and the functionality.}
-\label{fig:dummy-party}
-\end{figure*}
-
-\begin{figure*}
-\lstinputlisting[style=myilc]{listings/Fcrs.ilc}
-\caption{Ideal functionality for common reference string.}
-\label{fig:f-crs}
-\end{figure*}
-
-\begin{figure*}
-\lstinputlisting[style=myilc]{listings/Fcom-full.ilc}
-\caption{Ideal functionality for one-time bit commitment.}
-\label{fig:f-com-full}
-\end{figure*}
-
-%\begin{figure*}
-%\lstinputlisting[style=myilc]{listings/committer.ilc}
-%\caption{Universally composable commitment committer.}
-%\label{fig:committer}
-%\end{figure*}
-%
-%\begin{figure*}
-%\lstinputlisting[style=myilc]{listings/receiver.ilc}
-%\caption{Universally composable commitment receiver.}
-%\label{fig:receiver}
-%\end{figure*}
-
-\begin{figure}
-\lstinputlisting[style=myilc]{listings/sim.ilc}
-\caption{Ideal world simulator for UC commitment.}
-\label{fig:sim}
-\end{figure}
-
-\begin{figure*}
-\lstinputlisting[style=myilc]{listings/simR.ilc}
-\caption{Real world simulator for UC commitment.}
-\label{fig:simR}
-\end{figure*}
-
 \section{Universally Composable Commitment Protocol}
+\label{app:ucc}
 In this section we give the full elaboration of our UC commitment instantiation.
 The specification functionality is given in the body in Figure~\ref{func:com},
 along with the protocol implementation in Section~\ref{subsec:example}.
@@ -352,3 +300,44 @@ In the real world, the environment receives a commitment message $(\mathsf{Commi
 \caption{Universally Composable Commitment}
 \label{alg:com}
 \end{algorithm}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/dummy.ilc}
+\caption{Dummy adversary. The dummy adversary forwards messages from the
+environment to either the functionality (if the message has
+constructor \textsf{A2F}) or the party \textsf{p} (if the message has
+constructor \textsf{A2P}). Similarly, the dummy adversary forwards messages from
+the functionality or the procotol parties to the environment.}
+\label{fig:dummy-adversary}
+\end{figure*}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/dummyp.ilc}
+\caption{Dummy party. The dummy party simply relays information between the
+environment and the functionality.}
+\label{fig:dummy-party}
+\end{figure*}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/Fcrs.ilc}
+\caption{Ideal functionality for common reference string.}
+\label{fig:f-crs}
+\end{figure*}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/Fcom-full.ilc}
+\caption{Ideal functionality for one-time bit commitment.}
+\label{fig:f-com-full}
+\end{figure*}
+
+\begin{figure}
+\lstinputlisting[style=myilc]{listings/sim.ilc}
+\caption{Ideal world simulator for UC commitment.}
+\label{fig:sim}
+\end{figure}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/simR.ilc}
+\caption{Real world simulator for UC commitment.}
+\label{fig:simR}
+\end{figure*}
