@@ -28,8 +28,6 @@ Modes consist of $\Wm$ (write mode), $\Rm$ (read mode), and $\Vm$ (value
 mode). The rules for sequential and parallel composition of modes are given in
 Figure~\ref{fig:mode-composition}.
 
-\todo{Discuss store, process pool, and channel typings.}
-
 The intuitionistic portion of ILC supports a fairly standard feature set. The
 more interesting expressions are those related to affinity and message-passing
 concurrency. Bang! types have introduction form $\eBang{e}$ and elimination form
@@ -115,7 +113,8 @@ programs are expressible as ITMs}:
 
 Before we go through a quick tour of the typing rules, we point out a few
 things: Value mode derivations and ordinary type polymorphism are omitted to
-avoid clutter, and algorithmic typing rules are given in Appendix \todo{}.
+avoid clutter, and algorithmic typing rules are given in
+Appendix~\ref{sec:algo-type-check}.
 
 \paragraph{Rules for preventing read nondeterminism.}
 To protect read channels from duplication, the nu rule binds read channels in

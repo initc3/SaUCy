@@ -1,11 +1,11 @@
 \appendix
 
-\section{Algorithmic Type Checking}
+\onecolumn
+\section{Algorithmic Typing Rules}
 \label{sec:algo-type-check}
+\ \\
 
-Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
-
-\begin{figure*}
+\begin{figure*}[h]
 \centering
 \judgbox{\Delta_{in} ; \Gamma_1 |- e : \Delta_{out}; \Gamma_2; A}{~~Under $\Delta_{in}$ and
   $\Gamma_1$, expression~$e$ results $\Delta_{out}$ and $\Gamma_2$ and has intuitionistic type $A$.}
@@ -71,8 +71,8 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \and
 %
 \Infer{a-fix}
-{\Delta_1; \Gamma,x : \tyArr{A}{\footnotesize m}{A} |- e : \Delta_2; \Gamma; \tyArr{A}{\footnotesize m}{A}}
-{\Delta_1; \Gamma |- \eFix{x}{e} : \Delta_2; \Gamma; \tyArr{A}{\footnotesize m}{A}}
+{\emptyctxt; \Gamma,x : \tyArr{A}{\footnotesize m}{A} |- e : \emptyctxt; \Gamma; \tyArr{A}{\footnotesize m}{A}}
+{\Delta; \Gamma |- \eFix{x}{e} : \Delta; \Gamma; \tyArr{A}{\footnotesize m}{A}}
 %
 \and
 %
@@ -91,8 +91,8 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \and
 %
 \Infer{a-abs}
-{\Delta_1 ; \Gamma, x:A |- e : \Delta_2; \Gamma; B}
-{\Delta_1 ; \Gamma |- \eLam{x}{e} : \Delta_2; \Gamma; \tyArr{A}{\footnotesize m}{B}}
+{\emptyctxt ; \Gamma, x:A |- e : \emptyctxt; \Gamma; B}
+{\Delta ; \Gamma |- \eLam{x}{e} : \Delta; \Gamma; \tyArr{A}{\footnotesize m}{B}}
 %
 \and
 %
@@ -139,26 +139,33 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \judgbox{\Delta_{in} ; \Gamma_1 |- e : \Delta_{out}; \Gamma_2; A}{~~Under $\Delta_{in}$ and
   $\Gamma_1$, expression~$e$ results $\Delta_{out}$ and $\Gamma_2$ and has affine type $A$.}
 \begin{mathpar}
-\Infer{a-lvar}
-{\Delta(x) = A}
-{\Delta; \Gamma |- x : \Delta ; \Gamma; A}
+\Infer{a-avar}
+{\Delta(x) = X}
+{\Delta; \Gamma |- x : \Delta ; \Gamma; X}
+%
+\and
+%
+\Infer{a-bang}
+{\emptyctxt ; \Gamma |- e : \emptyctxt ; \Gamma ; A}
+{\Delta ; \Gamma |- \eBang{e} : \Delta ; \Gamma ; \tyBang{A}}
 %
 \and
 %
 \Infer{a-tensor}
 {\Delta_1; \Gamma |- e_1 : \Delta_2 ; \Gamma ; X_1\\\\
 \Delta_2; \Gamma |- e_2 : \Delta_3 ; \Gamma ; X_2}
-{\Delta_1, \Delta_2; \Gamma |- \ePair{e_1}{e_2} : \Delta_3 ; \Gamma ; \tyTensor{X_1}{X_2}}
+{\Delta_1, \Delta_2; \Gamma |- \eLPair{e_1}{e_2} : \Delta_3 ; \Gamma ; \tyTensor{X_1}{X_2}}
+%
+\and
+%  
+\Infer{a-asplit}
+{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyTensor{X_1}{X_2}\\\\
+\Delta_2,x_1:X_1, x_2: X_2; \Gamma |- e : \Delta_3; \Gamma; Y}
+{\Delta_1; \Gamma |- \eLsplit{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; Y}
 %
 \and
 %
-\Infer{a-bang}
-{\Delta_1 ; \Gamma |- e : \Delta_2 ; \Gamma ; A }
-{\Delta_1 ; \Gamma |- \eBang{e} : \Delta_2 ; \Gamma ; \tyBang{A}}
-%
-\and
-%
-\Infer{a-lfix}
+\Infer{a-afix}
 {\Delta_1, x : \tyLolli{X}{\footnotesize m}{X}; \Gamma |- e : \Delta_ 2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{X}}
 {\Delta_1; \Gamma |- \eLfix{x}{e} : \Delta_2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{X}}
 %
@@ -166,11 +173,19 @@ Figure~\ref{fig:alg-type-check} gives the algorithmic type checking rules.
 \Infer{a-lolli}
 {\Delta_1,x:X ; \Gamma |- e : \Delta_2 ; \Gamma ; Y}
 {\Delta_1 ; \Gamma |- \eLAM{x}{e} : \Delta_2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{Y}}
+%
+\and
+%
+\Infer{a-aapp}
+{\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; X\\\\
+\Delta_2; \Gamma |- e_1 : \Delta_3; \Gamma; \tyLolli{X}{\footnotesize m}{Y}}
+{\Delta_1; \Gamma |- \eLapp{e_1}{e_2} : \Delta_3; \Gamma; Y}
 \end{mathpar}
-\caption{Algorithmic typing rules. \todo{Update.}}
+\caption{Algorithmic typing rules.}
 \label{fig:alg-type-check}
 \end{figure*}
 
+\twocolumn
 \section{\textsf{execUC}}
 \label{sec:full-execUC}
 
@@ -183,23 +198,13 @@ denotes the read end of communications from the environment \textsf{z} to the
 party \textsf{p}. First, the random bitstring is split amongst each of the five
 parties. Then, the functionality, the adversary, and both protocol parties are
 spawned in a child process (given the appropriate channels and parameters), and
-the process continues as the environment process. Notice that parties are
-wrapped in a \textsf{wrapper} function, which takes an additional boolean
-parameter for whether or not the party is corrupted. \todo{Update type
-signature, inline wrappers.}}
+the process continues as the environment process. Notice that parties are run in
+wrapper functions, which alter their behavior depending on whether or not they
+are corrupted. If a party is corrupted, then the adversary masquerades as the
+party. The mode carried over the rightmost lollipop is $m \in \{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}}
+|| (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R}
+|| \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}_{\mathsf{e}}}\}$.}
 \label{fig:execUC}
-\end{figure*}
-
-\begin{figure*}
-\lstinputlisting[style=myilc]{listings/wrapper.ilc}
-\caption{Party wrapper. The \textsf{wrapper} function takes as parameters a
-process \textsf{p}, a boolean \textsf{crupt}, the process' associated
-communication channels, the security parameter, and a random bitstring. If the
-party is corrupted, then messages from the functionality or the other party are
-simply forwarded to the adversary, and messages from the adversary are forwarded
-to the functionality. Otherwise, the party runs as expected. \todo{Update
-signature and body.}}
-\label{fig:wrapper}
 \end{figure*}
 
 \begin{figure*}
@@ -208,14 +213,14 @@ signature and body.}}
 environment to either the functionality (if the message has
 constructor \textsf{A2F}) or the party \textsf{p} (if the message has
 constructor \textsf{A2P}). Similarly, the dummy adversary forwards messages from
-the functionality or the procotol parties to the environment. \todo{Update signature.}}
+the functionality or the procotol parties to the environment.}
 \label{fig:dummy-adversary}
 \end{figure*}
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/dummyp.ilc}
 \caption{Dummy party. The dummy party simply relays information between the
-environment and the functionality. \todo{Update signature.}}
+environment and the functionality.}
 \label{fig:dummy-party}
 \end{figure*}
 
@@ -249,9 +254,11 @@ environment and the functionality. \todo{Update signature.}}
 \label{fig:simR}
 \end{figure*}
 
-\section{Cryptography Definitions}
 
 \begin{comment}
+\section{Cryptography Definitions}
+
+
 \subsection{Brain Dump}
 
 \begin{definition}[Protocol Emulation]
@@ -389,9 +396,6 @@ of the input to the adversary.
 \end{definition}
 
 Environment should activate the adversary to allow sending of messages.
-\end{comment}
-
-
 
 \begin{definition}[Interactive Turing Machine]
 \end{definition}
@@ -416,6 +420,8 @@ Environment should activate the adversary to allow sending of messages.
   x$.
   \end{itemize}
 \end{definition}
+
+\end{comment}
 
 \section{Universally Composable Commitment Protocol}
 In this section we give the full elaboration of our UC commitment instantiation.
@@ -468,6 +474,36 @@ In the real world, the environment receives a commitment message $(\mathsf{Commi
 \label{alg:com}
 \end{algorithm}
 
+\section{Extending ILC with Trapdoor Permutations}
 
+UC Commitments are realized from cryptographic primitives, such as trapdoor
+permutations, which require extensions to ILC. The new syntactic forms are
+\textsf{kgen}, \textsf{tdp}, \textsf{inv}, and \textsf{hc} with the static and
+dynamic semantics shown in Figure~\ref{fig:extended-ilc}. The semantics are
+written in terms of the cryptographic objects themselves.
+
+\todo{Probably move these details to the appendix?} The key generation function
+\textsf{keygen} takes as input a security parameter and outputs a random public
+key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor permutation function
+\textsf{tdp} takes as inputs a key $v_{pk}$ and a bitstring $v_{in}$ and outputs
+a bitstring $v_{out}$. \todo{Inverse.} The hardcore predicate function
+\textsf{hc} takes as input a key $v_{pk}$ and outputs a single bit. \todo{These
+  require a bit of background...}
+
+\input{figures/ilc/extended-syntax}
+
+\todo{Give definition of PRG somwhere.} We can use these to implement a special
+pseudorandom number generator $G_{pk}
+\colon \{0,1\}^k \to \{0,1\}^{4k}$ that has a trapdoor property, i.e., it is easy
+to compute, but difficult to invert except with special information called the
+``trapdoor.''
+\[ G_{pk}(r) = \big(\mathbf{f}_{pk}^{(3n)}(r),
+\mathbf{B}(\mathbf{f}_{pk}^{(3n-1)}(r)), \ldots, \mathbf{B}(\mathbf{f}_{pk}(r)),
+\mathbf{B}(r)\big)\]
+\noindent Here, $\mathbf{f}_{pk}$ is a trapdoor permutation over $\{0,1\}^{k}$,
+with $\mathbf{f}_{pk}^{(i)}(r)$ denoting the $i^{\textnormal{th}}$-fold
+application of $\mathbf{f}_{pk}$, and $\mathbf{B}$ is a hardcore predicate for
+$\mathbf{f}_{pk}$. In ILC, this can be implemented as:
+\lstinputlisting[style=myilc]{listings/prg.ilc}
 
 \input{sections/ilcproofs}

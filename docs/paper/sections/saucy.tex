@@ -80,7 +80,7 @@ What remains is to define a notion of indistinguishability for value distributio
 The implementation of SaUCy
  is centered around a definition of UC execution model in ILC.
 For the most part, this just involves connecting channels as illustrated in
-Figure~\ref{fig:execUC-diagram} to the right. For demonstration, we only show
+Figure~\ref{fig:execUC-diagram}. For demonstration, we only show
 the case of two-party protocols (\`{a} la Simplified
 UC~\cite{canetti2015simpler}), which will suffice for our example of
 instantiating universally composable commitments.  Also, we will only aim to
@@ -125,8 +125,6 @@ Note that for space and readability, we elide channel allocation/distribution
 and wrapper definitions (with ellipses). We also abbreviate the type signature
 (e.g., $X_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
 Appendix~\ref{sec:full-execUC}.
-
-%$\{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}} || (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R} || \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}_{\mathsf{e}}}\}$
 
 \begin{comment}
 \begin{itemize}[leftmargin=*]
@@ -401,34 +399,8 @@ $\Func_{\textsc{crs}}$).
 
 \paragraph{Extending ILC with cryptographic primitives.}
 UC Commitments are realized from cryptographic primitives, such as trapdoor
-permutations, which require extensions to ILC. The new syntactic forms are
-\textsf{kgen}, \textsf{tdp}, \textsf{inv}, and \textsf{hc} with the static and
-dynamic semantics shown in Figure~\ref{fig:extended-ilc}. The semantics are
-written in terms of the cryptographic objects themselves.
-
-\todo{Probably move these details to the appendix?} The key generation function
-\textsf{keygen} takes as input a security parameter and outputs a random public
-key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor permutation function
-\textsf{tdp} takes as inputs a key $v_{pk}$ and a bitstring $v_{in}$ and outputs
-a bitstring $v_{out}$. \todo{Inverse.} The hardcore predicate function
-\textsf{hc} takes as input a key $v_{pk}$ and outputs a single bit. \todo{These
-  require a bit of background...}
-
-\input{figures/ilc/extended-syntax}
-
-\todo{Give definition of PRG somwhere.} We can use these to implement a special
-pseudorandom number generator $G_{pk}
-\colon \{0,1\}^k \to \{0,1\}^{4k}$ that has a trapdoor property, i.e., it is easy
-to compute, but difficult to invert except with special information called the
-``trapdoor.''
-\[ G_{pk}(r) = \big(\mathbf{f}_{pk}^{(3n)}(r),
-\mathbf{B}(\mathbf{f}_{pk}^{(3n-1)}(r)), \ldots, \mathbf{B}(\mathbf{f}_{pk}(r)),
-\mathbf{B}(r)\big)\]
-\noindent Here, $\mathbf{f}_{pk}$ is a trapdoor permutation over $\{0,1\}^{k}$,
-with $\mathbf{f}_{pk}^{(i)}(r)$ denoting the $i^{\textnormal{th}}$-fold
-application of $\mathbf{f}_{pk}$, and $\mathbf{B}$ is a hardcore predicate for
-$\mathbf{f}_{pk}$. In ILC, this can be implemented as:
-\lstinputlisting[style=myilc]{listings/prg.ilc}
+permutations, which require extensions to ILC. The new syntactic forms are given
+with their static and dynamic semantics in Figure~\ref{fig:extended-ilc}.
 
 \paragraph{Commitment Protocol.}
 The commitment protocol from Canetti and Fischlin~\cite{canetti2001commitments}
