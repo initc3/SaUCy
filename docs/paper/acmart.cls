@@ -1632,11 +1632,11 @@ Computing Machinery]
     \if@ACM@authorversion\else
       \if@printpermission\@copyrightpermission\par\fi
     \fi
-    \if@ACM@manuscript\else
+%    \if@ACM@manuscript\else
 %       \if@ACM@journal\else % Print the conference information
 %         {\itshape \acmConference@shortname, \acmConference@date, \acmConference@venue}\par
 %       \fi
-    \fi
+%    \fi
     \if@printcopyright
       \copyright\ \@copyrightyear\ \@copyrightowner\\
     \else
