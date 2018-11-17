@@ -183,8 +183,11 @@
 \caption{Algorithmic typing rules.}
 \label{fig:alg-type-check}
 \end{figure*}
+\newpage
 
-
+\twocolumn
+\input{sections/ilcproofs}
+\onecolumn
 \section{ILC Implementation of \textsf{execUC} }
 \label{sec:full-execUC}
 The full definition of the UC execution experiment is given in Figure~\ref{fig:execUC}.
@@ -213,6 +216,38 @@ party. The mode carried over the rightmost lollipop is derived as $\{(\mathsf{m}
 \end{figure*}
 \newpage
 \twocolumn
+
+\section{Extending ILC with Trapdoor Permutations}
+
+UC Commitments are realized from cryptographic primitives, such as trapdoor
+permutations, which require extensions to ILC. The new syntactic forms are
+\textsf{kgen}, \textsf{tdp}, \textsf{inv}, and \textsf{hc} with the static and
+dynamic semantics shown in Figure~\ref{fig:extended-ilc}. The semantics are
+written in terms of the cryptographic objects themselves.
+
+The key generation function \textsf{keygen} takes as input a random bitstring
+and outputs a random public key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor
+permutation function
+\textsf{tdp} takes as inputs a key $v_{pk}$ and a bitstring $v_{in}$ and outputs
+a bitstring $v_{out}$. The \textsf{inv} function takes as inputs a key-trapdoor
+pair $(v_{pk}, v_{td})$ and a bitstring $v_{in}$ and outputs a bitstring
+$v_{out}$. The hardcore predicate function
+\textsf{hc} takes as input a key $v_{pk}$ and outputs a single bit.
+
+\input{figures/ilc/extended-syntax}
+
+We can use these to implement a special pseudorandom number generator $G_{pk}
+\colon \{0,1\}^k \to \{0,1\}^{4k}$ that has a trapdoor property, i.e., it is easy
+to compute, but difficult to invert except with special information called the
+``trapdoor.''
+\[ G_{pk}(r) = \big(\mathbf{f}_{pk}^{(3n)}(r),
+\mathbf{B}(\mathbf{f}_{pk}^{(3n-1)}(r)), \ldots, \mathbf{B}(\mathbf{f}_{pk}(r)),
+\mathbf{B}(r)\big)\]
+\noindent Here, $\mathbf{f}_{pk}$ is a trapdoor permutation over $\{0,1\}^{k}$,
+with $\mathbf{f}_{pk}^{(i)}(r)$ denoting the $i^{\textnormal{th}}$-fold
+application of $\mathbf{f}_{pk}$, and $\mathbf{B}$ is a hardcore predicate for
+$\mathbf{f}_{pk}$. In ILC, this can be implemented as:
+\lstinputlisting[style=myilc]{listings/prg.ilc}
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/dummy.ilc}
@@ -317,37 +352,3 @@ In the real world, the environment receives a commitment message $(\mathsf{Commi
 \caption{Universally Composable Commitment}
 \label{alg:com}
 \end{algorithm}
-
-\section{Extending ILC with Trapdoor Permutations}
-
-UC Commitments are realized from cryptographic primitives, such as trapdoor
-permutations, which require extensions to ILC. The new syntactic forms are
-\textsf{kgen}, \textsf{tdp}, \textsf{inv}, and \textsf{hc} with the static and
-dynamic semantics shown in Figure~\ref{fig:extended-ilc}. The semantics are
-written in terms of the cryptographic objects themselves.
-
-The key generation function \textsf{keygen} takes as input a random bitstring
-and outputs a random public key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor
-permutation function
-\textsf{tdp} takes as inputs a key $v_{pk}$ and a bitstring $v_{in}$ and outputs
-a bitstring $v_{out}$. The \textsf{inv} function takes as inputs a key-trapdoor
-pair $(v_{pk}, v_{td})$ and a bitstring $v_{in}$ and outputs a bitstring
-$v_{out}$. The hardcore predicate function
-\textsf{hc} takes as input a key $v_{pk}$ and outputs a single bit.
-
-\input{figures/ilc/extended-syntax}
-
-We can use these to implement a special pseudorandom number generator $G_{pk}
-\colon \{0,1\}^k \to \{0,1\}^{4k}$ that has a trapdoor property, i.e., it is easy
-to compute, but difficult to invert except with special information called the
-``trapdoor.''
-\[ G_{pk}(r) = \big(\mathbf{f}_{pk}^{(3n)}(r),
-\mathbf{B}(\mathbf{f}_{pk}^{(3n-1)}(r)), \ldots, \mathbf{B}(\mathbf{f}_{pk}(r)),
-\mathbf{B}(r)\big)\]
-\noindent Here, $\mathbf{f}_{pk}$ is a trapdoor permutation over $\{0,1\}^{k}$,
-with $\mathbf{f}_{pk}^{(i)}(r)$ denoting the $i^{\textnormal{th}}$-fold
-application of $\mathbf{f}_{pk}$, and $\mathbf{B}$ is a hardcore predicate for
-$\mathbf{f}_{pk}$. In ILC, this can be implemented as:
-\lstinputlisting[style=myilc]{listings/prg.ilc}
-
-\input{sections/ilcproofs}
