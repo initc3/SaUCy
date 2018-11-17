@@ -213,20 +213,20 @@ $C_1$ steps to configuration $C_2$,''
 and the local stepping judgment $\sigma_1; \e_1 \longrightarrow \sigma_2; \e_2$ for a single process~$e$ as ``under store
 $\sigma_1$, expression $e_1$ steps to store $\sigma_{2}$ and expression $e_2$.
 %
-The rules of this judgement follow a standard call-by-value semantics, 
+The rules of this judgment follow a standard call-by-value semantics, 
 where we streamline the definition with an evaluation context~$E$.
 
-Configuration stepping conists of five rules, including a congruence
+Configuration stepping consists of five rules, including a congruence
 rule \Rule{congr} that permits some of the other rules to be simpler,
 by making the order of the pool unimportant.
 %
 The other four rules consist of local stepping (via \Rule{local}),
-creating new proceses (via \Rule{fork}),
+creating new processes (via \Rule{fork}),
 creating new channels (via \Rule{nu}),
 and read-write interactions (via \Rule{rw}).
 %
 To avoid double-allocating the same name twice, the rules record the
-names of channels (read and write ends) and procesess in the name set.
+names of channels (read and write ends) and processes in the name set.
 %
 Rule~\Rule{rw} uses the syntax~$R$ for a combination of several (mutually exclusive) read expressions; when synchronized, 
 using this syntax, the rule eliminates the unchosen read effects before control continues with the chosen read effect.
