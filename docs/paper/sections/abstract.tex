@@ -1,17 +1,13 @@
 \begin{abstract}
-  \todo{Abstract needs revising.} The universal composability (UC) framework is
-  an established gold standard for analyzing cryptographic protocols in a
-  modular way from simpler building blocks. In the framework, security is
-  preserved under \emph{concurrent} composition with arbitrary other protocols,
-  so a UC-secure protocol remains so when dropped into any context.
-
-  But although UC is widely used for on-paper proofs, its modularity benefits
-  have not been enjoyed in practical implementations. This is due in part to the
-  fact that proof artifacts (which are essentially programs) are traditionally
-  written in a combination of prose and pseudocode, which makes them error-prone
-  and difficult to verify. Moreover, previous work on systematizing
-  cryptographic analysis falls short of either permitting computational security
-  proofs or being expressive enough to represent distributed protocols.
+  The universal composability (UC) framework is
+  the established standard for analyzing cryptographic protocols in a
+  modular way, such that security is
+  preserved under concurrent composition with arbitrary other protocols.
+  However, although UC is widely used for on-paper proofs,
+  % its modularity benefits are not widely used for analyzing implementations.
+  prior attempts at systemizing it have fallen short,
+  either by using an symbolic model (thereby ruling out computational reduction proofs),
+  or by limiting its expressiveness.
 
   In this paper, we lay the groundwork for building a concrete, executable
   implementation of the UC framework (dubbed SaUCy) in the form of a process
@@ -19,6 +15,10 @@
   faithfully captures the computational model underlying UC---interactive Turing
   machines (ITMs)---by adapting ITMs to a subset of the $\pi$-calculus through its
   type system. In other words, \emph{well-typed ILC programs are expressible as
-    ITMs.} And being a faithful embedding of ITMs is crucial---it is necessary for
-  computational security proofs to go through. \todo{Discuss SaUCy.}
+  ITMs.} In turn, ILC's strong confluence property enables reasoning about
+  cryptographic security reductions.
+  We demonstrate the use of SaUCy by working through an instantiation
+  of UC-secure commitments from the literature, defining a composition
+  operator and proving its associated theorem, as well as examining
+  a subtle definitional issue involving race conditions.
 \end{abstract}

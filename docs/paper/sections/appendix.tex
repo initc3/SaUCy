@@ -247,15 +247,15 @@ environment and the functionality.}
 %\label{fig:receiver}
 %\end{figure*}
 
-\begin{figure*}
+\begin{figure}
 \lstinputlisting[style=myilc]{listings/sim.ilc}
-\caption{Simulator for UC commitment.}
+\caption{Ideal world simulator for UC commitment.}
 \label{fig:sim}
-\end{figure*}
+\end{figure}
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/simR.ilc}
-\caption{Simulator for UC commitment.}
+\caption{Real world simulator for UC commitment.}
 \label{fig:simR}
 \end{figure*}
 
@@ -429,6 +429,28 @@ Environment should activate the adversary to allow sending of messages.
 \end{comment}
 
 \section{Universally Composable Commitment Protocol}
+In this section we give the full elaboration of our UC commitment instantiation.
+The specification functionality is given in the body in Figure~\ref{func:com},
+along with the protocol implementation in Section~\ref{subsec:example}.
+Our development follows closely from the psuedocode in the UC literature~\cite{canetti2001commitments}, which we show here in Algorithm~\ref{alg:com}.
+The protocol relies on the CRS functionality which we define here in Figure~\ref{fig:f-crs}.
+To briefly summarize what is going: the setup CRS samples a random string $\sigma$ and two trapdoor pseudorandom generators (prgs).
+To commit to the bit $b$, the commiter produces a string $y$ that is the result of applying one or the other of the prgs, and if $b=1$ additionally applying xor with $\sigma$.
+The intuitive explanation why this is hiding is that without the trapdoor, it is difficult to tell whether a random $4k$-bit string is in the range of either prg. To open the commitment, the committer simply reveals the preimage and the receiver checks which of the two cases applies. The intuitive explanation why this is binding is that it is difficult to find a pair $y,y\oplus\sigma$ that are respectively in the range of both prgs.
+
+The UC proof consists of two simulators, one for the ideal world and one for the real world.
+The ideal world simulator, given in Figure~\ref{fig:sim} is ported directly from the UC literature~\cite{canetti2001commitments}, while the non-standard real world simulator, given in Figure~\ref{fig:simR}, is required because our protocol emulation definition requires simulation in both directions.
+The key to the ideal world simulator is to allow the simulator to generate its own ``fake'' CRS, for which it stores the trapdoors. The string $\sigma$ is not truly random, but instead is the result of combining two evaluations of the prgs.
+The ideal world simulator consists of two cases, depending on which of the parties is corrupt.
+
+In the case that the committer P is corrupt, the simulator needs to be able to \emph{extract} the committed value. The simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit}' ~ y)$; in the real world, this is relayed by the dummy adversary to Q, who outputs \textsf{Committed} back to the environment. Hence to achieve the same effect in the ideal word, the simulator must send $(\mathsf{Commit}~b)$ to $\Func_{\textsc{Com}}$. To extract $b$ from $y$, the simulator makes use of the prg trapdoor check which one has $y$ in its range.
+It is necessary to argue by cryptographic reduction that this simulation is sound.
+To show this, we would define an alternative execution where the prg is substituted for a truly random function (i.e., a random oracle). If an environment $\mc{Z}$ could distinguish between these two worlds, then we could adapt the execution to distinguish the prg from random, violating the prg assumption.
+
+In the case that the receiver Q is corrupt, the simulator needs to \emph{equivocate}.
+The simulator is activated when $\mc{Z}$ inputs $(\mathsf{Commit}~b)$ to P, after which $\Func_{\textsc{Com}}$ sends $\mathsf{Committed}$ to the simulator.
+In the real world, the environment receives a commitment message $(\mathsf{Commit}'~y)$ from corrupted Q for some seemingly-random $y$. To achieve the same effect, the simulator must choose $y$. However, the simulator is next activated when the $\mc{Z}$ inputs $(\mathsf{Open}~b)$ to P, after which the simulator learns $b$ from $\Func_{\textsc{Com}}$. However, in the real world the environment receives a valid opening $(\mathsf{Opened}'~b~r)$ that is consistent with  $y$ and with the value chosen by the environment. Thus the simulator must initially choose $y$ so that it can later be opened to either value $b$ may take. The simulator achieves this by choosing $\sigma$ and $y$ ahead of time while generating the fake CRS. The reduction step is the same, and involves replacing prg with a true random function.
+
 \begin{algorithm}
 \SetAlgorithmName{Protocol}{protocol}{List of Protocols}
 \DontPrintSemicolon
@@ -441,16 +463,16 @@ Environment should activate the adversary to allow sending of messages.
 \SetKwBlock{Commit}{\textnormal{\textsf{Commit}($b$):}}{}
 \Commit{
   $r \leftarrow \{0, 1\}^n$\;
-  $x \coloneqq G_{{pk}_b}(r)$\;
-  if $b=1$ then $x \coloneqq x \oplus \sigma$\;
-  Send $(\mathsf{Commit}, x)$ to receiver.\;
-  Upon receiving $(\mathsf{Commit}, x)$ from $A$, $B$ outputs $(\mathsf{Receipt})$.
+  $y \coloneqq G_{{pk}_b}(r)$\;
+  if $b=1$ then $y \coloneqq y \oplus \sigma$\;
+  Send $(\mathsf{Commit}, y)$ to receiver.\;
+  Upon receiving $(\mathsf{Commit}, y)$ from $A$, $B$ outputs $(\mathsf{Receipt})$.
 }\smallskip
 
 \SetKwBlock{Decommit}{\textnormal{\textsf{Decommit}($x$):}}{}
 \Decommit{
   Send $(b, r)$ to receiver.\;
-  Receiver checks $x = G_{{pk}_b}(r)$ for $b = 0$, or $x = G_{{pk}_b}(r) \oplus \sigma$
+  Receiver checks $y = G_{{pk}_b}(r)$ for $b = 0$, or $y = G_{{pk}_b}(r) \oplus \sigma$
   for $b = 1$. If verification succeeds, then $B$ outputs $(\mathsf{Open}, b)$.
 }
 \caption{Universally Composable Commitment}
