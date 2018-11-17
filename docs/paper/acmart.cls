@@ -2298,12 +2298,12 @@ Computing Machinery]
     \fancyfoot[C]{\if@ACM@printfolios\footnotesize\thepage\fi}%
     \fancyhead[LO]{\ACM@linecountL\@headfootfont\shorttitle}%
     \fancyhead[RE]{\@headfootfont\@shortauthors\ACM@linecountR}%
-    \if@ACM@nonacm\else%
-      \fancyhead[LE]{\ACM@linecountL\@headfootfont\acmConference@shortname,
-        \acmConference@date, \acmConference@venue}%
-      \fancyhead[RO]{\@headfootfont\acmConference@shortname,
-        \acmConference@date, \acmConference@venue\ACM@linecountR}%
-    \fi%
+%    \if@ACM@nonacm\else%
+%      \fancyhead[LE]{\ACM@linecountL\@headfootfont\acmConference@shortname,
+%        \acmConference@date, \acmConference@venue}%
+%      \fancyhead[RO]{\@headfootfont\acmConference@shortname,
+%        \acmConference@date, \acmConference@venue\ACM@linecountR}%
+%    \fi%
   \fi
   \if@ACM@sigchiamode
      \fancyheadoffset[L]{\dimexpr(\marginparsep+\marginparwidth)}%
