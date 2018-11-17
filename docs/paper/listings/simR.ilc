@@ -8,10 +8,10 @@ let simR !crupt !toZ frZ !toF frF toP frP !toQ frQ !k !bits =
       let y = if b == 0 then prg $\mathsf{pk}_0$ r else xors (prg $\mathsf{pk}_0$ r) $\sigma$ in
 	wr (Commit' y) $->$ toQ ;
 	let $\langle$!(Open), frZ$\rangle$= rd frZ in
-	  wr (Open' b r) $->$ toQ
+	  !(wr (Open' b r) $->$ toQ)
   | CruptQ $=>$
     let $\langle$!(Commit' y), frQ$\rangle$ = rd frQ in
       wr Receipt $->$ toZ ;
       let $\langle$!(Open' b r), frQ$\rangle$ = rd frQ in
-        wr (Opened b) $->$ toZ
+        !(wr (Opened b) $->$ toZ)
   | CruptNone $=>$ error "Fail"
