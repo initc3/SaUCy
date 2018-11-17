@@ -200,20 +200,22 @@ Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic syntax and 
 We define a \emph{configuration}~$C$ as a tuple of dynamic channel and process names~$\Sigma$, 
 a shared mutable store~$\sigma$, 
 and a pool of running and terminated processes~$\pi$.
-%
-To state and prove the meta theory of ILC (\Secref{sec:metatheory}), we
-extend the type system give above with typing rules for
-configurations, including typing environments for channels and stores. 
 
-We omit these details here for space reasons, and we refer the interested reader to \Secref{sec:ilcproofs}.
+To state and prove the meta theory of ILC (\Secref{sec:metatheory}), we
+extend the type system given above with typing rules for
+configurations, including typing environments for channels and stores. 
+%
+We omit these details here for space reasons, 
+and we refer the interested reader to \Secref{sec:ilcproofs}.
 
 We read the configuration reduction judgment $C_1 ---> C_2$ as ``configuration
 $C_1$ steps to configuration $C_2$,'' 
 %
-and the local stepping judgment $\sigma_1; \e_1 \longrightarrow \sigma_2; \e_2$ for a single process~$e$ as ``under store
+and the local stepping judgment $\sigma_1; e_1 \longrightarrow \sigma_2; e_2$ 
+for a single process~$e$ as ``under store
 $\sigma_1$, expression $e_1$ steps to store $\sigma_{2}$ and expression $e_2$.
 %
-The rules of this judgment follow a standard call-by-value semantics, 
+The rules of local stepping follow a standard call-by-value semantics, 
 where we streamline the definition with an evaluation context~$E$.
 
 Configuration stepping consists of five rules, including a congruence
@@ -225,11 +227,21 @@ creating new processes (via \Rule{fork}),
 creating new channels (via \Rule{nu}),
 and read-write interactions (via \Rule{rw}).
 %
-To avoid double-allocating the same name twice, the rules record the
-names of channels (read and write ends) and processes in the name set.
+To avoid allocating the same name twice, 
+the name set~$\Names$ records names of allocated channels and processes.
 %
-Rule~\Rule{rw} uses the syntax~$R$ for a combination of several (mutually exclusive) read expressions; when synchronized, 
-using this syntax, the rule eliminates the unchosen read effects before control continues with the chosen read effect.
+Rule~\Rule{rw} uses the syntax~$R$ for a combination of several (mutually exclusive) 
+read-mode expressions, with a chosen read filling the (single) hole.
+%
+When synchronized, 
+the rule uses this syntax to eliminate all of the unchosen read-mode expressions 
+before control continues with the chosen read effect.
+%
+The relation $c_1 \leadsto c_2$ holds when 
+channel names $c_1$ and $c_2$ refer to the 
+write and read ends of a common channel.
+%
+(The rules abstract over how channel names, and this relation, are structured.)
 
 %%% If you want more detail, you can uncomment this text below;
 %%% However, it doesn't add much intuition beyond just reading each rule:
