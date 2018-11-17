@@ -435,7 +435,7 @@ The intuitive explanation why this is hiding is that without the trapdoor, it is
 
 The UC proof consists of two simulators, one for the ideal world and one for the real world.
 The ideal world simulator, given in Figure~\ref{fig:sim} is ported directly from the UC literature~\cite{canetti2001commitments}, while the non-standard real world simulator, given in Figure~\ref{fig:simR}, is required because our protocol emulation definition requires simulation in both directions.
-The key to the ideal world simulator is to allow the simulator to generate its own CRS, for which it stores the trapdoors. The string $\sigma$ is not truly random, but instead is the result of combining two evaluations of the prgs.
+The key to the ideal world simulator is to allow the simulator to generate its own ``fake'' CRS, for which it stores the trapdoors. The string $\sigma$ is not truly random, but instead is the result of combining two evaluations of the prgs.
 The ideal world simulator consists of two cases, depending on which of the parties is corrupt.
 
 In the case that the committer P is corrupt, the simulator needs to be able to \emph{extract} the committed value. The simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit}' ~ y)$; in the real world, this is relayed by the dummy adversary to Q, who outputs \textsf{Committed} back to the environment. Hence to achieve the same effect in the ideal word, the simulator must send $(\mathsf{Commit}~b)$ to $\Func_{\textsc{Com}}$. To extract $b$ from $y$, the simulator makes use of the prg trapdoor check which one has $y$ in its range.
@@ -443,8 +443,8 @@ It is necessary to argue by cryptographic reduction that this simulation is soun
 To show this, we would define an alternative execution where the prg is substituted for a truly random function (i.e., a random oracle). If an environment $\mc{Z}$ could distinguish between these two worlds, then we could adapt the execution to distinguish the prg from random, violating the prg assumption.
 
 In the case that the receiver Q is corrupt, the simulator needs to \emph{equivocate}.
-The simulator is activated when $\mc{Z}$ inputs $(\mathsf{Commit}~b)$ to P, after which $\Func_{\mathsc{Com}}$ sends $\mathsf{Committed}$ to the simulator.
-In the real world, the environment receives a commitment message $(\mathsf{Commit}'~y)$ from corrupted Q for some seemingly-random $y$. To achieve the same effect, the simulator must choose $y$. However, the simulator is next activated when the $\mc{Z}$ inputs $(\mathsf{Open}~b)$ to P, after which the simulator learns $b$ from $\Func_{\mathsc{Com}}$. However, in the real world the environment receives a valid opening $(\mathsf{Opened}'~b~r)$ that is consistent with  $y$ and with the value chosen by the environment. Thus the simulator must initially choose $y$ so that it can later be opened to either value $b$ may take. To achieve this, the CRS 
+The simulator is activated when $\mc{Z}$ inputs $(\mathsf{Commit}~b)$ to P, after which $\Func_{\textsc{Com}}$ sends $\mathsf{Committed}$ to the simulator.
+In the real world, the environment receives a commitment message $(\mathsf{Commit}'~y)$ from corrupted Q for some seemingly-random $y$. To achieve the same effect, the simulator must choose $y$. However, the simulator is next activated when the $\mc{Z}$ inputs $(\mathsf{Open}~b)$ to P, after which the simulator learns $b$ from $\Func_{\textsc{Com}}$. However, in the real world the environment receives a valid opening $(\mathsf{Opened}'~b~r)$ that is consistent with  $y$ and with the value chosen by the environment. Thus the simulator must initially choose $y$ so that it can later be opened to either value $b$ may take. The simulator achieves this by choosing $\sigma$ and $y$ ahead of time while generating the fake CRS.
 
 \begin{algorithm}
 \SetAlgorithmName{Protocol}{protocol}{List of Protocols}
