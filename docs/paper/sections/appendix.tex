@@ -242,11 +242,11 @@ environment and the functionality.}
 %\label{fig:receiver}
 %\end{figure*}
 
-\begin{figure*}
+\begin{figure}
 \lstinputlisting[style=myilc]{listings/sim.ilc}
 \caption{Ideal world simulator for UC commitment.}
 \label{fig:sim}
-\end{figure*}
+\end{figure}
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/simR.ilc}
@@ -444,7 +444,7 @@ To show this, we would define an alternative execution where the prg is substitu
 
 In the case that the receiver Q is corrupt, the simulator needs to \emph{equivocate}.
 The simulator is activated when $\mc{Z}$ inputs $(\mathsf{Commit}~b)$ to P, after which $\Func_{\textsc{Com}}$ sends $\mathsf{Committed}$ to the simulator.
-In the real world, the environment receives a commitment message $(\mathsf{Commit}'~y)$ from corrupted Q for some seemingly-random $y$. To achieve the same effect, the simulator must choose $y$. However, the simulator is next activated when the $\mc{Z}$ inputs $(\mathsf{Open}~b)$ to P, after which the simulator learns $b$ from $\Func_{\textsc{Com}}$. However, in the real world the environment receives a valid opening $(\mathsf{Opened}'~b~r)$ that is consistent with  $y$ and with the value chosen by the environment. Thus the simulator must initially choose $y$ so that it can later be opened to either value $b$ may take. The simulator achieves this by choosing $\sigma$ and $y$ ahead of time while generating the fake CRS.
+In the real world, the environment receives a commitment message $(\mathsf{Commit}'~y)$ from corrupted Q for some seemingly-random $y$. To achieve the same effect, the simulator must choose $y$. However, the simulator is next activated when the $\mc{Z}$ inputs $(\mathsf{Open}~b)$ to P, after which the simulator learns $b$ from $\Func_{\textsc{Com}}$. However, in the real world the environment receives a valid opening $(\mathsf{Opened}'~b~r)$ that is consistent with  $y$ and with the value chosen by the environment. Thus the simulator must initially choose $y$ so that it can later be opened to either value $b$ may take. The simulator achieves this by choosing $\sigma$ and $y$ ahead of time while generating the fake CRS. The reduction step is the same, and involves replacing prg with a true random function.
 
 \begin{algorithm}
 \SetAlgorithmName{Protocol}{protocol}{List of Protocols}
