@@ -31,10 +31,9 @@ Figure~\ref{fig:mode-composition}.
 The intuitionistic portion of ILC supports a fairly standard feature set. The
 more interesting expressions are those related to affinity and message-passing
 concurrency. Bang! types have introduction form $\eBang{e}$ and elimination form
-$\eLetBang{x}{e_1}{e_2}$, lollipops have introduction form $\eLAM{x}{e}$ and
-elimination form $\eLapp{e_1}{e_2}$, tensors have introduction form
-$\eLPair{e_1}{e_2}$ and elimination form $\eLsplit{e_1}{x_1}{x_2}{e_2}$, and
-the expressions for message-passing concurrency are these:
+$\eLetBang{x}{e_1}{e_2}$. Lollipops have introduction form $\eLAM{x}{e}$ and
+elimination form $\eLapp{e_1}{e_2}$. Tensors have introduction form
+$\eLPair{e_1}{e_2}$ and elimination form $\eLsplit{e_1}{x_1}{x_2}{e_2}$. The expressions for message-passing concurrency are these:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     a corresponding write channel $x_2$ in $e$.
