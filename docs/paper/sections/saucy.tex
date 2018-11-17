@@ -405,12 +405,23 @@ with their static and dynamic semantics in Figure~\ref{fig:extended-ilc}.
 The commitment protocol from Canetti and Fischlin~\cite{canetti2001commitments}
 is implemented in ILC as follows:
 \lstinputlisting[style=myilc]{listings/ucc.ilc}
+To briefly summarize what is going: the setup CRS functionality (given in the Appendix) samples a random string $\sigma$ and two trapdoor pseudorandom generators (prgs).
+To commit to $b$, the commiter produces a string $y$ that is the result of applying one or the other of the prgs, and if $b=1$ additionally applying xor with $\sigma$.
+The intuitive explanation why this is hiding is that without the trapdoor, it is difficult to tell whether a random $4k$-bit string is in the range of either prg. To open the commitment, the committer simply reveals the preimage and the receiver checks which of the two cases applies. The intuitive explanation why this is binding is that it is difficult to find a pair $y,y\oplus\sigma$ that are respectively in the range of both prgs.
 
 \paragraph{Defining the simulator.}
-The simulator $\mathsf{simI}$ translates every attack on $(\mathsf{committer},
-\mathsf{receiver})$ running with \textsf{fCrs} on $(\mathsf{dummyP},
-\mathsf{dummyQ})$ running with \textsf{fCom}. For space reasons, we leave the
-simulator definition to Appendix \todo{}.
+The UC proof consists of two simulators, one for the ideal world and one for the real world.
+The ideal world simulator is ported directly from the UC literature~\cite{canetti2001commitments}, while the non-standard real world simulator, given in the Appendix, is required because our protocol emulation definition requires simulation in both directions.
+
+The ideal world simulator generates its own ``fake'' CRS for which it stores the trapdoors. The string $\sigma$ is not truly random, but instead is the result of combining two evaluations of the prgs. In Figure~\ref{fig:sim-short} we show the case that the committer P is corrupt (the other case is in the Appendix). The simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit}' ~ y)$; in the real world, this is relayed by the dummy adversary to Q, who outputs \textsf{Committed} back to the environment. Hence to achieve the same effect in the ideal word, the simulator must send $(\mathsf{Commit}~b)$ to $\Func_{\textsc{Com}}$. To extract $b$ from $y$, the simulator makes use of the prg trapdoor check which one has $y$ in its range.
+It is necessary to argue by cryptographic reduction that this simulation is sound.
+
+\begin{figure}
+\lstinputlisting[style=myilc]{listings/sim-short.ilc}
+\caption{Ideal world simulator (excerpt) for UC commitment (full version in Appendix).}
+\label{fig:sim-short}
+\end{figure}
+
 
 \paragraph{Relational argument.}
 The goal of the relational analysis is to show that an environment's output in
