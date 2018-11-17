@@ -1,4 +1,4 @@
-let simR !crupt !toZ frZ !toF frF toP frP !toQ frQ toQasP toPasQ !k !bits =
+let simR !crupt !toZ frZ !toF frF toP frP !toQ frQ !k !bits =
   match crupt with
   | CruptP $=>$
     let $\langle$!(Commit b), frZ$\rangle$ = rd frZ in
