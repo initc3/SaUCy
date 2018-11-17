@@ -76,6 +76,29 @@ such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 
 \subsection{Confluence}
 
+The following lemmas state structural
+invariants over write effects and read channels of a well-typed
+configuration: no two writes are in parallel composition, and every read channel end is a non-duplicable (affine) resource.
+
+\begin{lemma}[Unique writer process]
+\label{lem:UniqueWriter}
+If $C$ is a well-typed configuration with process pool~$\pi$, 
+then there exists at most one write-mode process in $\pi$.
+\begin{proof}
+By structural induction over the typing derivation for $C$.
+\end{proof}
+\end{lemma}
+
+\begin{lemma}[Unique reader process]
+\label{lem:UniqueReader}
+If $C$ is a well-typed configuration with process pool~$\pi$, 
+and $c$ is a read channel in this configuration,
+then there exists at most one process in $\pi$ where $c$ appears.
+\begin{proof}
+By structural induction over the typing derivation for $C$.
+\end{proof}
+\end{lemma}
+
 \begin{theorem}[Single-step confluence]
 For all well-typed configurations $C$,
 %
@@ -110,8 +133,12 @@ or
    from the second step to that of the first step.
 
    \emph{Case: read-write interaction:}
-     TODO
-
+   In the case that either step uses \Rule{rw}, 
+   we rely on
+   lemmas \ref{lem:UniqueWriter} and \ref{lem:UniqueReader}.
+   to show that both steps use \Rule{rw},
+   and that the reader-writer process pair is unique.
+   
 \end{proof}
 \end{theorem}
 
