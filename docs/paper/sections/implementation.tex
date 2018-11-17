@@ -1,13 +1,13 @@
 \section{Implementation}
 \label{sec:implementation}
 
-We have implemented an ILC interpreter in Haskell.  For economy of use, our
-implementation performs polymorphic type inference, bounded polymorphic mode
-inference, and affinity inference. Polymorphism on modes is bounded precisely
-due to our restriction on parallel write mode composition. Moreover, a
-consequence of any kind of mode polymorphism at all is that the modes of higher
-order functions can be dependent on the modes of its function arguments. We
-illustrate this below.
+We have implemented an ILC interpreter in Haskell, which (at present) consists
+of 2.3K source lines of code.  For economy of use, our implementation performs
+polymorphic type inference, bounded polymorphic mode inference, and affinity
+inference. Polymorphism on modes is bounded precisely due to our restriction on
+parallel write mode composition. Moreover, a consequence of any kind of mode
+polymorphism at all is that the modes of higher order functions can be dependent
+on the modes of its function arguments. We give a taste of this below.
 
 This first example features full mode polymorphism and no dependent modes.
 \lstinputlisting[style=myilc]{listings/loop.ilc}
