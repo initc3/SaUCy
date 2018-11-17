@@ -23,6 +23,66 @@ map a kind of identifier (location, process name, or channel name) to its associ
     &$\bnfas$& $\emptyctxt \bnfalt \ChTy,c:A \bnfalt \ChTy,c:X$
 \end{grammar}
 
+\subsection{Configuration typings}
+
+Using the syntax above, we define configuration typing as a straightforward extension
+of single-process typing, given in \Secref{subsec:types}:
+
+\judgbox{\JCty{\StTy}{\ChTy}{C}{\PrTy} |> m}{Configuration $C$ is well-typed}
+\begin{mathpar}
+\Infer{empty}
+{ 
+  \StTy ; \ChTy |- \Store : \StTy
+}
+{\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\emptyProcs}}{\cdot} |> \Vm}
+\and
+\Infer{aff}
+{ \StTy ; \ChTy |- e : X |> m_1
+  \\
+ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy} |> m_2
+ \\
+ m_1 || m_2 => m_3
+}
+{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:X} |> m_3}
+\and
+\Infer{int}
+{ \StTy ; \ChTy |- e : A |> m_1
+  \\
+ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy} |> m_2
+ \\
+ m_1 || m_2 => m_3
+}
+{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:A} |> m_3 }
+\end{mathpar}
+
+Notably, parallel procesess with modes $m_1$ and $m_2$ must have modes
+that compose, where $m_1 || m_2$ is defined; this invariant ensures that there
+is at most one write mode process in a well-typed pool.
+
+Because of the premise in the base case rule (\Rule{empty}), all
+well-typed configurations consist of well-typed stores.
+%
+We define store typing in the standard way:
+
+\judgbox{\StTy ; \ChTy |- \Store : \StTy }
+{Under $\StTy$ and $\ChTy$, store~$\Store$ is well-typed}
+\begin{mathpar}
+\Infer{empty}
+{ ~ }
+{ 
+  \StTy ; \ChTy |- \cdot : \cdot
+}
+\and
+\Infer{loc}
+{ \StTy ; \ChTy |- v : A 
+  \\
+  \StTy ; \ChTy |- \Store : \StTy
+}
+{ 
+  \StTy ; \ChTy |- (\Store, \ell:v) : (\StTy, \ell:A)
+}
+\end{mathpar}
+
 \subsection{Type soundness}
 
 \begin{lemma}[Non-progress]
@@ -34,9 +94,9 @@ and process typings~$\PrTy$,
 if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
 and $\JCterm{C}$,
 then $\not\exists C'$ such that $\JCred{C}{C'}$.
-\begin{proof}
-  TODO
-\end{proof}
+%\begin{proof}
+%  TODO
+%\end{proof}
 \end{lemma}
 
 
@@ -46,13 +106,13 @@ store typings~$\StTy$,
 channel typings~$\ChTy$,
 and process typings~$\PrTy$,
 %
-if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
+if $\JCty{\StTy}{\ChTy}{C}{\PrTy} |> m$
 then 
 either $\JCterm{C}$,
 or $\exists C'$ such that $\JCred{C}{C'}$.
-\begin{proof}
-   TODO
-\end{proof}
+%\begin{proof}
+%   TODO
+%\end{proof}
 \end{theorem}
 
 \begin{theorem}[Preservation]
@@ -62,16 +122,16 @@ channel typings~$\ChTy$
 and process typings~$\PrTy$,
 \\
 %
- if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
+ if $\JCty{\StTy}{\ChTy}{C}{\PrTy} |> m$
 and $\JCred{C}{C'}$ 
 then there exists 
 store typing extension $\StTy' \supseteq \StTy$
 channel typing extension $\ChTy' \supseteq \ChTy$
 and process typing extension $\PrTy' \supseteq \PrTy$
-such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
-\begin{proof}
-  TODO
-\end{proof}
+such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'} |> m'$.
+%\begin{proof}
+%  TODO
+%\end{proof}
 \end{theorem}
 
 
@@ -115,7 +175,10 @@ or
 \item $\exists C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
 \end{enumerate}
 \begin{proof}
-   By induction on the pair of steps $\left< \JCred{C}{C_1} , \JCred{C}{C_2} \right>$.
+   By induction on the pair of steps 
+   $\left< \JCred{C}{C_1}\right.$, 
+   $\left.\JCred{C}{C_2} \right>$.
+
    We consider the following cases:
 
    \emph{Case: congruence:} if either step uses \Rule{congr}, we apply the inductive hypothesis.
@@ -185,7 +248,8 @@ there exists renaming function~$g$
 such that $C_1 = g(C_2)$.
 \begin{proof}
   By induction on the reduction sequence pair
-  $\left< \JCredm{C}{C_1} , \JCredm{f(C)}{C_2} \right>$.
+  $\left< \JCredm{C}{C_1}\right.$, 
+  $\left.\JCredm{f(C)}{C_2} \right>$.
   Because of single-step confluence, we know that if
   if either reduction sequence is empty, then the other must be empty,
   and that
