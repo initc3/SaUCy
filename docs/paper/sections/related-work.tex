@@ -1,41 +1,41 @@
 \section{Related Work}
 \label{sec:related}
 
-\begin{comment}
-We first touch on two different approaches for analyzing cryptographic
-protocols: the symbolic approach and the computational approach. Their
-distinctions show up in our subsequent discussions of related process calculi,
-tools for cryptographic reasoning, and variations of the UC framework.
+%% \begin{comment}
+%% We first touch on two different approaches for analyzing cryptographic
+%% protocols: the symbolic approach and the computational approach. Their
+%% distinctions show up in our subsequent discussions of related process calculi,
+%% tools for cryptographic reasoning, and variations of the UC framework.
 
-\subsection{Symbolic vs. Computational Cryptography}
-\label{subsec:symbolic-computational}
+%% \subsection{Symbolic vs. Computational Cryptography}
+%% \label{subsec:symbolic-computational}
 
-Approaches for reasoning about the security of cryptographic protocols generally
-operate in one of two models---the symbolic model or the computational model---each
-of which have their merits and drawbacks.
+%% Approaches for reasoning about the security of cryptographic protocols generally
+%% operate in one of two models---the symbolic model or the computational model---each
+%% of which have their merits and drawbacks.
 
-In the symbolic model, cryptographic operations are abstracted (and idealized)
-as term algebras, and adversary capabilities are defined as deduction rules over
-these terms (which can be applied
-nondeterministically)~\cite{cortier2011survey}. Viewing protocols from this
-abstract vantage point makes the analysis relatively tractable. However, because
-adversaries are nondeterministic, their capabilities must be severely restricted
-and it is therefore possible to verify protocols that are susceptible to attacks
-that lie outside the adversary model.
+%% In the symbolic model, cryptographic operations are abstracted (and idealized)
+%% as term algebras, and adversary capabilities are defined as deduction rules over
+%% these terms (which can be applied
+%% nondeterministically)~\cite{cortier2011survey}. Viewing protocols from this
+%% abstract vantage point makes the analysis relatively tractable. However, because
+%% adversaries are nondeterministic, their capabilities must be severely restricted
+%% and it is therefore possible to verify protocols that are susceptible to attacks
+%% that lie outside the adversary model.
 
-In the computational model, cryptographic operations are modeled as functions
-over bitstrings, and adversaries are modeled as probabilistic polynomial time
-Turing machines. Here, security is defined in terms of the probability and
-computational complexity of attacks, which complicates proofs, but admits much
-stronger security guarantees. Analyzing protocols in the computational model is
-the modus operandi in cryptography, and, for the most part, proofs are done
-manually. The goal of this work, and others we discuss later, seek to change
-this dynamic.
+%% In the computational model, cryptographic operations are modeled as functions
+%% over bitstrings, and adversaries are modeled as probabilistic polynomial time
+%% Turing machines. Here, security is defined in terms of the probability and
+%% computational complexity of attacks, which complicates proofs, but admits much
+%% stronger security guarantees. Analyzing protocols in the computational model is
+%% the modus operandi in cryptography, and, for the most part, proofs are done
+%% manually. The goal of this work, and others we discuss later, seek to change
+%% this dynamic.
 
-There is also a body of interesting work on computational soundness, which
-focuses on bridging the gap between the symbolic and computational
-models~\cite{abadi2002reconciling}.
-\end{comment}
+%% There is also a body of interesting work on computational soundness, which
+%% focuses on bridging the gap between the symbolic and computational
+%% models~\cite{abadi2002reconciling}.
+%% \end{comment}
 
 \subsection{Process Calculi}
 \label{subsec:process-calculi}
@@ -86,7 +86,11 @@ Lincoln \etal~\cite{lincoln1998probabilistic} give a computational semantics to
 a variant of the $\pi$-calculus, which allows one to define communicating
 probabilistic polynomial-time processes; Mateus
 \etal~\cite{mateus2003composition} adapts their calculus to explore (sequential)
-compositionality properties in protocols.  Laud~\cite{laud2005secrecy} gives a
+compositionality properties in protocols.
+A drawback of these protocols is that they embed probabilistic choices directly
+into the definition --- essentially when faced with non-determinism, each path
+has equal probability.
+Laud~\cite{laud2005secrecy} gives a
 computational semantics to the spi calculus, which additionally includes a type
 system for ensuring well-typed protocols preserve the secrecy of messages given
 to it by users.
@@ -113,7 +117,6 @@ ILC requires a sophisticated type system to achieve confluence.
 
 \subsection{Tools for Cryptographic Analysis}
 \label{subsec:tools}
-
 There are a variety of computer-aided tools for cryptographic analysis, both
 symbolic and computational. Among the symbolic tools include the NRL protocol
 analyzer~\cite{meadows1996nrl}, Maude-NPA~\cite{escobar2009maude}, and
@@ -137,29 +140,35 @@ its tooling.
 
 \subsection{Variations of the UC Framework}
 \label{subsec:uc-variants}
-
 A number of variants of the UC framework have been proposed to address some of
 its hitches or to make it easier to use.
+Symbolic UC~\cite{bohl2016symbolic} defines a UC-like framework
+in $\pi$ calculus, but does does not aim to show computational
+proofs. Instead, they prove security relative to idealized notions
+of cryptography primitives. Such security claims may not transfer
+to proofs based on computational hardness assumptions.
+%In particular, they show that certain
+%aspects of the UC framework, such as ideal functionality specifications and UC
+%composition, still carry over to the symbolic model.
 
-Symbolic UC~\cite{bohl2016symbolic} transports ideas from the UC framework to
-the symbolic model of cryptography. In particular, they show that certain
-aspects of the UC framework, such as ideal functionality specifications and UC
-composition, still carry over to the symbolic model.
+The reactive simulatability framework (RSIM)~\cite{backes2007reactive} is
+a framework for representing and analyzing cryptographic protocols in a
+composable way. In contrast with UC, which uses ITMs as its computational model,
+RSIM uses probabilistic IO automata, which is amenable automated reasoning tools.
+In contrast to RSIM, ILC is intended to be the basis for a convenient and
+flexible programming language to which we can easily port existing UC
+pseudocode. GNUC~\cite{hofheinz2015gnuc}.
+%As one example, RSIM defines a particular
+%communication model in terms of ports and schedulers, whereas in our
+%case the scheduler 
+%ILC leads to a programming language, more flexible and convenient to work with.
 
 Simplified universal composability (SUC)~\cite{canetti2015simpler} gives a
 simpler and restricted variant of the UC framework that is suitable for
 two-party multiparty computation tasks. The main difference from vanilla UC is
 that the set of parties is fixed, which greatly simplifies polynomial time
 reasoning and protocol composition while maintaining the same strong properties.
-
-The reactive simulatability framework (RSIM)~\cite{backes2007reactive} is
-another framework for representing and analyzing cryptographic protocols in a
-composable way. In contrast with UC, which uses ITMs as its computational model,
-RSIM uses probabilistic IO automata. This simplified model makes analyzing
-protocols amenable to automated reasoning tools.
-
-\todo{GUC~\cite{canetti2007universally}, GNUC~\cite{hofheinz2015gnuc},
-  JUC~\cite{canetti2003universal}}
+We follow the SUC approach in our development of \textsf{execUC}.
 
 \begin{comment}
 \begin{enumerate}[leftmargin=*]
