@@ -231,8 +231,14 @@ environment and the functionality.}
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/Fcrs.ilc}
-\caption{Ideal functionality for common reference string (CRS).}
+\caption{Ideal functionality for common reference string.}
 \label{fig:f-crs}
+\end{figure*}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/Fcom-full.ilc}
+\caption{Ideal functionality for one-time bit commitment.}
+\label{fig:f-com-full}
 \end{figure*}
 
 %\begin{figure*}
@@ -322,18 +328,18 @@ permutations, which require extensions to ILC. The new syntactic forms are
 dynamic semantics shown in Figure~\ref{fig:extended-ilc}. The semantics are
 written in terms of the cryptographic objects themselves.
 
-\todo{Probably move these details to the appendix?} The key generation function
-\textsf{keygen} takes as input a security parameter and outputs a random public
-key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor permutation function
+The key generation function \textsf{keygen} takes as input a random bitstring
+and outputs a random public key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor
+permutation function
 \textsf{tdp} takes as inputs a key $v_{pk}$ and a bitstring $v_{in}$ and outputs
-a bitstring $v_{out}$. \todo{Inverse.} The hardcore predicate function
-\textsf{hc} takes as input a key $v_{pk}$ and outputs a single bit. \todo{These
-  require a bit of background...}
+a bitstring $v_{out}$. The \textsf{inv} function takes as inputs a key-trapdoor
+pair $(v_{pk}, v_{td})$ and a bitstring $v_{in}$ and outputs a bitstring
+$v_{out}$. The hardcore predicate function
+\textsf{hc} takes as input a key $v_{pk}$ and outputs a single bit.
 
 \input{figures/ilc/extended-syntax}
 
-\todo{Give definition of PRG somwhere.} We can use these to implement a special
-pseudorandom number generator $G_{pk}
+We can use these to implement a special pseudorandom number generator $G_{pk}
 \colon \{0,1\}^k \to \{0,1\}^{4k}$ that has a trapdoor property, i.e., it is easy
 to compute, but difficult to invert except with special information called the
 ``trapdoor.''

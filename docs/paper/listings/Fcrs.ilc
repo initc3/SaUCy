@@ -1,4 +1,4 @@
-fCrs :: $\forall$ ... . $\tyBang{\keyword{Crupt} \multimap ... \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}}$
+fCrs :: $\forall$ ... . $\tyBang{\keyword{Crupt} \multimap \cdots \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}}$
 let fCrs crupt !toP frP !toQ frQ !toA frA !k !bits =
   let rbits = ref bits in
   let pubref = ref Nothing in

@@ -3,7 +3,7 @@
     Expressions
     & $e$
         &$\bnfas$&
-        $\eKGen{e_1}{e_2} \bnfalt \eTdp{e_1}{e_2} \bnfalt \eInv{e_1}{e_2}
+        $\eKGen{e} \bnfalt \eTdp{e_1}{e_2} \bnfalt \eInv{e_1}{e_2}
     \bnfalt \eHc{e}$
   \end{grammar}
   
@@ -11,9 +11,8 @@
   intuitionistic type $A$ and mode $m$.}
   \begin{mathpar}
   \Infer{kgen}
-  {\Delta_1 ; \Gamma |- e_1 : \tyNat\\
-   \Delta_2 ; \Gamma |- e_2 : [\tyBit]}
-  {\Delta_1, \Delta_2; \Gamma |- \eKGen{e_1}{e_2}: ([\tyBit], [\tyBit])}
+  {\Delta ; \Gamma |- e : [\tyBit]}
+  {\Delta; \Gamma |- \eKGen{e}: ([\tyBit], [\tyBit])}
   %
   \and
   %
@@ -40,8 +39,8 @@
     expression~$e_1$ reduces to~$\Store_2 ; e_2$.}
   \begin{mathpar}
   \Infer{kgen}
-  {\keyword{\textbf{Gen}}(v_k, v_r) = (v_{pk}, v_{td}) \\ v_{k}, v_{td} \in \{0,1\}^{v_k}}
-  { \Store ; \eKGen{v_k}{v_r} ---> \Store ; (v_{pk}, v_{td})}
+  {\keyword{\textbf{Gen}}(v_r) = (v_{pk}, v_{td}) \\ v_{pk}, v_{td} \in \{0,1\}^k}
+  { \Store ; \eKGen{v_r} ---> \Store ; (v_{pk}, v_{td})}
   \and
   \Infer{tdp}
   {\mathbf{f}({v_{pk}},v_{in}) = v_{out} \\ \mathbf{f} \colon \{0,1\}^k -> \{0,1\}^k -> \{0,1\}^k}
@@ -57,6 +56,7 @@
     -> \{0, 1\}}
   { \Store ; \eHc{v_{pk}} ---> \Store ; v}
   \end{mathpar}
-  \caption{Extending ILC with trapdoor permutations. \todo{Security parameter.}}
+  \caption{Extending ILC with trapdoor permutations. The semantics are
+    parameterized by a security parameter $k$.}
   \label{fig:extended-ilc}
 \end{figure*}
