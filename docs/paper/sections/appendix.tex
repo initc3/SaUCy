@@ -3,7 +3,6 @@
 \onecolumn
 \section{Algorithmic Typing Rules}
 \label{sec:algo-type-check}
-\ \\
 
 \begin{figure*}[h]
 \centering
@@ -185,11 +184,12 @@
 \label{fig:alg-type-check}
 \end{figure*}
 
-\twocolumn
+\newpage
+
 \section{\textsf{execUC}}
 \label{sec:full-execUC}
 
-\begin{figure*}
+\begin{figure*}[h]
 \begin{subfigure}{.75\textwidth}
 \lstinputlisting[style=myilc]{listings/suc-colored.ilc}
 \end{subfigure}
@@ -206,11 +206,13 @@ spawned in a child process (given the appropriate channels and parameters), and
 the process continues as the environment process. Notice that parties are run in
 wrapper functions, which alter their behavior depending on whether or not they
 are corrupted. If a party is corrupted, then the adversary masquerades as the
-party. The mode carried over the rightmost lollipop is $\mathsf{m} \in \{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}}
+party. The mode carried over the rightmost lollipop is derived as $\{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}}
 || (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R}
-|| \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}_{\mathsf{e}}}\}$.}
+|| \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}}\}$.}
 \label{fig:execUC}
 \end{figure*}
+\newpage
+\twocolumn
 
 \begin{figure*}
 \lstinputlisting[style=myilc]{listings/dummy.ilc}
@@ -264,10 +266,6 @@ environment and the functionality.}
 \caption{Real world simulator for UC commitment.}
 \label{fig:simR}
 \end{figure*}
-
-
-
-\section{Cryptography Definitions}
 
 \section{Universally Composable Commitment Protocol}
 In this section we give the full elaboration of our UC commitment instantiation.
