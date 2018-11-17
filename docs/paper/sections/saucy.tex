@@ -98,20 +98,18 @@ the onset of the execution. This is in contrast to \emph{adaptive} corruptions,
 in which parties can be corrupted as the execution proceeds.
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
 
-The function \textsf{execUC} is parameterized by an environment \textsf{z},
+\noindent The function \textsf{execUC} is parameterized by an environment \textsf{z},
 protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a}, an ideal
 functionality \textsf{f}, a security parameter \textsf{k}, a random bitstring
 \textsf{r}, and a static corruption model \textsf{crupt :: !Crupt}. The
 \textsf{Crupt} datatype is defined below, with its variants denoting the cases
 when party \textsf{p} is corrupt, party \textsf{q} is corrupt, or no party is
 corrupt, respectively.
-Some careful programming is needed to handle the cases
-when the adversary sends messages on behalf of corrupted parties; this is 
-captured by \textsf{wrapper\{P,Q\}} (shown in the Appendix \todo{}).
-
-\endgroup
-
 \lstinputlisting[style=myilc]{listings/crupt.ilc}
+\endgroup
+\noindent Some careful programming is needed to handle the cases
+when the adversary sends messages on behalf of corrupted parties; this is 
+captured by \textsf{wrapper\{P,Q\}} (shown in the Appendix).
 
 \noindent It first allocates the required channels (see
 Figure~\ref{fig:execUC-diagram}), and then splits a random bitstring,
