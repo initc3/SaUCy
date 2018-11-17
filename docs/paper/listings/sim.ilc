@@ -15,8 +15,7 @@ let simI !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
 	  else
 	    if check $\mathsf{td}_1$ $\mathsf{pk}_1$ (xors y $\sigma$) then
 	      wr (Commit 1) $->$ toP
-	    else
-	      error "Fail"
+	    else error "Fail"
 	  let $\langle$!(A2P (Open' b r)), frZ$\rangle$ = rd frZ in
 	    if b == 0 && y == prg $\mathsf{pk}_0$ r ||
 	      b == 1 && y == xors (prg $\mathsf{pk}_1$ r) $\sigma$
