@@ -142,26 +142,32 @@ its tooling.
 \label{subsec:uc-variants}
 A number of variants of the UC framework have been proposed to address some of
 its hitches or to make it easier to use.
-Symbolic UC~\cite{bohl2016symbolic} defines a UC-like framework
-in $\pi$-calculus, but does does not aim to show computational
-proofs. Instead, they prove security relative to idealized notions
-of cryptography primitives. Such security claims may not transfer
-to proofs based on computational hardness assumptions.
 %In particular, they show that certain
 %aspects of the UC framework, such as ideal functionality specifications and UC
 %composition, still carry over to the symbolic model.
-
 The reactive simulatability framework (RSIM)~\cite{backes2007reactive} is
 a framework for representing and analyzing cryptographic protocols in a
 composable way. In contrast with UC, which uses ITMs as its computational model,
 RSIM uses probabilistic IO automata, which is amenable automated reasoning tools.
 In contrast to RSIM, ILC is intended to be the basis for a convenient and
 flexible programming language to which we can easily port existing UC
-pseudocode. GNUC~\cite{hofheinz2015gnuc}.
+pseudocode. 
+The IITMs model~\cite{iitm,kusters2009computational} has similar
+goals to ours, namely to provide a simple basis for UC.
+However, our approach is simpler, for example our type system subsumes
+their notion of \emph{compatibility} and \emph{connectability}, we avoid
+the distinctions of \emph{net}, \emph{external}, \emph{io}, etc. tapes,
+a concrete programming model.
 %As one example, RSIM defines a particular
 %communication model in terms of ports and schedulers, whereas in our
 %case the scheduler 
 %ILC leads to a programming language, more flexible and convenient to work with.
+
+Symbolic UC~\cite{bohl2016symbolic} defines a UC-like framework
+in $\pi$-calculus, but does does not aim to show computational
+proofs. Instead, they prove security relative to idealized notions
+of cryptography primitives. Such security claims may not transfer
+to proofs based on computational hardness assumptions.
 
 Simplified universal composability (SUC)~\cite{canetti2015simpler} gives a
 simpler and restricted variant of the UC framework that is suitable for
