@@ -12,7 +12,8 @@
   \\[2mm]
   \judgbox{m ;; n => p}{~~The sequential composition of modes $m$ and $n$ is mode~$p$.}
   \begin{mathpar}
-  \Infer{w*}{ }{\Wm ;; n => \Wm}
+  \Infer{wr}{ }{\Wm ;; \Rm => \Wm}
+  \and \Infer{wv}{ }{\Wm ;; \Vm => \Wm}
   \and \Infer{r$\ast$}{ }{\Rm ;; n => \Rm}
   \and \Infer{v$\ast$}{ }{\Vm ;; n => n}
   \end{mathpar}
@@ -22,6 +23,6 @@
 %  \begin{mathpar}
 %  \Infer{ }{ }{\Wm || \Wm\ \slashed{=>}\ p}
 %  \end{mathpar}
-\caption{Sequential and parallel mode composition.}
+\caption{Sequential and parallel mode composition. \todo{Changed.}}
 \label{fig:mode-composition}
 \end{figure*}
