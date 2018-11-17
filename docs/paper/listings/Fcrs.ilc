@@ -1,8 +1,12 @@
 fCrs :: $\forall$ ... . $\tyBang{\keyword{Crupt} \multimap ... \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}}$
-let fCrs crupt !toP frP !toQ frQ !toA frA k r =
+let fCrs crupt !toP frP !toQ frQ !toA frA !k !bits =
+  let rbits = ref bits in
   let pubref = ref Nothing in
   let replyCrs fr $\mathsf{to}$ = loop fr !(match @pubref with
-			    | Nothing $=>$ let pub = samplePublicStrings D in
+			    | Nothing $=>$ let $\sigma$ = sample (4*k) rbits in
+					let $\mathsf{pk}_0$ = kgen k (sample k rbits) in
+					let $\mathsf{pk}_1$ = kgen k (sample k rbits) in					   
+					let pub = ($\sigma$, $\mathsf{pk}_0$,$\mathsf{pk}_1$) in
 					  set pubref $\coloneqq$ Just pub ; wr pub $-> \mathsf{to}$
                             | Just pub $=>$ wr pub $-> \mathsf{to}$) in
       $\,$replyCrs frP toP
