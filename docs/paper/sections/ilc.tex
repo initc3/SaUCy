@@ -195,22 +195,55 @@ to affine variables.
 \subsection{Dynamic Semantics}
 \label{subsec:semantics}
 
-\todo{Need some help explaining this subsection.} Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic semantics
-of ILC. The top-level judgment $C_1 -> C_2$ should be read as ``configuration
-$C_1$ steps to configuration $C_2$,'' where a configuration $C$ consists of a
-set of communication channels $\Sigma$ (both read-ends and write-ends), a process
-pool $\pi$, and a store $\sigma$ (a finite map from locations $\ell$ to
-values). Configuration stepping uses an ancillary judgment for local stepping,
-which covers cases in which the configuration does not change. The local
-stepping judgment $\sigma_1; \e_1 \longrightarrow \sigma_2; \e_2$ should be read as ``under store
-$\sigma_1$, expression $e_1$ steps to store $\sigma_{2}$ and expression $e_2$.
+%\todo{Need some help explaining this subsection.} 
+Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic syntax and semantics of ILC, respectively.
+%
+We define a \emph{configuration}~$C$ as a tuple of dynamic channel and process names~$\Sigma$, 
+a shared mutable store~$\sigma$, 
+and a pool of running and terminated processes~$\pi$.
+%
+To state and prove the meta theory of ILC (\Secref{sec:metatheory}), we
+extend the type system give above with typing rules for
+configurations, including typing environments for channels and stores. 
 
-Local stepping has a standard call-by-value semantics. Configuration stepping is
-more interesting. In the fork rule, the redex $\eFork{e_1}{e_2}$ in evaluation
-context $E$ spawns a new process $e_1$ and steps to $E[e_2]$. In the nu rule,
-the term $E[ \eNu{(x_1, x_2)}{e} ]$ reduces to $E[
-[\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]$, where $c_1$ and $c_2$ are fresh channels
-added to $\Sigma$. In the rw rule, given that $c_2$ is the corresponding write
-channel of $c_1$, denoted $c_2 \leadsto c_1$, the processes $E_1[R[ \eRd{\eChan{c_1}}]
-]$ and $E_2[ \eWr{\eChan{c_2}}{v}]$ step to the processes $E_1[
-(v, \eChan{c_1})]$ and $E_2[ \eUnit]$, respectively.
+We omit these details here for space reasons, and we refer the interested reader to \Secref{sec:ilcproofs}.
+
+We read the configuration reduction judgment $C_1 ---> C_2$ as ``configuration
+$C_1$ steps to configuration $C_2$,'' 
+%
+and the local stepping judgment $\sigma_1; \e_1 \longrightarrow \sigma_2; \e_2$ for a single process~$e$ as ``under store
+$\sigma_1$, expression $e_1$ steps to store $\sigma_{2}$ and expression $e_2$.
+%
+The rules of this judgement follow a standard call-by-value semantics, 
+where we streamline the definition with an evaluation context~$E$.
+
+Configuration stepping conists of five rules, including a congruence
+rule \Rule{congr} that permits some of the other rules to be simpler,
+by making the order of the pool unimportant.
+%
+The other four rules consist of local stepping (via \Rule{local}),
+creating new proceses (via \Rule{fork}),
+creating new channels (via \Rule{nu}),
+and read-write interactions (via \Rule{rw}).
+%
+To avoid double-allocating the same name twice, the rules record the
+names of channels (read and write ends) and procesess in the name set.
+%
+Rule~\Rule{rw} uses the syntax~$R$ for a combination of several (mutually exclusive) read expressions; when synchronized, 
+using this syntax, the rule eliminates the unchosen read effects before control continues with the chosen read effect.
+
+%%% If you want more detail, you can uncomment this text below;
+%%% However, it doesn't add much intuition beyond just reading each rule:
+
+%% In the fork rule, the redex $\eFork{e_1}{e_2}$ in evaluation
+%% context $E$ spawns a new process $e_1$ and continues by evaluating $E[e_2]$. 
+%% %
+%% In the nu rule,
+%% the term $E[ \eNu{(x_1, x_2)}{e} ]$ reduces to $E[
+%% [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]$, where $c_1$ and $c_2$ are fresh channel ends
+%% added to $\Sigma$. 
+%% %
+%% In the rw rule, given that $c_2$ is the corresponding write
+%% channel of $c_1$, denoted $c_2 \leadsto c_1$, the processes $E_1[R[ \eRd{\eChan{c_1}}]
+%% ]$ and $E_2[ \eWr{\eChan{c_2}}{v}]$ step to the processes $E_1[
+%% (v, \eChan{c_1})]$ and $E_2[ \eUnit]$, respectively.

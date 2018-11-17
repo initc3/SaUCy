@@ -36,7 +36,10 @@
 \\[1mm]
  Read contexts
   & $R$
-     & $\bnfas$ & $\bullet \bnfalt \eRd{\eChan{c}} \oplus R \bnfalt R \oplus \eRd{\eChan{c}}$
+%%
+%% This initial definition of R is too limiting: It's not general enough to support the progress theorem:
+%     & $\bnfas$ & $\bullet \bnfalt \eRd{\eChan{c}} \oplus R \bnfalt R \oplus \eRd{\eChan{c}}$
+     & $\bnfas$ & $\bullet \bnfalt e \oplus R \bnfalt R \oplus e$
 \end{grammar}
 \end{subfigure}
 \caption{Channel names, process names, configurations and evaluation contexts.}
