@@ -5,7 +5,7 @@ let execUC z (p,q) f a k !r crupt =
   , (${\color{Green}\sf rP2F}$, ${\color{Green}\sf wP2F}$), (${\color{Green}\sf rF2P}$, ${\color{Green}\sf wF2P}$)
   , (${\color{Green}\sf rQ2F}$, ${\color{Green}\sf wQ2F}$), (${\color{Green}\sf rF2Q}$, ${\color{Green}\sf wF2Q}$)
   , (${\color{orange}\sf rF2A}$, ${\color{orange}\sf wF2A}$), (${\color{orange}\sf rA2F}$, ${\color{orange}\sf wA2F}$)
-  , (${\color{orange}\sf rA2Z}$, ${\color{orange}\sf wA2Z}$), (${\color{orange}\sf rZ2A}$, ${\color{orange}\sf wZ2A}$)
+  , (${\color{purple}\sf rA2Z}$, ${\color{purple}\sf wA2Z}$), (${\color{purple}\sf rZ2A}$, ${\color{purple}\sf wZ2A}$)
   , (rP2A, wP2A), (rA2P, wA2P)
   , (rQ2A, wQ2A), (rA2Q, wA2Q)
   , (${\color{blue}\sf rP2Q}$, ${\color{blue}\sf wP2Q}$), (${\color{blue}\sf rQ2P}$, ${\color{blue}\sf wQ2P}$)    
@@ -27,7 +27,7 @@ let execUC z (p,q) f a k !r crupt =
 	p ${\color{red}\sf toZ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf toF}$ 	${\color{Green}\sf frF}$ ${\color{blue}\sf toP}$ ${\color{blue}\sf frP}$ k bits in       
     let (rf,ra,rp,rq,rz) = splitBits5 r in
     $\ \ \ \,$ f crupt !${\color{Green}\sf wF2P}$ ${\color{Green}\sf rP2F}$ !${\color{Green}\sf wF2Q}$ ${\color{Green}\sf rQ2F}$ !${\color{orange}\sf wF2A}$ ${\color{orange}\sf rA2F}$ k !rf
-    $\xFork$ a crupt !${\color{orange}\sf wA2Z}$ ${\color{orange}\sf rZ2A}$ !${\color{orange}\sf wA2F}$ ${\color{orange}\sf rF2A}$ !wA2P rP2A !wA2Q rQ2A k !ra
+    $\xFork$ a crupt !${\color{purple}\sf wA2Z}$ ${\color{purple}\sf rZ2A}$ !${\color{orange}\sf wA2F}$ ${\color{orange}\sf rF2A}$ !wA2P rP2A !wA2Q rQ2A k !ra
     $\xFork$ wrapperP p crupt !${\color{red}\sf wP2Z}$ ${\color{red}\sf rZ2P}$ !${\color{Green}\sf wP2F}$ ${\color{Green}\sf rF2P}$ !wP2A rA2P !${\color{blue}\sf wP2Q}$ ${\color{blue}\sf rQ2P}$ k !rp
     $\xFork$ wrapperQ q crupt !${\color{red}\sf wQ2Z}$ ${\color{red}\sf rZ2Q}$ !${\color{Green}\sf wQ2F}$ ${\color{Green}\sf rF2Q}$ !wQ2A rA2Q !${\color{blue}\sf wQ2P}$ ${\color{blue}\sf rP2Q}$ k !rq
-    $\xFork$ z !${\color{red}\sf wZ2P}$ ${\color{red}\sf rP2Z}$ !${\color{red}\sf wZ2Q}$ ${\color{red}\sf rQ2Z}$ !${\color{orange}\sf wZ2A}$ ${\color{orange}\sf rA2Z}$ k !rz
+    $\xFork$ z !${\color{red}\sf wZ2P}$ ${\color{red}\sf rP2Z}$ !${\color{red}\sf wZ2Q}$ ${\color{red}\sf rQ2Z}$ !${\color{purple}\sf wZ2A}$ ${\color{purple}\sf rA2Z}$ k !rz
