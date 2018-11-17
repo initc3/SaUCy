@@ -43,29 +43,40 @@
 Process calculi have a long and rich history. ILC occupies a point in this space
 that is particularly suited to faithfully capturing interactive Turing machines
 (and hence, computational cryptography), but plenty of existing calculi are also
-cryptographically-flavored and/or enjoy similar properties to ILC. We survey
+cryptographically-flavored and/or enjoy similar properties to ILC.
+We survey
 some of them here.
 
-\paragraph{With symbolic semantics.} Two of the early adaptations of process calculi for reasoning about
+\paragraph{With symbolic semantics.}
+Two early adaptations of process calculi for reasoning about
 cryptographic protocols were the spi calculus~\cite{abadi1999calculus} and the
-applied $\pi$-calculus~\cite{abadi2001mobile}, both of which extend the standard
+applied $\pi$-calculus~\cite{abadi2001mobile}, both of which extend the
 $\pi$-calculus with cryptographic
-operations~\cite{milner1999communicating}. Importantly, they introduced
-techniques for proving (symbolic) security via a notion of observational
-equivalence.
+operations~\cite{milner1999communicating}.
+Symbolic UC~\cite{bohl2016symbolic} is a simulation-based security framework
+in this setting.
+However, protocols proven secure in the symbolic setting may not be realizable
+with any cryptographic primitives based on hardness assumptions.
+%Since our aim is to express cryptographic theory,  does does not aim to show computational
+%proofs. Instead, they prove security relative to idealized notions
+%of cryptography primitives. Such 
+
+%Importantly, they introduced
+%techniques for proving (symbolic) security via a notion of observational
+%equivalence.
 
 \paragraph{With computational semantics.}
 Naturally, ensuing work has turned to bridging the gap between this PL-style of
 formalization and the computational model of cryptography by outfitting these
 calculi with a computational semantics.
-
+%
 %The spi calculus extends the
 %$\pi$-calculus with constructs for encryption and decryption, and introduces a
 %technique for proving authenticity and secrecy properties of cryptographic
 %protocols via observational equivalence between spi calculus processes. The
 %applied $\pi$-calculus builds on this work, permitting a wider variety of
 %cryptographic primitives that can be defined by means of an equational theory.
-
+%
 %A variety of tools for protocol analysis, some of which we discuss in the next
 %subsection, can trace their roots back to these works. They generally operate in
 %what is called the \emph{symbolic} model of cryptography (also known as the
@@ -75,13 +86,13 @@ calculi with a computational semantics.
 %from this abstract vantage point makes the analysis relatively tractable, it is
 %possible to verify protocols that are susceptible to simple attacks that lie
 %outside the adversary model.
-
+%
 %A variety of tools for symbolic analysis, some of which we discuss in the next
 %subsection, can trace their roots back to these works. Naturally, ensuing work
 %has also turned to bridging the gap between this PL-style of formalization and
 %the computational model of cryptography by outfitting existing calculi with
 %a computational semantics that considers issues of complexity and probability.
-
+%
 Lincoln \etal~\cite{lincoln1998probabilistic} give a computational semantics to
 a variant of the $\pi$-calculus, which allows one to define communicating
 probabilistic polynomial-time processes; Mateus
@@ -117,15 +128,15 @@ ILC requires a sophisticated type system to achieve confluence.
 
 \subsection{Tools for Cryptographic Analysis}
 \label{subsec:tools}
-There are a variety of computer-aided tools for cryptographic analysis, both
-symbolic and computational. Among the symbolic tools include the NRL protocol
+There are a variety of computer-aided tools for cryptographic analysis.
+Among the symbolic tools include the NRL protocol
 analyzer~\cite{meadows1996nrl}, Maude-NPA~\cite{escobar2009maude}, and
 Proverif~\cite{blanchet2010proverif}. Among the computational tools include
 CertiCrypt~\cite{barthe2009formal}, EasyCrypt~\cite{barthe2011computer},
 CryptoVerif~\cite{blanchet2007cryptoverif}, Cryptol~\cite{lewis2003cryptol}, and
 $\text{F}^{\star}$~\cite{swamy2016dependent}.
 Although the computational tools do not support message-passing concurrency,
-it would be interesting to compile ILC terms into EasyCrypt in order use
+it would be interesting to embed ILC into EasyCrypt or F* in order to use
 its tooling.
 
 %CertiCrypt~\cite{barthe2009formal} is a framework (built on
@@ -163,18 +174,12 @@ a concrete programming model.
 %case the scheduler 
 %ILC leads to a programming language, more flexible and convenient to work with.
 
-Symbolic UC~\cite{bohl2016symbolic} defines a UC-like framework
-in $\pi$-calculus, but does does not aim to show computational
-proofs. Instead, they prove security relative to idealized notions
-of cryptography primitives. Such security claims may not transfer
-to proofs based on computational hardness assumptions.
-
 Simplified universal composability (SUC)~\cite{canetti2015simpler} gives a
 simpler and restricted variant of the UC framework that is suitable for
 two-party multiparty computation tasks. The main difference from vanilla UC is
 that the set of parties is fixed, which greatly simplifies polynomial time
 reasoning and protocol composition while maintaining the same strong properties.
-We follow the SUC approach in our development of \textsf{execUC}.
+We follow this in our \textsf{execUC} definition.
 
 \begin{comment}
 \begin{enumerate}[leftmargin=*]
