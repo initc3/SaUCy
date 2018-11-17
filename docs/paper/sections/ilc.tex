@@ -127,11 +127,9 @@ violate the affinity of read channels.\smallskip
 The mode composition rules given in Figure~\ref{fig:mode-composition} prevent
 write mode processes from being composed in parallel. This is reflected in the
 fork rule, which derives the mode of $\eFork{e_1}{e_2}$ as the parallel
-composition of the mode of $e_1$ and the mode of $e_2$. \todo{Although unrelated
-to preventing write nondeterminism, the modes also prevent sequential write
-composition (affecting the let and let! rules). This prevents processes from
-getting ``stuck'' trying to write again immediately after giving away its
-activation.}
+composition of the mode of $e_1$ and the mode of $e_2$.
+To ensure this property is preserved during normalization, we must also forbid
+sequential composition of write mode processes.
 
 \begin{comment}
 \paragraph{Intuitionistic rules.}

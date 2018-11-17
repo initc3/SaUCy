@@ -283,8 +283,9 @@ The main takeaway of the modal type system is this: Parallel composition of
 write mode processes is \emph{not allowed}, i.e., $\Wm || \Wm => p$ is not
 derivable for any mode $p$. This ensures that no confusion arises as to which
 process is currently writing, or put another way, which process is currently
-active. \todo{A more minor takeaway is that sequential compostion of write mode
-processes is also not allowed, so processes cannot get ``stuck.''}\smallskip
+active.\smallskip
+%\todo{A more minor takeaway is that sequential compostion of write mode
+%processes is also not allowed, so processes cannot get ``stuck.''}\smallskip
 
 %Recall that in the ITM model, execution is
 %essentially single-threaded, so this ensures that no confusion arises as to
