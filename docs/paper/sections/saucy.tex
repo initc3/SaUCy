@@ -77,6 +77,15 @@ What remains is to define a notion of indistinguishability for value distributio
 
 \subsection{The UC Framework, Concretely}
 \label{subsec:concrete-uc}
+\begingroup
+\setlength\intextsep{0pt}
+\setlength{\columnsep}{10pt}
+\begin{wrapfigure}{R}{0.15\textwidth}
+\centering
+\includegraphics[width=0.15\textwidth]{graphics/execUC}
+\caption{\textsf{execUC}.}
+\label{fig:execUC-diagram}
+\end{wrapfigure}
 The implementation of SaUCy
  is centered around a definition of UC execution model in ILC.
 For the most part, this just involves connecting channels as illustrated in
@@ -89,15 +98,6 @@ the onset of the execution. This is in contrast to \emph{adaptive} corruptions,
 in which parties can be corrupted as the execution proceeds.
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
 
-\begingroup
-\setlength\intextsep{0pt}
-\setlength{\columnsep}{10pt}
-\begin{wrapfigure}{R}{0.15\textwidth}
-\centering
-\includegraphics[width=0.15\textwidth]{graphics/execUC}
-\caption{\textsf{execUC}.}
-\label{fig:execUC-diagram}
-\end{wrapfigure}
 The function \textsf{execUC} is parameterized by an environment \textsf{z},
 protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a}, an ideal
 functionality \textsf{f}, a security parameter \textsf{k}, a random bitstring
