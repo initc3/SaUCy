@@ -273,6 +273,11 @@ In the case that the receiver Q is corrupt, the simulator needs to \emph{equivoc
 The simulator is activated when $\mc{Z}$ inputs $(\mathsf{Commit}~b)$ to P, after which $\Func_{\textsc{Com}}$ sends $\mathsf{Committed}$ to the simulator.
 In the real world, the environment receives a commitment message $(\mathsf{Commit}'~y)$ from corrupted Q for some seemingly-random $y$. To achieve the same effect, the simulator must choose $y$. However, the simulator is next activated when the $\mc{Z}$ inputs $(\mathsf{Open}~b)$ to P, after which the simulator learns $b$ from $\Func_{\textsc{Com}}$. However, in the real world the environment receives a valid opening $(\mathsf{Opened}'~b~r)$ that is consistent with  $y$ and with the value chosen by the environment. Thus the simulator must initially choose $y$ so that it can later be opened to either value $b$ may take. The simulator achieves this by choosing $\sigma$ and $y$ ahead of time while generating the fake CRS. The reduction step is the same, and involves replacing prg with a true random function.
 
+Recall that the motivation for the real world simulator is to rule out degenerate protocols that diverge in some way.
+For every well behaved environment such that the ideal world is \textsf{PPT}, we need to demonstrate an adversary in the real world that is also \textsf{PPT}.
+Fortunately, the real world simulator, shown in Figure~\ref{fig:simR} is much simpler than ideal world simulator.
+Essentially the simulator runs a copy of the honest protocol for each of the corrupted parties. The simulation that results in this case is identical.
+
 \begin{algorithm}
 \SetAlgorithmName{Protocol}{protocol}{List of Protocols}
 \DontPrintSemicolon
