@@ -1,4 +1,4 @@
-execUC :: $\forall$ ... . $X_{\mathsf{z}} \multimap X_{\mathsf{p}} \otimes X_{\mathsf{q}} \multimap X_{\mathsf{f}} \multimap X_{\mathsf{a}} \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} \multimap \tyBang{\keyword{Crupt}} \multimap_m \tyBang{\tyBit}$ 
+execUC :: $\forall$ ... . $X_{\mathsf{z}} \multimap X_{\mathsf{p}} \otimes X_{\mathsf{q}} \multimap X_{\mathsf{f}} \multimap X_{\mathsf{a}} \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} \multimap \tyBang{\keyword{Crupt}} \multimap_\mathsf{m} \tyBang{\tyBit}$ 
 let execUC z (p,q) f a k !r crupt =
   $\nu$ (${\color{red}\sf rZ2P}$, ${\color{red}\sf wZ2P}$), (${\color{red}\sf rP2Z}$, ${\color{red}\sf wP2Z}$)
   , (${\color{red}\sf rZ2Q}$, ${\color{red}\sf wZ2Q}$), (${\color{red}\sf rQ2Z}$, ${\color{red}\sf wQ2Z}$)
