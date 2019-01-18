@@ -10,8 +10,8 @@
   $\Gamma$, expression~$e$ has intuitionistic type $A$ and output context $\Delta_{out}$.}
 \begin{mathpar}
 \Infer{a-var}
-{\Gamma(x) = A}
-{\Delta; \Gamma |- x : A ; \Delta}
+{}
+{\Delta; \Gamma, x : A |- x : A ; \Delta}
 %
 \and
 %
@@ -96,9 +96,9 @@
 \and
 %
 \Infer{a-app}
-{\Delta_1; \Gamma |- e_2 : A ; \Delta_2\\\\
-\Delta_2; \Gamma |- e_1 : A -> B ; \Delta_3}
-{\Delta_1; \Gamma |- \eApp{e_1}{e_2} : B ; \Delta_3}
+{\Delta_1; \Gamma |- e_2 : U ; \Delta_2\\\\
+\Delta_2; \Gamma |- e_1 : U {->}_{\pi} V ; \Delta_3}
+{\Delta_1; \Gamma |- \eApp{e_1}{e_2} : V ; \Delta_3}
 %
 \and
 %
@@ -139,8 +139,8 @@
   $\Gamma$, expression~$e$ has affine type $X$ and output context $\Delta_{out}$.}
 \begin{mathpar}
 \Infer{a-avar}
-{\Delta(x) = X}
-{\Delta; \Gamma |- x : X ; \Delta}
+{ }
+{\Delta, x : X; \Gamma |- x : X ; \Delta}
 %
 \and
 %
