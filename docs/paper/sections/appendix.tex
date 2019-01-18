@@ -27,6 +27,12 @@
 %
 \and
 %
+\Infer{a-unbang}
+{\Delta_1 ; \Gamma |- e : \tyBang{A} ; \Delta_2}
+{\Delta_1 ; \Gamma |- \eUnbang{e} : A ; \Delta_2}
+%
+\and
+%
 \Infer{a-unit}
 { }
 {\Delta ; \Gamma |- \eUnit : \tyUnit ; \Delta}
@@ -36,7 +42,7 @@
 \Infer{a-pair}
 {\Delta_1; \Gamma |- e_1 : U_1 ; \Delta_2\\\\
 \Delta_2; \Gamma |- e_2 : U_2 ; \Delta_3}
-{\Delta_1; \Gamma |- \ePair{e_1}{e_2} : \tyProdd{\omega}{U_1}{U_2} ; \Delta_3}
+{\Delta_1; \Gamma |- \ePair{e_1}{e_2} : \tyProdd{\pi}{U_1}{U_2} ; \Delta_3}
 %
 \and
 %
@@ -69,27 +75,21 @@
 \and
 %
 \Infer{a-get}
-{\Delta_1; \Gamma |- e : \tyRef{A} ; \Delta_2}
-{\Delta_1, \wrtok; \Gamma |- \eGet{e} : A ; \Delta_2, \wrtok}
+{\Delta_1, \wrtok; \Gamma |- e : \tyRef{A} ; \Delta_2}
+{\Delta_1, \wrtok; \Gamma |- \eGet{e} : A ; \Delta_2}
 %
 \and
 %
 \Infer{a-set}
-{\Delta_1; \Gamma |- e_1 : \tyRef{A} ; \Delta_2\\\\
+{\Delta_1, \wrtok; \Gamma |- e_1 : \tyRef{A} ; \Delta_2\\\\
 \Delta_2; \Gamma |- e_2 : A ; \Delta_3}
-{\Delta_1, \wrtok; \Gamma |- \eSet{e_1}{e_2} : \tyUnit ; \Delta_3, \wrtok}
+{\Delta_1, \wrtok; \Gamma |- \eSet{e_1}{e_2} : \tyUnit ; \Delta_3}
 %
 \and
 %
 \Infer{a-fix}
-{\emptyctxt; \Gamma,x : A -> A |- e : A -> A ; \emptyctxt}
-{\Delta; \Gamma |- \eFixx{\omega}{x}{e} : A -> A ; \Delta}
-%
-\and
-%
-\Infer{a-afix}
-{\Delta_1, x : X \multimap X; \Gamma |- e : X \multimap X ; \Delta_2}
-{\Delta_1; \Gamma |- \eFixx{1}{x}{e} : X \multimap X ; \Delta_2}
+{\emptyctxt; \Gamma,x : U -> U |- e : U -> U ; \emptyctxt}
+{\Delta; \Gamma |- \eFixx{\pi}{x}{e} : U -> U ; \Delta}
 %
 \and
 %
@@ -100,16 +100,16 @@
 %
 \and
 %
-\Infer{a-let!}
-{\Delta_1; \Gamma |- e_1 : \tyBang{A} ; \Delta_2\\\\
-\Delta_2; \Gamma, x:A |- e_2 : U ; \Delta_3}
-{\Delta_1; \Gamma |- \eLetBang{x}{e_1}{e_2} : U ; \Delta_3}
-%
-\and
-%
+%\Infer{a-let!}
+%{\Delta_1; \Gamma |- e_1 : \tyBang{A} ; \Delta_2\\\\
+%\Delta_2; \Gamma, x:A |- e_2 : U ; \Delta_3}
+%{\Delta_1; \Gamma |- \eLetBang{x}{e_1}{e_2} : U ; \Delta_3}
+%%
+%\and
+%%
 \Infer{a-abs}
-{\emptyctxt ; \Gamma, x:A |- e : B ; \emptyctxt}
-{\Delta ; \Gamma |- \eLamm{\omega}{x}{e} : A -> B ; \Delta}
+{\emptyctxt ; \Gamma, x:A |- e : U ; \emptyctxt}
+{\Delta ; \Gamma |- \eLamm{\infty}{x}{e} : A -> U ; \Delta}
 %
 \and
 %
@@ -145,7 +145,7 @@
 %{\Delta_1; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : A; \Delta_3}
 \Infer{a-rd}
 {\Delta_1 ; \Gamma |- e : \tyRd{S} ; \Delta_2}
-{\Delta_1 ; \Gamma |- \eRd{e} : \tyProdd{1}{\tyBang{S}}{\tyRd{S}}; \Delta_2, \wrtok}
+{\Delta_1 ; \Gamma |- \eRd{e} : \tyTensor{\tyBang{S}}{\tyRd{S}}; \Delta_2, \wrtok}
 %
 \and
 %

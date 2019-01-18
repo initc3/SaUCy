@@ -11,6 +11,8 @@
 \usepackage{xcolor}
 \usepackage{comment}
 \usepackage{enumitem}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
 \usepackage{joshuadunfield}
 \usepackage{lipsum}
 \usepackage{mathpartir}
@@ -114,6 +116,7 @@
 \newcommand{\eSeq}[2]{{#1}\,;\,{#2}}
 
 \newcommand{\eBang}[1]{{!}\,{#1}}
+\newcommand{\eUnbang}[1]{\textnormal{!`}\,{#1}}
 \newcommand{\eLAM}[2]{\Lambda{#1}.\,{#2}}
 \newcommand{\eLsplit}[4]{\keyword{split}\langle{#1},{#2}.{#3}.{#4}\rangle}
 \newcommand{\eLfix}[2]{\keyword{fix}\langle{#1}.{#2}\rangle}
