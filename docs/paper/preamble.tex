@@ -91,18 +91,20 @@
 \newcommand{\eVar}[1]{#1}
 \newcommand{\eChan}[1]{#1}
 \newcommand{\eUnit}{\Lparen\hspace{1px}\Rparen}
-\newcommand{\ePair}[2]{\Lparen{#1},{#2}\Rparen}
+\newcommand{\ePair}[2]{\Lparen{#1},{#2}\Rparen_{\pi}}
 \newcommand{\eInj}[2]{\keyword{inj}_{#1}\Lparen#2\Rparen}
 \newcommand{\eRef}[1]{\keyword{ref}\Lparen{#1}\Rparen}
 \newcommand{\eCase}[5]{\keyword{case}\Lparen{#1},{#2}.{#3},{#4}.{#5}\Rparen}
-\newcommand{\eSplit}[4]{\keyword{split}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
+\newcommand{\eSplit}[4]{\keyword{split}_{\pi}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
 \newcommand{\eGet}[1]{\keyword{get}\Lparen{#1}\Rparen}
 \newcommand{\eSet}[2]{\keyword{set}\Lparen{#1},{#2}\Rparen}
 \newcommand{\eFix}[2]{\keyword{fix}\Lparen{#1}.{#2}\Rparen}
-\newcommand{\eLet}[3]{\keyword{let}\ {#1} = {#2}\ \keyword{in}\ {#3}}
+\newcommand{\eFixx}[3]{\keyword{fix}_{#1}\Lparen{#2}.{#3}\Rparen}
+\newcommand{\eLet}[3]{\keyword{let}_{\pi}\ {#1} = {#2}\ \keyword{in}\ {#3}}
 \newcommand{\eLetRd}[4]{\eLet{\eLPair{#1}{#2}}{\eRd{#3}}{{#4}}}
 \newcommand{\eLetBang}[3]{\keyword{let!}\ {#1} = {#2}\ \keyword{in}\ {#3}}
 \newcommand{\eLam}[2]{\lambda{#1}.\,{#2}}
+\newcommand{\eLamm}[3]{\lambda_{#1} {#2}.\,{#3}}
 \newcommand{\eApp}[2]{#1\,#2}
 \newcommand{\eNu}[2]{\nu#1.\,#2}
 \newcommand{\eWr}[2]{\keyword{wr}\Lparen{#1},{#2}\Rparen}
@@ -128,7 +130,7 @@
 \newcommand{\tyNat}{\tyname{Nat}}
 \newcommand{\tyBool}{\tyname{Bool}}
 \newcommand{\tyUnit}{\keyword{Unit}}
-\newcommand{\tyProd}[2]{{#1} ** {#2}}
+\newcommand{\tyProd}[2]{{#1} {**}_{\pi} {#2}}
 \newcommand{\tySum}[2]{{#1} + {#2}}
 \newcommand{\tyRd}[1]{\keyword{Rd}\,#1}
 \newcommand{\tyWr}[1]{\keyword{Wr}\,#1}
