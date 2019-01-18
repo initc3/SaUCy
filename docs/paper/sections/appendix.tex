@@ -11,48 +11,48 @@
 \begin{mathpar}
 \Infer{a-var}
 {\Gamma(x) = A}
-{\Delta; \Gamma |- x : \Delta; \Gamma; A}
+{\Delta; \Gamma |- x : A ; \Delta}
 %
 \and
 %
 \Infer{a-unit}
 { }
-{\Delta ; \Gamma |- \eUnit : \Delta; \Gamma; \tyUnit}
+{\Delta ; \Gamma |- \eUnit : \tyUnit ; \Delta}
 %
 \and
 %
 \Infer{a-pair}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A_1\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; A_2}
-{\Delta_1; \Gamma |- \ePair{e_1}{e_2} : \Delta_3; \Gamma;  \tyProd{A_1}{A_2}}
+{\Delta_1; \Gamma |- e_1 : A_1 ; \Delta_2\\\\
+\Delta_2; \Gamma |- e_2 : A_2 ; \Delta_3}
+{\Delta_1; \Gamma |- \ePair{e_1}{e_2} : \tyProd{A_1}{A_2} ; \Delta_3}
 %
 \and
 %
 \Infer{a-inj}
 {i \in \{1, 2\}\\\\
-\Delta_1; \Gamma |- e : \Delta_2; \Gamma; A_i}
-{\Delta_1 ; \Gamma |- \eInj{i}{e} : \Delta_2; \Gamma; \tySum{A_1}{A_2}}
+\Delta_1; \Gamma |- e : A_i ; \Delta_2}
+{\Delta_1 ; \Gamma |- \eInj{i}{e} : \tySum{A_1}{A_2} ; \Delta_2}
 %
 \and
 %
 \Infer{a-ref}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; A}
-{\Delta_1; \Gamma |- \eRef{e} : \Delta_2; \Gamma; \tyRef{A}}
+{\Delta_1; \Gamma |- e : A ; \Delta_2}
+{\Delta_1; \Gamma |- \eRef{e} : \tyRef{A} ; \Delta_2}
 %
 \and
 %
 \Infer{a-split}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyProd{A_1}{A_2}\\\\
-\Delta_2; \Gamma,x_1:A_1, x_2: A_2 |- e : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- e_1 : \tyProd{A_1}{A_2} ; \Delta_2\\\\
+\Delta_2; \Gamma,x_1:A_1, x_2: A_2 |- e : B ; \Delta_3}
+{\Delta_1; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : B ; \Delta_3}
 %
 \and
 %  
 \Infer{a-case}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; \tySum{A_1}{A_2}\\\\
-\Delta_2; \Gamma,x_1:A_1 |- e_1 : \Delta_3; \Gamma; B\\\\
-\Delta_2; \Gamma,x_2:A_2 |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eCase{e}{x_1}{e_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- e : \tySum{A_1}{A_2} ; \Delta_2\\\\
+\Delta_2; \Gamma,x_1:A_1 |- e_1 : B ; \Delta_3\\\\
+\Delta_2; \Gamma,x_2:A_2 |- e_2 : B ; \Delta_3}
+{\Delta_1; \Gamma |- \eCase{e}{x_1}{e_1}{x_2}{e_2} : B ; \Delta_3}
 %
 \and
 %
@@ -70,35 +70,35 @@
 \and
 %
 \Infer{a-fix}
-{\emptyctxt; \Gamma,x : \tyArr{A}{\footnotesize m}{A} |- e : \emptyctxt; \Gamma; \tyArr{A}{\footnotesize m}{A}}
-{\Delta; \Gamma |- \eFix{x}{e} : \Delta; \Gamma; \tyArr{A}{\footnotesize m}{A}}
+{\emptyctxt; \Gamma,x : A -> A |- e : A -> A ; \emptyctxt}
+{\Delta; \Gamma |- \eFix{x}{e} : A -> A ; \Delta}
 %
 \and
 %
 \Infer{a-let}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma, x:A |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eLet{x}{e_1}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- e_1 : A ; \Delta_2\\\\
+\Delta_2; \Gamma, x:A |- e_2 : B ; \Delta_3}
+{\Delta_1; \Gamma |- \eLet{x}{e_1}{e_2} : B ; \Delta_3}
 %
 \and
 %
 \Infer{a-let!}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma, x:A |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eLetBang{x}{e_1}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- e_1 : A ; \Delta_2\\\\
+\Delta_2; \Gamma, x:A |- e_2 : B ; \Delta_3}
+{\Delta_1; \Gamma |- \eLetBang{x}{e_1}{e_2} : B ; \Delta_3}
 %
 \and
 %
 \Infer{a-abs}
-{\emptyctxt ; \Gamma, x:A |- e : \emptyctxt; \Gamma; B}
-{\Delta ; \Gamma |- \eLam{x}{e} : \Delta; \Gamma; \tyArr{A}{\footnotesize m}{B}}
+{\emptyctxt ; \Gamma, x:A |- e : B ; \emptyctxt}
+{\Delta ; \Gamma |- \eLam{x}{e} : A -> B ; \Delta}
 %
 \and
 %
 \Infer{a-app}
-{\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma |- e_1 : \Delta_3; \Gamma; \tyArr{A}{\footnotesize m}{B}}
-{\Delta_1; \Gamma |- \eApp{e_1}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- e_2 : A ; \Delta_2\\\\
+\Delta_2; \Gamma |- e_1 : A -> B ; \Delta_3}
+{\Delta_1; \Gamma |- \eApp{e_1}{e_2} : B ; \Delta_3}
 %
 \and
 %
@@ -135,50 +135,50 @@
 {\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : A ; \Delta_2}
 \end{mathpar}
 
-\judgbox{\Delta_{in} ; \Gamma_1 |- e : \Delta_{out}; \Gamma_2; A}{~~Under $\Delta_{in}$ and
-  $\Gamma_1$, expression~$e$ results $\Delta_{out}$ and $\Gamma_2$ and has affine type $A$.}
+\judgbox{\Delta_{in} ; \Gamma |- e : X ; \Delta_{out}}{~~Under input contexts $\Delta_{in}$ and
+  $\Gamma$, expression~$e$ has affine type $X$ and output context $\Delta_{out}$.}
 \begin{mathpar}
 \Infer{a-avar}
 {\Delta(x) = X}
-{\Delta; \Gamma |- x : \Delta ; \Gamma; X}
+{\Delta; \Gamma |- x : X ; \Delta}
 %
 \and
 %
 \Infer{a-bang}
-{\emptyctxt ; \Gamma |- e : \emptyctxt ; \Gamma ; A}
-{\Delta ; \Gamma |- \eBang{e} : \Delta ; \Gamma ; \tyBang{A}}
+{\emptyctxt ; \Gamma |- e : A ; \emptyctxt}
+{\Delta ; \Gamma |- \eBang{e} : \tyBang{A} ; \Delta}
 %
 \and
 %
 \Infer{a-tensor}
-{\Delta_1; \Gamma |- e_1 : \Delta_2 ; \Gamma ; X_1\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3 ; \Gamma ; X_2}
-{\Delta_1, \Delta_2; \Gamma |- \eLPair{e_1}{e_2} : \Delta_3 ; \Gamma ; \tyTensor{X_1}{X_2}}
+{\Delta_1; \Gamma |- e_1 : X_1 ; \Delta_2\\\\
+\Delta_2; \Gamma |- e_2 : X_2 ; \Delta_3}
+{\Delta_1, \Delta_2; \Gamma |- \eLPair{e_1}{e_2} : \tyTensor{X_1}{X_2} ; \Delta_3}
 %
 \and
 %  
 \Infer{a-asplit}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyTensor{X_1}{X_2}\\\\
-\Delta_2,x_1:X_1, x_2: X_2; \Gamma |- e : \Delta_3; \Gamma; Y}
-{\Delta_1; \Gamma |- \eLsplit{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; Y}
+{\Delta_1; \Gamma |- e_1 : \tyTensor{X_1}{X_2} ; \Delta_2\\\\
+\Delta_2,x_1:X_1, x_2: X_2; \Gamma |- e : Y ; \Delta_3}
+{\Delta_1; \Gamma |- \eLsplit{e_1}{x_1}{x_2}{e_2} : Y ; \Delta_3}
 %
 \and
 %
 \Infer{a-afix}
-{\Delta_1, x : \tyLolli{X}{\footnotesize m}{X}; \Gamma |- e : \Delta_ 2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{X}}
-{\Delta_1; \Gamma |- \eLfix{x}{e} : \Delta_2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{X}}
+{\Delta_1, x : X \multimap X; \Gamma |- e : X \multimap X ; \Delta_2}
+{\Delta_1; \Gamma |- \eLfix{x}{e} : X \multimap X ; \Delta_2}
 %
 \and
 \Infer{a-lolli}
-{\Delta_1,x:X ; \Gamma |- e : \Delta_2 ; \Gamma ; Y}
-{\Delta_1 ; \Gamma |- \eLAM{x}{e} : \Delta_2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{Y}}
+{\Delta_1,x:X ; \Gamma |- e : Y ; \Delta_2}
+{\Delta_1 ; \Gamma |- \eLAM{x}{e} : X \multimap Y ; \Delta_2}
 %
 \and
 %
 \Infer{a-aapp}
-{\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; X\\\\
-\Delta_2; \Gamma |- e_1 : \Delta_3; \Gamma; \tyLolli{X}{\footnotesize m}{Y}}
-{\Delta_1; \Gamma |- \eLapp{e_1}{e_2} : \Delta_3; \Gamma; Y}
+{\Delta_1; \Gamma |- e_2 : X ; \Delta_2\\\\
+\Delta_2; \Gamma |- e_1 : X \multimap Y ; \Delta_3}
+{\Delta_1; \Gamma |- \eLapp{e_1}{e_2} : Y ; \Delta_3}
 \end{mathpar}
 \caption{Algorithmic typing rules.}
 \label{fig:alg-type-check}
