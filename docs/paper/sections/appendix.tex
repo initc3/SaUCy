@@ -6,12 +6,24 @@
 
 \begin{figure*}[h]
 \centering
-\judgbox{\Delta_{in} ; \Gamma |- e : A ; \Delta_{out}}{~~Under input contexts $\Delta_{in}$ and
-  $\Gamma$, expression~$e$ has intuitionistic type $A$ and output context $\Delta_{out}$.}
+\judgbox{\Delta_{in} ; \Gamma |- e : U ; \Delta_{out}}{~~Under input contexts $\Delta_{in}$ and
+  $\Gamma$, expression~$e$ has type $U$ and output context $\Delta_{out}$.}
 \begin{mathpar}
 \Infer{a-var}
 {}
 {\Delta; \Gamma, x : A |- x : A ; \Delta}
+%
+\and
+%
+\Infer{a-avar}
+{ }
+{\Delta, x : X; \Gamma |- x : X ; \Delta}
+%
+\and
+%
+\Infer{a-bang}
+{\emptyctxt ; \Gamma |- e : A ; \emptyctxt}
+{\Delta ; \Gamma |- \eBang{e} : \tyBang{A} ; \Delta}
 %
 \and
 %
@@ -25,6 +37,13 @@
 {\Delta_1; \Gamma |- e_1 : A_1 ; \Delta_2\\\\
 \Delta_2; \Gamma |- e_2 : A_2 ; \Delta_3}
 {\Delta_1; \Gamma |- \ePair{e_1}{e_2} : \tyProd{A_1}{A_2} ; \Delta_3}
+%
+\and
+%
+\Infer{a-tensor}
+{\Delta_1; \Gamma |- e_1 : X_1 ; \Delta_2\\\\
+\Delta_2; \Gamma |- e_2 : X_2 ; \Delta_3}
+{\Delta_1, \Delta_2; \Gamma |- \eLPair{e_1}{e_2} : \tyTensor{X_1}{X_2} ; \Delta_3}
 %
 \and
 %
@@ -48,6 +67,13 @@
 %
 \and
 %  
+\Infer{a-asplit}
+{\Delta_1; \Gamma |- e_1 : \tyTensor{X_1}{X_2} ; \Delta_2\\\\
+\Delta_2,x_1:X_1, x_2: X_2; \Gamma |- e : Y ; \Delta_3}
+{\Delta_1; \Gamma |- \eLsplit{e_1}{x_1}{x_2}{e_2} : Y ; \Delta_3}
+%
+\and
+%  
 \Infer{a-case}
 {\Delta_1; \Gamma |- e : \tySum{A_1}{A_2} ; \Delta_2\\\\
 \Delta_2; \Gamma,x_1:A_1 |- e_1 : B ; \Delta_3\\\\
@@ -57,15 +83,15 @@
 \and
 %
 \Infer{a-get}
-{\Delta_1, \wrtok; \Gamma |- e : \tyRef{A} ; \Delta_2}
-{\Delta_1, \wrtok; \Gamma |- \eGet{e} : A ; \Delta_2}
+{\Delta_1; \Gamma |- e : \tyRef{A} ; \Delta_2}
+{\Delta_1, \wrtok; \Gamma |- \eGet{e} : A ; \Delta_2, \wrtok}
 %
 \and
 %
 \Infer{a-set}
-{\Delta_1, \wrtok; \Gamma |- e_1 : \tyRef{A} ; \Delta_2\\\\
+{\Delta_1; \Gamma |- e_1 : \tyRef{A} ; \Delta_2\\\\
 \Delta_2; \Gamma |- e_2 : A ; \Delta_3}
-{\Delta_1, \wrtok; \Gamma |- \eSet{e_1}{e_2} : \tyUnit ; \Delta_3}
+{\Delta_1, \wrtok; \Gamma |- \eSet{e_1}{e_2} : \tyUnit ; \Delta_3, \wrtok}
 %
 \and
 %
@@ -75,23 +101,35 @@
 %
 \and
 %
+\Infer{a-afix}
+{\Delta_1, x : X \multimap X; \Gamma |- e : X \multimap X ; \Delta_2}
+{\Delta_1; \Gamma |- \eLfix{x}{e} : X \multimap X ; \Delta_2}
+%
+\and
+%
 \Infer{a-let}
-{\Delta_1; \Gamma |- e_1 : A ; \Delta_2\\\\
-\Delta_2; \Gamma, x:A |- e_2 : B ; \Delta_3}
-{\Delta_1; \Gamma |- \eLet{x}{e_1}{e_2} : B ; \Delta_3}
+{\Delta_1; \Gamma |- e_1 : U ; \Delta_2\\\\
+[\Delta_2; \Gamma], x:U |- e_2 : V ; \Delta_3}
+{\Delta_1; \Gamma |- \eLet{x}{e_1}{e_2} : V ; \Delta_3}
 %
 \and
 %
 \Infer{a-let!}
-{\Delta_1; \Gamma |- e_1 : A ; \Delta_2\\\\
-\Delta_2; \Gamma, x:A |- e_2 : B ; \Delta_3}
-{\Delta_1; \Gamma |- \eLetBang{x}{e_1}{e_2} : B ; \Delta_3}
+{\Delta_1; \Gamma |- e_1 : \tyBang{A} ; \Delta_2\\\\
+\Delta_2; \Gamma, x:A |- e_2 : U ; \Delta_3}
+{\Delta_1; \Gamma |- \eLetBang{x}{e_1}{e_2} : U ; \Delta_3}
 %
 \and
 %
 \Infer{a-abs}
 {\emptyctxt ; \Gamma, x:A |- e : B ; \emptyctxt}
 {\Delta ; \Gamma |- \eLam{x}{e} : A -> B ; \Delta}
+%
+\and
+%
+\Infer{a-lolli}
+{\emptyctxt; \Gamma |- e : U ; \emptyctxt}
+{\Delta ; \Gamma |- \eLAM{x}{e} : X \multimap U ; \Delta}
 %
 \and
 %
@@ -115,26 +153,30 @@
 %
 \and
 %
-\Infer{a-letrd}
-{\Delta_1; \Gamma |- e_1 : \tyRd{S}; \Delta_2\\\\
-\Delta_2, \wrtok, x_1 : \tyBang{S}, x_2 : \tyRd{S} ; \Gamma |- e_2 : A ; \Delta_3}
-{\Delta_1; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : A; \Delta_3}
+%\Infer{a-letrd}
+%{\Delta_1; \Gamma |- e_1 : \tyRd{S}; \Delta_2\\\\
+%\Delta_2, \wrtok, x_1 : \tyBang{S}, x_2 : \tyRd{S} ; \Gamma |- e_2 : A ; \Delta_3}
+%{\Delta_1; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : A; \Delta_3}
+\Infer{a-rd}
+{\Delta_1 ; \Gamma |- e : \tyRd{S} ; \Delta_2}
+{\Delta_1 ; \Gamma |- \keyword{rd}(e) : \tyTensor{\tyBang{S}}{\tyRd{S}}; \Delta_2, \wrtok}
 %
 \and
 %
 \Infer{a-fork}
-{\Delta_1; \Gamma |- e_1 : A ; \Delta_2\\\\
-\Delta_2; \Gamma |- e_2 : B ; \Delta_3}
-{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : B ; \Delta_3}
+{\Delta_1; \Gamma |- e_1 : U ; \Delta_2\\\\
+\Delta_2; \Gamma |- e_2 : V ; \Delta_3}
+{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : V ; \Delta_3}
 %
 \and
 %
 \Infer{a-choice}
-{\Delta_1; \Gamma |- e_1 : A ; \Delta_2\\\\
-\Delta_1; \Gamma |- e_2 : A ; \Delta_2}
-{\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : A ; \Delta_2}
+{\Delta_1; \Gamma |- e_1 : U ; \Delta_2\\\\
+\Delta_1; \Gamma |- e_2 : U ; \Delta_2}
+{\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : U ; \Delta_2}
 \end{mathpar}
 
+\begin{comment}
 \judgbox{\Delta_{in} ; \Gamma |- e : X ; \Delta_{out}}{~~Under input contexts $\Delta_{in}$ and
   $\Gamma$, expression~$e$ has affine type $X$ and output context $\Delta_{out}$.}
 \begin{mathpar}
@@ -180,6 +222,7 @@
 \Delta_2; \Gamma |- e_1 : X \multimap Y ; \Delta_3}
 {\Delta_1; \Gamma |- \eLapp{e_1}{e_2} : Y ; \Delta_3}
 \end{mathpar}
+\end{comment}
 \caption{Algorithmic typing rules.}
 \label{fig:alg-type-check}
 \end{figure*}
