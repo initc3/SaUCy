@@ -1,43 +1,45 @@
 \begin{figure*}[t]
-
-  \begin{minipage}{.5\textwidth}
-  \begin{grammar}
-    All types
-    & $U, V$
-    &$\bnfas$& $A \bnfalt X$
-    \\
-    Sendable types
-    & $S$
-    &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{B} \bnfalt \tyArr{U}{\pi}{U}$
-    \\
-    Intuitionistic types
-    & $A,B$
-    &$\bnfas$& $S \bnfalt \tyWr{S} \bnfalt \tyRef{A}$
-    \\
-    Affine types
-    & $X,Y$
-    &$\bnfas$& $\tyRd{S} \bnfalt \tyBang{A} \bnfalt
-    \tyTensor{X}{Y}$
-  \end{grammar}    
+  \centering
+  \begin{minipage}{.475\textwidth}
+    \centering
+    \begin{grammar}
+      All types
+      & $U, V$
+      &$\bnfas$& $A \bnfalt X$
+      \\
+      Sendable types
+      & $S$
+      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{B} \bnfalt \tyArr{U}{\pi}{U}$
+      \\
+      Intuitionistic types
+      & $A,B$
+      &$\bnfas$& $S \bnfalt \tyWr{S} \bnfalt \tyRef{A}$
+      \\
+      Affine types
+      & $X,Y$
+      &$\bnfas$& $\tyRd{S} \bnfalt \tyBang{A} \bnfalt
+      \tyTensor{X}{Y}$
+    \end{grammar}
   \end{minipage}%
-  \begin{minipage}{.5\textwidth}
-  \begin{grammar}
-    Multiplicities
-    & $\pi$
-    &$\bnfas$& $1 \bnfalt \infty$    
-    \\
-    Sendable typings
-    & ${\Gamma}_S$
-    &$\bnfas$& $\emptyctxt \bnfalt {\Gamma}_S,x:S$
-    \\
-    Intuitionistic typings
-    & $\Gamma$
-    &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
-    \\
-    Affine typings
-    & $\Delta$
-    &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:X \bnfalt \Delta, \wrtok$
-  \end{grammar}    
+  \begin{minipage}{.475\textwidth}
+    \centering
+    \begin{grammar}
+      Multiplicities
+      & $\pi$
+      &$\bnfas$& $1 \bnfalt \infty$    
+      \\
+      Sendable typings
+      & ${\Gamma}_S$
+      &$\bnfas$& $\emptyctxt \bnfalt {\Gamma}_S,x:S$
+      \\
+      Intuitionistic typings
+      & $\Gamma$
+      &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
+      \\
+      Affine typings
+      & $\Delta$
+      &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:X \bnfalt \Delta, \wrtok$
+    \end{grammar}
   \end{minipage}
   \begin{grammar}
     Expressions
