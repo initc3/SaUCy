@@ -36,7 +36,7 @@
 \Infer{a-pair}
 {\Delta_1; \Gamma |- e_1 : U_1 ; \Delta_2\\\\
 \Delta_2; \Gamma |- e_2 : U_2 ; \Delta_3}
-{\Delta_1; \Gamma |- \ePair{e_1}{e_2} : \tyProd{U_1}{U_2} ; \Delta_3}
+{\Delta_1; \Gamma |- \ePair{e_1}{e_2} : \tyProdd{\omega}{U_1}{U_2} ; \Delta_3}
 %
 \and
 %
@@ -145,7 +145,7 @@
 %{\Delta_1; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : A; \Delta_3}
 \Infer{a-rd}
 {\Delta_1 ; \Gamma |- e : \tyRd{S} ; \Delta_2}
-{\Delta_1 ; \Gamma |- \eRd{e} : \tyTensor{\tyBang{S}}{\tyRd{S}}; \Delta_2, \wrtok}
+{\Delta_1 ; \Gamma |- \eRd{e} : \tyProdd{1}{\tyBang{S}}{\tyRd{S}}; \Delta_2, \wrtok}
 %
 \and
 %

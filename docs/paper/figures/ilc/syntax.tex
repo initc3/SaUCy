@@ -6,7 +6,7 @@
     \\
     Sendable types
     & $S$
-    &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{B} \bnfalt U
+    &$\bnfas$& $\tyUnit \bnfalt \tyProdd{\omega}{A}{B} \bnfalt \tySum{A}{B} \bnfalt U
     {->}_{\pi} U$
     \\
     Sendable typings
@@ -24,7 +24,7 @@
     Affine types
     & $X,Y$
     &$\bnfas$& $\tyRd{S} \bnfalt \tyBang{A} \bnfalt
-    \tyTensor{X}{Y}$
+    \tyProdd{1}{X}{Y}$
     \\
     Affine typings
     & $\Delta$
