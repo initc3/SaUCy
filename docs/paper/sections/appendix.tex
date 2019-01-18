@@ -6,8 +6,8 @@
 
 \begin{figure*}[h]
 \centering
-\judgbox{\Delta_{in} ; \Gamma_1 |- e : \Delta_{out}; \Gamma_2; A}{~~Under $\Delta_{in}$ and
-  $\Gamma_1$, expression~$e$ results $\Delta_{out}$ and $\Gamma_2$ and has intuitionistic type $A$.}
+\judgbox{\Delta_{in} ; \Gamma |- e : A ; \Delta_{out}}{~~Under input contexts $\Delta_{in}$ and
+  $\Gamma$, expression~$e$ has intuitionistic type $A$ and output context $\Delta_{out}$.}
 \begin{mathpar}
 \Infer{a-var}
 {\Gamma(x) = A}
@@ -57,15 +57,15 @@
 \and
 %
 \Infer{a-get}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; \tyRef{A}}
-{\Delta_1; \Gamma |- \eGet{e} : \Delta_2; \Gamma; A}
+{\Delta_1, \wrtok; \Gamma |- e : \tyRef{A} ; \Delta_2}
+{\Delta_1, \wrtok; \Gamma |- \eGet{e} : A ; \Delta_2}
 %
 \and
 %
 \Infer{a-set}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyRef{A}\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; A}      
-{\Delta_1; \Gamma |- \eSet{e_1}{e_2} : \Delta_3; \Gamma; \tyUnit}
+{\Delta_1, \wrtok; \Gamma |- e_1 : \tyRef{A} ; \Delta_2\\\\
+\Delta_2; \Gamma |- e_2 : A ; \Delta_3}
+{\Delta_1, \wrtok; \Gamma |- \eSet{e_1}{e_2} : \tyUnit ; \Delta_3}
 %
 \and
 %
@@ -103,36 +103,36 @@
 \and
 %
 \Infer{a-nu}
-{\Delta_1, x_1: \tyRd{A} ; \Gamma, x_2 : \tyWr{A} |- e : \Delta_2; \Gamma; B}
-{\Delta_1; \Gamma |- \eNu{(x_1, x_2)}{e} : \Delta_2; \Gamma; B}
+{\Delta_1, x_1: \tyRd{S} ; \Gamma, x_2 : \tyWr{S} |- e : A ; \Delta_2}
+{\Delta_1; \Gamma |- \eNu{(x_1, x_2)}{e} : A; \Delta_2}
 %
 \and
 %
 \Infer{a-wr}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; \tyWr{A}}
-{\Delta_1; \Gamma|- \eWr{e_1}{e_2} : \Delta_3; \Gamma; \tyUnit}
+{\emptyctxt; {\Gamma}_S |- e_1 : S ; \emptyctxt\\
+\Delta_1; \Gamma |- e_2 : \tyWr{S} ; \Delta_2}
+{\Delta_1, \wrtok; \Gamma|- \eWr{e_1}{e_2} : \tyUnit; \Delta_2}
 %
 \and
 %
 \Infer{a-letrd}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyRd{A}\\\\
-\Delta_2, x_2 : \tyRd{A} ; \Gamma, x_1 : A |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- e_1 : \tyRd{S}; \Delta_2\\\\
+\Delta_2, \wrtok, x_1 : \tyBang{S}, x_2 : \tyRd{S} ; \Gamma |- e_2 : A ; \Delta_3}
+{\Delta_1; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : A; \Delta_3}
 %
 \and
 %
 \Infer{a-fork}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- e_1 : A ; \Delta_2\\\\
+\Delta_2; \Gamma |- e_2 : B ; \Delta_3}
+{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : B ; \Delta_3}
 %
 \and
 %
 \Infer{a-choice}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
-\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; A}
-{\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : \Delta_2; \Gamma; A}
+{\Delta_1; \Gamma |- e_1 : A ; \Delta_2\\\\
+\Delta_1; \Gamma |- e_2 : A ; \Delta_2}
+{\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : A ; \Delta_2}
 \end{mathpar}
 
 \judgbox{\Delta_{in} ; \Gamma_1 |- e : \Delta_{out}; \Gamma_2; A}{~~Under $\Delta_{in}$ and

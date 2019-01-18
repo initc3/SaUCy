@@ -1,9 +1,17 @@
 \begin{figure*}[t]
   \begin{grammar}
+    Sendable types
+    & $S$
+    &$\bnfas$& $\tyUnit \bnfalt \tyProd{A}{B} \bnfalt \tySum{A}{B} \bnfalt
+    \tyArr{A}{\footnotesize m}{B}$
+    \\
+    Sendable typings
+    & ${\Gamma}_S$
+    &$\bnfas$& $\emptyctxt \bnfalt {\Gamma}_S,x:S$
+    \\
     Intuitionistic types
     & $A,B$
-    &$\bnfas$& $\tyUnit \bnfalt \tyProd{A}{B} \bnfalt \tySum{A}{B} \bnfalt
-    \tyWr{A} \bnfalt \tyRef{A} \bnfalt \tyArr{A}{\footnotesize m}{B}$
+    &$\bnfas$& $S \bnfalt \tyWr{S} \bnfalt \tyRef{A}$
     \\
     Intuitionistic typings
     & $\Gamma$
@@ -11,8 +19,8 @@
     \\
     Affine types
     & $X,Y$
-    &$\bnfas$& $\tyRd{A} \bnfalt \tyBang{A} \bnfalt \tyTensor{X}{Y} \bnfalt
-    \tyLolli{X}{\footnotesize m}{Y}$
+    &$\bnfas$& $\wrtok \bnfalt \tyRd{S} \bnfalt \tyBang{A} \bnfalt
+    \tyTensor{X}{Y} \bnfalt \tyLolli{X}{\footnotesize m}{Y}$
     \\
     Affine typings
     & $\Delta$

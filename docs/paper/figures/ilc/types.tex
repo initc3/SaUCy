@@ -100,21 +100,21 @@
 \and
 %
 \Infer{nu}
-{\Delta, x_1:\tyRd{A}; \Gamma, x_2:\tyWr{A} |- e : B |> m}
+{\Delta, x_1:\tyRd{S}; \Gamma, x_2:\tyWr{S} |- e : B |> m}
 {\Delta ; \Gamma |- \eNu{(x_1, x_2)}{e} : B |> m}
 %
 \and
 %
 \Infer{wr}
-{\Delta_1; \Gamma   |- e_1 : A\\\\
-\Delta_2; \Gamma   |- e_2 : \tyWr{A}}
-{\Delta_1, \Delta_2; \Gamma |- \eWr{e_1}{e_2} : \tyUnit |> \Wm}
+{\emptyctxt; {\Gamma}_S |- e_1 : S\\
+\Delta; \Gamma   |- e_2 : \tyWr{S}}
+{\Delta, \wrtok; \Gamma |- \eWr{e_1}{e_2} : \tyUnit}
 %
 \and
 %
 \Infer{letrd}
-{\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\\\
-\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma |- e_2 : B |> m
+{\Delta_1 ; \Gamma |- e_1 : \tyRd{S}\\\\
+\Delta_2,x_1:\tyBang{S},x_2:\tyRd{S} ; \Gamma |- e_2 : B |> m
 }
 {\Delta_1, \Delta_2 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : B |> \Rm}
 %
