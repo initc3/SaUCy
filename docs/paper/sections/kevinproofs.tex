@@ -1,0 +1,62 @@
+\section{ILC Metatheory Attempt}
+
+\begin{lemma}[Canonical forms]
+  If \[\Delta_{in} ; \Gamma ; \Omega |- v : U ; \Delta_{out}\] then
+  \begin{enumerate}
+  \item If $U$ is $\mathbbm{1}$, then $v = \eUnit$.
+  \item If $U$ is $A ** B$, then $v = \ePair{v_1}{v_2}{\infty}$ where \[\Delta_{in} ; \Gamma ; \Omega |-
+    v_1 : A ; \Delta_{out}\] and \[\Delta_{in} ; \Gamma ; \Omega |- v_2 : B ; \Delta_{out}.\]
+  \item If $U$ is $\tySum{A_1}{A_2}$, then $v = \eInj{i}{v_i}$
+    where $i \in \{1, 2\}$ and \[\Delta_{in} ; \Gamma ; \Omega |- v_i : A_i ; \Delta_{out}.\]
+  \item If $U$ is $\tyArr{V_1}{\pi}{V_2}$, then $v = \eLamm{\pi}{x}{e}$
+    where \[\Delta_{in} ; \Gamma ; \Omega |- x : V_1 ; \Delta_{out}\] and \[\Delta_{in} ; \Gamma ; \Omega |- e :
+    V_2 ; \Delta_{out}.\]
+  \item If $U$ is $\tyWr{S}$, then $v = \todo{}$.
+  \item If $U$ is $\tyRef{A}$, then $v = \eRef{v'}$ where \[\Delta_{in} ; \Gamma ; \Omega |- v'
+    : A ; \Delta_{out}.\]    
+  \item If $U$ is $\tyRd{S}$, then $v = \todo{}$.
+  \item If $U$ is $\tyBang{A}$, then $v = \todo{}$.
+  \item If $U$ is $\tyTensor{X}{Y}$, then $v = \ePair{v_1}{v_2}{1}$
+    where \[\Delta_{in} ; \Gamma ; \Omega |- v_1 : X ; \Delta_{out}\] and \[\Delta_{in} ; \Gamma ; \Omega |- v_2 : Y
+    ; \Delta_{out}.\]    
+  \end{enumerate}
+\end{lemma}
+
+\begin{theorem}[Local progress]
+  If \[\Delta_{in} ; \Gamma ; \Omega |- e : U ; \Delta_{out}\] \[\Gamma ; \Omega |- \sigma\]
+  then either $\Lterm{e}$ or there exists $\sigma' ; e'$ such that \[\sigma ; e -> \sigma' ; e'.\]
+\end{theorem}
+
+\begin{proof}
+  By induction on the derivation of $e$.
+  \begin{itemize}
+  \item \textbf{Case}
+      $\Infer{var}
+      {}
+      {\Delta; \Gamma, x : A |- x : A ; \Delta}$
+  \end{itemize}
+\end{proof}
+
+\begin{theorem}[Local preservation]
+  If \[\Delta_{in} ; \Gamma ; \Omega |- e : U ; \Delta_{out}\] \[\Gamma ; \Omega |- \sigma\] \[\sigma ; e -> \sigma' ; e'\]
+  then there exists store typing extension $\Omega' \supseteq \Omega$ such that \[\Delta_{in} ; \Gamma ; \Omega'
+  |- e' : U ; \Delta_{out}\] \[\Gamma ; \Omega'; |- \sigma'.\]
+\end{theorem}
+
+\begin{comment}
+\begin{theorem}[Local progress]
+  For all affine typings $\Delta_{in}$ and $\Delta_{out}$, intuitionistic typings $\Gamma$, and
+  store typings $\Omega$, if $\Delta_{in} ; \Gamma ; \Omega |- e : U ; \Delta_{out}$ and $\Gamma ; \Omega |- \sigma$,
+  then either $\Lterm{e}$ or there exists $\sigma' ; e'$ such that $\sigma ; e -> \sigma' ; e'$.
+\end{theorem}
+
+\begin{theorem}[Local preservation]
+  For all $\sigma ; e$, $\sigma'; e'$, affine typings $\Delta_{in}$ and $\Delta_{out}$,
+  intuitionistic typings $\Gamma$, and store typings $\Omega$, if $\Delta_{in} ; \Gamma ; \Omega |- e : U
+  ; \Delta_{out}$, $\Gamma ; \Omega |- \sigma$, and $\sigma ; e -> \sigma' ; e'$, then there exists store
+  typing extension $\Omega' \supseteq \Omega$ such that $\Delta_{in} ; \Gamma ; \Omega' |- e' : U ; \Delta_{out}$ and $\Gamma
+  ; \Omega'; |- \sigma'$.
+\end{theorem}
+\end{comment}
+
+\newpage

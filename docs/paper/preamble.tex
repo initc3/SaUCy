@@ -93,7 +93,7 @@
 \newcommand{\eVar}[1]{#1}
 \newcommand{\eChan}[1]{#1}
 \newcommand{\eUnit}{\Lparen\hspace{1px}\Rparen}
-\newcommand{\ePair}[2]{\Lparen{#1},{#2}\Rparen_{\pi}}
+\newcommand{\ePair}[3]{\Lparen{#1},{#2}\Rparen_{#3}}
 \newcommand{\eInj}[2]{\keyword{inj}_{#1}\Lparen#2\Rparen}
 \newcommand{\eRef}[1]{\keyword{ref}\Lparen{#1}\Rparen}
 \newcommand{\eCase}[5]{\keyword{case}\Lparen{#1},{#2}.{#3},{#4}.{#5}\Rparen}
@@ -270,3 +270,5 @@
 \newcommand{\Jered}[4]{#1 ; #2 ---> #3 ; #4}
 
 \newcommand{\Rule}[1]{\textrm{#1}}
+
+\newcommand{\Lterm}[1]{#1~\textbf{lterm}}

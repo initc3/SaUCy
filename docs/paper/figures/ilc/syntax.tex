@@ -9,7 +9,7 @@
       \\
       Sendable types
       & $S$
-      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{B} \bnfalt \tyArr{U}{\pi}{U}$
+      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{B} \bnfalt \tyArr{U}{\pi}{V}$
       \\
       Intuitionistic types
       & $A,B$
@@ -45,7 +45,7 @@
     Expressions
     & $e$
     &$\bnfas$&
-    $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2} \bnfalt \eInj{i}{e}
+    $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2}{\pi} \bnfalt \eInj{i}{e}
     \bnfalt \eRef{e} \bnfalt \eSplit{e_1}{x_1}{x_2}{e_2} \bnfalt
     \eCase{e}{x_1}{e_1}{x_2}{e_2}$
     \\ &&& $\bnfaltbrk \eGet{e} \bnfalt \eSet{e_1}{e_2} \bnfalt \eFixx{\pi}{x}{e}
