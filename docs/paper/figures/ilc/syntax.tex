@@ -1,15 +1,16 @@
 \begin{figure*}[t]
   \centering
+    \begin{grammar}  
+        All types
+      & $U, V$
+        &$\bnfas$& $A \bnfalt X$
+    \end{grammar}          
   \begin{minipage}{.475\textwidth}
     \centering
     \begin{grammar}
-      All types
-      & $U, V$
-      &$\bnfas$& $A \bnfalt X$
-      \\
       Sendable types
       & $S$
-      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{B} \bnfalt \tyArr{U}{\pi}{V}$
+      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{}{B} \bnfalt \tyArr{U}{\ell}{V}$
       \\
       Intuitionistic types
       & $A,B$
@@ -18,16 +19,16 @@
       Affine types
       & $X,Y$
       &$\bnfas$& $\tyRd{S} \bnfalt \tyBang{A} \bnfalt
-      \tyTensor{X}{Y}$
+      \tyTensor{X}{Y} \bnfalt \tyOplus{X}{Y}$
+      \\
+      Arrow labels
+      & $\ell$
+      &$\bnfas$& $\pi \bnfalt \omega$
     \end{grammar}
   \end{minipage}%
   \begin{minipage}{.475\textwidth}
     \centering
     \begin{grammar}
-      Multiplicities
-      & $\pi$
-      &$\bnfas$& $1 \bnfalt \infty$    
-      \\
       Sendable typings
       & ${\Gamma}_S$
       &$\bnfas$& $\emptyctxt \bnfalt {\Gamma}_S,x:S$
@@ -39,6 +40,10 @@
       Affine typings
       & $\Delta$
       &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:X \bnfalt \Delta, \wrtok$
+      \\            
+      Multiplicity labels
+      & $\pi$
+      &$\bnfas$& $1 \bnfalt \infty$
     \end{grammar}
   \end{minipage}
   \begin{grammar}
@@ -47,10 +52,10 @@
     &$\bnfas$&
     $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2}{\pi} \bnfalt \eInj{i}{e}
     \bnfalt \eRef{e} \bnfalt \eSplit{e_1}{x_1}{x_2}{e_2} \bnfalt
-    \eCase{e}{x_1}{e_1}{x_2}{e_2}$
+    \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2}$
     \\ &&& $\bnfaltbrk \eGet{e} \bnfalt \eSet{e_1}{e_2} \bnfalt \eFixx{\pi}{x}{e}
     \bnfalt \eLet{x}{e_1}{e_2} \bnfalt \eBang{e} \bnfalt \eUnbang{e}$
-    \\ &&& $\bnfaltbrk \eLamm{\pi}{x}{e} \bnfalt \eApp{e_1}{e_2}
+    \\ &&& $\bnfaltbrk \eLamm{\pi}{x}{e} \bnfalt \eApp{e_1}{e_2}{\pi}
     \bnfalt \eNu{(x_1,x_2)}{e} \bnfalt \eWr{e_1}{e_2}
     \bnfalt \eRd{e} \bnfalt \eFork{e_1}{e_2} \bnfalt \eChoice{e_1}{e_2}$
   \end{grammar}      

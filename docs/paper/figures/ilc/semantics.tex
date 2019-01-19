@@ -30,9 +30,9 @@
   & $E$
      & $\bnfas$ & 
  $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eLetBang{x}{E}{e}$
-\\ contexts &&& $\bnfaltbrk \eApp{E}{e} \bnfalt \eApp{v}{E} \bnfalt \eRef{E} \bnfalt \eGet{E}$
+\\ contexts &&& $\bnfaltbrk \eApp{E}{e}{\pi} \bnfalt \eApp{v}{E}{\pi} \bnfalt \eRef{E} \bnfalt \eGet{E}$
      \\ &&& $\bnfaltbrk \eSet{E}{e} \bnfalt \eSet{\ell}{E}$
-\\ &&& $\bnfaltbrk \eSplit{E}{x_1}{x_2}{e} \bnfalt \eCase{E}{x_1}{e_1}{x_2}{e_2}$
+\\ &&& $\bnfaltbrk \eSplit{E}{x_1}{x_2}{e} \bnfalt \eCase{\pi}{E}{x_1}{e_1}{x_2}{e_2}$
 \\[1mm]
  Read contexts
   & $R$
@@ -102,7 +102,7 @@ C_2' \equiv C_2
 \and
 \Infer{app}
 {}
-{ \Store ; \eApp{(\eLam{x}{e})}{v} ---> \Store ; [v/x]e }
+{ \Store ; \eApp{(\eLam{x}{e})}{v}{\pi} ---> \Store ; [v/x]e }
 \and
 \Infer{split}
 { }
@@ -110,7 +110,7 @@ C_2' \equiv C_2
 \and
 \Infer{case}
 { }
-{ \Store ; \eCase{\eInj{i}{v}}{x_1}{e_1}{x_2}{e_2} ---> \Store ; [v/x_i]e_i }
+{ \Store ; \eCase{\pi}{\eInj{i}{v}}{x_1}{e_1}{x_2}{e_2} ---> \Store ; [v/x_i]e_i }
 \and
 \Infer{fix}
 { }

@@ -6,7 +6,7 @@
   \item If $U$ is $\mathbbm{1}$, then $v = \eUnit$.
   \item If $U$ is $A ** B$, then $v = \ePair{v_1}{v_2}{\infty}$ where \[\Delta_{in} ; \Gamma ; \Omega |-
     v_1 : A ; \Delta_{out}\] and \[\Delta_{in} ; \Gamma ; \Omega |- v_2 : B ; \Delta_{out}.\]
-  \item If $U$ is $\tySum{A_1}{A_2}$, then $v = \eInj{i}{v_i}$
+  \item If $U$ is $\tySum{A_1}{}{A_2}$, then $v = \eInj{i}{v_i}$
     where $i \in \{1, 2\}$ and \[\Delta_{in} ; \Gamma ; \Omega |- v_i : A_i ; \Delta_{out}.\]
   \item If $U$ is $\tyArr{V_1}{\pi}{V_2}$, then $v = \eLamm{\pi}{x}{e}$
     where \[\Delta_{in} ; \Gamma ; \Omega |- x : V_1 ; \Delta_{out}\] and \[\Delta_{in} ; \Gamma ; \Omega |- e :
