@@ -36,7 +36,10 @@
 \definecolor{Green}{rgb}{0.13, 0.55, 0.13}
 \definecolor{Purple}{rgb}{0.6, 0.2, 0.8}
 
-\newcommand{\wrtok}{\textcircled{\tiny{\Wm}}}
+\newcommand*{\xdash}[1][3em]{\rule[0.5ex]{#1}{0.4pt}}
+\newcommand{\sep}{\xdash[0.8em]\kern-.22em\raisebox{-.052ex}{$\mathsf{*}$}\ }
+\newcommand{\wrhat}{\hat{\rule{0ex}{1.575ex}\wrtok}}
+\newcommand{\wrtok}{\textcircled{\small{\wm}}}
 
 \newcommand{\mc}[1]{\mathcal{{#1}}}
 \newcommand{\todo}[1]{\emph{\hl{TODO:} {#1}}}
@@ -154,6 +157,7 @@
 \newcommand{\Rm}{\textsf{R}}
 \newcommand{\Wm}{\textsf{W}}
 \newcommand{\Vm}{\textsf{V}}
+\newcommand{\wm}{\textsf{w}}
 
 % ILC Semantics
 %\newcommand{\Chans}{\Sigma}
