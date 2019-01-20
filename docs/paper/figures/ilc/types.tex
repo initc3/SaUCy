@@ -69,15 +69,15 @@
 \and
 %
 \Infer{get}
-{\Delta_1, \wrtok; \Gamma |- e : \tyRef{A} ; \Delta_2}
-{\Delta_1, \wrtok; \Gamma |- \eGet{e} : A ; \Delta_2}
+{\Delta_1; \Gamma |- e : \tyRef{A} ; \Delta_2}
+{\Delta_1, \wrtok; \Gamma |- \eGet{e} : A ; \Delta_2, \wrtok}
 %
 \and
 %
 \Infer{set}
-{\Delta_1, \wrtok; \Gamma |- e_1 : \tyRef{A} ; \Delta_2\\\\
+{\Delta_1; \Gamma |- e_1 : \tyRef{A} ; \Delta_2\\\\
 \Delta_2; \Gamma |- e_2 : A ; \Delta_3}
-{\Delta_1, \wrtok; \Gamma |- \eSet{e_1}{e_2} : \tyUnit ; \Delta_3}
+{\Delta_1, \wrtok; \Gamma |- \eSet{e_1}{e_2} : \tyUnit ; \Delta_3, \wrtok}
 %
 \and
 %
@@ -108,7 +108,7 @@
 %
 \Infer{wabs}
 {\wrtok; \Gamma |- e : U ; \Delta_2}
-{\Delta_1 ; \Gamma |- \eLamm{\omega}{\eUnit}{e} : \tyArr{\mathbbm{1}}{\omega}{U} ; \Delta_1 + \wrtok ? \Delta_2}
+{\Delta_1 ; \Gamma |- \eLamm{\omega}{\eUnit}{e} : \tyArr{\mathbbm{1}}{\omega}{U} ; \Delta_1}
 %
 \and
 %
@@ -120,9 +120,9 @@
 \and
 %
 \Infer{wapp}
-{\Delta_1, \wrtok; \Gamma |- e_2 : \mathbbm{1} ; \Delta_2\\\\
-\Delta_2; \Gamma |- e_1 : \tyArr{\mathbbm{1}}{\omega}{V} ; \Delta_3}
-{\Delta_1, \wrtok; \Gamma |- \eApp{e_1}{e_2}{\omega} : V ; \Delta_3}
+{\Delta_1; \Gamma |- e_2 : \mathbbm{1} ; \Delta_2\\\\
+\Delta_2; \Gamma |- e_1 : \tyArr{\mathbbm{1}}{\omega}{U} ; \Delta_3}
+{\Delta_1, \wrtok; \Gamma |- \eApp{e_1}{e_2}{\omega} : U ; \Delta_3}
 %
 \and
 %
