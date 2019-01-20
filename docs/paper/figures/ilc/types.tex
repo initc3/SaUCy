@@ -56,7 +56,7 @@
 \Infer{split}
 {\Delta_1; \Gamma |- e_1 : \tyProd{U_1}{U_2} ; \Delta_2\\\\
 [\Delta_2; \Gamma],x_1:U_1, x_2: U_2 |- e : V ; \Delta_3}
-{\Delta_1; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : V ; \Delta_3}
+{\Delta_1; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : V ; \Delta_3 \div (x_1:U_1, x_2: U_2)}
 %
 \and
 %  
@@ -64,7 +64,7 @@
 {\Delta_1; \Gamma |- e : \tySum{U_1}{\pi}{U_2} ; \Delta_2\\\\
 [\Delta_2; \Gamma],x_1:U_1 |- e_1 : V ; \Delta_3\\\\
 [\Delta_2; \Gamma],x_2:U_2 |- e_2 : V ; \Delta_3}
-{\Delta_1; \Gamma |- \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2} : V ; \Delta_3}
+{\Delta_1; \Gamma |- \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2} : V ; \Delta_3 \div (x_1:U_1, x_2:U_2)}
 %
 \and
 %
@@ -83,32 +83,34 @@
 %
 \Infer{fix}
 {\emptyctxt; \Gamma,x : \tyArr{U}{\pi}{U} |- e : \tyArr{U}{\pi}{U} ; \emptyctxt}
-{\Delta; \Gamma |- \eFixx{\pi}{x}{e} : \tyArr{U}{\pi}{U} ; \Delta}
+{\Delta_1; \Gamma |- \eFixx{\pi}{x}{e} : \tyArr{U}{\pi}{U} ; \Delta_2}
 %
 \and
 %
 \Infer{let}
-{\Delta_1; \Gamma |- e_1 : U ; \Delta_2\\\\
-[\Delta_2; \Gamma], x:U |- e_2 : V ; \Delta_3}
-{\Delta_1; \Gamma |- \eLet{x}{e_1}{e_2} : V ; \Delta_3}
+{\hat{\Delta_1} \neq \emptyctxt => U_1 \not\in \tyArr{U_2}{\ell}{V_2}\\\\
+\Delta_1, \hat{\Delta_1}; \Gamma |- e_1 : U_1 ; \Delta_2\\
+[\Delta_2; \Gamma], x:U |- e_2 : V_1 ; \Delta_3}
+{\Delta_1, \hat{\Delta_1}; \Gamma |- \eLet{x}{e_1}{e_2} : V ; \Delta_3 \div (x:U)}
 %
 \and
 %
 \Infer{abs}
 {\hat{\Delta_1} ; \Gamma, x:A |- e : U ; \Delta_2, \hat{\Delta_2}}
-{\Delta_1, \hat{\Delta_1} ; \Gamma |- \eLamm{\infty}{x}{e} : A -> U ; \Delta_3, \hat{\Delta_2}}
+{\Delta_1, \hat{\Delta_1} ; \Gamma |- \eLamm{\infty}{x}{e} : A -> U ; \Delta_1, \hat{\Delta_2}}
 %
 \and
 %
 \Infer{lolli}
 {\hat{\Delta_1}, \hat{x} : X; \Gamma |- e : U ; \Delta_2, \hat{\Delta_2}}
-{\Delta_1, \hat{\Delta_1} ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U ; \Delta_3, \hat{\Delta_2}}
+{\Delta_1, \hat{\Delta_1} ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U ; \Delta_1, \hat{\Delta_2} \div (\hat{x} : X)}
 %
 \and
 %
 \Infer{wabs}
-{\wrtok; \Gamma |- e : U ; \Delta_2}
-{\Delta_1 ; \Gamma |- \eLamm{\omega}{\eUnit}{e} : \tyArr{\mathbbm{1}}{\omega}{U} ; \Delta_1}
+{\hat{\Delta_1}, \hat{\wrtok}; \Gamma |- e : U ; \Delta_2, \hat{\Delta_2}}
+{\Delta_1, \hat{\Delta_1} ; \Gamma |- \eLamm{\omega}{\eUnit}{e} : \tyArr{\mathbbm{1}}{\omega}{U} ; \Delta_1,
+  \hat{\Delta_2} \div \hat{\wrtok}}
 %
 \and
 %
