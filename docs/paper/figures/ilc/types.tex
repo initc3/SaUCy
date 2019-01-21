@@ -87,16 +87,8 @@
 %
 \and
 %
-\Infer{fix}
-{\hat{\Delta_1}; \Gamma,x : \tyArr{U}{\pi}{V} |- e : \tyArr{U}{\pi}{V} ; \check{\Delta_2}, \hat{\Delta_2}}
-{\check{\Delta_1}, \hat{\Delta_1}; \Gamma |- \eFixx{\pi}{x}{e} : \tyArr{U}{\pi}{V} ; \check{\Delta_1},
-  \hat{\Delta_2}}
-%
-\and
-%
 \Infer{let}
-{%\hat{\Delta_1} \neq \emptyctxt => U_1 \not\in \tyArr{U_2}{\ell}{V_2}\\\\
-\hat{\Delta_1} \neq \emptyctxt \land U_1 \in \tyArr{U_2}{\ell}{V_2} => \check{\Delta_1},
+{\hat{\Delta_1} \neq \emptyctxt \land U_1 \in \tyArr{U_2}{\ell}{V_2} => \check{\Delta_1},
 \hat{\Delta_1}; \Gamma |- e_1 : U_1 ; \check{\Delta_2}, \hat{\Delta_1}\\\\
 \check{\Delta_1}, \hat{\Delta_1}; \Gamma |- e_1 : U_1 ; \Delta_2\\
 [\Delta_2; \Gamma], x:U |- e_2 : V_1 ; \Delta_3}
@@ -170,4 +162,39 @@
 \end{mathpar}
 \caption{Typing rules.}
 \label{fig:type-expressions}
+\end{figure*}
+
+\begin{figure*}[h]
+\centering
+\begin{mathpar}
+\Infer{}
+{ }  
+{\Delta \div \emptyctxt = \Delta}
+%
+\and
+%
+\Infer{}
+{ }
+{\Delta \div (\Gamma, x : A) = \Delta}
+%
+\and
+%
+\Infer{}
+{\Delta_1 \div \Delta_2 = \Delta_3 \\ \Delta_3 = \Delta_4, x : X}
+{\Delta_1 \div (\Delta_2, x : X) = \Delta_4}
+%
+\and
+%
+\Infer{}
+{ }  
+{[\Delta; \Gamma], x : A = \Delta ; \Gamma, x : A}
+%
+\and
+%
+\Infer{}
+{ }  
+{[\Delta; \Gamma], x : X = \Delta, x : X ; \Gamma}
+\end{mathpar}
+\caption{Notation.}
+\label{fig:notation}
 \end{figure*}
