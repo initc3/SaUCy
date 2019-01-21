@@ -3,7 +3,7 @@
 \judgbox{\Delta_{in} ; \Gamma |- e : U ; \Delta_{out}}{~~Under input contexts $\Delta_{in}$ and
   $\Gamma$, expression~$e$ has type $U$ and output context $\Delta_{out}$.}
 \begin{mathpar}
-\Infer{var}
+\Infer{ivar}
 {}
 {\Delta; \Gamma, x : A |- x : A ; \Delta}
 %
@@ -16,8 +16,8 @@
 \and
 %
 \Infer{bang}
-{\emptyctxt ; \Gamma |- e : A ; \emptyctxt}
-{\Delta ; \Gamma |- \eBang{e} : \tyBang{A} ; \Delta}
+{\Delta_1 ; \Gamma |- e : A ; \Delta_2}
+{\Delta_1 ; \Gamma |- \eBang{e} : \tyBang{A} ; \Delta_2}
 %
 \and
 %
@@ -62,7 +62,7 @@
 %  
 \Infer{case}
 {\Delta_1; \Gamma |- e : \tySum{U_1}{\pi}{U_2} ; \Delta_2\\\\
-[\Delta_2; \Gamma],x_1:U_1 |- e_1 : V ; \Delta_3\\\\
+[\Delta_2; \Gamma],x_1:U_1 |- e_1 : V ; \Delta_3\\
 [\Delta_2; \Gamma],x_2:U_2 |- e_2 : V ; \Delta_3}
 {\Delta_1; \Gamma |- \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2} : V ; \Delta_3 \div (x_1:U_1, x_2:U_2)}
 %
@@ -82,8 +82,8 @@
 \and
 %
 \Infer{fix}
-{\emptyctxt; \Gamma,x : \tyArr{U}{\pi}{V} |- e : \tyArr{U}{\pi}{V} ; \Delta_2}
-{\Delta_1; \Gamma |- \eFixx{\pi}{x}{e} : \tyArr{U}{\pi}{V} ; \Delta_1}
+{\emptyctxt; \Gamma,x : \tyArr{U}{\ell}{V} |- e : \tyArr{U}{\ell}{V} ; \Delta_2}
+{\Delta_1; \Gamma |- \eFixx{\ell}{x}{e} : \tyArr{U}{\ell}{V} ; \Delta_1}
 %
 \and
 %
@@ -136,7 +136,7 @@
 \and
 %
 \Infer{wr}
-{\Delta_1; {\Gamma}_S |- e_1 : S ; \Delta_2\\
+{\Delta_1; \Gamma |- e_1 : S ; \Delta_2\\
 \Delta_2; \Gamma |- e_2 : \tyWr{S} ; \Delta_3}
 {\Delta_1, \wrtok; \Gamma|- \eWr{e_1}{e_2} : \tyUnit; \Delta_3}
 %

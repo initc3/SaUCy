@@ -1,17 +1,12 @@
 \begin{figure*}[t]
   \centering
-    \begin{grammar}  
-        All types
-      & $U, V$
-        &$\bnfas$& $A \bnfalt X$
-    \end{grammar}          
   \begin{minipage}{.475\textwidth}
     \centering
     \begin{grammar}
-      Sendable types
-      & $S$
-      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{}{B} \bnfalt \tyArr{U}{\ell}{V}$
-      \\
+        All types
+      & $U, V$
+        &$\bnfas$& $A \bnfalt X$
+      \\      
       Intuitionistic types
       & $A,B$
       &$\bnfas$& $S \bnfalt \tyWr{S} \bnfalt \tyRef{A}$
@@ -29,9 +24,9 @@
   \begin{minipage}{.475\textwidth}
     \centering
     \begin{grammar}
-      Sendable typings
-      & ${\Gamma}_S$
-      &$\bnfas$& $\emptyctxt \bnfalt {\Gamma}_S,x:S$
+      Sendable types
+      & $S$
+      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{}{B} \bnfalt \tyArr{U}{\ell}{V}$              
       \\
       Intuitionistic typings
       & $\Gamma$
@@ -53,7 +48,7 @@
     $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2}{\pi} \bnfalt \eInj{i}{e}
     \bnfalt \eRef{e} \bnfalt \eSplit{e_1}{x_1}{x_2}{e_2} \bnfalt
     \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2}$
-    \\ &&& $\bnfaltbrk \eGet{e} \bnfalt \eSet{e_1}{e_2} \bnfalt \eFixx{\pi}{x}{e}
+    \\ &&& $\bnfaltbrk \eGet{e} \bnfalt \eSet{e_1}{e_2} \bnfalt \eFixx{\ell}{x}{e}
     \bnfalt \eLet{x}{e_1}{e_2} \bnfalt \eBang{e} \bnfalt \eUnbang{e}$
     \\ &&& $\bnfaltbrk \eLamm{\pi}{x}{e} \bnfalt \eApp{e_1}{e_2}{\ell}
     \bnfalt \eNu{(x_1,x_2)}{e} \bnfalt \eWr{e_1}{e_2}
