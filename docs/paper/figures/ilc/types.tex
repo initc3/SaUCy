@@ -84,10 +84,13 @@
 \Infer{fix}
 {\emptyctxt; \Gamma,x : \tyArr{U}{\pi}{V} |- e : \tyArr{U}{\pi}{V} ; \Delta_2}
 {\Delta_1; \Gamma |- \eFixx{\pi}{x}{e} : \tyArr{U}{\pi}{V} ; \Delta_1}
-%\Infer{fix}
-%{\hat{\Delta_1}; \Gamma,x : \tyArr{U}{\pi}{V} |- e : \tyArr{U}{\pi}{V} ; \check{\Delta_2}, \hat{\Delta_2}}
-%{\check{\Delta_1}, \hat{\Delta_1}; \Gamma |- \eFixx{\pi}{x}{e} : \tyArr{U}{\pi}{V} ; \check{\Delta_1},
-%  \hat{\Delta_2}}
+%
+\and
+%
+\Infer{fix}
+{\hat{\Delta_1}; \Gamma,x : \tyArr{U}{\pi}{V} |- e : \tyArr{U}{\pi}{V} ; \check{\Delta_2}, \hat{\Delta_2}}
+{\check{\Delta_1}, \hat{\Delta_1}; \Gamma |- \eFixx{\pi}{x}{e} : \tyArr{U}{\pi}{V} ; \check{\Delta_1},
+  \hat{\Delta_2}}
 %
 \and
 %
