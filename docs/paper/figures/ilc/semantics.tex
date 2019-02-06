@@ -90,7 +90,7 @@ C_2' \equiv C_2
 \and
 \Infer{app}
 {}
-{ \eApp{(\eLam{\pi}{x}{e})}{v} ---> [v/x]e }
+{ \eApp{(\eLam{\pi}{x}{e})}{v}{\pi} ---> [v/x]e }
 \and
 \Infer{split}
 { }
@@ -102,7 +102,7 @@ C_2' \equiv C_2
 \and
 \Infer{fix}
 { }
-{ \eFix{\pi}{x}{e} ---> [\eFix{x}{e} / x] e }
+{ \eFix{\pi}{x}{e} ---> [\eFix{\pi}{x}{e} / x] e }
 \end{mathpar}
 \caption{Reduction semantics.}
 \label{fig:semantics}
