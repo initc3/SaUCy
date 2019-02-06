@@ -3,15 +3,10 @@
 
 \subsection{Additional syntax}
 
-We define syntax for store, process and channel typings, which each
-map a kind of identifier (location, process name, or channel name) to its associated type:
+We define syntax for process and channel typings, which each map a kind of
+identifier (process name, or channel name) to its associated type:
 
 \begin{grammar}
-  Store typings
-    %(maps process names to their types)
-    & $\StTy$
-    &$\bnfas$& $\emptyctxt \bnfalt \StTy,\ell:A$
-    \\
     Process pool typings
     %(maps process names to their types)
     & $\PrTy$
@@ -32,12 +27,12 @@ of single-process typing, given in \Secref{subsec:types}:
 \begin{mathpar}
 \Infer{empty}
 { 
-  \StTy ; \ChTy |- \Store : \StTy
+  %\StTy ; \ChTy |- \Store : \StTy
 }
 {\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\emptyProcs}}{\cdot} |> \Vm}
 \and
 \Infer{aff}
-{ \StTy ; \ChTy |- e : X |> m_1
+{ \ChTy |- e : X |> m_1
   \\
  \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy} |> m_2
  \\
@@ -46,7 +41,7 @@ of single-process typing, given in \Secref{subsec:types}:
 { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:X} |> m_3}
 \and
 \Infer{int}
-{ \StTy ; \ChTy |- e : A |> m_1
+{ \ChTy |- e : A |> m_1
   \\
  \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy} |> m_2
  \\
@@ -59,35 +54,10 @@ Notably, parallel procesess with modes $m_1$ and $m_2$ must have modes
 that compose, where $m_1 || m_2$ is defined; this invariant ensures that there
 is at most one write mode process in a well-typed pool.
 
-Because of the premise in the base case rule (\Rule{empty}), all
-well-typed configurations consist of well-typed stores.
-%
-We define store typing in the standard way:
-
-\judgbox{\StTy ; \ChTy |- \Store : \StTy }
-{Under $\StTy$ and $\ChTy$, store~$\Store$ is well-typed}
-\begin{mathpar}
-\Infer{empty}
-{ ~ }
-{ 
-  \StTy ; \ChTy |- \cdot : \cdot
-}
-\and
-\Infer{loc}
-{ \StTy ; \ChTy |- v : A 
-  \\
-  \StTy ; \ChTy |- \Store : \StTy
-}
-{ 
-  \StTy ; \ChTy |- (\Store, \ell:v) : (\StTy, \ell:A)
-}
-\end{mathpar}
-
 \subsection{Type soundness}
 
 \begin{lemma}[Non-progress]
 For all configurations $C$,
-store typings~$\StTy$,
 channel typings~$\ChTy$,
 and process typings~$\PrTy$,
 %
@@ -102,7 +72,6 @@ then $\not\exists C'$ such that $\JCred{C}{C'}$.
 
 \begin{theorem}[Progress]
 For all configurations $C$,
-store typings~$\StTy$,
 channel typings~$\ChTy$,
 and process typings~$\PrTy$,
 %
@@ -117,7 +86,6 @@ or $\exists C'$ such that $\JCred{C}{C'}$.
 
 \begin{theorem}[Preservation]
 For all configurations $C, C'$,
-store typings~$\StTy$,
 channel typings~$\ChTy$
 and process typings~$\PrTy$,
 \\
@@ -125,7 +93,6 @@ and process typings~$\PrTy$,
  if $\JCty{\StTy}{\ChTy}{C}{\PrTy} |> m$
 and $\JCred{C}{C'}$ 
 then there exists 
-store typing extension $\StTy' \supseteq \StTy$
 channel typing extension $\ChTy' \supseteq \ChTy$
 and process typing extension $\PrTy' \supseteq \PrTy$
 such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'} |> m'$.

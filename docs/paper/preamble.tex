@@ -89,14 +89,14 @@
 \newcommand{\eVar}[1]{#1}
 \newcommand{\eChan}[1]{#1}
 \newcommand{\eUnit}{\Lparen\hspace{1px}\Rparen}
-\newcommand{\ePair}[2]{\Lparen{#1},{#2}\Rparen}
-\newcommand{\eInj}[2]{\keyword{inj}_{#1}\Lparen#2\Rparen}
+\newcommand{\ePair}[3]{{\Lparen{#1},{#2}\Rparen}_{#3}}
+\newcommand{\eInj}[3]{\keyword{inj}_{#1}^{#2}\Lparen#3\Rparen}
 \newcommand{\eRef}[1]{\keyword{ref}\Lparen{#1}\Rparen}
-\newcommand{\eCase}[5]{\keyword{case}\Lparen{#1},{#2}.{#3},{#4}.{#5}\Rparen}
-\newcommand{\eSplit}[4]{\keyword{split}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
+\newcommand{\eCase}[6]{\keyword{case}_{#1}\Lparen{#2},{#3}.{#4},{#5}.{#6}\Rparen}
+\newcommand{\eSplit}[5]{\keyword{split}_{#1}\Lparen{#2},{#3}.{#4}.{#5}\Rparen}
 \newcommand{\eGet}[1]{\keyword{get}\Lparen{#1}\Rparen}
 \newcommand{\eSet}[2]{\keyword{set}\Lparen{#1},{#2}\Rparen}
-\newcommand{\eFix}[2]{\keyword{fix}\Lparen{#1}.{#2}\Rparen}
+\newcommand{\eFix}[3]{\keyword{fix}_{#1}\Lparen{#2}.{#3}\Rparen}
 \newcommand{\eLet}[3]{\keyword{let}\ {#1} = {#2}\ \keyword{in}\ {#3}}
 \newcommand{\eLetRd}[4]{\eLet{\eLPair{#1}{#2}}{\eRd{#3}}{{#4}}}
 \newcommand{\eLetBang}[3]{\keyword{let!}\ {#1} = {#2}\ \keyword{in}\ {#3}}
@@ -155,7 +155,7 @@
 \newcommand{\ProcNm}[1]{#1{:}}
 \newcommand{\proc}[1]{#1}
 \newcommand{\emptyProcs}{\varepsilon}
-\newcommand{\Config}[3]{\left<#1;#2;#3\right>}
+\newcommand{\Config}[3]{\left<#1;#3\right>}
 
 % ILC Misc
 \newcommand{\xFork}{\mathrel{|\rhd}}
@@ -243,7 +243,7 @@
 
 %% Configuration typing judgement: Each process has a mode, with at most one write-mode process, and each process has a return type, 
 %% captured in the final mapping (#3).
-\newcommand{\JCty}[4]{#1 ; #2 |- #3 : #4}
+\newcommand{\JCty}[4]{#2 |- #3 : #4}
 
 %% Configurations~$C_1$ and $C_2$ are equivalent.
 \newcommand{\JCequiv}[2]{#1 \equiv #2}

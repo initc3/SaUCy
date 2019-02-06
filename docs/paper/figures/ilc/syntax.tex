@@ -1,52 +1,48 @@
 \begin{figure*}[t]
   \begin{grammar}
+    All types
+    & $U,V$
+    &$\bnfas$& $A \bnfalt X$
+    \\
     Intuitionistic types
     & $A,B$
     &$\bnfas$& $\tyUnit \bnfalt \tyProd{A}{B} \bnfalt \tySum{A}{B} \bnfalt
-    \tyWr{A} \bnfalt \tyRef{A} \bnfalt \tyArr{A}{\footnotesize m}{B}$
-    \\
-    Intuitionistic typings
-    & $\Gamma$
-    &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
+    \tyWr{A} \bnfalt \tyArr{A}{\footnotesize m}{U}$
     \\
     Affine types
     & $X,Y$
-    &$\bnfas$& $\tyRd{A} \bnfalt \tyBang{A} \bnfalt \tyTensor{X}{Y} \bnfalt
-    \tyLolli{X}{\footnotesize m}{Y}$
-    \\
-    Affine typings
-    & $\Delta$
-    &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:X$
-    \\
-    Modes & $m,n,p$ &$\bnfas$& $\Wm \bnfalt \Rm \bnfalt \Vm$    
-    %% \\[2mm]
-    %% Store typings
-    %% %(maps process names to their types)
-    %% & $\StTy$
-    %% &$\bnfas$& $\emptyctxt \bnfalt \StTy,\ell:A$
-    %% \\
-    %% Process pool typings
-    %% %(maps process names to their types)
-    %% & $\PrTy$
-    %% &$\bnfas$& $\emptyctxt \bnfalt \PrTy,p:A \bnfalt \PrTy,p:X$
-    %% \\
-    %% Channel pool typings
-    %% %(maps channel names to their types)
-    %% & $\ChTy$
-    %% &$\bnfas$& $\emptyctxt \bnfalt \ChTy,c:A \bnfalt \ChTy,c:X$
+    &$\bnfas$& $\tyRd{A} \bnfalt \tyBang{A} \bnfalt \tyTensor{X}{Y} \bnfalt X \oplus
+    Y \bnfalt \tyLolli{X}{\footnotesize m}{U}$
   \end{grammar}
+  \vspace{-.1cm}
+  \begin{minipage}{.4\textwidth}
+    \begin{grammar}
+      Modes & $m,n,p$ &$\bnfas$& $\Wm \bnfalt \Rm \bnfalt \Vm$
+      \\
+      Multiplicity & $\pi$ &$\bnfas$& $1 \bnfalt \infty$      
+    \end{grammar}
+  \end{minipage}%
+  \begin{minipage}{.4\textwidth}
+    \begin{grammar}
+      Intuitionistic typings
+      & $\Gamma$
+      &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
+      \\
+      Affine typings
+      & $\Delta$
+      &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:X$
+    \end{grammar}    
+  \end{minipage}
   \begin{grammar}
     Expressions
     & $e$
         &$\bnfas$&
-        $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2} \bnfalt \eInj{i}{e}
-    \bnfalt \eRef{e} \bnfalt \eSplit{e_1}{x_1}{x_2}{e_2} \bnfalt
-    \eCase{e}{x_1}{e_1}{x_2}{e_2}$
-    \\ &&& $\bnfaltbrk \eGet{e} \bnfalt \eSet{e_1}{e_2} \bnfalt \eFix{x}{e}
+        $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2}{\pi} \bnfalt \eInj{\pi}{i}{e} \bnfalt \eSplit{\pi}{e_1}{x_1}{x_2}{e_2} \bnfalt
+    \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2}$
+    \\ &&& $\bnfaltbrk \eFix{\pi}{x}{e}
     \bnfalt \eLet{x}{e_1}{e_2} \bnfalt \eLetBang{x}{e_1}{e_2} \bnfalt \eBang{e}$
     \\ &&& $\bnfaltbrk \eLam{x}{e} \bnfalt \eApp{e_1}{e_2} \bnfalt \eLAM{x}{e}
-    \bnfalt \eLapp{e_1}{e_2} \bnfalt \eLPair{e_1}{e_2} \bnfalt
-    \eLsplit{e_1}{x_1}{x_2}{e_2} \bnfalt \eLfix{x}{e}$
+    \bnfalt \eLapp{e_1}{e_2}$
     \\ &&& $\bnfaltbrk \eNu{(x_1,x_2)}{e} \bnfalt \eWr{e_1}{e_2}
     \bnfalt \eLetRd{x_1}{x_2}{e_1}{e_2} \bnfalt \eFork{e_1}{e_2} \bnfalt \eChoice{e_1}{e_2}$
   \end{grammar}

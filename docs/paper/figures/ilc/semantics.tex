@@ -5,14 +5,10 @@
   Channel names & $c$   &$\bnfas$& $\cdots$
   \\
   Process names & $p,q$ &$\bnfas$& $\cdots$
-  \\
-  Store locations & $\ell$ & $\bnfas$ & $\cdots$
   \\[1mm]
   Name sets
   & $\Names$ 
     & $\bnfas$ & $\emptyNames ~|~ \Names, c ~|~ \Names, p$
-  \\
-  Stores & $\Store$ & $\bnfas$ & $\Store ~|~ \Store, \ell{:}v$
   \\
   Process pools
   & $\Procs$ 
@@ -30,9 +26,8 @@
   & $E$
      & $\bnfas$ & 
  $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eLetBang{x}{E}{e}$
-\\ contexts &&& $\bnfaltbrk \eApp{E}{e} \bnfalt \eApp{v}{E} \bnfalt \eRef{E} \bnfalt \eGet{E}$
-     \\ &&& $\bnfaltbrk \eSet{E}{e} \bnfalt \eSet{\ell}{E}$
-\\ &&& $\bnfaltbrk \eSplit{E}{x_1}{x_2}{e} \bnfalt \eCase{E}{x_1}{e_1}{x_2}{e_2}$
+\\ contexts &&& $\bnfaltbrk \eApp{E}{e} \bnfalt \eApp{v}{E} \bnfalt$
+\\ &&& $\bnfaltbrk \eSplit{\pi}{E}{x_1}{x_2}{e} \bnfalt \eCase{\pi}{E}{x_1}{e_1}{x_2}{e_2}$
 \\[1mm]
  Read contexts
   & $R$
@@ -61,7 +56,7 @@
 %\begin{figure*}
 \judgbox{C_1 ---> C_2}{~~Configuration~$C_1$ reduces to $C_2$.}
 \begin{mathpar}
-\Infer{local}{ \Store_1 ; e_1 ---> \Store_2 ; e_2 }
+\Infer{local}{e_1 ---> e_2 }
 { \Config{\Names}{\Store_1}{\Procs, \ProcNm{p} \proc{E[e_1]}} --->
   \Config{\Names}{\Store_2}{\Procs, \ProcNm{p} \proc{E[e_2]}} }
 \and
@@ -89,44 +84,31 @@ C_2' \equiv C_2
 \\
 \end{mathpar}
 
-\judgbox{\Store_1 ; e_1 ---> \Store_2 ; e_2}{~~Under store $\Store_1$,
-  expression~$e_1$ reduces to~$\Store_2 ; e_2$.}
+\judgbox{e_1 ---> e_2}{~~Expression~$e_1$ reduces to~$e_2$.}
 \begin{mathpar}
 \Infer{let}
 {}
-{ \Store ; \eLet{x}{v}{e} ---> \Store ; [v/x]e }
+{ \eLet{x}{v}{e} ---> [v/x]e }
 \and
 \Infer{let!}
 {}
-{ \Store ; \eLetBang{x}{v}{e} ---> \Store ; [v/x]e }
+{ \eLetBang{x}{v}{e} ---> [v/x]e }
 \and
 \Infer{app}
 {}
-{ \Store ; \eApp{(\eLam{x}{e})}{v} ---> \Store ; [v/x]e }
+{ \eApp{(\eLam{x}{e})}{v} ---> [v/x]e }
 \and
 \Infer{split}
 { }
-{ \Store ; \eSplit{\ePair{v_1}{v_2}}{x_1}{x_2}{e} ---> \Store ; [v_1/x_1][v_2/x_2]e }
+{ \eSplit{\pi}{\ePair{v_1}{v_2}{\pi}}{x_1}{x_2}{e} ---> [v_1/x_1][v_2/x_2]e }
 \and
 \Infer{case}
 { }
-{ \Store ; \eCase{\eInj{i}{v}}{x_1}{e_1}{x_2}{e_2} ---> \Store ; [v/x_i]e_i }
+{ \eCase{\pi}{\eInj{\pi}{i}{v}}{x_1}{e_1}{x_2}{e_2} ---> [v/x_i]e_i }
 \and
 \Infer{fix}
 { }
-{ \Store ; \eFix{x}{e} ---> \Store ; [\eFix{x}{e} / x] e }
-~\hspace*{4mm}
-\Infer{ref}
-{ \ell \not \in dom(\Store) }
-{ \Store ; \eRef{v} ---> \Store, \ell{:}v ; \ell }
-~\hspace*{4mm}
-\Infer{get}
-{ \Store(\ell) = v }
-{ \Store ; \eGet{\ell} ---> \Store; v }
-~\hspace*{4mm}
-\Infer{set}
-{ }
-{ \Store ; \eSet{\ell}{v} ---> \Store\{\ell := v\}; \eUnit }
+{ \eFix{\pi}{x}{e} ---> [\eFix{x}{e} / x] e }
 \end{mathpar}
 \caption{Reduction semantics.}
 \label{fig:semantics}

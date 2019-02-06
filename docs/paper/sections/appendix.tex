@@ -24,27 +24,21 @@
 \Infer{a-pair}
 {\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A_1\\\\
 \Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; A_2}
-{\Delta_1; \Gamma |- \ePair{e_1}{e_2} : \Delta_3; \Gamma;  \tyProd{A_1}{A_2}}
+{\Delta_1; \Gamma |- \ePair{e_1}{e_2}{\pi} : \Delta_3; \Gamma;  \tyProd{A_1}{A_2}}
 %
 \and
 %
 \Infer{a-inj}
 {i \in \{1, 2\}\\\\
 \Delta_1; \Gamma |- e : \Delta_2; \Gamma; A_i}
-{\Delta_1 ; \Gamma |- \eInj{i}{e} : \Delta_2; \Gamma; \tySum{A_1}{A_2}}
-%
-\and
-%
-\Infer{a-ref}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; A}
-{\Delta_1; \Gamma |- \eRef{e} : \Delta_2; \Gamma; \tyRef{A}}
+{\Delta_1 ; \Gamma |- \eInj{\pi}{i}{e} : \Delta_2; \Gamma; \tySum{A_1}{A_2}}
 %
 \and
 %
 \Infer{a-split}
 {\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyProd{A_1}{A_2}\\\\
 \Delta_2; \Gamma,x_1:A_1, x_2: A_2 |- e : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
+{\Delta_1; \Gamma |- \eSplit{\pi}{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
 %
 \and
 %  
@@ -52,26 +46,13 @@
 {\Delta_1; \Gamma |- e : \Delta_2; \Gamma; \tySum{A_1}{A_2}\\\\
 \Delta_2; \Gamma,x_1:A_1 |- e_1 : \Delta_3; \Gamma; B\\\\
 \Delta_2; \Gamma,x_2:A_2 |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eCase{e}{x_1}{e_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
-%
-\and
-%
-\Infer{a-get}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; \tyRef{A}}
-{\Delta_1; \Gamma |- \eGet{e} : \Delta_2; \Gamma; A}
-%
-\and
-%
-\Infer{a-set}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyRef{A}\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; A}      
-{\Delta_1; \Gamma |- \eSet{e_1}{e_2} : \Delta_3; \Gamma; \tyUnit}
+{\Delta_1; \Gamma |- \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
 %
 \and
 %
 \Infer{a-fix}
 {\emptyctxt; \Gamma,x : \tyArr{A}{\footnotesize m}{A} |- e : \emptyctxt; \Gamma; \tyArr{A}{\footnotesize m}{A}}
-{\Delta; \Gamma |- \eFix{x}{e} : \Delta; \Gamma; \tyArr{A}{\footnotesize m}{A}}
+{\Delta; \Gamma |- \eFix{\pi}{x}{e} : \Delta; \Gamma; \tyArr{A}{\footnotesize m}{A}}
 %
 \and
 %

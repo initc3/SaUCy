@@ -17,8 +17,8 @@ and expressions.
 
 Types are bifurcated into two kinds: one for intuitionistic types (written $A$,
 $B$) and one for affine types (written $X$, $Y$). The standard intuitionistic
-types include unit ($\tyUnit$), products ($\tyProd{A}{B}$), sums
-($\tySum{A}{B}$), and references ($\tyRef{A}$). The more interesting ones are
+types include unit ($\tyUnit$), products ($\tyProd{A}{B}$), and sums
+($\tySum{A}{B}$). The more interesting ones are
 write channels ($\tyWr{A}$) and arrows ($\tyArr{A}{\footnotesize m}{B}$), which
 importantly carry a mode. Affine types include read channels ($\tyRd{A}$),
 bang! types ($\tyBang{A}$), tensors ($\tyTensor{X}{Y}$), and lollipops
@@ -199,13 +199,12 @@ to affine variables.
 %\todo{Need some help explaining this subsection.} 
 Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic syntax and semantics of ILC, respectively.
 %
-We define a \emph{configuration}~$C$ as a tuple of dynamic channel and process names~$\Sigma$, 
-a shared mutable store~$\sigma$, 
+We define a \emph{configuration}~$C$ as a tuple of dynamic channel and process names~$\Sigma$
 and a pool of running and terminated processes~$\pi$.
 
 To state and prove the meta theory of ILC (\Secref{sec:metatheory}), we
 extend the type system given above with typing rules for
-configurations, including typing environments for channels and stores. 
+configurations, including typing environments for channels. 
 %
 We omit these details here for space reasons, 
 and we refer the interested reader to \Secref{sec:ilcproofs}.
@@ -213,9 +212,8 @@ and we refer the interested reader to \Secref{sec:ilcproofs}.
 We read the configuration reduction judgment $C_1 ---> C_2$ as ``configuration
 $C_1$ steps to configuration $C_2$,'' 
 %
-and the local stepping judgment $\sigma_1; e_1 \longrightarrow \sigma_2; e_2$ 
-for a single process~$e$ as ``under store
-$\sigma_1$, expression $e_1$ steps to store $\sigma_{2}$ and expression $e_2$.
+and the local stepping judgment $e_1 \longrightarrow e_2$ 
+for a single process~$e$ as ``expression $e_1$ steps to expression $e_2$.
 %
 The rules of local stepping follow a standard call-by-value semantics, 
 where we streamline the definition with an evaluation context~$E$.

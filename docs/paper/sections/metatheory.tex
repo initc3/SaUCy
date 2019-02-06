@@ -64,7 +64,6 @@ the final outcome.
 
 \begin{lemma}[Non-progress]
 For all configurations $C$,
-store typings~$\StTy$,
 channel typings~$\ChTy$,
 and process typings~$\PrTy$,
 %
@@ -79,7 +78,6 @@ then $\not\exists C'$ such that $\JCred{C}{C'}$.
 
 \begin{theorem}[Progress]
 For all configurations $C$,
-store typings~$\StTy$,
 channel typings~$\ChTy$,
 and process typings~$\PrTy$,
 %
@@ -94,7 +92,6 @@ or $\exists C'$ such that $\JCred{C}{C'}$.
 
 \begin{theorem}[Preservation]
 For all configurations $C, C'$,
-store typings~$\StTy$,
 channel typings~$\ChTy$
 and process typings~$\PrTy$,
 \\
@@ -102,7 +99,6 @@ and process typings~$\PrTy$,
  if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
 and $\JCred{C}{C'}$ 
 then there exists 
-store typing extension $\StTy' \supseteq \StTy$
 channel typing extension $\ChTy' \supseteq \ChTy$
 and process typing extension $\PrTy' \supseteq \PrTy$
 such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
@@ -122,7 +118,7 @@ up to non-deterministic naming choices in
 rules \Rule{ref}, \Rule{nu}, and \Rule{fork} (\Figref{fig:semantics}).
 %
 To account for different choices of dynamically-named
-store locations, channels and processes, respectively, 
+channels and processes, respectively, 
 we state and prove confluence
 with respect to a renaming function~$f$, which consistently renames
 these choices in a related configuration:
