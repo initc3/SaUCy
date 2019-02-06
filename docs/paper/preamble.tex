@@ -97,11 +97,11 @@
 \newcommand{\eGet}[1]{\keyword{get}\Lparen{#1}\Rparen}
 \newcommand{\eSet}[2]{\keyword{set}\Lparen{#1},{#2}\Rparen}
 \newcommand{\eFix}[3]{\keyword{fix}_{#1}\Lparen{#2}.{#3}\Rparen}
-\newcommand{\eLet}[3]{\keyword{let}\ {#1} = {#2}\ \keyword{in}\ {#3}}
-\newcommand{\eLetRd}[4]{\eLet{\eLPair{#1}{#2}}{\eRd{#3}}{{#4}}}
+\newcommand{\eLet}[4]{\keyword{let}_{#1}\ {#2} = {#3}\ \keyword{in}\ {#4}}
+\newcommand{\eLetRd}[4]{\eLet{}{\langle{#1},{#2}\rangle}{\eRd{#3}}{{#4}}}
 \newcommand{\eLetBang}[3]{\keyword{let!}\ {#1} = {#2}\ \keyword{in}\ {#3}}
-\newcommand{\eLam}[2]{\lambda{#1}.\,{#2}}
-\newcommand{\eApp}[2]{#1\,#2}
+\newcommand{\eLam}[3]{\lambda_{#1}{#2}.\,{#3}}
+\newcommand{\eApp}[3]{{\Lparen#1\,#2\Rparen}_{#3}}
 \newcommand{\eNu}[2]{\nu#1.\,#2}
 \newcommand{\eWr}[2]{\keyword{wr}\Lparen{#1},{#2}\Rparen}
 \newcommand{\eRd}[1]{\keyword{rd}\Lparen{#1}\Rparen}
@@ -110,11 +110,7 @@
 \newcommand{\eSeq}[2]{{#1}\,;\,{#2}}
 
 \newcommand{\eBang}[1]{{!}\,{#1}}
-\newcommand{\eLAM}[2]{\Lambda{#1}.\,{#2}}
-\newcommand{\eLsplit}[4]{\keyword{split}\langle{#1},{#2}.{#3}.{#4}\rangle}
-\newcommand{\eLfix}[2]{\keyword{fix}\langle{#1}.{#2}\rangle}
-\newcommand{\eLapp}[2]{\langle{#1}\,{#2}\rangle}
-\newcommand{\eLPair}[2]{\langle{#1},{#2}\rangle}
+\newcommand{\eUnbang}[1]{\textnormal{!`}\,{#1}}
 
 % Extended ILC
 \newcommand{\eKGen}[1]{\keyword{kgen}\Lparen{#1}\Rparen}
@@ -125,7 +121,8 @@
 % ILC Types
 \newcommand{\tyNat}{\tyname{Nat}}
 \newcommand{\tyBool}{\tyname{Bool}}
-\newcommand{\tyUnit}{\keyword{Unit}}
+%\newcommand{\tyUnit}{\keyword{Unit}}
+\newcommand{\tyUnit}{\mathbbm{1}}
 \newcommand{\tyProd}[2]{{#1} ** {#2}}
 \newcommand{\tySum}[2]{{#1} + {#2}}
 \newcommand{\tyRd}[1]{\keyword{Rd}\,#1}

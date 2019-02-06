@@ -5,7 +5,7 @@
   Channel names & $c$   &$\bnfas$& $\cdots$
   \\
   Process names & $p,q$ &$\bnfas$& $\cdots$
-  \\[1mm]
+  \\
   Name sets
   & $\Names$ 
     & $\bnfas$ & $\emptyNames ~|~ \Names, c ~|~ \Names, p$
@@ -13,22 +13,20 @@
   Process pools
   & $\Procs$ 
     & $\bnfas$ & $\emptyProcs ~|~ \Procs, p{:}\proc{e}$
-    \\[1mm]
-  Configurations
-  & $C$
-     & $\bnfas$ & $\Config{\Names}{\Store}{\Procs} $
-     \\[1mm]
 \end{grammar}
 \end{subfigure}%
 \begin{subfigure}{0.5\textwidth}
-\begin{grammar}
- Evaluation
+  \begin{grammar}
+  Configurations
+  & $C$
+     & $\bnfas$ & $\Config{\Names}{\Store}{\Procs} $
+     \\
+ Evaluation contexts
   & $E$
      & $\bnfas$ & 
- $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eLetBang{x}{E}{e}$
-\\ contexts &&& $\bnfaltbrk \eApp{E}{e} \bnfalt \eApp{v}{E} \bnfalt$
+ $\bullet \bnfalt \eLet{\pi}{x}{E}{e} \bnfalt \eApp{E}{e}{\pi} \bnfalt \eApp{v}{E}{\pi}$
 \\ &&& $\bnfaltbrk \eSplit{\pi}{E}{x_1}{x_2}{e} \bnfalt \eCase{\pi}{E}{x_1}{e_1}{x_2}{e_2}$
-\\[1mm]
+\\
  Read contexts
   & $R$
 %%
@@ -88,15 +86,11 @@ C_2' \equiv C_2
 \begin{mathpar}
 \Infer{let}
 {}
-{ \eLet{x}{v}{e} ---> [v/x]e }
-\and
-\Infer{let!}
-{}
-{ \eLetBang{x}{v}{e} ---> [v/x]e }
+{ \eLet{\pi}{x}{v}{e} ---> [v/x]e }
 \and
 \Infer{app}
 {}
-{ \eApp{(\eLam{x}{e})}{v} ---> [v/x]e }
+{ \eApp{(\eLam{\pi}{x}{e})}{v} ---> [v/x]e }
 \and
 \Infer{split}
 { }
