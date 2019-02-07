@@ -1,3 +1,3 @@
-let reentrantF frP frA ... =
-  loop frP !($\lambda$ m . (let $\langle$!Ok, frA$\rangle$ = rd frA in wr m $->$ toQ)
-                $\xFork$ wr m $->$ toA)
+let reentrantF ... frP frA =
+  loop ($\lambda$ m . (let $\langle$!Ok, frA$\rangle$ = rd frA in wr m $->$ toQ)
+            $\xFork$ wr m $->$ toA) frP

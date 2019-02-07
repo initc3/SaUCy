@@ -233,28 +233,23 @@ feature of ILC is confluence, so many of our design choices are for achieving
 this.\smallskip
 
 \myheader{Affine types.}
-%The role of affine types is to restrict the dataflow of
-%read channels so that no confusion arises at the receiving ends of
-%communications.
-Let us first examine the function signature of \textsf{fCom}, which (glossing
-over some details) takes as arguments two channels, a read channel \textsf{frP}
-(reads message from $P$) and a write channel \textsf{toQ} (writes messages to
-$Q$), and returns \textsf{Unit}. There are a number of things to unpack here:
+Let us first examine the function signature of \textsf{fCom}, which takes as
+arguments two channels, a write channel \textsf{toQ} (writes values of type
+\textsf{Msg} to $Q$) and a read channel \textsf{frP} (reads messages of type
+\textsf{Msg} from $P$) , and returns \textsf{Unit}. There are a number of things
+to unpack here:
 
 \begin{itemize}[leftmargin=*]
-  \item The signature consists of affine arrows $\multimap$ (or ``lollipops''), which
-    describe the types of functions that consume their argument at most once.
-  \item Both lollipops and intuitionistic (unrestricted) arrows carry the
-    \emph{modal type} (or \emph{mode}) of their function bodies. A mode can have
-    one of three values: either write $\Wm$, read $\Rm$, or value $\Vm$.  In the
-    example, the left lollipop has mode $\Vm$, which we elide, and the right
-    lollipop has mode $\Rm$. We have more to say about modes later.
-%  \item Channels are typed. Both \textsf{frP} and \textsf{toQ} communicate
-%    values inhabiting the sum type \textsf{Msg}.
+  \item The signature consists of a combination of intuitionistic arrows $->$
+    and affine arrows $\multimap$ (or ``lollipops''). Lollipops describe the types of
+    functions that consume their argument at most once.
+  \item Both kinds of arrows carry the \emph{modal type} (or \emph{mode}) of
+    their function bodies. A mode can have one of three values: either write
+    $\Wm$, read $\Rm$, or value $\Vm$.  In the example, the left lollipop has
+    mode $\Vm$, which we elide, and the right lollipop has mode $\Rm$. We have
+    more to say about modes later.
   \item Read channels are affinely typed to protect them from duplication.
-  \item Write channels and the unit value are intuitionistically typed. Hence,
-    their types require the ! operator (pronounced ``bang!'') to be lifted into
-    an affine type.
+  \item Write channels and the unit value are intuitionistically typed.
 \end{itemize}
 
 \noindent ILC achieves the above with a two-kind system. That is, types are
@@ -272,17 +267,16 @@ either sequentially or in parallel to yield new modes.
 To give the high-level idea, suppose expressions $e_1$ and $e_2$ have modes
 $m_1$ and $m_2$, respectively. Sequential mode composition shows up in the
 obvious case of sequentially evaluating the two expressions, so the mode of
-$\eSeq{e_1}{e_2}$ is derived as $m1 ;; m2 => m3$.\footnote{The expression
-  $\eSeq{e_1}{e_2}$ is syntactic sugar for $\eLet{}{\eUnit}{e_1}{e_2}$.} Parallel
-mode composition shows in the case of forking a child process, so the mode of
-$\eFork{e_1}{e_2}$ (fork a process $e_1$ and continue as $e_2$) is derived as
-$m_1 || m_2 => m_3$. The rules for mode composition are discussed in
-Section~\ref{sec:ilc}.
+$\eSeq{e_1}{e_2}$ (syntactic sugar for $\eLet{}{\eUnit}{e_1}{e_2}$) is derived
+as $m_1 ;; m_2 => m_3$. Parallel mode composition shows in the case of forking a
+child process, so the mode of $\eFork{e_1}{e_2}$ (fork a process $e_1$ and
+continue as $e_2$) is derived as $m_1 || m_2 => m_3$. The rules for mode
+composition are discussed in Section~\ref{sec:ilc}.
 
 The main takeaway of the modal type system is this: Parallel composition of
 write mode processes is \emph{not allowed}, i.e., $\Wm || \Wm => p$ is not
 derivable for any mode $p$. This ensures that no confusion arises as to which
-process is currently writing, or put another way, which process is currently
+process is currently writing, or equivalently, which process is currently
 active.\smallskip
 %\todo{A more minor takeaway is that sequential compostion of write mode
 %processes is also not allowed, so processes cannot get ``stuck.''}\smallskip
@@ -296,20 +290,20 @@ active.\smallskip
 follows $\Func_{\textsc{com}}$, but there are several points worth mentioning.
 
 First, we introduce the letrd and wr typing rules. Typing judgments have the
-form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is an affine typing context, $\Gamma$ is an
+form $\Delta ; \Gamma |- e : U |> m$, where $\Delta$ is an affine typing context, $\Gamma$ is an
 intuitionistic typing context, and $m$ is a mode.
 \begin{mathpar}
 \Infer{letrd}
 {\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\
-\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma |- e_2 : B |> m
+\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma |- e_2 : U |> m
 }
-{\Delta_1, \Delta_2 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : B |> \Rm}
+{\Delta_1, \Delta_2 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : U |> \Rm}
 \end{mathpar}
 
 The letrd rule says that if we can partition the affine context $\Delta$ as $\Delta_1,
 \Delta_2$ such that $e_1$ has type $\tyRd{A}$ and mode $\Vm$ (elided) under contexts
-$\Delta_1; \Gamma$, and $e_2$ has type $B$ and mode $m$ under contexts
-$\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma$, then the full expression has type $B$ and
+$\Delta_1; \Gamma$, and $e_2$ has type $U$ and mode $m$ under contexts
+$\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma$, then the full expression has type $U$ and
 mode $\Rm$. Notice several things:
 \begin{itemize}[leftmargin=*]
   \item Reading on a channel of type $\tyRd{A}$ produces an affine pair (or
@@ -334,12 +328,9 @@ The wr rule says that if we can partition the affine context $\Delta$ as $\Delta
 such that $e_1$ has type $A$ and mode $\Vm$, and $e_2$ has a type $\tyWr{A}$ and
 mode $\Vm$, then the full expression has type $\tyUnit$ and mode $\Wm$.
 
-Revisiting \textsf{fCom}, observe that the two letrd expressions are composed
-sequentially, so the mode of the entire function body is derived as $\Rm ;; \Rm
-=> \Rm$ according to our mode composition rules. This is reflected in the fact
-that the right lollipop in the function signature carries a mode $\Rm$. Finally,
-because wr expressions return $\eUnit$, we wrap it inside a bang! to lift its
-type into the affine type \textsf{!Unit}.
+Revisiting \textsf{fCom}, by rule letrd, the mode of the entire function body is
+$\Rm$. This explains why the lollipop in the function signature carries the mode
+$\Rm$.
 
 \begin{comment}
 \subsection{The UC Framework, Concretely}

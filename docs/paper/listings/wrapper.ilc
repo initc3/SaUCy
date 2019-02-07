@@ -1,9 +1,7 @@
 wrapperP :: $\forall$ ... . $X_{\mathsf{p}} \multimap \tyBang{\keyword{Crupt} \multimap ... \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}}$
-let wrapperP p !crupt toZ frZ toF frF toA frA toP frP k bits =
-  if crupt == CruptP then
-       loop frZ !($\lambda$ _ . error "Z cannot write to corrupted party.")
-    $\xFork$ fwd frF toA
-    $\xFork$ fwd frP toA    
-    $\xFork$ fwd frA toF
-  else
-    p toZ frZ toF frF toP frP k bits
+let wrapperP p !crupt ${\color{red}\sf toZ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf toF}$ ${\color{Green}\sf frF}$ toA frA ${\color{blue}\sf toQ}$ ${\color{blue}\sf frQ}$ k bits =
+      if crupt == CruptP then
+	   loop ${\color{red}\sf frZ}$ !($\lambda$ _ . error "Z cannot write to corrupted party.")
+	$\xFork$ fwd ${\color{Green}\sf frF}$ toA
+	$\xFork$ fwd ${\color{blue}\sf frP}$ toA    
+	$\xFork$ fwd frA ${\color{Green}\sf toF}$

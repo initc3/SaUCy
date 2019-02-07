@@ -1,5 +1,5 @@
-committer :: $\forall$ ... . $\tyBang{\tyWr{\keyword{Msg}}} \cdots \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} \multimap_{\mathsf{R}} \tyBang{\tyUnit}$
-let committer toZ frZ !toF frF !toQ frQ !k !bits =
+committer :: $\forall$ ... . $\tyNat -> [\tyBit] -> \cdots \multimap_{\mathsf{R}} \tyUnit$
+let committer k bits toZ toF toQ frZ frF frQ =
   let $\langle$!(Commit b), frZ$\rangle$= rd frZ in
     wr GetCRS $->$ toF ;
     let $\langle$!(PublicStrings $\sigma$ $\mathsf{pk}_0 \mathsf{pk}_1$), frF$\rangle$ = rd frF in
@@ -10,8 +10,8 @@ let committer toZ frZ !toF frF !toQ frQ !k !bits =
       let $\langle$!Open, frZ$\rangle$= rd frZ in
         !(wr (Open' b r) $->$ toQ)
 
-receiver :: $\forall$ ... . $\tyBang{\tyWr{\keyword{Msg}}}\cdots \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} \multimap_{\mathsf{R}} \tyBang{\tyUnit}$
-let receiver !toZ frZ toF frF toP frP k bits =
+receiver :: $\forall$ ... . $\tyNat -> [\tyBit] -> \cdots \multimap_{\mathsf{R}} \tyUnit$
+let receiver k bits toZ toF toP frZ frF frP =
   let $\langle$!(Commit' x), frP$\rangle$ = rd frP in
     wr GetCRS $->$ toF ;
     let $\langle$!(PublicStrings $\sigma$ $\mathsf{pk}_0 \mathsf{pk}_1$), frF$\rangle$ = rd frF in    

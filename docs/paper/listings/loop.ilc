@@ -1,2 +1,2 @@
-loop :: $\forall$ a b m . Rd a $\multimap$ !(a ${->}_{\textsf{m}}$ b) ${\multimap}_{\textsf{R}}$ b
-letrec loop c !f = let $\langle$!v, c$\rangle$ = rd c in f v; loop c !f
+loop :: $\forall$ a b m . (a ${->}_{\textsf{m}}$ b) $->$ Rd a ${\multimap}_{\textsf{R}}$ b
+letrec loop f c = let $\langle$!v, c$\rangle$ = rd c in f v; loop f c

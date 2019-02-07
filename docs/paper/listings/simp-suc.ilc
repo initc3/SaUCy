@@ -1,10 +1,10 @@
-execUC :: $\forall$ ... . $X_{\mathsf{z}} \multimap X_{\mathsf{p}} \otimes X_{\mathsf{q}} \multimap X_{\mathsf{f}} \multimap X_{\mathsf{a}}$
-        $\multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} \multimap \tyBang{\keyword{Crupt}} \multimap_{m} \tyBang{\tyBit} $ 
-let execUC z (p,q) f a k !r crupt =
+execUC :: $\forall$ ... . $\tyNat -> [\tyBit] -> \keyword{Crupt} -> X_{\mathsf{z}} -> A_{\mathsf{p}} \times A_{\mathsf{q}}$
+              $-> A_{\mathsf{f}} -> A_{\mathsf{a}} {->}_{m} \tyBit $
+let execUC k r crupt z (p,q) f a =
   $\nu$ ... . let ... in
        let (rf,ra,rp,rq,rz) = splitBits5 r in
-	 $\ \ \ \,$ f !crupt ... k !rf
-	 $\xFork$ a !crupt ... k !ra
-	 $\xFork$ wrapperP p crupt ... k !rp
-	 $\xFork$ wrapperQ q crupt ... k !rq
-	 $\xFork$ z ... k !rz
+	 $\ \ \ \,$ f k rf crupt ...
+	 $\xFork$ a k ra crupt ...
+	 $\xFork$ wrapperP p k rp (crupt == CruptP) ...
+	 $\xFork$ wrapperQ q k rq (crupt == CruptQ) ...
+	 $\xFork$ z k rz ...

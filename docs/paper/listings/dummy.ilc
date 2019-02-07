@@ -1,11 +1,11 @@
-dummy :: $\forall$ a ... . $\tyBang{\keyword{Crupt} \multimap \cdots \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}} \multimap$ a
-let dummyA !crupt !toZ frZ !toF frF !toP frP toQ frQ !toQasP toPasQ k r =
-  let fwd2Z c = loop c !($\lambda$ m . wr (X2Z m) $->$ toZ) in
-       loop frZ !($\lambda$ x . match x with
-		     | A2F m $=>$ wr m $->$ toF
-		     | A2P m $=>$ if crupt == CruptP
-			       $\,$then wr m $->$ toQasP
-			       $\,$else wr m $->$ toP)
-    $\xFork$ fwd2Z frF
-    $\xFork$ fwd2Z frP
-    $\xFork$ fwd2Z frQ
+dummy :: $\forall$ a ... . $\tyNat -> [\tyBit] -> \keyword{Crupt} -> \cdots$ a
+let dummyA k bits crupt toZ toF toP toQ toQasP frZ frF frP frQ toPasQ=
+  let fwd2Z $\eUnit$ c = loop ($\lambda$ m . wr (X2Z m) $->$ toZ) c in
+       loop ($\lambda$ x . match x with
+		 | A2F m $=>$ wr m $->$ toF
+		 | A2P m $=>$ if crupt == CruptP
+			   $\,$then wr m $->$ toQasP
+			   $\,$else wr m $->$ toP) frZ
+    $\xFork$ fwd2Z $\eUnit$ frF
+    $\xFork$ fwd2Z $\eUnit$ frP
+    $\xFork$ fwd2Z $\eUnit$ frQ

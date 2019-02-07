@@ -1,4 +1,5 @@
-let simI !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
+simI :: $\tyNat -> [\tyBit] -> \mathsf{Crupt} -> \cdots \multimap_{\textsf{\tiny R}} \mathbbm{1}$
+let simI k bits crupt toZ toF toP toQ frZ frF frP frQ =
   let ($\mathsf{pk}_0$,$\mathsf{td}_0$) = kgen k in
   let ($\mathsf{pk}_1$,$\mathsf{td}_1$) = kgen k in  
   let ($\mathsf{r}_0$, bits) = sample k bits in
@@ -18,7 +19,7 @@ let simI !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
 	  let $\langle$!(A2P (Open' b r)), frZ$\rangle$ = rd frZ in
 	    if b == 0 && y == prg $\mathsf{pk}_0$ r ||
 	      b == 1 && y == xors (prg $\mathsf{pk}_1$ r) $\sigma$
-	    then !(wr Open $->$ toP)
+	    then wr Open $->$ toP
 	    else error "Fail"
     | CruptQ $=>$
       let $\langle$!GetCRS, frZ$\rangle$ = rd frZ in
@@ -28,7 +29,7 @@ let simI !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
 	  wr (X2Z (Commit' y)) $->$ toZ ;
 	  let $\langle$!(Opened b'), frQ$\rangle$ = rd frQ in
 	    if (b' == 0) then
-	      !(wr (X2Z (Opened' $\mathsf{r}_0$)) $->$ toZ)
+	      wr (X2Z (Opened' $\mathsf{r}_0$)) $->$ toZ
 	    else
-	      !(wr (X2Z (Opened' $\mathsf{r}_1$)) $->$ toZ)
+	      wr (X2Z (Opened' $\mathsf{r}_1$)) $->$ toZ
     | CruptNone $=>$ error "Fail"

@@ -5,165 +5,148 @@
 \label{sec:algo-type-check}
 
 \begin{figure*}[h]
-\centering
-\judgbox{\Delta_{in} ; \Gamma_1 |- e : \Delta_{out}; \Gamma_2; A}{~~Under $\Delta_{in}$ and
-  $\Gamma_1$, expression~$e$ results $\Delta_{out}$ and $\Gamma_2$ and has intuitionistic type $A$.}
+\judgbox{\Delta_{in} ; \Gamma |- e : U -| \Delta_{out}}{~~Under input contexts $\Delta_{in}$ and
+  $\Gamma$, expression~$e$ has type $U$ and output context $\Delta_{out}$.}
 \begin{mathpar}
-\Infer{a-var}
-{\Gamma(x) = A}
-{\Delta; \Gamma |- x : \Delta; \Gamma; A}
+\Infer{ivar}
+{}
+{\Delta; \Gamma, x : A |- x : A -| \Delta}
 %
 \and
 %
-\Infer{a-unit}
+\Infer{avar}
 { }
-{\Delta ; \Gamma |- \eUnit : \Delta; \Gamma; \tyUnit}
+{\Delta, x : X; \Gamma |- x : X -| \Delta}
 %
 \and
 %
-\Infer{a-pair}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A_1\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; A_2}
-{\Delta_1; \Gamma |- \ePair{e_1}{e_2}{\pi} : \Delta_3; \Gamma;  \tyProd{A_1}{A_2}}
+\Infer{unit}
+{ }
+{\Delta ; \Gamma |- \eUnit : \tyUnit -| \Delta}
 %
 \and
 %
-\Infer{a-inj}
+\Infer{pair}
+{\Delta_1; \Gamma |- e_1 : U_1 -| \Delta_2\\\\
+\Delta_2; \Gamma |- e_2 : U_2 -| \Delta_3}
+{\Delta_1; \Gamma |- \ePair{e_1}{e_2}{\pi} : U_1 \times_{\pi}U_2 -| \Delta_3}
+%
+\and
+%
+\Infer{inj}
 {i \in \{1, 2\}\\\\
-\Delta_1; \Gamma |- e : \Delta_2; \Gamma; A_i}
-{\Delta_1 ; \Gamma |- \eInj{\pi}{i}{e} : \Delta_2; \Gamma; \tySum{A_1}{A_2}}
+\Delta_1; \Gamma |- e : U_i -| \Delta_2}
+{\Delta_1 ; \Gamma |- \eInj{\pi}{i}{e} : U_1 +_{\pi} U_2 -| \Delta_2}
 %
 \and
 %
-\Infer{a-split}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyProd{A_1}{A_2}\\\\
-\Delta_2; \Gamma,x_1:A_1, x_2: A_2 |- e : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eSplit{\pi}{e_1}{x_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
-%
-\and
-%  
-\Infer{a-case}
-{\Delta_1; \Gamma |- e : \Delta_2; \Gamma; \tySum{A_1}{A_2}\\\\
-\Delta_2; \Gamma,x_1:A_1 |- e_1 : \Delta_3; \Gamma; B\\\\
-\Delta_2; \Gamma,x_2:A_2 |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2} : \Delta_3; \Gamma; B}
-%
-\and
-%
-\Infer{a-fix}
-{\emptyctxt; \Gamma,x : \tyArr{A}{\footnotesize m}{A} |- e : \emptyctxt; \Gamma; \tyArr{A}{\footnotesize m}{A}}
-{\Delta; \Gamma |- \eFix{\pi}{x}{e} : \Delta; \Gamma; \tyArr{A}{\footnotesize m}{A}}
-%
-\and
-%
-\Infer{a-let}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma, x:A |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eLet{\pi}{x}{e_1}{e_2} : \Delta_3; \Gamma; B}
-%
-\and
-%
-\Infer{a-unbang}
-{\Delta_1 ; \Gamma |- e : \tyBang{A} ; \Delta_2}
-{\Delta_1 ; \Gamma |- \eUnbang{e} : A ; \Delta_2}
-%
-\and
-%
-\Infer{a-abs}
-{\emptyctxt ; \Gamma, x:A |- e : \emptyctxt; \Gamma; B}
-{\Delta ; \Gamma |- \eLam{1}{x}{e} : \Delta; \Gamma; \tyArr{A}{\footnotesize m}{B}}
-%
-\and
-%
-\Infer{a-app}
-{\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma |- e_1 : \Delta_3; \Gamma; \tyArr{A}{\footnotesize m}{B}}
-{\Delta_1; \Gamma |- \eApp{e_1}{e_2}{\pi} : \Delta_3; \Gamma; B}
-%
-\and
-%
-\Infer{a-nu}
-{\Delta_1, x_1: \tyRd{A} ; \Gamma, x_2 : \tyWr{A} |- e : \Delta_2; \Gamma; B}
-{\Delta_1; \Gamma |- \eNu{(x_1, x_2)}{e} : \Delta_2; \Gamma; B}
-%
-\and
-%
-\Infer{a-wr}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; \tyWr{A}}
-{\Delta_1; \Gamma|- \eWr{e_1}{e_2} : \Delta_3; \Gamma; \tyUnit}
-%
-\and
-%
-\Infer{a-letrd}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyRd{A}\\\\
-\Delta_2, x_2 : \tyRd{A} ; \Gamma, x_1 : A |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : \Delta_3; \Gamma; B}
-%
-\and
-%
-\Infer{a-fork}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3; \Gamma; B}
-{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : \Delta_3; \Gamma; B}
-%
-\and
-%
-\Infer{a-choice}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; A\\\\
-\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; A}
-{\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : \Delta_2; \Gamma; A}
-\end{mathpar}
-
-\judgbox{\Delta_{in} ; \Gamma_1 |- e : \Delta_{out}; \Gamma_2; A}{~~Under $\Delta_{in}$ and
-  $\Gamma_1$, expression~$e$ results $\Delta_{out}$ and $\Gamma_2$ and has affine type $A$.}
-\begin{mathpar}
-\Infer{a-avar}
-{\Delta(x) = X}
-{\Delta; \Gamma |- x : \Delta ; \Gamma; X}
-%
-\and
-%
-\Infer{a-bang}
-{\emptyctxt ; \Gamma |- e : \emptyctxt ; \Gamma ; A}
-{\Delta ; \Gamma |- \eBang{e} : \Delta ; \Gamma ; \tyBang{A}}
-%
-\and
-%
-\Infer{a-tensor}
-{\Delta_1; \Gamma |- e_1 : \Delta_2 ; \Gamma ; X_1\\\\
-\Delta_2; \Gamma |- e_2 : \Delta_3 ; \Gamma ; X_2}
-{\Delta_1, \Delta_2; \Gamma |- \ePair{e_1}{e_2}{\infty} : \Delta_3 ; \Gamma ; \tyTensor{X_1}{X_2}}
+\Infer{split}
+{\Delta_1; \Gamma |- e_1 : \tyProd{U_1}{U_2} ; \Delta_2\\\\
+[\Delta_2; \Gamma],x_1:U_1, x_2: U_2 |- e : V ; \Delta_3}
+{\Delta_1; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : V ; \Delta_3 \div (x_1:U_1, x_2: U_2)}
 %
 \and
 %  
-\Infer{a-asplit}
-{\Delta_1; \Gamma |- e_1 : \Delta_2; \Gamma; \tyTensor{X_1}{X_2}\\\\
-\Delta_2,x_1:X_1, x_2: X_2; \Gamma |- e : \Delta_3; \Gamma; Y}
-{\Delta_1; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2}{\infty} : \Delta_3; \Gamma; Y}
+\Infer{case}
+{\Delta_1; \Gamma |- e : U_1 +_{\pi} U_2 -| \Delta_2\\\\
+[\Delta_2; \Gamma],x_1:U_1 |- e_1 : V -| \Delta_3\\
+[\Delta_2; \Gamma],x_2:U_2 |- e_2 : V -| \Delta_3}
+{\Delta_1; \Gamma |- \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2} : V -| \Delta_3 \div (x_1:U_1, x_2:U_2)}
 %
 \and
 %
-\Infer{a-afix}
-{\Delta_1, x : \tyLolli{X}{\footnotesize m}{X}; \Gamma |- e : \Delta_ 2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{X}}
-{\Delta_1; \Gamma |- \eFix{\infty}{x}{e} : \Delta_2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{X}}
-%
-\and
-\Infer{a-lolli}
-{\Delta_1,x:X ; \Gamma |- e : \Delta_2 ; \Gamma ; Y}
-{\Delta_1 ; \Gamma |- \eLam{\infty}{x}{e} : \Delta_2 ; \Gamma ; \tyLolli{X}{\footnotesize m}{Y}}
+\Infer{ifix}
+{\emptyctxt; \Gamma,x : \tyArr{A}{\footnotesize m}{U} |- e : \tyArr{A}{\footnotesize m}{U} -| \Delta_2}
+{\Delta_1; \Gamma |- \eFix{\infty}{x}{e} : \tyArr{A}{\footnotesize}{U} -| \Delta_2}
 %
 \and
 %
-\Infer{a-aapp}
-{\Delta_1; \Gamma |- e_2 : \Delta_2; \Gamma; X\\\\
-\Delta_2; \Gamma |- e_1 : \Delta_3; \Gamma; \tyLolli{X}{\footnotesize m}{Y}}
-{\Delta_1; \Gamma |- \eApp{e_1}{e_2}{\pi} : \Delta_3; \Gamma; Y}
+\Infer{afix}
+{\Delta_1,x : \tyLolli{X}{\footnotesize m}{U}; \Gamma |- e : \tyLolli{X}{\footnotesize m}{U} -| \Delta_2}
+{\Delta_1; \Gamma |- \eFix{1}{x}{e} : \tyLolli{U}{\footnotesize m}{U} -| \Delta_2}
+%
+\and
+%
+\Infer{let}
+{\Delta_1; \Gamma |- e_1 : U_1 -| \Delta_2\\
+[\Delta_2; \Gamma], x:U |- e_2 : V_1 -| \Delta_3}
+{\Delta_1; \Gamma |- \eLet{x}{e_1}{e_2} : V -| \Delta_3 \div (x:U)}
+%
+\and
+%
+\Infer{bang}
+{\Delta_1 ; \Gamma |- e : A -| \Delta_2}
+{\Delta_1 ; \Gamma |- \eBang{e} : \tyBang{A} -| \Delta_2}
+%
+\and
+%
+\Infer{unbang}
+{\Delta_1 ; \Gamma |- e : \tyBang{A} -| \Delta_2}
+{\Delta_1 ; \Gamma |- \eUnbang{e} : A -| \Delta_2}
+%
+\and
+%
+\Infer{iabs}
+{\emptyctxt ; \Gamma, x:A |- e : U -| \Delta_2}
+{\Delta_1 ; \Gamma |- \eLam{\infty}{x}{e} : \tyArr{A}{\footnotesize m}{U} -| \Delta_1}
+%
+\and
+%
+\Infer{aabs}
+{\Delta_1, x:X ; \Gamma |- e : U -| \Delta_2}
+{\Delta_1 ; \Gamma |- \eLam{1}{x}{e} : \tyLolli{X}{\footnotesize m}{U} -| \Delta_1}
+%
+\and
+%
+\Infer{iapp}
+{\Delta_1; \Gamma |- e_2 : A -| \Delta_2\\\\
+\Delta_2; \Gamma |- e_1 : \tyArr{A}{\footnotesize m}{U} -| \Delta_3}
+{\Delta_1; \Gamma |- \eApp{e_1}{e_2}{\infty} : U -| \Delta_3}
+%
+\and
+%
+\Infer{aapp}
+{\Delta_1; \Gamma |- e_2 : X -| \Delta_2\\\\
+\Delta_2; \Gamma |- e_1 : \tyLolli{X}{\footnotesize m}{U} -| \Delta_3}
+{\Delta_1; \Gamma |- \tyLolli{e_1}{1}{e_2} : U -| \Delta_3}
+%
+\and
+%
+\Infer{nu}
+{\Delta_1, x_1: \tyRd{A} ; \Gamma, x_2 : \tyWr{A} |- e : U -| \Delta_2}
+{\Delta_1; \Gamma |- \eNu{(x_1, x_2)}{e} : U -| \Delta_2}
+%
+\and
+%
+\Infer{wr}
+{\Delta_1; \Gamma |- e_1 : A -| \Delta_2\\
+\Delta_2; \Gamma |- e_2 : \tyWr{A} -| \Delta_3}
+{\Delta_1; \Gamma|- \eWr{e_1}{e_2} : \tyUnit -| \Delta_3}
+%
+\and
+%
+\Infer{letrd}
+{\Delta_1 ; \Gamma |- e_1 : \tyRd{A} -| \Delta_2 \\\\
+\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma |- e_2 : U -| \Delta_3}
+{\Delta_1; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : U -| \Delta_3}
+%
+\and
+%
+\Infer{fork}
+{\Delta_1; \Gamma |- e_1 : U -| \Delta_2\\\\
+\Delta_2; \Gamma |- e_2 : V -| \Delta_3}
+{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : V -| \Delta_3}
+%
+\and
+%
+\Infer{choice}
+{\Delta_1; \Gamma |- e_1 : U -| \Delta_2\\\\
+\Delta_1; \Gamma |- e_2 : U -| \Delta_2}
+{\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : U -| \Delta_2}
 \end{mathpar}
 \caption{Algorithmic typing rules.}
 \label{fig:alg-type-check}
 \end{figure*}
-\newpage
 
 \twocolumn
 \input{sections/ilcproofs}
@@ -194,7 +177,7 @@ party. The mode carried over the rightmost lollipop is derived as $\{(\mathsf{m}
 || \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}}\}$.}
 \label{fig:execUC}
 \end{figure*}
-\newpage
+
 \twocolumn
 
 \section{Extending ILC with Trapdoor Permutations}
