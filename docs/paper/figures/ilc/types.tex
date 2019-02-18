@@ -102,13 +102,13 @@
 %
 \Infer{lolli}
 {\Delta_1,x : X; \Gamma |- e : U -| \Delta_2}
-{\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U -| \Delta_1 \cap \Delta_2}
+{\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U -| \Delta_2}
 %
 \and
 %
 \Infer{wabs}
 {\Delta_1, \wrtok ; \Gamma |- e : U -| \Delta_2}
-{\Delta_1 ; \Gamma |- \eLamm{\wm}{\eUnit}{e} : \mathbbm{1} \sep U -| \Delta_1 \cap \Delta_2}
+{\Delta_1 ; \Gamma |- \eLamm{\wm}{\eUnit}{e} : \mathbbm{1} \sep U -| \Delta_2}
 %
 \and
 %
