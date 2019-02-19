@@ -1,7 +1,7 @@
 \begin{figure*}[h]
 \centering
-\judgbox{\Delta_{in} ; \Gamma |- e : U -| \Delta_{out}}{~~Under input contexts $\Delta_{in}$ and
-  $\Gamma$, expression~$e$ has type $U$ and output context $\Delta_{out}$.}
+\judgbox{\Delta_{\emph{in}} ; \Gamma |- e : U -| \Delta_{\emph{out}}}{~~Under input contexts $\Delta_{\emph{in}}$ and
+  $\Gamma$, expression~$e$ has type $U$ and output context $\Delta_{\emph{out}}$.}
 \begin{mathpar}
 \Infer{ivar}
 {}
@@ -12,18 +12,6 @@
 \Infer{avar}
 { }
 {\Delta, x : X; \Gamma |- x : X -| \Delta}
-%
-\and
-%
-\Infer{bang}
-{\Delta_1 ; \Gamma |- e : A -| \Delta_2}
-{\Delta_1 ; \Gamma |- \eBang{e} : \tyBang{A} -| \Delta_2}
-%
-\and
-%
-\Infer{unbang}
-{\Delta_1 ; \Gamma |- e : \tyBang{A} -| \Delta_2}
-{\Delta_1 ; \Gamma |- \eUnbang{e} : A -| \Delta_2}
 %
 \and
 %
@@ -54,9 +42,9 @@
 \and
 %
 \Infer{split}
-{\Delta_1; \Gamma |- e_1 : \tyProd{U_1}{U_2} ; \Delta_2\\\\
-[\Delta_2; \Gamma],x_1:U_1, x_2: U_2 |- e : V ; \Delta_3}
-{\Delta_1; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : V ; \Delta_3 \div (x_1:U_1, x_2: U_2)}
+{\Delta_1; \Gamma |- e_1 : \tyProd{U_1}{U_2} -| \Delta_2\\\\
+[\Delta_2; \Gamma],x_1:U_1, x_2: U_2 |- e : V -| \Delta_3}
+{\Delta_1; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : V -| \Delta_3 \div (x_1:U_1, x_2: U_2)}
 %
 \and
 %  
@@ -81,9 +69,18 @@
 %
 \and
 %
-\Infer{fix}
-{\emptyctxt; \Gamma,x : \tyArr{U}{\ell}{V} |- e : \tyArr{U}{\ell}{V} -| \Delta_2}
-{\Delta_1; \Gamma |- \eFixx{\ell}{x}{e} : \tyArr{U}{\ell}{V} -| \Delta_1}
+\Infer{ifix}
+{\emptyctxt; \Gamma,x : A -> U |- e : A -> U -| \emptyctxt}
+{\Delta; \Gamma |- \eFixx{\infty}{x}{e} : A -> U -| \Delta}
+%
+\and
+%
+\Infer{afix}
+{\Delta_1, x : X \multimap U ; \Gamma |- e : X \multimap U -| \Delta_2}
+{\Delta_1; \Gamma |- \eFixx{1}{x}{e} : X \multimap U -| \Delta_2 \div (x : X \multimap U)}
+%\Infer{fix}
+%{\emptyctxt; \Gamma,x : \tyArr{U}{\ell}{V} |- e : \tyArr{U}{\ell}{V} -| \Delta_2}
+%{\Delta_1; \Gamma |- \eFixx{\ell}{x}{e} : \tyArr{U}{\ell}{V} -| \Delta_1}
 %
 \and
 %
@@ -94,21 +91,33 @@
 %
 \and
 %
-\Infer{abs}
-{\emptyctxt ; \Gamma, x:A |- e : U -| \Delta_2}
-{\Delta_1 ; \Gamma |- \eLamm{\infty}{x}{e} : A -> U -| \Delta_1}
+\Infer{bang}
+{\Delta_1 ; \Gamma |- e : A -| \Delta_2}
+{\Delta_1 ; \Gamma |- \eBang{e} : \tyBang{A} -| \Delta_2}
 %
 \and
 %
-\Infer{lolli}
+\Infer{unbang}
+{\Delta_1 ; \Gamma |- e : \tyBang{A} -| \Delta_2}
+{\Delta_1 ; \Gamma |- \eUnbang{e} : A -| \Delta_2}
+%
+\and
+%
+\Infer{iabs}
+{\emptyctxt ; \Gamma, x:A |- e : U -| \emptyctxt}
+{\Delta ; \Gamma |- \eLamm{\infty}{x}{e} : A -> U -| \Delta}
+%
+\and
+%
+\Infer{aabs}
 {\Delta_1,x : X; \Gamma |- e : U -| \Delta_2}
-{\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U -| \Delta_2}
+{\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U -| \Delta_2 \div (x:X)}
 %
 \and
 %
 \Infer{wabs}
-{\Delta_1, \wrtok ; \Gamma |- e : U -| \Delta_2}
-{\Delta_1 ; \Gamma |- \eLamm{\wm}{\eUnit}{e} : \mathbbm{1} \sep U -| \Delta_2}
+{\wrtok ; \Gamma |- e : U -| \Delta_2}
+{\Delta_1 ; \Gamma |- \eLamm{\wm}{\eUnit}{e} : \mathbbm{1} \sep U -| \Delta_1}
 %
 \and
 %
