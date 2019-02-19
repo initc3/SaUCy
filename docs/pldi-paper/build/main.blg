@@ -1,0 +1,110 @@
+This is BibTeX, Version 0.99d (TeX Live 2016)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: ./build/main.aux
+The style file: ACM-Reference-Format.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Database file #1: bibs/references.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=20001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--can't use both volume and number fields in abadi2001mobile
+Warning--empty publisher in abadi2001mobile
+Warning--empty address in abadi2001mobile
+Warning--empty publisher in barthe2011computer
+Warning--empty address in barthe2011computer
+Warning--page numbers missing in both pages and numpages fields in barthe2011computer
+Warning--empty publisher in berger2001sequentiality
+Warning--empty address in berger2001sequentiality
+Warning--empty publisher in blanchet2007cryptoverif
+Warning--empty address in blanchet2007cryptoverif
+Warning--no number and no volume in blanchet2010proverif
+Warning--page numbers missing in both pages and numpages fields in blanchet2010proverif
+Warning--empty publisher in camenisch2016universal
+Warning--empty address in camenisch2016universal
+Warning--empty publisher in canetti2001universally
+Warning--empty address in canetti2001universally
+Warning--page numbers missing in both pages and numpages fields in canetti2001universally
+Warning--empty publisher in canetti2015simpler
+Warning--empty address in canetti2015simpler
+Warning--empty publisher in canetti2001commitments
+Warning--empty address in canetti2001commitments
+Warning--empty publisher in canetti2003universal
+Warning--empty address in canetti2003universal
+Warning--empty year in dziembowski2017perun
+Warning--empty institution in dziembowski2017perun
+Warning--empty publisher in dziembowski2018general
+Warning--empty address in dziembowski2018general
+Warning--empty address in escobar2009maude
+Warning--no journal in fowler2018session
+Warning--no number and no volume in fowler2018session
+Warning--page numbers missing in both pages and numpages fields in fowler2018session
+Warning--empty publisher in goldreich1987play
+Warning--empty address in goldreich1987play
+Warning--empty publisher in katz2007universally
+Warning--empty address in katz2007universally
+Warning--empty publisher in kosba2016hawk
+Warning--empty address in kosba2016hawk
+Warning--empty publisher in iitm
+Warning--empty address in iitm
+Warning--empty publisher in kusters2009computational
+Warning--empty address in kusters2009computational
+Warning--empty publisher in laud2005secrecy
+Warning--empty address in laud2005secrecy
+Warning--empty publisher in lewis2003cryptol
+Warning--empty address in lewis2003cryptol
+Warning--empty publisher in lincoln1998probabilistic
+Warning--empty address in lincoln1998probabilistic
+Warning--empty address in lindell2014introduction
+Warning--empty publisher in mateus2003composition
+Warning--empty address in mateus2003composition
+Warning--no number and no volume in miller2017sprites
+Warning--page numbers missing in both pages and numpages fields in miller2017sprites
+Warning--empty address in milner1999communicating
+Warning--empty publisher in swamy2016dependent
+Warning--empty address in swamy2016dependent
+Warning--page numbers missing in both pages and numpages fields in swamy2016dependent
+You've used 35 entries,
+            5719 wiz_defined-function locations,
+            1578 strings with 24563 characters,
+and the built_in function-call counts, 41358 in all, are:
+= -- 4901
+> -- 1437
+< -- 0
++ -- 473
+- -- 492
+* -- 2859
+:= -- 4175
+add.period$ -- 175
+call.type$ -- 35
+change.case$ -- 238
+chr.to.int$ -- 35
+cite$ -- 91
+duplicate$ -- 3830
+empty$ -- 2668
+format.name$ -- 604
+if$ -- 9909
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 149
+newline$ -- 300
+num.names$ -- 280
+pop$ -- 1534
+preamble$ -- 1
+purify$ -- 546
+quote$ -- 0
+skip$ -- 1354
+stack$ -- 0
+substring$ -- 3059
+swap$ -- 382
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 866
+warning$ -- 56
+while$ -- 280
+width$ -- 0
+write$ -- 626
+(There were 56 warnings)
