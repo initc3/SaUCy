@@ -111,7 +111,7 @@
 %
 \Infer{wabs}
 {\wrtok ; \Gamma, x:A |- e : U -| \emptyctxt}
-{\Delta ; \Gamma |- \eLamm{\wm}{x}{e} : A {->}_{\wm} U -| \Delta}
+{\Delta ; \Gamma |- \eLamm{\wm}{x}{e} : \tyArr{A}{\wm}{U} -| \Delta}
 %\Infer{wabs}
 %{\wrtok ; \Gamma |- e : U -| \Delta_2}
 %{\Delta_1 ; \Gamma |- \eLamm{\wm}{\eUnit}{e} : \mathbbm{1} \sep U -| \Delta_1}
@@ -126,9 +126,9 @@
 \and
 %
 \Infer{wapp}
-{\Delta_1; \Gamma |- e_2 : U -| \Delta_2\\\\
-\Delta_2; \Gamma |- e_1 : U {->}_{\wm} V -| \Delta_3}
-{\Delta_1, \wrtok; \Gamma |- \eApp{e_1}{e_2}{\wm} : V -| \Delta_3}
+{\Delta_1; \Gamma |- e_2 : A -| \Delta_2\\\\
+\Delta_2; \Gamma |- e_1 : \tyArr{A}{\wm}{U} -| \Delta_3}
+{\Delta_1, \wrtok; \Gamma |- \eApp{e_1}{e_2}{\wm} : U -| \Delta_3}
 %
 \and
 %
