@@ -50,7 +50,7 @@
 %  
 \Infer{case}
 {\Delta_1; \Gamma |- e : \tySum{U_1}{\pi}{U_2} -| \Delta_2\\\\
-[\Delta_2; \Gamma],x_1:U_1 |- e_1 : V -| \Delta_3\\
+[\Delta_2; \Gamma],x_1:U_1 |- e_1 : V -| \Delta_3\\\\
 [\Delta_2; \Gamma],x_2:U_2 |- e_2 : V -| \Delta_3}
 {\Delta_1; \Gamma |- \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2} : V -| \Delta_3 \div (x_1:U_1, x_2:U_2)}
 %
@@ -79,7 +79,7 @@
 \and
 %
 \Infer{let}
-{\Delta_1; \Gamma |- e_1 : U -| \Delta_2\\
+{\Delta_1; \Gamma |- e_1 : U -| \Delta_2\\\\
 [\Delta_2; \Gamma], x:U |- e_2 : V -| \Delta_3}
 {\Delta_1; \Gamma |- \eLet{x}{e_1}{e_2} : V -| \Delta_3 \div (x:U)}
 %
@@ -134,40 +134,44 @@
 %
 \Infer{nu}
 {\Delta_1, x_1: \tyRd{S} ; \Gamma, x_2 : \tyWr{S} |- e : A -| \Delta_2}
-{\Delta_1; \Gamma |- \eNu{(x_1, x_2)}{e} : A -| \Delta_2}
+{\Delta_1; \Gamma |- \eNu{(x_1, x_2)}{e} : A -| \Delta_2 \div (x_1: \tyRd{S})}
 %
 \and
 %
 \Infer{wr}
-{\Delta_1; \Gamma |- e_1 : S -| \Delta_2\\
+{\Delta_1; \Gamma |- e_1 : S -| \Delta_2\\\\
 \Delta_2; \Gamma |- e_2 : \tyWr{S} -| \Delta_3}
 {\Delta_1, \wrtok; \Gamma|- \eWr{e_1}{e_2} : \tyUnit -| \Delta_3}
 %
 \and
 %
 \Infer{rd}
-{\wrtok \not \in \Delta_1 \\ \Delta_1 ; \Gamma |- e : \tyRd{S} -| \Delta_2}
+{\wrtok \not \in \Delta_1\\\\
+\Delta_1 ; \Gamma |- e : \tyRd{S} -| \Delta_2}
 {\Delta_1 ; \Gamma |- \eRd{e} : \tyTensor{\tyBang{S}}{\tyRd{S}} -| \Delta_2, \wrtok}
 %
 \and
 %
+%\Infer{fork}
+%{\Delta_1; \Gamma |- e_1 : U -| \Delta_3\\\\
+%\Delta_2; \Gamma |- e_2 : V -| \Delta_4}
+%{\Delta_1, \Delta_2; \Gamma |- \eFork{e_1}{e_2} : V -| \Delta_4}
+%\Infer{fork}
+%{\Delta_1; \Gamma |- e_2 : U -| \Delta_2\\\\
+%\Delta_2 \div \wrtok; \Gamma |- e_1 : V -| \Delta_3}
+%{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : V -| \Delta_3}
 \Infer{fork}
 {\Delta_1; \Gamma |- e_1 : U -| \Delta_2\\\\
-\Delta_2; \Gamma |- e_2 : V -| \Delta_3}
-{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : V -| \Delta_3}
+\Delta_2, \wrtok; \Gamma |- e_2 : V -| \Delta_3}
+{\Delta_1, \wrtok; \Gamma |- \eFork{e_1}{e_2} : V -| \Delta_3}
 %
 \and
 %
-%\Infer{choice}
-%{\Delta_1; \Gamma |- e_1 : U -| \Delta_2\\\\
-%\Delta_1; \Gamma |- e_2 : U -| \Delta_2}
-%{\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : U -| \Delta_2}
 \Infer{choice}
-{\Delta; \Gamma |- e_1 : \tyTensor{\tyBang{S_1}}{\tyRd{S_1}} -| \Delta_1\\
-\Delta; \Gamma |- e_2 : \tyTensor{\tyBang{S_2}}{\tyRd{S_2}} -| \Delta_2\\\\
-\Delta_1, x_1 : \tyTensor{\tyBang{S_1}}{\tyRd{S_1}} ; \Gamma |- e_3 : U -| \Delta_3\\
-\Delta_2, x_2 : \tyTensor{\tyBang{S_2}}{\tyRd{S_2}} ; \Gamma |- e_4 : U -| \Delta_3}
-{\Delta; \Gamma |- \eChoice{e_1}{x_1}{e_3}{e_2}{x_2}{e_4} : U -| \Delta_3}
+{\wrtok \not \in \Delta_1 \\\\
+\Delta_1; \Gamma |- e_1 : U -| \Delta_2\\\\
+\Delta_1; \Gamma |- e_2 : U -| \Delta_2}
+{\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : U -| \Delta_2}
 \end{mathpar}
 \caption{Typing rules.}
 \label{fig:type-expressions}
