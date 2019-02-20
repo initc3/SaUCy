@@ -50,7 +50,7 @@
 %  
 \Infer{case}
 {\Delta_1; \Gamma |- e : \tySum{U_1}{\pi}{U_2} -| \Delta_2\\\\
-[\Delta_2; \Gamma],x_1:U_1 |- e_1 : V -| \Delta_3\\\\
+[\Delta_2; \Gamma],x_1:U_1 |- e_1 : V -| \Delta_3\\
 [\Delta_2; \Gamma],x_2:U_2 |- e_2 : V -| \Delta_3}
 {\Delta_1; \Gamma |- \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2} : V -| \Delta_3 \div (x_1:U_1, x_2:U_2)}
 %
@@ -99,22 +99,22 @@
 %
 \Infer{iabs}
 {\emptyctxt ; \Gamma, x:A |- e : U -| \emptyctxt}
-{\Delta ; \Gamma |- \eLamm{\infty}{x}{e} : A -> U -| \Delta}
+{\Delta ; \Gamma |- \eLamm{}{x}{e} : A -> U -| \Delta}
+%
+\and
+%
+\Infer{wabs}
+{\wrtok ; \Gamma, x:A |- e : U -| \emptyctxt}
+{\Delta ; \Gamma |- \eLamm{\wm}{x}{e} : A \twoheadrightarrow U -| \Delta}
+%\Infer{wabs}
+%{\wrtok ; \Gamma |- e : U -| \Delta_2}
+%{\Delta_1 ; \Gamma |- \eLamm{\wm}{\eUnit}{e} : \mathbbm{1} \sep U -| \Delta_1}
 %
 \and
 %
 \Infer{aabs}
 {\Delta_1,x : X; \Gamma |- e : U -| \Delta_2}
 {\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U -| \Delta_2 \div (x:X)}
-%
-\and
-%
-\Infer{wabs}
-{\wrtok ; \Gamma, x:A |- e : U -| \emptyctxt}
-{\Delta ; \Gamma |- \eLamm{\wm}{x}{e} : \tyArr{A}{\wm}{U} -| \Delta}
-%\Infer{wabs}
-%{\wrtok ; \Gamma |- e : U -| \Delta_2}
-%{\Delta_1 ; \Gamma |- \eLamm{\wm}{\eUnit}{e} : \mathbbm{1} \sep U -| \Delta_1}
 %
 \and
 %
@@ -127,7 +127,7 @@
 %
 \Infer{wapp}
 {\Delta_1; \Gamma |- e_2 : A -| \Delta_2\\\\
-\Delta_2; \Gamma |- e_1 : \tyArr{A}{\wm}{U} -| \Delta_3}
+\Delta_2; \Gamma |- e_1 : A \twoheadrightarrow U  -| \Delta_3}
 {\Delta_1, \wrtok; \Gamma |- \eApp{e_1}{e_2}{\wm} : U -| \Delta_3}
 %
 \and
