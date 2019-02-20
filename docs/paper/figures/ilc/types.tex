@@ -70,8 +70,8 @@
 %\and
 %%
 \Infer{fix}
-{[\emptyctxt; \Gamma],x : U {->}_{\ell} V |- e : U {->}_{\ell} V -| \emptyctxt}
-{\Delta; \Gamma |- \eFixx{\ell}{x}{e} : U {->}_{\ell} V -| \Delta}
+{[\emptyctxt; \Gamma],x : \tyArr{U}{\ell}{V} |- e : \tyArr{U}{\ell}{V} -| \emptyctxt}
+{\Delta; \Gamma |- \eFixx{\ell}{x}{e} : \tyArr{U}{\ell}{V} -| \Delta}
 %\Infer{fix}
 %{\emptyctxt; \Gamma,x : \tyArr{U}{\ell}{V} |- e : \tyArr{U}{\ell}{V} -| \Delta_2}
 %{\Delta_1; \Gamma |- \eFixx{\ell}{x}{e} : \tyArr{U}{\ell}{V} -| \Delta_1}

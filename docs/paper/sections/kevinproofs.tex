@@ -1,3 +1,77 @@
+\section{To Prove (Type Soundness)}
+
+\subsection{Progress}
+
+\begin{lemma}[Canonical forms (local)]
+  If $|- v : U$, then
+  \begin{enumerate}[leftmargin=*]
+  \item If $U$ is $\mathbbm{1}$, then $v = \eUnit$.
+  \item If $U$ is $\tyProdd{}{A}{B}$, then $v = \ePair{v_1}{v_2}{\infty}$, where
+    $|- v_1 : A$ and $|- v_2 : B$.
+  \item If $U$ is $\tyTensor{X}{Y}$, then $v = \ePair{v_1}{v_2}{1}$, where
+    $|- v_1 : X$ and $|- v_2 : Y$.
+  \item If $U$ is $\tySum{A_1}{}{A_2}$, then $v =
+    \eInjj{\infty}{i}{v_i}$, where $i \in \{1, 2\}$ and $|- v_i : A_i$.
+  \item If $U$ is $\tyOplus{X_1}{X_2}$, then $v =
+    \eInjj{1}{i}{v_i}$, where $i \in \{1, 2\}$ and $|- v_i : X_i$.    
+  \item If $U$ is $A -> V$, then $v = \eLamm{\infty}{x}{e}$, where $|- x
+    : A$ and $|- e : V$.
+  \item If $U$ is $A {->}_{\wm} V$, then $v = \eLamm{\wm}{x}{e}$, where $|- x :
+    A$ and $|- e : V$.
+  \item If $U$ is $X \multimap V$, then $v = \eLamm{1}{x}{e}$, where $|- x : X$ and $|-
+    e : V$.
+  \end{enumerate}
+  \begin{proof}
+    \todo{}
+  \end{proof}
+\end{lemma}
+
+\begin{lemma}[Canonical forms]
+  \todo{}
+  \begin{proof}
+    \todo{}
+  \end{proof}
+\end{lemma}
+
+\begin{theorem}[Progress (local)]
+  If $|- e : U$, then either $\Lterm{e}$ or there exists $e'$ such that $e ->
+  e'$.
+  \begin{proof}
+    By induction on the derivation of $|- e : U$.
+  \end{proof}
+\end{theorem}
+
+\begin{theorem}[Progress]
+  For all configurations $C$, channel typings~$\ChTy$,
+  and process typings~$\PrTy$, if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ then
+  either $\JCterm{C}$, or $\exists C'$ such that $\JCred{C}{C'}$.
+  \begin{proof}
+    \todo{}
+  \end{proof}
+\end{theorem}
+
+\subsection{Preservation}
+
+\begin{theorem}[Preservation (local)]
+  If $|- e : U$ and $e -> e'$, then $|- e' : U$.
+  \begin{proof}
+    By induction on the derivation of $|- e : U$.
+  \end{proof}
+\end{theorem}
+
+\begin{theorem}[Preservation]
+  For all configurations $C, C'$, channel typings~$\ChTy$ and process
+  typings~$\PrTy$, if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ and $\JCred{C}{C'}$ then
+  there exists channel typing extension $\ChTy' \supseteq \ChTy$ and process typing
+  extension $\PrTy' \supseteq \PrTy$ such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
+  \begin{proof}
+    \todo{}
+  \end{proof}
+\end{theorem}
+
+\newpage
+
+\begin{comment}
 \section{ILC Metatheory Attempt}
 
 \begin{lemma}[Canonical forms]
@@ -29,12 +103,6 @@
 
 \begin{proof}
   By induction on the derivation of $e$.
-  \begin{itemize}
-  \item \textbf{Case}
-      $\Infer{var}
-      {}
-      {\Delta; \Gamma, x : A |- x : A ; \Delta}$
-  \end{itemize}
 \end{proof}
 
 \begin{theorem}[Local preservation]
@@ -43,7 +111,7 @@
   |- e' : U ; \Delta_{out}\] \[\Gamma ; \Omega'; |- \sigma'.\]
 \end{theorem}
 
-\begin{comment}
+
 \begin{theorem}[Local progress]
   For all affine typings $\Delta_{in}$ and $\Delta_{out}$, intuitionistic typings $\Gamma$, and
   store typings $\Omega$, if $\Delta_{in} ; \Gamma ; \Omega |- e : U ; \Delta_{out}$ and $\Gamma ; \Omega |- \sigma$,
@@ -57,6 +125,5 @@
   typing extension $\Omega' \supseteq \Omega$ such that $\Delta_{in} ; \Gamma ; \Omega' |- e' : U ; \Delta_{out}$ and $\Gamma
   ; \Omega'; |- \sigma'$.
 \end{theorem}
-\end{comment}
-
 \newpage
+\end{comment}

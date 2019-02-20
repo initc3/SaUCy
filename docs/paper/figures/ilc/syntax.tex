@@ -1,6 +1,6 @@
 \begin{figure*}[t]
   \centering
-  \begin{minipage}{.475\textwidth}
+  \begin{minipage}{.58\textwidth}
     \centering
     \begin{grammar}
         All types
@@ -9,25 +9,23 @@
       \\      
       Intuitionistic types
       & $A,B$
-      &$\bnfas$& $S \bnfalt \tyWr{S}$
+      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{}{B} \bnfalt
+      \tyArr{A}{\infty \mid \wm}{U} \bnfalt \tyWr{S}$
       \\
       Affine types
       & $X,Y$
-      &$\bnfas$& $\tyRd{S} \bnfalt \tyBang{A} \bnfalt
-      \tyTensor{X}{Y} \bnfalt \tyOplus{X}{Y}$
+      &$\bnfas$& $\tyBang{A} \bnfalt
+      \tyTensor{X}{Y} \bnfalt \tyOplus{X}{Y} \bnfalt X \multimap U \bnfalt \tyRd{S}$
       \\
-      Arrow labels
-      & $\ell$
-      &$\bnfas$& $\pi \bnfalt \wm$
-    \end{grammar}
-  \end{minipage}%
-  \begin{minipage}{.475\textwidth}
-    \centering
-    \begin{grammar}
       Sendable types
       & $S$
-      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{}{B} \bnfalt \tyArr{U}{\ell}{V}$              
-      \\
+      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{}{B} \bnfalt
+      \tyArr{A}{\infty \mid \wm}{U} \bnfalt X \multimap U$
+    \end{grammar}      
+  \end{minipage}%
+  \begin{minipage}{.42\textwidth}
+    \centering
+    \begin{grammar}
       Intuitionistic typings
       & $\Gamma$
       &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
@@ -35,11 +33,15 @@
       Affine typings
       & $\Delta$
       &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:X \bnfalt \Delta, \wrtok$
+      \\
+      Arrow labels
+      & $\ell$
+      &$\bnfas$& $\pi \bnfalt \wm$
       \\            
       Multiplicity labels
       & $\pi$
       &$\bnfas$& $1 \bnfalt \infty$
-    \end{grammar}
+    \end{grammar}    
   \end{minipage}
   \begin{grammar}
     Expressions

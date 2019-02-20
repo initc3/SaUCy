@@ -98,6 +98,7 @@
 \newcommand{\eUnit}{\Lparen\hspace{1px}\Rparen}
 \newcommand{\ePair}[3]{\Lparen{#1},{#2}\Rparen_{#3}}
 \newcommand{\eInj}[2]{\keyword{inj}_{\pi}^{#1}\Lparen#2\Rparen}
+\newcommand{\eInjj}[3]{\keyword{inj}_{#1}^{#2}\Lparen#3\Rparen}
 \newcommand{\eRef}[1]{\keyword{ref}\Lparen{#1}\Rparen}
 \newcommand{\eCase}[6]{\keyword{case}_{#1}\Lparen{#2},{#3}.{#4},{#5}.{#6}\Rparen}
 \newcommand{\eSplit}[4]{\keyword{split}_{\pi}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
@@ -175,8 +176,8 @@
 \newcommand{\xFork}{\mathrel{|\rhd}}
 \newcommand{\xChoice}{\mathrel{\oplus}}
 \newcommand{\e}{\epsilon}
-\newcommand{\Lparen}{\textsf{(}}
-\newcommand{\Rparen}{\textsf{)}}
+\newcommand{\Lparen}{\mathsf{(}}
+\newcommand{\Rparen}{\mathsf{)}}
 
 %% Math ligatures (thanks to the semantic package) that make it
 %% easier to typeset math using readable LaTeX text.
@@ -258,7 +259,7 @@
 
 %% Configuration typing judgement: Each process has a mode, with at most one write-mode process, and each process has a return type, 
 %% captured in the final mapping (#3).
-\newcommand{\JCty}[4]{#1 ; #2 |- #3 : #4}
+\newcommand{\JCty}[4]{#2 |- #3 : #4}
 
 %% Configurations~$C_1$ and $C_2$ are equivalent.
 \newcommand{\JCequiv}[2]{#1 \equiv #2}
