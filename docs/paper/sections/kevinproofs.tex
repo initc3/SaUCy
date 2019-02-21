@@ -2,36 +2,36 @@
 
 \subsection{Progress}
 
-\begin{lemma}[Canonical forms (local)]
-  If $|- v : U$, then
-  \begin{enumerate}[leftmargin=*]
-  \item If $U$ is $\mathbbm{1}$, then $v = \eUnit$.
-  \item If $U$ is $\tyProdd{}{A}{B}$, then $v = \ePair{v_1}{v_2}{\infty}$, where
-    $|- v_1 : A$ and $|- v_2 : B$.
-  \item If $U$ is $\tyTensor{X}{Y}$, then $v = \ePair{v_1}{v_2}{1}$, where
-    $|- v_1 : X$ and $|- v_2 : Y$.
-  \item If $U$ is $\tySum{A_1}{}{A_2}$, then $v =
-    \eInjj{\infty}{i}{v_i}$, where $i \in \{1, 2\}$ and $|- v_i : A_i$.
-  \item If $U$ is $\tyOplus{X_1}{X_2}$, then $v =
-    \eInjj{1}{i}{v_i}$, where $i \in \{1, 2\}$ and $|- v_i : X_i$.    
-  \item If $U$ is $A -> V$, then $v = \eLamm{\infty}{x}{e}$, where $|- x
-    : A$ and $|- e : V$.
-  \item If $U$ is $A {->}_{\wm} V$, then $v = \eLamm{\wm}{x}{e}$, where $|- x :
-    A$ and $|- e : V$.
-  \item If $U$ is $X \multimap V$, then $v = \eLamm{1}{x}{e}$, where $|- x : X$ and $|-
-    e : V$.
-  \end{enumerate}
-  \begin{proof}
-    \todo{}
-  \end{proof}
-\end{lemma}
-
-\begin{lemma}[Canonical forms]
-  \todo{}
-  \begin{proof}
-    \todo{}
-  \end{proof}
-\end{lemma}
+%\begin{lemma}[Canonical forms (local)]
+%  If $|- v : U$, then
+%  \begin{enumerate}[leftmargin=*]
+%  \item If $U$ is $\mathbbm{1}$, then $v = \eUnit$.
+%  \item If $U$ is $\tyProdd{}{A}{B}$, then $v = \ePair{v_1}{v_2}{\infty}$, where
+%    $|- v_1 : A$ and $|- v_2 : B$.
+%  \item If $U$ is $\tyTensor{X}{Y}$, then $v = \ePair{v_1}{v_2}{1}$, where
+%    $|- v_1 : X$ and $|- v_2 : Y$.
+%  \item If $U$ is $\tySum{A_1}{}{A_2}$, then $v =
+%    \eInjj{\infty}{i}{v_i}$, where $i \in \{1, 2\}$ and $|- v_i : A_i$.
+%  \item If $U$ is $\tyOplus{X_1}{X_2}$, then $v =
+%    \eInjj{1}{i}{v_i}$, where $i \in \{1, 2\}$ and $|- v_i : X_i$.    
+%  \item If $U$ is $A -> V$, then $v = \eLamm{\infty}{x}{e}$, where $|- x
+%    : A$ and $|- e : V$.
+%  \item If $U$ is $A {->}_{\wm} V$, then $v = \eLamm{\wm}{x}{e}$, where $|- x :
+%    A$ and $|- e : V$.
+%  \item If $U$ is $X \multimap V$, then $v = \eLamm{1}{x}{e}$, where $|- x : X$ and $|-
+%    e : V$.
+%  \end{enumerate}
+%  \begin{proof}
+%    \todo{}
+%  \end{proof}
+%\end{lemma}
+%
+%\begin{lemma}[Canonical forms]
+%  \todo{}
+%  \begin{proof}
+%    \todo{}
+%  \end{proof}
+%\end{lemma}
 
 \begin{theorem}[Progress (local)]
   If $|- e : U$, then either $\Lterm{e}$ or there exists $e'$ such that $e ->

@@ -149,6 +149,11 @@
 {\wrtok \not \in \Delta_1\\\\
 \Delta_1 ; \Gamma |- e : \tyRd{S} -| \Delta_2}
 {\Delta_1 ; \Gamma |- \eRd{e} : \tyTensor{\tyBang{S}}{\tyRd{S}} -| \Delta_2, \wrtok}
+%\Infer{letrd}
+%{\wrtok \not \in \Delta_1\\
+%\Delta_1 ; \Gamma |- e_1 : \tyRd{S} -| \Delta_2\\\\
+%\Delta_2,\wrtok, x_1 : \tyBang{S}, x_2 : \tyRd{S} ; \Gamma |- e_2 : U -| \Delta_3}
+%{\Delta_1 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : U -| \Delta_3 \div (\wrtok, x_1 : \tyBang{S}, x_2 : \tyRd{S})}
 %
 \and
 %

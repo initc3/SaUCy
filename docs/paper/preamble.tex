@@ -107,7 +107,8 @@
 \newcommand{\eFix}[2]{\keyword{fix}\Lparen{#1}.{#2}\Rparen}
 \newcommand{\eFixx}[3]{\keyword{fix}_{#1}\Lparen{#2}.{#3}\Rparen}
 \newcommand{\eLet}[3]{\keyword{let}_{\pi}\ {#1} = {#2}\ \keyword{in}\ {#3}}
-\newcommand{\eLetRd}[4]{\eLet{\eLPair{#1}{#2}}{\eRd{#3}}{{#4}}}
+\newcommand{\eLett}[3]{\keyword{let}\ {#1} = {#2}\ \keyword{in}\ {#3}}
+\newcommand{\eLetRd}[4]{\eLett{\eLPair{#1}{#2}}{\eRd{#3}}{{#4}}}
 \newcommand{\eLetBang}[3]{\keyword{let!}\ {#1} = {#2}\ \keyword{in}\ {#3}}
 \newcommand{\eLam}[2]{\lambda{#1}.\,{#2}}
 \newcommand{\eLamm}[3]{\lambda_{#1}\,{#2}.\,{#3}}

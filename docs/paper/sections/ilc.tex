@@ -12,36 +12,42 @@ static semantics, and dynamic semantics.
 \subsection{Syntax}
 \label{subsec:syntax}
 
-The syntax of ILC given in Figure~\ref{fig:ilc-syntax} consists of types, modes,
-and expressions.
+The syntax of ILC given in Figure~\ref{fig:ilc-syntax} consists of types and
+expressions. To streamline the syntax, certain elements are parameterized by a
+multiplicity $\pi$ to distinguish between the intuitionistic ($\infty$) and affine
+($1$) counterparts. Moreover, certain elements are parameterized by a function
+label $\ell$, which includes the multiplicity labels along with an additional label
+$\wm$ to be explained later.
 
-Types are bifurcated into two kinds: one for intuitionistic types (written $A$,
-$B$) and one for affine types (written $X$, $Y$). The standard intuitionistic
-types include unit ($\tyUnit$), products ($\tyProd{A}{B}$), sums
-($\tySum{A}{}{B}$), and references ($\tyRef{A}$). The more interesting ones are
-write channels ($\tyWr{A}$) and arrows ($\tyArr{A}{\footnotesize m}{B}$), which
-importantly carry a mode. Affine types include read channels ($\tyRd{A}$),
-bang! types ($\tyBang{A}$), tensors ($\tyTensor{X}{Y}$), and lollipops
-($\tyLolli{X}{\footnotesize m}{Y}$).
+Types in ILC (written $U$, $V$) are bifurcated into intuitionistic types
+(written $A$, $B$) and affine types (written $X$, $Y$).  The standard
+intuitionistic types include unit ($\tyUnit$), products ($\tyProdd{\infty}{A}{B}$ or
+simply $\tyProdd{}{A}{B}$), sums ($\tySum{A}{\infty}{B}$ or simply $\tySum{A}{}{B}$),
+and arrows ($\tyArr{A}{\infty}{U}$ or simply $A -> U$). These types, along with a
+special ``write'' arrow type ($\tyArr{A}{\wm}{U}$ or simply $A \twoheadrightarrow U$), round out
+the sendable types, i.e., the types of values that can be sent over
+channels. The remaining intuitionistic type is the write channel type
+($\tyWr{S}$), whose constructor can take sendable types, but does not yield a
+sendable type.
 
-Modes consist of $\Wm$ (write mode), $\Rm$ (read mode), and $\Vm$ (value
-mode). The rules for sequential and parallel composition of modes are given in
-Figure~\ref{fig:mode-composition}.
+Affine types include bang types ($\tyBang{A}$), affine pairs or ``tensors''
+($\tyProdd{1}{X}{Y}$ or simply $\tyTensor{X}{Y}$), affine sums
+($\tySum{X}{1}{Y}$ or simply $\tyOplus{X}{Y}$), affine arrows or ``lollipops''
+($\tyArr{X}{1}{U}$ or simply $X \multimap U$), and read channel types ($\tyRd{S}$).
 
-The intuitionistic portion of ILC supports a fairly standard feature set. The
-more interesting expressions are those related to affinity and message-passing
-concurrency. Bang! types have introduction form $\eBang{e}$ and elimination form
-$\eLetBang{x}{e_1}{e_2}$. Lollipops have introduction form $\eLAM{x}{e}$ and
-elimination form $\eLapp{e_1}{e_2}$. Tensors have introduction form
-$\eLPair{e_1}{e_2}$ and elimination form $\eLsplit{e_1}{x_1}{x_2}{e_2}$. The expressions for message-passing concurrency are these:
+ILC supports a fairly standard feature set of expressions (with both
+intuitionistic and affine variants). What is new here is an introduction form
+($\eBang{e}$) and elimination form ($\eUnbang{e}$) for bang types. The more
+interesting expressions are those related to affinity and message-passing
+concurrency:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     a corresponding write channel $x_2$ in $e$.
   \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the result of evaluating $e_1$ on
     the write channel result of evaluating $e_2$.
-  \item \emph{Read:} $\eLetRd{x_1}{x_2}{e_1}{e_2}$ reads a value from the read
-    channel result of evaluating $e_1$, binding the value as $x_1$ and the read
-    channel as $x_2$ in $e_2$.
+  \item \emph{Read:} $\eRd{e}$ reads a value from the read channel result of
+    evaluating $e$. (There is more going on here, but it is better explained in
+    the context of the typing rules.)
   \item \emph{Fork:} $\eFork{e_1}{e_2}$ forks a child process $e_1$ and
     continues as $e_2$.
   \item \emph{Choice:} $\eChoice{e_1}{e_2}$ allows a process to continue as
@@ -49,37 +55,22 @@ $\eLPair{e_1}{e_2}$ and elimination form $\eLsplit{e_1}{x_1}{x_2}{e_2}$. The exp
     processes.
 \end{itemize}
 
-%\begingroup
-%\setlength\intextsep{0pt}
-%\begin{wrapfigure}{r}{0.275\textwidth}
-%  \lstinputlisting[style=myilc]{listings/loop.ilc}
-%\end{wrapfigure}
-%Note that replication ($!e$ in the $\pi$-calculus), which allows a process to
-%spawn repeatedly, is not included for reasons we discuss in
-%Section~\ref{subsec:types}. Instead, replication can be achieved through
-%recursive definitions. For example, the recursive function \textsf{loop} (above)
-%takes as arguments a read channel \textsf{c} and a function \textsf{f}. In the
-%definition of \textsf{loop}, the let expression binds the value read from
-%\textsf{c} to the variable \textsf{v} and rebinds the read channel to
-%\textsf{c}; the body of the let expression applies the function \textsf{f} to
-%the value \textsf{v}, and then repeats \textsf{loop}.\mypar
-%\endgroup
+The affine write token \todo{}.
 
 \subsection{Static Semantics}
 \label{subsec:types}
 
-%\input{figures/ilc/syntax-types}
-
 The type system of ILC is given in Figure~\ref{fig:type-expressions}. The
-intuitionistic typing judgment $\Delta ; \Gamma |- e : A |> m$ should be read as follows:
+algorithmic typing judgment $\Delta_{\emph{in}} ; \Gamma |- e : U -| \Delta_{\emph{out}}$
+should be read as follows:
 \begingroup
 \addtolength\leftmargini{-.2in}
 \begin{quote}
-  Under affine context $\Delta$ and intuitionistic context $\Gamma$, the expression $e$
-  has intuitionistic type $A$ and mode $m$.
+  Under input contexts $\Delta_{\emph{in}}$ and $\Gamma$, expression~$e$ has type $U$ and
+  output context $\Delta_{\emph{out}}$.
 \end{quote}
 \endgroup
-\noindent (The affine typing judgment follows similarly.) Importantly, the type
+\noindent Importantly, the type
   system maintains these invariants:
 
 \begin{comment}
