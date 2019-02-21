@@ -106,9 +106,9 @@
 \newcommand{\eSet}[2]{\keyword{set}\Lparen{#1},{#2}\Rparen}
 \newcommand{\eFix}[2]{\keyword{fix}\Lparen{#1}.{#2}\Rparen}
 \newcommand{\eFixx}[3]{\keyword{fix}_{#1}\Lparen{#2}.{#3}\Rparen}
-\newcommand{\eLet}[3]{\keyword{let}_{\pi}\ {#1} = {#2}\ \keyword{in}\ {#3}}
+\newcommand{\eLet}[3]{\keyword{let}_{\pi}\lparen{#2},{#1}.{#3}\Rparen}
 \newcommand{\eLett}[3]{\keyword{let}\ {#1} = {#2}\ \keyword{in}\ {#3}}
-\newcommand{\eLetRd}[4]{\eLett{\eLPair{#1}{#2}}{\eRd{#3}}{{#4}}}
+%\newcommand{\eLetRd}[4]{\eLett{\eLPair{#1}{#2}}{\eRd{#3}}{{#4}}}
 \newcommand{\eLetBang}[3]{\keyword{let!}\ {#1} = {#2}\ \keyword{in}\ {#3}}
 \newcommand{\eLam}[2]{\lambda{#1}.\,{#2}}
 \newcommand{\eLamm}[3]{\lambda_{#1}\,{#2}.\,{#3}}
@@ -116,6 +116,7 @@
 \newcommand{\eNu}[2]{\nu#1.\,#2}
 \newcommand{\eWr}[2]{\keyword{wr}\Lparen{#1},{#2}\Rparen}
 \newcommand{\eRd}[1]{\keyword{rd}\Lparen{#1}\Rparen}
+\newcommand{\eLetRd}[3]{\keyword{rd}\Lparen{#1},{#2}.{#3}\Rparen}
 \newcommand{\eFork}[2]{\ensuremath{#1 \xFork #2}}
 \newcommand{\eChoice}[2]{\ensuremath{#1 \xChoice #2}}
 \newcommand{\eSeq}[2]{{#1}\,;\,{#2}}
@@ -175,7 +176,7 @@
 
 % ILC Misc
 \newcommand{\xFork}{\mathrel{|\rhd}}
-\newcommand{\xChoice}{\mathrel{\lhd|\rhd}}
+\newcommand{\xChoice}{\mathrel{\ominus}}
 \newcommand{\e}{\epsilon}
 \newcommand{\Lparen}{\mathsf{(}}
 \newcommand{\Rparen}{\mathsf{)}}

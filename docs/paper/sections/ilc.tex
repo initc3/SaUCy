@@ -26,9 +26,9 @@ simply $\tyProdd{}{A}{B}$), sums ($\tySum{A}{\infty}{B}$ or simply $\tySum{A}{}{
 and arrows ($\tyArr{A}{\infty}{U}$ or simply $A -> U$). These types, along with a
 special ``write'' arrow type ($\tyArr{A}{\wm}{U}$ or simply $A \twoheadrightarrow U$), round out
 the sendable types, i.e., the types of values that can be sent over
-channels. The remaining intuitionistic type is the write channel type
-($\tyWr{S}$), whose constructor can take sendable types, but does not yield a
-sendable type.
+channels. \todo{Why?} The remaining intuitionistic type is the write channel
+type ($\tyWr{S}$), whose constructor can take sendable types, but does not yield
+a sendable type.
 
 Affine types include bang types ($\tyBang{A}$), affine pairs or ``tensors''
 ($\tyProdd{1}{X}{Y}$ or simply $\tyTensor{X}{Y}$), affine sums
@@ -45,9 +45,9 @@ concurrency:
     a corresponding write channel $x_2$ in $e$.
   \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the result of evaluating $e_1$ on
     the write channel result of evaluating $e_2$.
-  \item \emph{Read:} $\eRd{e}$ reads a value from the read channel result of
-    evaluating $e$. (There is more going on here, but it is better explained in
-    the context of the typing rules.)
+  \item \emph{Read:} $\eLetRd{e_1}{x}{e_2}$ reads a value from the read channel
+    result of evaluating $e$. (There is more going on here, but it is better
+    explained in the context of the typing rules.)
   \item \emph{Fork:} $\eFork{e_1}{e_2}$ forks a child process $e_1$ and
     continues as $e_2$.
   \item \emph{Choice:} $\eChoice{e_1}{e_2}$ allows a process to continue as
@@ -60,18 +60,13 @@ The affine write token \todo{}.
 \subsection{Static Semantics}
 \label{subsec:types}
 
-The type system of ILC is given in Figure~\ref{fig:type-expressions}. The
-algorithmic typing judgment $\Delta_{\emph{in}} ; \Gamma |- e : U -| \Delta_{\emph{out}}$
-should be read as follows:
-\begingroup
-\addtolength\leftmargini{-.2in}
-\begin{quote}
-  Under input contexts $\Delta_{\emph{in}}$ and $\Gamma$, expression~$e$ has type $U$ and
-  output context $\Delta_{\emph{out}}$.
-\end{quote}
-\endgroup
-\noindent Importantly, the type
-  system maintains these invariants:
+The type system of ILC is given in Figure~\ref{fig:type-expressions}.
+%
+We read the typing judgement $\Delta_{\emph{in}} ; \Gamma |- e : U -| \Delta_{\emph{out}}$ as
+``under input contexts $\Delta_{\emph{in}}$ and $\Gamma$, expression~$e$ has type $U$ and
+  output context $\Delta_{\emph{out}}$.''
+  
+Importantly, the type system maintains these invariants:
 
 \begin{comment}
 Judgments have the form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is an affine typing
@@ -187,16 +182,14 @@ to affine variables.
 \subsection{Dynamic Semantics}
 \label{subsec:semantics}
 
-%\todo{Need some help explaining this subsection.} 
 Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic syntax and semantics of ILC, respectively.
 %
 We define a \emph{configuration}~$C$ as a tuple of dynamic channel and process names~$\Sigma$, 
-a shared mutable store~$\sigma$, 
 and a pool of running and terminated processes~$\pi$.
 
 To state and prove the meta theory of ILC (\Secref{sec:metatheory}), we
 extend the type system given above with typing rules for
-configurations, including typing environments for channels and stores. 
+configurations, including typing environments for channels. 
 %
 We omit these details here for space reasons, 
 and we refer the interested reader to \Secref{sec:ilcproofs}.
@@ -204,9 +197,8 @@ and we refer the interested reader to \Secref{sec:ilcproofs}.
 We read the configuration reduction judgment $C_1 ---> C_2$ as ``configuration
 $C_1$ steps to configuration $C_2$,'' 
 %
-and the local stepping judgment $\sigma_1; e_1 \longrightarrow \sigma_2; e_2$ 
-for a single process~$e$ as ``under store
-$\sigma_1$, expression $e_1$ steps to store $\sigma_{2}$ and expression $e_2$.
+and the local stepping judgment $e_1 \longrightarrow e_2$ for a single process~$e$ as
+``expression $e_1$ steps to expression $e_2$.
 %
 The rules of local stepping follow a standard call-by-value semantics, 
 where we streamline the definition with an evaluation context~$E$.

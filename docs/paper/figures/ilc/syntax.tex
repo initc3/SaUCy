@@ -10,7 +10,7 @@
       Sendable types
       & $S$
       &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{}{B} \bnfalt
-      \tyArr{A}{}{U} \bnfalt A \twoheadrightarrow U$
+      \tyArr{A}{}{U} \bnfalt \tyArr{A}{\wm}{U}$
       \\
       Intuitionistic types
       & $A,B$
@@ -51,8 +51,8 @@
     \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2}$
     \\ &&& $\bnfaltbrk \eLamm{\ell}{x}{e} \bnfalt \eApp{e_1}{e_2}{\ell} \bnfalt \eFixx{\ell}{x}{e}
     \bnfalt \eLet{x}{e_1}{e_2} \bnfalt \eBang{e} \bnfalt \eUnbang{e}$
-    \\ &&& $\bnfaltbrk \eNu{(x_1,x_2)}{e} \bnfalt \eWr{e_1}{e_2}
-    \bnfalt \eRd{e} \bnfalt \eFork{e_1}{e_2} \bnfalt \eChoice{e_1}{e_2}$
+    \\ &&& $\bnfaltbrk \eNu{(x_1,x_2)}{e} \bnfalt \eWr{e_1}{e_2} \bnfalt
+    \eLetRd{e_1}{x}{e_2} \bnfalt \eFork{e_1}{e_2} \bnfalt \eChoice{e_1}{e_2}$
   \end{grammar}      
   \caption{Syntax of ILC.}
   \label{fig:ilc-syntax}

@@ -105,7 +105,7 @@
 %
 \Infer{wabs}
 {\wrtok ; \Gamma, x:A |- e : U -| \emptyctxt}
-{\Delta ; \Gamma |- \eLamm{\wm}{x}{e} : A \twoheadrightarrow U -| \Delta}
+{\Delta ; \Gamma |- \eLamm{\wm}{x}{e} : \tyArr{A}{\wm}{U} -| \Delta}
 %\Infer{wabs}
 %{\wrtok ; \Gamma |- e : U -| \Delta_2}
 %{\Delta_1 ; \Gamma |- \eLamm{\wm}{\eUnit}{e} : \mathbbm{1} \sep U -| \Delta_1}
@@ -115,6 +115,10 @@
 \Infer{aabs}
 {\Delta_1,x : X; \Gamma |- e : U -| \Delta_2}
 {\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U -| \Delta_2 \div (x:X)}
+%\Infer{aabs}
+%{\wrtok \in \Delta_1 => \Delta_3 \coloneqq \Delta_2, \wrtok\\\\
+%\Delta_1,x : X \div \wrtok ; \Gamma |- e : U -| \Delta_2}
+%{\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U -| \Delta_3 \div (x:X)}
 %
 \and
 %
@@ -127,7 +131,7 @@
 %
 \Infer{wapp}
 {\Delta_1; \Gamma |- e_2 : A -| \Delta_2\\\\
-\Delta_2; \Gamma |- e_1 : A \twoheadrightarrow U  -| \Delta_3}
+\Delta_2; \Gamma |- e_1 : \tyArr{A}{\wm}{U}  -| \Delta_3}
 {\Delta_1, \wrtok; \Gamma |- \eApp{e_1}{e_2}{\wm} : U -| \Delta_3}
 %
 \and
@@ -146,29 +150,17 @@
 \and
 %
 \Infer{rd}
-{\wrtok \not \in \Delta_1\\\\
-\Delta_1 ; \Gamma |- e : \tyRd{S} -| \Delta_2}
-{\Delta_1 ; \Gamma |- \eRd{e} : \tyTensor{\tyBang{S}}{\tyRd{S}} -| \Delta_2, \wrtok}
-%\Infer{letrd}
-%{\wrtok \not \in \Delta_1\\
-%\Delta_1 ; \Gamma |- e_1 : \tyRd{S} -| \Delta_2\\\\
-%\Delta_2,\wrtok, x_1 : \tyBang{S}, x_2 : \tyRd{S} ; \Gamma |- e_2 : U -| \Delta_3}
-%{\Delta_1 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : U -| \Delta_3 \div (\wrtok, x_1 : \tyBang{S}, x_2 : \tyRd{S})}
+{\wrtok \not \in \Delta_1\\
+\Delta_1 ; \Gamma |- e_1 : \tyRd{S} -| \Delta_2\\\\
+\Delta_2,\wrtok, x : \tyTensor{\tyBang{S}}{\tyRd{S}} ; \Gamma |- e_2 : U -| \Delta_3}
+{\Delta_1 ; \Gamma |- \eLetRd{e_1}{x}{e_2} : U -| \Delta_3 \div (\wrtok, x : \tyTensor{\tyBang{S}}{\tyRd{S}})}
 %
 \and
 %
-%\Infer{fork}
-%{\Delta_1; \Gamma |- e_1 : U -| \Delta_3\\\\
-%\Delta_2; \Gamma |- e_2 : V -| \Delta_4}
-%{\Delta_1, \Delta_2; \Gamma |- \eFork{e_1}{e_2} : V -| \Delta_4}
-%\Infer{fork}
-%{\Delta_1; \Gamma |- e_2 : U -| \Delta_2\\\\
-%\Delta_2 \div \wrtok; \Gamma |- e_1 : V -| \Delta_3}
-%{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : V -| \Delta_3}
 \Infer{fork}
 {\Delta_1; \Gamma |- e_1 : U -| \Delta_2\\\\
-\Delta_2, \wrtok; \Gamma |- e_2 : V -| \Delta_3}
-{\Delta_1, \wrtok; \Gamma |- \eFork{e_1}{e_2} : V -| \Delta_3}
+\Delta_2; \Gamma |- e_2 : V -| \Delta_3}
+{\Delta_1; \Gamma |- \eFork{e_1}{e_2} : V -| \Delta_3}
 %
 \and
 %
@@ -178,7 +170,7 @@
 \Delta_1; \Gamma |- e_2 : U -| \Delta_2}
 {\Delta_1; \Gamma |- \eChoice{e_1}{e_2} : U -| \Delta_2}
 \end{mathpar}
-\caption{Typing rules.}
+\caption{Algorithmic typing rules.}
 \label{fig:type-expressions}
 \end{figure*}
 
