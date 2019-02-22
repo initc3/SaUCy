@@ -8,13 +8,13 @@
         &$\bnfas$& $A \bnfalt X$
       \\
       Sendable types
-      & $S$
-      &$\bnfas$& $\tyUnit \bnfalt A ** B \bnfalt \tySum{A}{}{B} \bnfalt
+      & $S, T$
+      &$\bnfas$& $\tyUnit \bnfalt S ** T \bnfalt \tySum{S}{}{T} \bnfalt
       \tyArr{A}{\infty}{U} \bnfalt \tyArr{A}{\wm}{U}$
       \\
       Intuitionistic types
       & $A,B$
-      &$\bnfas$& $S \bnfalt \tyWr{S}$
+      &$\bnfas$& $S \bnfalt A ** B \bnfalt \tySum{A}{}{B} \bnfalt \tyWr{S}$
       \\
       Affine types
       & $X,Y$
