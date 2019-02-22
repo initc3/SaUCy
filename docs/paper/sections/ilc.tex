@@ -15,15 +15,20 @@ static semantics, and dynamic semantics.
 The syntax of ILC given in Figure~\ref{fig:ilc-syntax} consists of types and
 expressions. To streamline the abstract syntax, some expressions are
 parameterized by a multiplicity $\pi$ to distinguish between the intuitionistic
-($\infty$) and affine ($1$) counterparts. Moreover, other expressions are
-parameterized by a function label $\ell$, which includes the multiplicity labels
-along with an additional label $\wm$ (explained shortly).
+($\infty$) and affine ($1$) counterparts; other expressions are parameterized by a
+function label $\ell$, which includes the multiplicity labels along with an
+additional label $\wm$ (explained shortly).
 
 Types in ILC (written $U$, $V$) are bifurcated into intuitionistic types
-(written $A$, $B$) and affine types (written $X$, $Y$).  The standard
-intuitionistic types include unit ($\tyUnit$), products ($\tyProdd{}{A}{B}$),
-sums ($\tySum{A}{}{B}$), and arrows ($\tyArr{A}{\infty}{U}$ or simply $A ->
-U$). These types, along with a special ``write'' arrow type
+(written $A$, $B$) and affine types (written $X$, $Y$). A subset of the
+intuitionistic types are sendable types (written $S$, $T$). The sendable types
+include unit ($\tyUnit$), products ($\tyProdd{}{S}{T}$),
+sums ($\tySum{S}{}{T}$).
+
+
+The standard intuitionistic types include unit ($\tyUnit$), products
+($\tyProdd{}{A}{B}$), sums ($\tySum{A}{}{B}$), and arrows ($\tyArr{A}{\infty}{U}$ or
+simply $A -> U$). These types, along with a special ``write'' arrow type
 ($\tyArr{A}{\wm}{U}$), round out the sendable types, i.e., the types of values
 that can be sent over channels. \todo{Why?} The remaining intuitionistic type is
 the write channel type ($\tyWr{S}$), whose constructor can take sendable types,
