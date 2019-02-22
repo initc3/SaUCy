@@ -13,40 +13,39 @@ static semantics, and dynamic semantics.
 \label{subsec:syntax}
 
 The syntax of ILC given in Figure~\ref{fig:ilc-syntax} consists of types and
-expressions. To streamline the syntax, certain elements are parameterized by a
-multiplicity $\pi$ to distinguish between the intuitionistic ($\infty$) and affine
-($1$) counterparts. Moreover, certain elements are parameterized by a function
-label $\ell$, which includes the multiplicity labels along with an additional label
-$\wm$ to be explained later.
+expressions. To streamline the abstract syntax, some expressions are
+parameterized by a multiplicity $\pi$ to distinguish between the intuitionistic
+($\infty$) and affine ($1$) counterparts. Moreover, other expressions are
+parameterized by a function label $\ell$, which includes the multiplicity labels
+along with an additional label $\wm$ (explained shortly).
 
 Types in ILC (written $U$, $V$) are bifurcated into intuitionistic types
 (written $A$, $B$) and affine types (written $X$, $Y$).  The standard
-intuitionistic types include unit ($\tyUnit$), products ($\tyProdd{\infty}{A}{B}$ or
-simply $\tyProdd{}{A}{B}$), sums ($\tySum{A}{\infty}{B}$ or simply $\tySum{A}{}{B}$),
-and arrows ($\tyArr{A}{\infty}{U}$ or simply $A -> U$). These types, along with a
-special ``write'' arrow type ($\tyArr{A}{\wm}{U}$), round out the sendable
-types, i.e., the types of values that can be sent over channels. \todo{Why?} The
-remaining intuitionistic type is the write channel type ($\tyWr{S}$), whose
-constructor can take sendable types, but does not yield a sendable type.
+intuitionistic types include unit ($\tyUnit$), products ($\tyProdd{}{A}{B}$),
+sums ($\tySum{A}{}{B}$), and arrows ($\tyArr{A}{\infty}{U}$ or simply $A ->
+U$). These types, along with a special ``write'' arrow type
+($\tyArr{A}{\wm}{U}$), round out the sendable types, i.e., the types of values
+that can be sent over channels. \todo{Why?} The remaining intuitionistic type is
+the write channel type ($\tyWr{S}$), whose constructor can take sendable types,
+but does not yield a sendable type.
 
-Affine types include bang types ($\tyBang{A}$), affine pairs or ``tensors''
-($\tyProdd{1}{X}{Y}$ or simply $\tyTensor{X}{Y}$), affine sums
-($\tySum{X}{1}{Y}$ or simply $\tyOplus{X}{Y}$), affine arrows or ``lollipops''
-($\tyArr{X}{1}{U}$ or simply $X \multimap U$), and read channel types ($\tyRd{S}$).
+Affine types include bang types ($\tyBang{A}$), products ($\tyTensor{X}{Y}$),
+sums ($\tyOplus{X}{Y}$), arrows or ``lollipops'' ($\tyArr{X}{1}{U}$ or simply
+$X \multimap U$), and read channel types ($\tyRd{S}$).
 
 ILC supports a fairly standard feature set of expressions (with both
 intuitionistic and affine variants). What is new here is an introduction form
 ($\eBang{e}$) and elimination form ($\eUnbang{e}$) for bang types. The more
-interesting expressions are those related to affinity and message-passing
-concurrency:
+interesting expressions are those related message-passing concurrency:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     a corresponding write channel $x_2$ in $e$.
   \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the result of evaluating $e_1$ on
     the write channel result of evaluating $e_2$.
   \item \emph{Read:} $\eLetRd{e_1}{x}{e_2}$ reads a value from the read channel
-    result of evaluating $e$. (There is more going on here, but it is better
-    explained in the context of the typing rules.)
+    result of evaluating $e_1$ and binds it as $x$ in $e_2$. (There is more
+    going on here, but it is better explained in the context of the typing
+    rules.)
   \item \emph{Fork:} $\eFork{e_1}{e_2}$ forks a child process $e_1$ and
     continues as $e_2$.
   \item \emph{Choice:} $\eChoice{e_1}{e_2}$ allows a process to continue as
@@ -54,25 +53,22 @@ concurrency:
     processes.
 \end{itemize}
 
-The affine write token \todo{}.
+The write token is special and unique, and need not ever be bound to a variable
+in the affine context.  Rather, it flows around “implicitly” in the program, by
+virtue of where it performs read and write effects (i.e., channel receives and
+sends).  In order to type a write expression, the write token must be present in
+the affine context. Dually, typing a read expression extends the outgoing affine
+context with the write token.
 
 \subsection{Static Semantics}
 \label{subsec:types}
 
-The type system of ILC is given in Figure~\ref{fig:type-expressions}.
-%
-We read the typing judgement $\Delta_{\emph{in}} ; \Gamma |- e : U -| \Delta_{\emph{out}}$ as
-``under input contexts $\Delta_{\emph{in}}$ and $\Gamma$, expression~$e$ has type $U$ and
-  output context $\Delta_{\emph{out}}$.''
+The type system of ILC is given in Figure~\ref{fig:type-expressions}.  We read
+the typing judgement $\Delta; \Gamma |- e : U$ as ``under affine context $\Delta$ and
+intuitionistic context $\Gamma$, expression~$e$ has type $U$.'' An algorithmic
+version of these rules appears in the Appendix.
   
 Importantly, the type system maintains these invariants:
-
-\begin{comment}
-Judgments have the form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is an affine typing
-context, $\Gamma$ is an intuitionistic typing context, and $m \in \{\Wm, \Rm, \Vm\}$ is
-a mode (write, read, and value, respectively). Importantly, it maintains these
-invariants:
-\end{comment}
 
 \begin{itemize}[leftmargin=*]
 \item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
@@ -80,10 +76,9 @@ invariants:
   protected against duplication by binding it in the affine context $\Delta$. This
   ensures that no nondeterminism arises at the receiving end of communications.
 
-\item \emph{No parallel composition of write mode processes.} The typing rules
-  do not allow parallel composition of two write mode processes ($\Wm ||
-  \Wm$). This ensures that no nondeterminism arises at the sending end of
-  communications.
+\item \emph{Unique active process that is allowed to write.} At most one process has the unique write token in its affine context, which
+  allows it to write to another process. This ensures that no nondeterminism
+  arises at the sending end of communications.
 \end{itemize}
 
 \begin{comment}

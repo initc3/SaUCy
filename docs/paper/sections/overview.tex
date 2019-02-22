@@ -299,11 +299,11 @@ First, we introduce the letrd and wr typing rules. Typing judgments have the
 form $\Delta ; \Gamma |- e : A |> m$, where $\Delta$ is an affine typing context, $\Gamma$ is an
 intuitionistic typing context, and $m$ is a mode.
 \begin{mathpar}
-\Infer{letrd}
-{\Delta_1 ; \Gamma |- e_1 : \tyRd{A}\\
-\Delta_2,x_1:\tyBang{A},x_2:\tyRd{A} ; \Gamma |- e_2 : B |> m
-}
-{\Delta_1, \Delta_2 ; \Gamma |- \eLetRd{x_1}{x_2}{e_1}{e_2} : B |> \Rm}
+\Infer{rd}
+{\wrtok \not \in \Delta\\
+\Delta_1 ; \Gamma |- e_1 : \tyRd{S}\\\\
+\Delta_2,\wrtok, x : \tyTensor{\tyBang{S}}{\tyRd{S}} ; \Gamma |- e_2 : U}
+{\Delta_1,\Delta_2 ; \Gamma |- \eLetRd{e_1}{x}{e_2} : U}  
 \end{mathpar}
 
 The letrd rule says that if we can partition the affine context $\Delta$ as $\Delta_1,
@@ -325,9 +325,9 @@ mode $\Rm$. Notice several things:
 \end{itemize}
 \begin{mathpar}
 \Infer{wr}
-{\Delta_1; \Gamma   |- e_1 : A\\
-\Delta_2; \Gamma   |- e_2 : \tyWr{A}}
-{\Delta_1, \Delta_2; \Gamma |- \eWr{e_1}{e_2} : \tyUnit |> \Wm}
+{\Delta_1; \Gamma |- e_1 : S\\\\
+\Delta_2; \Gamma |- e_2 : \tyWr{S}}
+{\Delta_1,\Delta_2,\wrtok; \Gamma|- \eWr{e_1}{e_2} : \tyUnit}
 \end{mathpar}
 
 The wr rule says that if we can partition the affine context $\Delta$ as $\Delta_1, \Delta_2$
