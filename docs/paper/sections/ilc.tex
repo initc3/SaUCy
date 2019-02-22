@@ -24,11 +24,10 @@ Types in ILC (written $U$, $V$) are bifurcated into intuitionistic types
 intuitionistic types include unit ($\tyUnit$), products ($\tyProdd{\infty}{A}{B}$ or
 simply $\tyProdd{}{A}{B}$), sums ($\tySum{A}{\infty}{B}$ or simply $\tySum{A}{}{B}$),
 and arrows ($\tyArr{A}{\infty}{U}$ or simply $A -> U$). These types, along with a
-special ``write'' arrow type ($\tyArr{A}{\wm}{U}$ or simply $A \twoheadrightarrow U$), round out
-the sendable types, i.e., the types of values that can be sent over
-channels. \todo{Why?} The remaining intuitionistic type is the write channel
-type ($\tyWr{S}$), whose constructor can take sendable types, but does not yield
-a sendable type.
+special ``write'' arrow type ($\tyArr{A}{\wm}{U}$), round out the sendable
+types, i.e., the types of values that can be sent over channels. \todo{Why?} The
+remaining intuitionistic type is the write channel type ($\tyWr{S}$), whose
+constructor can take sendable types, but does not yield a sendable type.
 
 Affine types include bang types ($\tyBang{A}$), affine pairs or ``tensors''
 ($\tyProdd{1}{X}{Y}$ or simply $\tyTensor{X}{Y}$), affine sums
