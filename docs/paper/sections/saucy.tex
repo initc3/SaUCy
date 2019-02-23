@@ -42,25 +42,24 @@ To meet these needs we define a judgment about ILC terms that take a security pa
   The judgment that \textsf{e} is polynomial time normalizable, written \textsf{PPT e}, is defined as follows:
   \begin{mathpar}
     \Infer{ppt}
-    {\emptyctxt ~; \emptyctxt |- e : \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} {\multimap}_{m}
-      \tyBang{\tyBit}\\
-    \forall~\mathsf{k} \in \tyNat.~\forall~r \in {[\tyBit]}^{(poly(\mathsf{k}))}.~\mathsf{e~!k~!r}~{->}^{poly(\mathsf{k})}~\mathsf{v}}
+    {\emptyctxt ~; \emptyctxt |- e : \tyNat -> [\tyBit] -> \tyBit\\
+    \forall~\mathsf{k} \in \tyNat.~\forall~r \in {[\tyBit]}^{(poly(\mathsf{k}))}.~\mathsf{e~k~r}~{->}^{poly(\mathsf{k})}~\mathsf{v}}
     {\keyword{PPT}~ \mathsf{e} }
   \end{mathpar}
   This says that if for all security parameters \textsf{k} and all bitstrings
-  \textsf{r} with length polynomial in \textsf{k} the term \textsf{e~!k~!r}
+  \textsf{r} with length polynomial in \textsf{k} the term \textsf{e~k~r}
   normalizes to a value \textsf{v} in $poly(\mathsf{k})$ steps.\footnote{Note that the normalization must be polynomial time for all $\mathsf{r}$, though we could have defined it to hold with high probability.}
 \end{definition}
 
 \begin{definition}[Value Distribution] 
-  Because processes are confluent, we know that if $\mathsf{e~!k~!r}~{->}^{*}~\mathsf{v}$
+  Because processes are confluent, we know that if $\mathsf{e~k~r}~{->}^{*}~\mathsf{v}$
   then the value $\mathsf{v}$ is unique.  We can therefore define the
   probability distribution ensemble
   $D(\mathsf{e}) = \{ D_{\mathsf{e,k}}\}_\mathsf{k}$
   based on a uniform distribution $U_k$ over
   $\mathsf{k}$-bit strings $\mathsf{r}$, so the distribution $D_{\mathsf{e,k}}$ is given as
 \[
-D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~!k~!r}~{->}^{*}~\mathsf{v} \}.
+D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~k~r}~{->}^{*}~\mathsf{v} \}.
 \]
 \end{definition}
 
@@ -101,7 +100,7 @@ in which parties can be corrupted as the execution proceeds.
 \noindent The function \textsf{execUC} is parameterized by an environment \textsf{z},
 protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a}, an ideal
 functionality \textsf{f}, a security parameter \textsf{k}, a random bitstring
-\textsf{r}, and a static corruption model \textsf{crupt :: !Crupt}. The
+\textsf{r}, and a static corruption model \textsf{crupt :: Crupt}. The
 \textsf{Crupt} datatype is defined below, with its variants denoting the cases
 when party \textsf{p} is corrupt, party \textsf{q} is corrupt, or no party is
 corrupt, respectively.
@@ -113,7 +112,7 @@ captured by \textsf{wrapper\{P,Q\}} (shown in the Appendix).
 
 Note that for space and readability, we elide channel allocation/distribution
 and wrapper definitions (with ellipses). We also abbreviate the type signature
-(e.g., $X_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
+(e.g., $A_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
 the Appendix.
 
 \begin{comment}

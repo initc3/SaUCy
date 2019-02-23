@@ -1,9 +1,8 @@
-let simI !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
-  let rbits = ref bits in
+let simI k bits crupt toZ toF toP toQ frZ frF frP frQ =
   let ($\mathsf{pk}_0$,$\mathsf{td}_0$) = kgen k in
   let ($\mathsf{pk}_1$,$\mathsf{td}_1$) = kgen k in  
-  let $\mathsf{r}_0$ = sample k rbits in
-  let $\mathsf{r}_1$ = sample k rbits in
+  let ($\mathsf{r}_0$, bits) = sample k bits in
+  let ($\mathsf{r}_1$, bits) = sample k bits in  
   let $\sigma$ = xors (prg $\mathsf{pk}_0$ $\mathsf{r}_0$) (prg $\mathsf{pk}_1$ $\mathsf{r}_1$) in
     match crupt with
     | CruptP $=>$
@@ -19,6 +18,6 @@ let simI !crupt !toZ frZ !toF frF !toP frP !toQ frQ !k !bits =
 	  let $\langle$!(A2P (Open' b r)), frZ$\rangle$ = rd frZ in
 	    if b == 0 && y == prg $\mathsf{pk}_0$ r ||
 	      b == 1 && y == xors (prg $\mathsf{pk}_1$ r) $\sigma$
-	    then !(wr Open $->$ toP)
+	    then wr Open $->$ toP
 	    else error "Fail"
     | ...

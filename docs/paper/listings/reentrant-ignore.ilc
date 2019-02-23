@@ -1,12 +1,11 @@
-letrec discardingF frP frA ... =
+letrec discardingF ... frP frA =
   let $\langle$!m, frP$\rangle$ = rd frP in
-    wr m $->$ toA;
-    letrec iloop frP frA =
+    wr m $->$ toA ;
+    letrec iloop $\eUnit$ frP frA =
        (let $\langle$_, frP$\rangle$ = rd frP in
-          wr Discard $->$ toP;
-	  iloop frP frA)
-       $\oplus$ (let $\langle$!Ok, frA$\rangle$ = rd frA in
-	  wr m $->$ toQ;
-	  discardingF frP frA ...)
-     in iloop frP frA
-
+          wr Discard $->$ toP ;
+	  iloop $\eUnit$ frP frA)
+       $\ominus$ (let $\langle$!Ok, frA$\rangle$ = rd frA in
+	  wr m $->$ toQ ;
+	  discardingF ... frP frA)
+     in iloop $\eUnit$ frP frA
