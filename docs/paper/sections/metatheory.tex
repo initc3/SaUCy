@@ -41,8 +41,8 @@ Informally, $\JCterm{C}$ holds when:
    is normalized (consists of a value).
  \item $C$ is (at least partially) deadlocked: 
    some (possibly-empty) portion of $C$ is normal, and
-   there exists one or more read-mode processes in $C$, or
-   there exists one or more write-mode processes in $C$,
+   there exists one or more reading processes in $C$, or
+   there exists one or more writing processes in $C$,
    however, no reader-writer pair exists for a common channel~$c$.
 \end{enumerate}
 

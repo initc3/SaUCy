@@ -129,12 +129,13 @@ affine typing discipline. In other words, \emph{well-typed ILC programs are
 at any given time, processes implicitly pass around an affine ``write token'' by
 virtue of where they perform read and write effects. Moreover, to maintain that
 this order of activations is fully determined, read channels are an affine
-resource, so there is a unique process being written to. Together, these give
-ILC its central metatheoretic property of confluence. The only nondeterminism in
-an ILC program is due to random coin tosses taken by processes, which have a
-well-defined distribution. Additionally, any apparent concurrency hazards, such
-as adversarial scheduling of messages in an asynchronous network, are due to an
-explicit adversary process rather than uncertainty built into the model itself.
+resource, so each write operation corresponds with a single, unique read
+operation. Together, these give ILC its central metatheoretic property of
+confluence. The only nondeterminism in an ILC program is due to random coin
+tosses taken by processes, which have a well-defined distribution. Additionally,
+any apparent concurrency hazards, such as adversarial scheduling of messages in
+an asynchronous network, are due to an explicit adversary process rather than
+uncertainty built into the model itself.
 
 \begin{comment}
 To give a quick tour of ILC's type system, judgments have the form $\Delta ; \Gamma |- e

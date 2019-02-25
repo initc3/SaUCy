@@ -213,10 +213,10 @@ To avoid allocating the same name twice,
 the name set~$\Names$ records names of allocated channels and processes.
 %
 Rule~\Rule{rw} uses the syntax~$R$ for a combination of several (mutually exclusive) 
-read-mode expressions, with a chosen read filling the (single) hole.
+reading processes, with a chosen read filling the (single) hole.
 %
 When synchronized, 
-the rule uses this syntax to eliminate all of the unchosen read-mode expressions 
+the rule uses this syntax to eliminate all of the unchosen reading processes 
 before control continues with the chosen read effect.
 %
 The relation $c_1 \leadsto c_2$ holds when 
