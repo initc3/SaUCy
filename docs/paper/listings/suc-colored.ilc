@@ -1,5 +1,13 @@
-execUC :: $\forall$ ... . $X_{\mathsf{z}} \multimap X_{\mathsf{p}} \otimes X_{\mathsf{q}} \multimap X_{\mathsf{f}} \multimap X_{\mathsf{a}} \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} \multimap \tyBang{\keyword{Crupt}} \multimap_\mathsf{m} \tyBang{\tyBit}$ 
-let execUC z (p,q) f a k !r crupt =
+wrapper :: $\forall$ ... . $A_{\mathsf{p}} -> \tyNat -> [\tyBit] -> \tyBool -> \cdots$
+let wrapperP p k bits iscrupt ${\color{red}\sf toZ}$ ${\color{Green}\sf toF}$ toA ${\color{blue}\sf toQ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf frF}$ frA ${\color{blue}\sf frQ}$=
+      if iscrupt then
+	   loop ($\lambda$ _ . error "Z cannot write to corrupted party.") ${\color{red}\sf frZ}$
+	$\xFork$ fwd toA ${\color{Green}\sf frF}$
+	$\xFork$ fwd toA ${\color{blue}\sf frP}$
+	$\xFork$ fwd ${\color{Green}\sf toF}$ frA 
+
+execUC :: $\forall$ ... . $\tyNat\ {->}_{\wm}\ [\tyBit] -> \keyword{Crupt} -> A_{\mathsf{z}} -> A_{\mathsf{p}} \times A_{\mathsf{q}} -> A_{\mathsf{f}} -> A_{\mathsf{a}} -> \tyBit$ 
+let execUC k r crupt z (p,q) f a =
   $\nu$ (${\color{red}\sf rZ2P}$, ${\color{red}\sf wZ2P}$), (${\color{red}\sf rP2Z}$, ${\color{red}\sf wP2Z}$)
   , (${\color{red}\sf rZ2Q}$, ${\color{red}\sf wZ2Q}$), (${\color{red}\sf rQ2Z}$, ${\color{red}\sf wQ2Z}$)
   , (${\color{Green}\sf rP2F}$, ${\color{Green}\sf wP2F}$), (${\color{Green}\sf rF2P}$, ${\color{Green}\sf wF2P}$)
@@ -9,25 +17,9 @@ let execUC z (p,q) f a k !r crupt =
   , (rP2A, wP2A), (rA2P, wA2P)
   , (rQ2A, wQ2A), (rA2Q, wA2Q)
   , (${\color{blue}\sf rP2Q}$, ${\color{blue}\sf wP2Q}$), (${\color{blue}\sf rQ2P}$, ${\color{blue}\sf wQ2P}$)    
-  . let wrapperP p !crupt ${\color{red}\sf toZ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf toF}$ ${\color{Green}\sf frF}$ toA frA ${\color{blue}\sf toQ}$ ${\color{blue}\sf frQ}$ k bits =
-      if crupt == CruptP then
-	   loop ${\color{red}\sf frZ}$ !($\lambda$ _ . error "Z cannot write to corrupted party.")
-	$\xFork$ fwd ${\color{Green}\sf frF}$ toA
-	$\xFork$ fwd ${\color{blue}\sf frP}$ toA    
-	$\xFork$ fwd frA ${\color{Green}\sf toF}$
-      else
-	p ${\color{red}\sf toZ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf toF}$ 	${\color{Green}\sf frF}$ ${\color{blue}\sf toQ}$ ${\color{blue}\sf frQ}$ k bits in
-    let wrapperQ p !crupt ${\color{red}\sf toZ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf toF}$ ${\color{Green}\sf frF}$ toA frA ${\color{blue}\sf toP}$ ${\color{blue}\sf frP}$ k bits =	
-      if crupt == CruptQ then
-	   loop ${\color{red}\sf frZ}$ !($\lambda$ _ . error "Z cannot write to corrupted party.")
-	$\xFork$ fwd ${\color{Green}\sf frF}$ toA
-	$\xFork$ fwd ${\color{blue}\sf frP}$ toA    
-	$\xFork$ fwd frA ${\color{Green}\sf toF}$
-      else
-	p ${\color{red}\sf toZ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf toF}$ 	${\color{Green}\sf frF}$ ${\color{blue}\sf toP}$ ${\color{blue}\sf frP}$ k bits in       
-    let (rf,ra,rp,rq,rz) = splitBits5 r in
-    $\ \ \ \,$ f crupt !${\color{Green}\sf wF2P}$ ${\color{Green}\sf rP2F}$ !${\color{Green}\sf wF2Q}$ ${\color{Green}\sf rQ2F}$ !${\color{orange}\sf wF2A}$ ${\color{orange}\sf rA2F}$ k !rf
-    $\xFork$ a crupt !${\color{Purple}\sf wA2Z}$ ${\color{Purple}\sf rZ2A}$ !${\color{orange}\sf wA2F}$ ${\color{orange}\sf rF2A}$ !wA2P rP2A !wA2Q rQ2A k !ra
-    $\xFork$ wrapperP p crupt !${\color{red}\sf wP2Z}$ ${\color{red}\sf rZ2P}$ !${\color{Green}\sf wP2F}$ ${\color{Green}\sf rF2P}$ !wP2A rA2P !${\color{blue}\sf wP2Q}$ ${\color{blue}\sf rQ2P}$ k !rp
-    $\xFork$ wrapperQ q crupt !${\color{red}\sf wQ2Z}$ ${\color{red}\sf rZ2Q}$ !${\color{Green}\sf wQ2F}$ ${\color{Green}\sf rF2Q}$ !wQ2A rA2Q !${\color{blue}\sf wQ2P}$ ${\color{blue}\sf rP2Q}$ k !rq
-    $\xFork$ z !${\color{red}\sf wZ2P}$ ${\color{red}\sf rP2Z}$ !${\color{red}\sf wZ2Q}$ ${\color{red}\sf rQ2Z}$ !${\color{Purple}\sf wZ2A}$ ${\color{Purple}\sf rA2Z}$ k !rz
+  . let (rf,ra,rp,rq,rz) = splitBits5 r in
+    $\ \ \ \,$ f k rf crupt ${\color{Green}\sf wF2P}$ ${\color{Green}\sf wF2Q}$ ${\color{orange}\sf wF2A}$ ${\color{Green}\sf rP2F}$ ${\color{Green}\sf rQ2F}$  ${\color{orange}\sf rA2F}$
+    $\xFork$ a k ra crupt ${\color{Purple}\sf wA2Z}$ ${\color{orange}\sf wA2F}$ wA2P wA2Q ${\color{Purple}\sf rZ2A}$ ${\color{orange}\sf rF2A}$ rP2A rQ2A
+    $\xFork$ wrapperP p k rp crupt ${\color{red}\sf wP2Z}$ ${\color{Green}\sf wP2F}$ wP2A ${\color{blue}\sf wP2Q}$ ${\color{red}\sf rZ2P}$ ${\color{Green}\sf rF2P}$ rA2P ${\color{blue}\sf rQ2P}$
+    $\xFork$ wrapperQ q k rq crupt ${\color{red}\sf wQ2Z}$ ${\color{Green}\sf wQ2F}$ wQ2A ${\color{blue}\sf wQ2P}$ ${\color{red}\sf rZ2Q}$ ${\color{Green}\sf rF2Q}$ rA2Q ${\color{blue}\sf rP2Q}$
+    $\xFork$ z k rz ${\color{red}\sf wZ2P}$ ${\color{red}\sf wZ2Q}$ ${\color{Purple}\sf wZ2A}$ ${\color{red}\sf rP2Z}$  ${\color{red}\sf rQ2Z}$ ${\color{Purple}\sf rA2Z}$

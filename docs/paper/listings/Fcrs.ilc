@@ -1,14 +1,12 @@
-fCrs :: $\forall$ ... . $\tyBang{\keyword{Crupt} \multimap \cdots \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}}$
-let fCrs crupt !toP frP !toQ frQ !toA frA !k !bits =
-  let rbits = ref bits in
-  let pubref = ref Nothing in
-  let replyCrs fr $\mathsf{to}$ = loop fr !(match @pubref with
-			    | Nothing $=>$ let $\sigma$ = sample (4*k) rbits in
-					let $\mathsf{pk}_0$ = kgen k (sample k rbits) in
-					let $\mathsf{pk}_1$ = kgen k (sample k rbits) in					   
-					let pub = ($\sigma$, $\mathsf{pk}_0$,$\mathsf{pk}_1$) in
-					  set pubref $\coloneqq$ Just pub ; wr pub $-> \mathsf{to}$
-                            | Just pub $=>$ wr pub $-> \mathsf{to}$) in
-      $\,$replyCrs frP toP
-    $\xFork$ replyCrs frQ toQ
-    $\xFork$ replyCrs frA toA
+fCrs :: $\forall$ a ... . $\tyNat -> [\tyBit] -> \keyword{Crupt} -> \cdots$ a
+let fCrs k bits crupt toP toQ toA frP frQ frA =
+  let ($\sigma$, bits) = sample (4*k) bits in
+  let ($\mathsf{r}_0$, bits) = sample k bits in
+  let ($\mathsf{r}_1$, bits) = sample k bits in    
+  let $\mathsf{pk}_0$ = kgen k $\mathsf{r}_0$ in
+  let $\mathsf{pk}_1$ = kgen k $\mathsf{r}_1$ in					   
+  let pub = ($\sigma$, $\mathsf{pk}_0$,$\mathsf{pk}_1$) in
+  let replyCrs to fr = loop ($\lambda$ _ . wr pub $-> \mathsf{to}$) fr in
+      $\,\,$replyCrs toP frP
+    $\xFork$ replyCrs toQ frQ
+    $\xFork$ replyCrs toA frA
