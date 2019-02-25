@@ -25,7 +25,7 @@
   \begin{minipage}{.42\textwidth}
     \centering
     \begin{grammar}
-      Function labels
+      Syntax labels
       & $\ell$
       &$\bnfas$& $\pi \bnfalt \wm$      
       \\      
@@ -46,9 +46,9 @@
     Expressions
     & $e$
     &$\bnfas$&
-    $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2}{\pi} \bnfalt \eInj{i}{e}
-    \bnfalt \eSplit{e_1}{x_1}{x_2}{e_2} \bnfalt
-    \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2}$
+    $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2}{\ell} \bnfalt \eInjj{\ell}{i}{e}
+    \bnfalt \eSplitt{\ell}{e_1}{x_1}{x_2}{e_2} \bnfalt
+    \eCase{\ell}{e}{x_1}{e_1}{x_2}{e_2}$
     \\ &&& $\bnfaltbrk \eLamm{\ell}{x}{e} \bnfalt \eApp{e_1}{e_2}{\ell} \bnfalt \eFixx{\ell}{x}{e}
     \bnfalt \eLet{x}{e_1}{e_2} \bnfalt \eBang{e} \bnfalt \eUnbang{e}$
     \\ &&& $\bnfaltbrk \eNu{(x_1,x_2)}{e} \bnfalt \eWr{e_1}{e_2} \bnfalt

@@ -16,7 +16,7 @@ The syntax of ILC given in Figure~\ref{fig:ilc-syntax} consists of types and
 expressions. To streamline the abstract syntax, some expressions are
 parameterized by a multiplicity $\pi$ to distinguish between the intuitionistic
 ($\infty$) and affine ($1$) counterparts; other expressions are parameterized by a
-function label $\ell$, which includes the multiplicity labels along with an
+syntax label $\ell$, which includes the multiplicity labels along with an
 additional label $\wm$ (explained shortly).
 
 Types in ILC (written $U$, $V$) are bifurcated into intuitionistic types
@@ -32,8 +32,14 @@ The affine types include bang types ($\tyBang{A}$), read channel types
 ($\tyRd{S}$), products ($\tyTensor{X}{Y}$), sums ($\tyOplus{X}{Y}$), and arrows
 or ``lollipops'' ($\tyArr{X}{1}{U}$ or simply $X \multimap U$).
 
-ILC supports a fairly standard feature set of expressions, with both
-intuitionistic and affine variants. The more interesting expressions are those
+ILC supports a fairly standard feature set of expressions, with intuitionistic
+variants parameterized by the label $\infty$ and affine variants parameterized by the
+label $1$. The remaining syntax label $\wm$ on various introduction and
+elimination forms serves two different meanings: on products and sums, it
+denotes the sendable variants; on functions, it denotes a special ``write''
+function.
+
+The more interesting expressions are those
 related to message-passing and concurrency:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
@@ -62,9 +68,11 @@ rules maintain that only one process is active at any given time (unique
 ownership of the affine write token), and the sequence of activations is
 deterministic (unique ownership of affine read channels).
 
-The typing rules for the functional fragment of ILC are fairly standard, but the
-rules for various forms of abstraction (iabs, wabs, aabs) and application (wapp)
-are worth commenting on.
+The typing rules for the functional fragment of ILC are fairly
+standard.\footnote{For brevity, we elide the typing rules for sendable products
+and sums, since they are analagous to the intuitionistic variants.} We comment
+on the nonobvious rules, such as the ones for various forms of abstraction
+(iabs, wabs, aabs) and application (wapp).
 
 Intuitionistic abstraction (iabs) is standard, except the body of a lambda
 expression must be closed with respect to affine variables to prevent their
