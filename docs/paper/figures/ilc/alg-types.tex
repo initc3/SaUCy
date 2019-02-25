@@ -45,7 +45,7 @@
 \Infer{ainj}
 {i \in \{1, 2\}\\\\
 \Delta_1; \Gamma |- e : X_i -| \Delta_2}
-{\Delta_1 ; \Gamma |- \eInjj{1}{i}{e} : \tyOplus{A_1}{A_2} -| \Delta_2}
+{\Delta_1 ; \Gamma |- \eInjj{1}{i}{e} : \tyOplus{X_1}{X_2} -| \Delta_2}
 %
 \and
 %
@@ -85,7 +85,7 @@
 %
 \and
 %
-\Infer{ifix}
+\Infer{wfix}
 {\emptyctxt; \Gamma,x : \tyArr{A}{\wm}{U} |- e : \tyArr{A}{\wm}{U} -| \emptyctxt}
 {\Delta; \Gamma |- \eFixx{\wm}{x}{e} : \tyArr{A}{\wm}{U} -| \Delta}
 %
@@ -106,7 +106,7 @@
 %
 \Infer{alet}
 {\Delta_1; \Gamma |- e_1 : X -| \Delta_2\\\\
-\Delta_2; \Gamma, x:X |- e_2 : U -| \Delta_3}
+\Delta_2, x:X; \Gamma |- e_2 : U -| \Delta_3}
 {\Delta_1; \Gamma |- \eLett{1}{x}{e_1}{e_2} : U -| \Delta_3 \div (x:X)}
 %
 \and
@@ -137,7 +137,7 @@
 %
 \Infer{aabs}
 {\Delta_1,x : X; \Gamma |- e : U -| \Delta_2}
-{\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U -| \Delta_2 \div (x:X)}
+{\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : \tyArr{X}{1}{U} -| \Delta_2 \div (x:X)}
 %
 \and
 %
@@ -163,8 +163,8 @@
 \and
 %
 \Infer{nu}
-{\Delta_1, x_1: \tyRd{S} ; \Gamma, x_2 : \tyWr{S} |- e : A -| \Delta_2}
-{\Delta_1; \Gamma |- \eNu{(x_1, x_2)}{e} : A -| \Delta_2 \div (x_1: \tyRd{S})}
+{\Delta_1, x_1: \tyRd{S} ; \Gamma, x_2 : \tyWr{S} |- e : U -| \Delta_2}
+{\Delta_1; \Gamma |- \eNu{(x_1, x_2)}{e} : U -| \Delta_2 \div (x_1: \tyRd{S})}
 %
 \and
 %
