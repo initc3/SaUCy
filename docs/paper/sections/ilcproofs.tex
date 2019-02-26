@@ -16,6 +16,11 @@ identifier (process name, or channel name) to its associated type:
     %(maps channel names to their types)
     & $\ChTy$
     &$\bnfas$& $\emptyctxt \bnfalt \ChTy,c:A \bnfalt \ChTy,c:X$
+    \\
+    Channel pool typings?
+    %(maps channel names to their types)
+    & $\ChTy$
+    &$\bnfas$& $\emptyctxt \bnfalt \ChTy,c:\tyRd{S} \bnfalt \ChTy,c:\tyWr{S}$
 \end{grammar}
 
 \subsection{Configuration typings}
@@ -33,6 +38,12 @@ of single-process typing, given in \Secref{subsec:types}:
 \and
 \Infer{aff}
 { \ChTy |- e : X
+  \\
+ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
+{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:X}}
+\and
+\Infer{aff?}
+{ \ChTy |- \Config{\Names}{}{p:e} : X
   \\
  \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
 { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:X}}
@@ -67,27 +78,57 @@ then $\not\exists C'$ such that $\JCred{C}{C'}$.
 \begin{mathpar}
 \Infer{rd}
 { }
-{\Lterm{\eLetRd{v}{x}{e}}}
+{\Lterm{\eLetRd{c}{x}{e}}}
 \and
 \Infer{wr}
 { }
-{\Lterm{\eWr{v_1}{v_2}}}
+{\Lterm{\eWr{c}{v}}}
 \end{mathpar}
 
 \begin{theorem}[Progress (local)]
   If $|- e : U$, then either $\Lterm{e}$ or there exists $e'$ such that $e ->
   e'$.
   \begin{proof}
-    By induction on the derivation of $|- e : U$.
+    By structural induction on the derivation of $|- e : U$.
   \end{proof}
 \end{theorem}
+
+\judgbox{\Norm{C}}{Configuration $C$ is fully normal.}
+\begin{mathpar}
+\Infer{empty}
+{ }
+{\Norm{\Config{\Names}{}{\emptyProcs}}}
+\and
+\Infer{fnorm}
+{\Norm{\Config{\Names}{}{\Procs}}}
+{\Norm{\Config{\Names}{}{\Procs,\proc{p:v}}}}
+\end{mathpar}
+
+\judgbox{\JCterm{C}}{Configuration $C$ is terminated.}
+\begin{mathpar}
+%\Infer{empty}
+%{ }
+%{\Norm{\Config{\Names}{}{\emptyProcs}}}
+%\and
+%\Infer{norm}
+%{\Norm{\Config{\Names}{}{\Procs}}}
+%{\Norm{\Config{\Names}{}{\Procs,\proc{p:v}}}}
+%\and
+\Infer{tnorm}
+{\Norm{\Config{\Names}{}{\Procs,\proc{p:v}}}}
+{\JCterm{\Config{\Names}{}{\Procs,\proc{p:v}}}}
+\and
+\Infer{dlock}
+{\Norm{\Config{\Names}{}{\Procs_1}} \\ \Norw{\Config{\Names}{}{\Procs_2,\proc{p:\Lterm{e}}}}}
+{\JCterm{\Config{\Names}{}{\Procs_1,\Procs_2,\proc{p:e}}}}
+\end{mathpar}
 
 \begin{theorem}[Progress]
 For all configurations $C$,
 channel typings~$\ChTy$,
 and process typings~$\PrTy$,
 %
-if $\JCty{\StTy}{\ChTy}{C}{\PrTy} |> m$
+if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
 then 
 either $\JCterm{C}$,
 or $\exists C'$ such that $\JCred{C}{C'}$.
@@ -99,7 +140,7 @@ or $\exists C'$ such that $\JCred{C}{C'}$.
 \begin{theorem}[Preservation (local)]
   If $|- e : U$ and $e -> e'$, then $|- e' : U$.
   \begin{proof}
-    By induction on the derivation of $e -> e'$.
+    By structural induction on the derivation of $e -> e'$.
   \end{proof}
 \end{theorem}
 
@@ -107,17 +148,43 @@ or $\exists C'$ such that $\JCred{C}{C'}$.
 For all configurations $C, C'$,
 channel typings~$\ChTy$
 and process typings~$\PrTy$,
-\\
 %
- if $\JCty{\StTy}{\ChTy}{C}{\PrTy} |> m$
+ if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
 and $\JCred{C}{C'}$ 
 then there exists 
 channel typing extension $\ChTy' \supseteq \ChTy$
 and process typing extension $\PrTy' \supseteq \PrTy$
-such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'} |> m'$.
-%\begin{proof}
-%  TODO
-%\end{proof}
+such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
+\begin{proof}
+    By structural induction on the derivation of $\JCred{C}{C'}$.
+  \begin{itemize}[leftmargin=*]
+  \item \textbf{Case}
+    \begin{mathpar}
+    \Infer{rw}
+    { c_2 \leadsto c_1 }
+    { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]}\\\\ --->
+    \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \ePair{!v}{\eChan{c_1}}{\wm}], \ProcNm{q}
+      E_2[ \eUnit ]} }
+    \end{mathpar}
+    Assume $|- \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[
+          \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} :
+    \PrTy$. We show $|- \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \ePair{!v}{\eChan{c_1}}{\wm}], \ProcNm{q}
+      E_2[ \eUnit ]} : \PrTy$ by preservation of the types of contexts $E_1$ and
+    $E_2$.
+
+    Preservation of $E_2$: By inversion, we have $|- E_2[\eWr{\eChan{c_2}}{v}] :
+    \tyUnit$ such that $\Names(\eChan{c_2}) = \tyWr{S}$ and $|- v : S$ for some
+    $S$. Also by inversion, $|- E_2[ \eUnit ] : \tyUnit$.
+
+    Preservation of $E_1$: Because $\Names(\eChan{c_2}) = \tyWr{S}$ and $c_2 \leadsto
+    c_1$, we have $\Names(\eChan{c_1}) = \tyRd{S}$. By inversion and the fact
+    $\Names(\eChan{c_1}) = \tyRd{S}$, we have $|- E_1[R[ \eRd{\eChan{c_1}}] ] :
+    \tyTensor{\tyBang{S}}{\tyRd{S}}$. By $|- v : S$ and $\Names(\eChan{c_1}) =
+    \tyRd{S}$, we have $|- E_2[ \ePair{!v}{\eChan{c_1}}{\wm}] :
+    \tyTensor{\tyBang{S}}{\tyRd{S}}$.
+  \end{itemize}
+
+\end{proof}
 \end{theorem}
 
 

@@ -78,8 +78,13 @@ C_2' \equiv C_2
 \Infer{rw}
 { c_2 \leadsto c_1 }
 { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
-  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ (v, \eChan{c_1})], \ProcNm{q} E_2[ () ]} }
-\\
+  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \ePair{!v}{\eChan{c_1}}{\wm}], \ProcNm{q}
+    E_2[ \eUnit ]} }
+%\Infer{rw}
+%{ c_2 \leadsto c_1 }
+%{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
+%  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ (v, \eChan{c_1})], \ProcNm{q}
+%    E_2[ () ]} }
 \end{mathpar}
 
 \judgbox{e_1 ---> e_2}{~~Expression~$e_1$ reduces to~$e_2$.}
