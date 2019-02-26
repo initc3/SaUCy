@@ -23,36 +23,30 @@ identifier (process name, or channel name) to its associated type:
 Using the syntax above, we define configuration typing as a straightforward extension
 of single-process typing, given in \Secref{subsec:types}:
 
-\judgbox{\JCty{\StTy}{\ChTy}{C}{\PrTy} |> m}{Configuration $C$ is well-typed}
+\judgbox{\JCty{\StTy}{\ChTy}{C}{\PrTy}}{Configuration $C$ is well-typed}
 \begin{mathpar}
 \Infer{empty}
 { 
   %\StTy ; \ChTy |- \Store : \StTy
 }
-{\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\emptyProcs}}{\cdot} |> \Vm}
+{\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\emptyProcs}}{\cdot}}
 \and
 \Infer{aff}
-{ \ChTy |- e : X |> m_1
+{ \ChTy |- e : X
   \\
- \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy} |> m_2
- \\
- m_1 || m_2 => m_3
-}
-{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:X} |> m_3}
+ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
+{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:X}}
 \and
 \Infer{int}
-{ \ChTy |- e : A |> m_1
+{ \ChTy |- e : A
   \\
- \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy} |> m_2
- \\
- m_1 || m_2 => m_3
-}
-{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:A} |> m_3 }
+ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
+{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:A}}
 \end{mathpar}
 
-Notably, parallel procesess with modes $m_1$ and $m_2$ must have modes
-that compose, where $m_1 || m_2$ is defined; this invariant ensures that there
-is at most one write mode process in a well-typed pool.
+%Notably, parallel procesess with modes $m_1$ and $m_2$ must have modes
+%that compose, where $m_1 || m_2$ is defined; this invariant ensures that there
+%is at most one write mode process in a well-typed pool.
 
 \subsection{Type soundness}
 
@@ -69,6 +63,24 @@ then $\not\exists C'$ such that $\JCred{C}{C'}$.
 %\end{proof}
 \end{lemma}
 
+\judgbox{\Lterm{e}}{Expression $e$ is locally terminated.}
+\begin{mathpar}
+\Infer{rd}
+{ }
+{\Lterm{\eLetRd{v}{x}{e}}}
+\and
+\Infer{wr}
+{ }
+{\Lterm{\eWr{v_1}{v_2}}}
+\end{mathpar}
+
+\begin{theorem}[Progress (local)]
+  If $|- e : U$, then either $\Lterm{e}$ or there exists $e'$ such that $e ->
+  e'$.
+  \begin{proof}
+    By induction on the derivation of $|- e : U$.
+  \end{proof}
+\end{theorem}
 
 \begin{theorem}[Progress]
 For all configurations $C$,
@@ -82,6 +94,13 @@ or $\exists C'$ such that $\JCred{C}{C'}$.
 %\begin{proof}
 %   TODO
 %\end{proof}
+\end{theorem}
+
+\begin{theorem}[Preservation (local)]
+  If $|- e : U$ and $e -> e'$, then $|- e' : U$.
+  \begin{proof}
+    By induction on the derivation of $e -> e'$.
+  \end{proof}
 \end{theorem}
 
 \begin{theorem}[Preservation]

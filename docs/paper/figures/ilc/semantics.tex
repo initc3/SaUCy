@@ -24,8 +24,8 @@
  Evaluation contexts
   & $E$
      & $\bnfas$ & 
- $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eApp{E}{e}{\pi} \bnfalt \eApp{v}{E}{\pi}$
-\\ &&& $\bnfaltbrk \eSplit{E}{x_1}{x_2}{e} \bnfalt \eCase{\pi}{E}{x_1}{e_1}{x_2}{e_2}$
+ $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eApp{E}{e}{\ell} \bnfalt \eApp{v}{E}{\ell}$
+\\ &&& $\bnfaltbrk \eSplitt{\ell}{E}{x_1}{x_2}{e} \bnfalt \eCase{\ell}{E}{x_1}{e_1}{x_2}{e_2}$
 \\
  Read contexts
   & $R$
@@ -94,11 +94,11 @@ C_2' \equiv C_2
 \and
 \Infer{split}
 { }
-{ \eSplit{\ePair{v_1}{v_2}{\pi}}{x_1}{x_2}{e} ---> [v_1/x_1][v_2/x_2]e }
+{ \eSplitt{\ell}{\ePair{v_1}{v_2}{\ell}}{x_1}{x_2}{e} ---> [v_1/x_1][v_2/x_2]e }
 \and
 \Infer{case}
 { }
-{ \eCase{\pi}{\eInj{i}{v}}{x_1}{e_1}{x_2}{e_2} ---> [v/x_i]e_i }
+{ \eCase{\ell}{\eInjj{\ell}{i}{v}}{x_1}{e_1}{x_2}{e_2} ---> [v/x_i]e_i }
 \and
 \Infer{fix}
 { }
