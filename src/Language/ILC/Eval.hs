@@ -22,10 +22,8 @@ module Language.ILC.Eval (
 
 import Control.Concurrent
 import Control.Exception
-import Data.IORef
 import qualified Data.Map.Strict as Map
 import Data.Typeable
-import Debug.Trace
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Language.ILC.Decl
@@ -65,10 +63,6 @@ evalPut env m expr = case expr of
   EList es -> do
     res <- evalList env es
     putMVar m $ VList res
-
-  ESett es -> do
-    res <- evalList env es
-    putMVar m $ VSet res
   
   ELam p e -> putMVar m $ VClosure (f p) env e
     where
@@ -158,31 +152,6 @@ evalPut env m expr = case expr of
     forkIO (evalPut env m' e1)
     forkIO (evalPut env m' e2)
     res <- takeMVar m'
-    putMVar m res
-
-  ERef e -> do
-    v <- eval env e
-    ref <- newIORef v
-    putMVar m $ VRef ref
-
-  EGet e -> do
-    v <- eval env e
-    let r = case v of
-              VRef r' -> r'
-              _       -> error "Eval.evalPut: EGet"
-    res <- readIORef r
-    putMVar m res
-
-  ESet x e -> do
-    let r = case env Map.! x of
-              VRef r' -> r'
-              _       -> error "Eval.evalPut: ESet"
-    v <- eval env e
-    writeIORef r v
-    putMVar m VUnit
-      
-  ESeq e1 e2 -> do
-    (_, res) <- evalSubs env e1 e2
     putMVar m res
 
   EBin op e1 e2 -> do

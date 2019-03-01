@@ -54,7 +54,7 @@ getCustomData ds = foldr f [] ds
 -- type.
 -- TODO: Generate fresh variables.
 custTyToExpr :: ValCon -> Int -> Expr
-custTyToExpr (x, TArr _ t@TArr{} _) i =
+custTyToExpr (x, TArr _ t@TArr{}) i =
   ELam (PVar (show i)) (custTyToExpr (x, t) (i + 1))
 custTyToExpr (x, TArr{}) i =
   ELam (PVar (show i)) (ECustom x (map (EVar . show) [1..i]))

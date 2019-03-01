@@ -36,14 +36,13 @@ data Expr = EVar Name                            -- ^ Variable
           | ELit Lit                             -- ^ Literal
           | ETuple [Expr]                        -- ^ Tuple
           | EList [Expr]                         -- ^ List
-          | ESett [Expr]                         -- ^ Set
           | ELam Pattern Expr                    -- ^ Lambda abstraction
           | EApp Expr Expr                       -- ^ Function application
           | EFix Expr                            -- ^ Fixpoint
           | ELet Pattern Expr Expr               -- ^ Let binding
           | ELetRd Pattern Expr Expr             -- ^ Rd binding
           | ELetBang Pattern Expr Expr           -- ^ Unpack linear binding
-          | EBang Expr                           -- ^ Linearize
+          | EBang Expr                           -- ^ Bang TODO: Make unop
           | EIf Expr Expr Expr                   -- ^ Conditional
           | EMatch Expr [(Pattern, Expr, Expr)]  -- ^ Pattern match 
           | ENu (Name, Name) Expr                -- ^ Channel allocation
@@ -51,10 +50,6 @@ data Expr = EVar Name                            -- ^ Variable
           | EWr Expr Expr                        -- ^ Write to channel
           | EFork Expr Expr                      -- ^ Fork new process
           | EChoice Expr Expr                    -- ^ External choice
-          | ERef Expr                            -- ^ Mutable reference
-          | EGet Expr                            -- ^ Dereference
-          | ESet Name Expr                       -- ^ Mutable Assignment
-          | ESeq Expr Expr                       -- ^ Sequencing
           | EPrint Expr                          -- ^ Print
           | EError Expr                          -- ^ Throw error
           | EBin Binop Expr Expr                 -- ^ Binary expression
@@ -101,7 +96,6 @@ data Pattern = PVar Name              -- ^ Variable pattern
              | PTuple [Pattern]       -- ^ Tuple pattern
              | PList [Pattern]        -- ^ List pattern
              | PCons Pattern Pattern  -- ^ Cons pattern
-             | PSet [Pattern]         -- ^ Set pattern
              | PCust Name [Pattern]   -- ^ Custom data type pattern
              deriving (Eq, Show)
 
@@ -120,5 +114,4 @@ instance Pretty Pattern where
   pretty (PTuple ps)   = prettyTuple $ map pretty ps
   pretty (PList ps)    = prettyList ps
   pretty (PCons hd tl) = pretty hd <+> text ":" <+> pretty tl
-  pretty (PSet ps)     = prettySet $ map pretty ps
   pretty (PCust x ps)  = text x <+> prettySpace (map pretty ps)

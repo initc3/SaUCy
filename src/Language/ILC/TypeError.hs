@@ -17,19 +17,14 @@ module Language.ILC.TypeError (
 
 import Text.PrettyPrint.ANSI.Leijen
 
-import Language.ILC.Mode
 import Language.ILC.Syntax
 import Language.ILC.Type
 
-data TypeError = UnificationFail TML TML
+data TypeError = UnificationFail Type Type
                | InfiniteType TVar Type
                | UnboundVariable Name
                | Ambiguous [(Type, Type)]
-               | UnificationMismatch [TML] [TML]
-               | ParFail Mode Mode
-               | SeqFail Mode Mode
-               | ChoiceFail Mode Mode
-               | ModeFail Mode Mode
+               | UnificationMismatch [Type] [Type]
                | TypeFail String
                | LinearFail Name
 
@@ -59,35 +54,6 @@ instance Pretty TypeError where
                 ] | (a, b) <- cs ]
          
   pretty (UnboundVariable a) = text "Not in scope:" <+> pretty a
-
-  pretty (ParFail m1 m2) =
-    hsep [ text "Cannot derive mode composition:"
-         , pretty m1
-         , text "|"
-         , pretty m2
-         ]
-
-  pretty (SeqFail m1 m2) =
-    hsep [ text "Cannot derive mode composition:"
-         , pretty m1
-         , text ";"
-         , pretty m2
-         ]
-
-  pretty (ChoiceFail m1 m2) =
-    hsep [ text "Subexpressions of choice have mode R.\n"
-         , text "Given:"
-         , pretty m1
-         , text "and"
-         , pretty m2
-         ]
-    
-  pretty (ModeFail a b) =
-    hsep [ text "Cannot unify types:\n\t"
-         , pretty a
-         , text "\nwith\n\t"
-         , pretty b
-         ]
   
   pretty (TypeFail s)  = text s
   

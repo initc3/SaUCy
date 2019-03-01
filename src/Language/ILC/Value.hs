@@ -19,7 +19,6 @@ module Language.ILC.Value (
   ) where
 
 import Control.Concurrent
-import Data.IORef
 import qualified Data.Map.Strict as Map
 import Text.PrettyPrint.ANSI.Leijen
 
@@ -37,12 +36,8 @@ data Value = VInt Integer                        -- ^ Integer value
            | VClosure (Maybe Name) TermEnv Expr  -- ^ Closure value
            | VRdChan Name (Chan Value)           -- ^ Read channel value
            | VWrChan Name (Chan Value)           -- ^ Write channel value
-           | VRef (IORef Value)                  -- ^ Mutable reference value
            | VCust Name [Value]                  -- ^ Mutable reference value
            deriving (Eq, Show)
-
-instance Show (IORef a) where
-  show _ = "IORef"
 
 instance Show (Chan a) where
   show _ = "Chan"
@@ -59,7 +54,6 @@ instance Pretty Value where
   pretty VClosure{}    = text "<closure>"
   pretty (VRdChan c _) = text "Rd" <+> text c
   pretty (VWrChan c _) = text "Wr" <+> text c
-  pretty (VRef _)      = text "<ref>"
   pretty (VCust x [])  = text x
   pretty (VCust x vs)  = text x <+> prettySpace (map pretty vs)
   
@@ -76,4 +70,4 @@ extendTmEnv env x v = Map.insert x v env
 
 -- | Extends the term environment with the given binding.
 mergeTmEnv :: TermEnv -> TermEnv -> TermEnv
-mergeTmEnv env1 env2 = Map.union env1 env2
+mergeTmEnv = Map.union

@@ -40,16 +40,6 @@ examples =
                                   (ELit $ LInt 2)))
               ]
       )
-    , ( "sequencing let bindings"
-      , "let x = 1 in x; let y = 1 in y"
-      , Right [ Decl "it" (ELet (PVar "x")
-                            (ELit $ LInt 1)
-                            (ESeq (EVar "x")
-                                  (ELet (PVar "y")
-                                        (ELit $ LInt 1)
-                                        (EVar "y"))))
-              ]
-      )
     , ( "nested let bindings"
       , "let x = 1 in let y = 2 in x + y"
       , Right [ Decl "it" (ELet (PVar "x")
@@ -78,25 +68,6 @@ examples =
                                 , ELit $ LBool True
                                 , ELit $ LString "one")
                               ])
-              ]
-      )
-    , ( "let binding w/ assign"
-      , "let x = 1 ; let y := 1 in x + y"
-      , Right [ Decl "it" (ELet (PVar "x")
-                            (ESeq (ELit $ LInt 1)
-                                  (ESet "y"
-                                           (ELit $ LInt 1)))
-                            (EBin Add (EVar "x")
-                                           (EVar "y")))
-              ]
-      )
-    , ( "let binding w/ sequencing and assign"
-      , "let a = 1 ; let b := 1 in b"
-      , Right [ Decl "it" (ELet (PVar "a")
-                            (ESeq (ELit $ LInt 1)
-                                  (ESet "b"
-                                           (ELit $ LInt 1)))
-                            (EVar "b"))
               ]
       )
     , ( "cons pattern matching"
