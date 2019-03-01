@@ -67,21 +67,54 @@ class Substitutable a where
   ftv   :: a -> Set.Set TVar
 
 instance Substitutable Type where
-  apply _ (TCon a) = TCon a
-  apply (Subst s) t@(TVar a) = Map.findWithDefault t a s
-  apply s (TArr t1 t2) = TArr (apply s t1) (apply s t2)
-  apply s (TList t) = TList (apply s t)
-  apply s (TProd ts) = TProd (apply s ts)
-  apply s (TWrChan t) = TWrChan (apply s t)
-  apply s (TCust t) = TCust (apply s t)
+  apply s (IType t) = IType (apply s t)
+  apply s (AType t) = AType (apply s t)
 
-  ftv (TVar a) = Set.singleton a
-  ftv TCon{} = Set.empty
-  ftv (TArr t1 t2) = ftv t1 `Set.union` ftv t2
-  ftv (TList t) = ftv t
-  ftv (TProd ts) = ftv ts
-  ftv (TWrChan t) = ftv t
-  ftv (TCust t) = ftv t
+  ftv (IType t) = ftv t
+  ftv (AType t) = ftv t  
+
+instance Substitutable IType where
+  apply (Subst s) t@(IVar a) = strip $ Map.findWithDefault (IType t) a s
+    where
+      strip = \(IType x) -> x
+  apply _ (ICon a) = ICon a
+  apply s (IProd ts) = IProd (apply s ts)
+  apply s (IArr t1 t2) = IArr (apply s t1) (apply s t2)
+  apply s (IList t) = IList (apply s t)
+  apply s (IWrChan t) = IWrChan (apply s t)
+  apply s (ICust t) = ICust (apply s t)
+  apply s (ISend t) = ISend (apply s t)  
+
+  ftv (IVar a) = Set.singleton a
+  ftv ICon{} = Set.empty
+  ftv (IProd ts) = ftv ts  
+  ftv (IArr t1 t2) = ftv t1 `Set.union` ftv t2
+  ftv (IList t) = ftv t
+  ftv (IWrChan t) = ftv t
+  ftv (ICust t) = ftv t
+  ftv (ISend t) = ftv t  
+
+instance Substitutable AType where
+  apply (Subst s) t@(AVar a) = strip $ Map.findWithDefault (AType t) a s
+    where
+      strip = \(AType x) -> x  
+  apply s (ARdChan t) = ARdChan (apply s t)  
+  apply s (AProd ts) = AProd (apply s ts)
+
+  ftv (AVar a) = Set.singleton a
+  ftv (ARdChan t) = ftv t  
+  ftv (AProd ts) = ftv ts
+
+instance Substitutable SType where
+  apply (Subst s) t@(SVar a) = strip $ Map.findWithDefault (IType (ISend t)) a s
+    where
+      strip = \(IType (ISend x)) -> x
+  apply s (SProd ts) = SProd (apply s ts)
+  apply _ (SCon a) = SCon a  
+
+  ftv (SVar a) = Set.singleton a
+  ftv (SProd ts) = ftv ts
+  ftv SCon{} = Set.empty  
 
 instance Substitutable Scheme where
   apply (Subst s) (Forall as t) = Forall as $ apply s' t
@@ -101,10 +134,6 @@ instance Substitutable a => Substitutable [a] where
 instance Substitutable TypeEnv where
   apply s (TypeEnv env) = TypeEnv $ Map.map (apply s) env
   ftv (TypeEnv env) = ftv $ Map.elems env
-
-checkType :: Eq a => a -> a -> String -> Infer a
-checkType ty1 ty2 msg = if ty1 == ty2 then return ty1
-                        else throwError (TypeFail msg)
 
 -------------------------------------------------------------------------------
 -- Inference
@@ -159,61 +188,67 @@ fresh f = do
   put s{count = count s + 1}
   return $ f (letters !! count s)
 
-freshifyt :: Map.Map TVar TVar -> Type -> Infer (Type, Map.Map TVar TVar)
-freshifyt env t@(TVar _) = return (t, env)
-freshifyt env t@(TCon _) = return (t, env)
-freshifyt env (TArr t1 t2) = do
-  (t1', env1) <- freshifyt env t1
-  (t2', env2) <- freshifyt env1 t2
-  return (TArr t1' t2', env2)
-freshifyt env (TList t) = do
-  (t', env') <- freshifyt env t
-  return (TList t', env')
-freshifyt env (TProd ts) = do
-  (TProd ts', env') <- foldM (\(TProd acc, e) t -> (freshifyt e t) >>=
-                       \(t', e') -> return (TProd (t':acc), e)) (TProd [], env) ts
-  return (TProd (reverse ts'), env')
-freshifyt env (TWrChan t) = do
-  (t', env') <- freshifyt env t
-  return (TWrChan t', env')
-freshifyt _ _ = error "Infer.freshifyt"
+--freshifyt :: Map.Map TVar TVar -> Type -> Infer (Type, Map.Map TVar TVar)
+--freshifyt env t@(TVar _) = return (t, env)
+--freshifyt env t@(TCon _) = return (t, env)
+--freshifyt env (TArr t1 t2) = do
+--  (t1', env1) <- freshifyt env t1
+--  (t2', env2) <- freshifyt env1 t2
+--  return (TArr t1' t2', env2)
+--freshifyt env (TList t) = do
+--  (t', env') <- freshifyt env t
+--  return (TList t', env')
+--freshifyt env (TProd ts) = do
+--  (TProd ts', env') <- foldM (\(TProd acc, e) t -> (freshifyt e t) >>=
+--                       \(t', e') -> return (TProd (t':acc), e)) (TProd [], env) ts
+--  return (TProd (reverse ts'), env')
+--freshifyt env (TWrChan t) = do
+--  (t', env') <- freshifyt env t
+--  return (TWrChan t', env')
+--freshifyt _ _ = error "Infer.freshifyt"
 
 instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
-  as' <- mapM (const (fresh (TVar . TV))) as
-  let s = Subst $ Map.fromList $ zip as as'
-      s' = apply s t
-  (s'', _) <- freshifyt Map.empty s'
-  return s''
+    as' <- mapM (const (fresh (IType . IVar . TV))) as
+    let s = Subst $ Map.fromList $ zip as as'
+    return $ apply s t
+
+--instantiate :: Scheme -> Infer Type
+--instantiate (Forall as t) = do
+--  as' <- mapM (const (fresh (TVar . TV))) as
+--  let s = Subst $ Map.fromList $ zip as as'
+--      s' = apply s t
+--  (s'', _) <- freshifyt Map.empty s'
+--  return s''
 
 generalize :: TypeEnv -> Type-> Scheme -- ^ T-Gen
 generalize env t = Forall as t
   where as = Set.toList $ ftv t `Set.difference` ftv env
 
 binops :: Binop -> Infer Type
-binops Add = return $ TArr tyInt (TArr tyInt tyInt)
-binops Sub = return $ TArr tyInt (TArr tyInt tyInt)
-binops Mul = return $ TArr tyInt (TArr tyInt tyInt)
-binops Div = return $ TArr tyInt (TArr tyInt tyInt)
-binops Mod = return $ TArr tyInt (TArr tyInt tyInt)
-binops And = return $ TArr tyBool (TArr tyBool tyBool)
-binops Or  = return $ TArr tyBool (TArr tyBool tyBool)
-binops Lt  = return $ TArr tyInt (TArr tyInt tyBool)
-binops Gt  = return $ TArr tyInt (TArr tyInt tyBool)
-binops Leq = return $ TArr tyInt (TArr tyInt tyBool)
-binops Geq = return $ TArr tyInt (TArr tyInt tyBool)
+binops Add = return $ (IType (IArr tyInt (IType (IArr tyInt (IType tyInt)))))
+binops Sub = return $ (IType (IArr tyInt (IType (IArr tyInt (IType tyInt)))))
+binops Mul = return $ (IType (IArr tyInt (IType (IArr tyInt (IType tyInt)))))
+binops Div = return $ (IType (IArr tyInt (IType (IArr tyInt (IType tyInt)))))
+binops Mod = return $ (IType (IArr tyInt (IType (IArr tyInt (IType tyInt)))))
+binops And = return $ (IType (IArr tyBool (IType (IArr tyBool (IType tyBool)))))
+binops Or  = return $ (IType (IArr tyBool (IType (IArr tyBool (IType tyBool)))))
+binops Lt  = return $ (IType (IArr tyInt (IType (IArr tyInt (IType tyBool)))))
+binops Gt  = return $ (IType (IArr tyInt (IType (IArr tyInt (IType tyBool)))))
+binops Leq = return $ (IType (IArr tyInt (IType (IArr tyInt (IType tyBool)))))
+binops Geq = return $ (IType (IArr tyInt (IType (IArr tyInt (IType tyBool)))))
 binops Eql = eqbinop
 binops Neq = eqbinop
 binops _   = error "Infer.binops"
 
 eqbinop :: Infer Type
 eqbinop = do
-  t1 <- fresh (TVar . TV)
-  t2 <- fresh (TVar . TV)
-  return $ TArr t1 (TArr t2 tyBool)
+  t1 <- fresh (IVar . TV)
+  t2 <- fresh (IVar . TV)
+  return $ IType (IArr t1 (IType (IArr t2 (IType tyBool))))
 
-unops :: Unop -> Type
-unops Not = TArr tyBool tyBool
+unops :: Unop -> IType
+unops Not = IArr tyBool (IType tyBool)
 
 concatTCEs :: [(Type, [Constraint], [(Name, Type)])]
            -> ([Type], [Constraint], [(Name, Type)])
@@ -237,133 +272,133 @@ listConstraints :: [Type]
                 -> [Constraint]
                 -> Infer (Type, [Constraint])
 listConstraints ts cs = do
-  thd <- fresh (TVar . TV)
+  thd <- fresh (IVar . TV)
   return $ if null ts
-           then (thd, cs)
-           else (head ts, cs ++ (map (thd,) ts))
+           then (IType thd, cs)
+           else (head ts, cs ++ (map (IType thd,) ts))
         
 inferPat :: Pattern
          -> Maybe Expr
          -> Infer (Type, [Constraint], [(Name, Type)])
 inferPat pat expr = case (pat, expr) of
   (PVar x, Just e) -> do
-    tv <- fresh (TVar . TV)
+    tv <- fresh (IVar . TV)
     (te, ce, _) <- infer e
-    let constraints = (tv, te) : ce
-    return (tv, constraints, [(x, tv)])
+    let constraints = (IType tv, te) : ce
+    return (IType tv, constraints, [(x, IType tv)])
   (PVar x, Nothing) -> do
-    tv <- fresh (TVar . TV)
-    return (tv, [], [(x, tv)])
+    tv <- fresh (IVar . TV)
+    return (IType tv, [], [(x, IType tv)])
 
-  (PInt _, Just e) -> do
-    (te, ce, _) <- infer e
-    let constraints = (te, tyInt) : ce
-    return (tyInt, constraints, [])
-  (PInt _, Nothing) -> return (tyInt, [], [])
-
-  (PBool _, Just e) -> do
-    (te, ce, _) <- infer e
-    let constraints = (te, tyBool) : ce
-    return (tyBool, constraints, [])
-  (PBool _, Nothing) -> return (tyBool, [], [])
-
-  (PString _, Just e) -> do
-    (te, ce, _) <- infer e
-    let constraints = (te, tyString) : ce
-    return (tyString, constraints, [])
-  (PString _, Nothing) -> return (tyString, [], [])
-
-  (PTuple ps, Just (ETuple es)) -> do
-    when (length ps /= length es) (error "fail") -- TODO: -- Custom error
-    (tes, ces, _) <- infer $ ETuple es
-    (ts, cs, env) <- inferPatList ps $ map Just es
-    let constraints = (TProd ts, tes) : ces ++ cs
-    return (TProd ts, constraints, env)
-  (PTuple ps, Just e) -> do
-    (ts, cs, env) <- inferPatList ps $ repeat Nothing
-    (te, ce, _) <- infer e
-    let constraints = (TProd ts, te) : cs ++ ce
-    return (TProd ts, constraints, env)
-  (PTuple ps, Nothing) -> do
-    (ts, cs, env) <- inferPatList ps $ repeat Nothing
-    return (TProd ts, cs, env)
-
-  (PList ps, Just (EList es)) -> do
-    when (length ps /= length es) (error "fail") -- TODO
-    (tes, ces, _) <- infer $ EList es
-    (ts, cs, env) <- inferPatList ps $ map Just es
-    (thd, cs') <- listConstraints ts cs
-    let constraints = (TList thd, tes) : ces ++ cs'
-    return (TList thd, constraints, env)
-  (PList ps, Just e) -> do
-    (te, ce, _) <- infer e
-    (ts, cs, env) <- inferPatList ps $ repeat Nothing
-    (thd, cs') <- listConstraints ts cs
-    let constraints = (TList thd, te) : ce ++ cs'
-    return (TList thd, constraints, env)
-  (PList ps, Nothing) -> do
-    tces <- zipWithM inferPat ps $ repeat Nothing
-    let (ts, cs, env) = concatTCEs tces
-    (thd, cs') <- listConstraints ts cs
-    return (TList thd, cs', env)
-
-  (PCons phd ptl, Just e@(EList (hd:tl))) -> do
-    (te, ce, _) <- infer e
-    (thd, chd, ehd) <- inferPat phd $ Just hd
-    (ttl, ctl, etl) <- inferPat ptl $ Just $ EList tl
-    let cs = ce ++ chd ++ ctl ++ [ (TList thd, te)
-                                 , (te, ttl) ]
-        env = ehd ++ etl
-    return (TList thd, cs, env)
-  (PCons phd ptl, Just e) -> do
-    (te, ce, _) <- infer e
-    (thd, chd, ehd) <- inferPat phd Nothing
-    (ttl, ctl, etl) <- inferPat ptl Nothing
-    let cs = ce ++ chd ++ ctl ++ [ (TList thd, te)
-                                 , (te, ttl)
-                                 , (TList thd, ttl) ]
-        env = ehd ++ etl
-    return (TList thd, cs, env)
-  (PCons phd ptl, Nothing) -> do
-    (thd, chd, ehd) <- inferPat phd Nothing
-    (ttl, ctl, etl) <- inferPat ptl Nothing
-    let cs = (TList thd, ttl) : chd ++ ctl
-        env = ehd ++ etl
-    return (TList thd, cs, env)
-
-  (PUnit, Just e) -> do
-    (te, ce,  _) <- infer e
-    let constraints = (te, tyUnit) : ce
-    return (tyUnit, constraints, [])
-  (PUnit, Nothing) -> return (tyUnit, [], [])
-
-  (PWildcard, Just _) -> do
-    ty <- fresh (TVar . TV)
-    return (ty, [], [])
-  (PWildcard, Nothing) -> do
-    ty <- fresh (TVar . TV)
-    return (ty, [], [])
-
-  (PCust x ps, Just (ECustom x' es)) -> do
-    tyx <- lookupEnv x
-    let tyx' = typeSumDeconstruction tyx ps
-    when (length ps /= length es) (error "fail1") -- TODO
-    when (x /= x') (error "fail2") -- TODO
-    (ts, cs, env) <- inferPatList ps $ map Just es
-    return (tyx', cs, env)
-  (PCust x ps, Just e) -> do
-    tyx <- lookupEnv x
-    let tyx' = typeSumDeconstruction tyx ps
-    (te, ce, _) <- infer e
-    (ts, cs, env) <- inferPatList ps $ repeat Nothing
-    let constraints = (tyx', te) : ce ++ cs
-    return (tyx', constraints, env)
-  (PCust x ps, Nothing) -> do
-    tyx <- lookupEnv x
-    let tyx' = typeSumDeconstruction tyx ps
-    tces <- zipWithM inferPat ps $ repeat Nothing
-    let (ts, cs, env) = concatTCEs tces
-    return (tyx', cs, env)
+--  (PInt _, Just e) -> do
+--    (te, ce, _) <- infer e
+--    let constraints = (te, tyInt) : ce
+--    return (tyInt, constraints, [])
+--  (PInt _, Nothing) -> return (tyInt, [], [])
+--
+--  (PBool _, Just e) -> do
+--    (te, ce, _) <- infer e
+--    let constraints = (te, tyBool) : ce
+--    return (tyBool, constraints, [])
+--  (PBool _, Nothing) -> return (tyBool, [], [])
+--
+--  (PString _, Just e) -> do
+--    (te, ce, _) <- infer e
+--    let constraints = (te, tyString) : ce
+--    return (tyString, constraints, [])
+--  (PString _, Nothing) -> return (tyString, [], [])
+--
+--  (PTuple ps, Just (ETuple es)) -> do
+--    when (length ps /= length es) (error "fail") -- TODO: -- Custom error
+--    (tes, ces, _) <- infer $ ETuple es
+--    (ts, cs, env) <- inferPatList ps $ map Just es
+--    let constraints = (TProd ts, tes) : ces ++ cs
+--    return (TProd ts, constraints, env)
+--  (PTuple ps, Just e) -> do
+--    (ts, cs, env) <- inferPatList ps $ repeat Nothing
+--    (te, ce, _) <- infer e
+--    let constraints = (TProd ts, te) : cs ++ ce
+--    return (TProd ts, constraints, env)
+--  (PTuple ps, Nothing) -> do
+--    (ts, cs, env) <- inferPatList ps $ repeat Nothing
+--    return (TProd ts, cs, env)
+--
+--  (PList ps, Just (EList es)) -> do
+--    when (length ps /= length es) (error "fail") -- TODO
+--    (tes, ces, _) <- infer $ EList es
+--    (ts, cs, env) <- inferPatList ps $ map Just es
+--    (thd, cs') <- listConstraints ts cs
+--    let constraints = (TList thd, tes) : ces ++ cs'
+--    return (TList thd, constraints, env)
+--  (PList ps, Just e) -> do
+--    (te, ce, _) <- infer e
+--    (ts, cs, env) <- inferPatList ps $ repeat Nothing
+--    (thd, cs') <- listConstraints ts cs
+--    let constraints = (TList thd, te) : ce ++ cs'
+--    return (TList thd, constraints, env)
+--  (PList ps, Nothing) -> do
+--    tces <- zipWithM inferPat ps $ repeat Nothing
+--    let (ts, cs, env) = concatTCEs tces
+--    (thd, cs') <- listConstraints ts cs
+--    return (TList thd, cs', env)
+--
+--  (PCons phd ptl, Just e@(EList (hd:tl))) -> do
+--    (te, ce, _) <- infer e
+--    (thd, chd, ehd) <- inferPat phd $ Just hd
+--    (ttl, ctl, etl) <- inferPat ptl $ Just $ EList tl
+--    let cs = ce ++ chd ++ ctl ++ [ (TList thd, te)
+--                                 , (te, ttl) ]
+--        env = ehd ++ etl
+--    return (TList thd, cs, env)
+--  (PCons phd ptl, Just e) -> do
+--    (te, ce, _) <- infer e
+--    (thd, chd, ehd) <- inferPat phd Nothing
+--    (ttl, ctl, etl) <- inferPat ptl Nothing
+--    let cs = ce ++ chd ++ ctl ++ [ (TList thd, te)
+--                                 , (te, ttl)
+--                                 , (TList thd, ttl) ]
+--        env = ehd ++ etl
+--    return (TList thd, cs, env)
+--  (PCons phd ptl, Nothing) -> do
+--    (thd, chd, ehd) <- inferPat phd Nothing
+--    (ttl, ctl, etl) <- inferPat ptl Nothing
+--    let cs = (TList thd, ttl) : chd ++ ctl
+--        env = ehd ++ etl
+--    return (TList thd, cs, env)
+--
+--  (PUnit, Just e) -> do
+--    (te, ce,  _) <- infer e
+--    let constraints = (te, tyUnit) : ce
+--    return (tyUnit, constraints, [])
+--  (PUnit, Nothing) -> return (tyUnit, [], [])
+--
+--  (PWildcard, Just _) -> do
+--    -- ty <- fresh (TVar . TV)
+--    return (tyUnit, [], [])
+--  (PWildcard, Nothing) -> do
+--    -- ty <- fresh (TVar . TV)
+--    return (tyUnit, [], [])
+--
+--  (PCust x ps, Just (ECustom x' es)) -> do
+--    tyx <- lookupEnv x
+--    let tyx' = typeSumDeconstruction tyx ps
+--    when (length ps /= length es) (error "fail1") -- TODO
+--    when (x /= x') (error "fail2") -- TODO
+--    (ts, cs, env) <- inferPatList ps $ map Just es
+--    return (tyx', cs, env)
+--  (PCust x ps, Just e) -> do
+--    tyx <- lookupEnv x
+--    let tyx' = typeSumDeconstruction tyx ps
+--    (te, ce, _) <- infer e
+--    (ts, cs, env) <- inferPatList ps $ repeat Nothing
+--    let constraints = (tyx', te) : ce ++ cs
+--    return (tyx', constraints, env)
+--  (PCust x ps, Nothing) -> do
+--    tyx <- lookupEnv x
+--    let tyx' = typeSumDeconstruction tyx ps
+--    tces <- zipWithM inferPat ps $ repeat Nothing
+--    let (ts, cs, env) = concatTCEs tces
+--    return (tyx', cs, env)
 
 -- | This function computes the type of a deconstructed sum type. The type of a
 -- value constructor should either be an arrow type leading to a custom type
@@ -371,13 +406,14 @@ inferPat pat expr = case (pat, expr) of
 -- itself (in the nullary case).
 -- TODO: Error handling.
 typeSumDeconstruction :: Type -> [Pattern] -> Type
-typeSumDeconstruction (TArr _ t) (p:ps) = typeSumDeconstruction t ps
+typeSumDeconstruction (IType (IArr _ t)) (p:ps) = typeSumDeconstruction t ps
 typeSumDeconstruction t            []     = t
 typeSumDeconstruction _            _      = error "Infer:typeSumDeconstruction"
 
 sumTypeBinds :: [Pattern] -> Type -> [(Name, Type)] -> [(Name, Type)]
-sumTypeBinds (PVar x:ps) (TArr t t'@TArr{}) env = sumTypeBinds ps t' ((x, t) : env)
-sumTypeBinds (PVar x:ps) (TArr t _)         env = (x, t) : env
+sumTypeBinds (PVar x:ps) (IType (IArr t t'@(IType IArr{}))) env =
+  sumTypeBinds ps t' ((x, (IType t)) : env)
+sumTypeBinds (PVar x:ps) (IType (IArr t _))         env = (x, (IType t)) : env
 sumTypeBinds _           _                    env = env
 
 inferBranch :: Expr
@@ -398,7 +434,7 @@ inferBranch expr (pat, guard, branch) = do
                         (local (apply sub) (infer branch))
                         binds)
       let _Γ4' = foldl (\_Γ (x, _) -> removeTyEnv _Γ x) _Γ4 binds
-          tyConstraints = (t2, tyBool) :c1 ++ c2 ++ c3
+          tyConstraints = (t2, IType tyBool) :c1 ++ c2 ++ c3
           constraints = tyConstraints
       return (t3, constraints, _Γ4')
 
@@ -414,19 +450,19 @@ infer expr = case expr of
 
   ELit (LInt _) -> do
     _Γ <- ask
-    return (tyInt, [], _Γ)
+    return (IType tyInt, [], _Γ)
 
   ELit (LBool _) -> do
     _Γ <- ask
-    return (tyBool, [], _Γ)
+    return (IType tyBool, [], _Γ)
     
   ELit (LString _) -> do
     _Γ <- ask
-    return (tyString, [], _Γ)
+    return (IType tyString, [], _Γ)
   
   ELit LUnit -> do
     _Γ <- ask
-    return (tyUnit, [], _Γ)
+    return (IType tyUnit, [], _Γ)
     
 {-  ETuple es -> do
     _Γ1 <- ask
@@ -742,24 +778,54 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
   where
     ord = zip (nub $ fv body) (map TV letters)
 
-    fv (TVar a) = [a]
-    fv (TArr a b) = fv a ++ fv b
-    fv (TCon _) = []
-    fv (TList a) = fv a
-    fv (TProd as) = concatMap fv as
-    fv (TWrChan a) = fv a
-    fv (TCust a) = fv a
+    fv (IType a) = fvi a
+    fv (AType a) = fva a
+
+    fvi (IVar a) = [a]
+    fvi (ICon _) = []
+    fvi (IProd as) = concatMap fvi as    
+    fvi (IArr a b) = fvi a ++ fv b
+    fvi (IList a) = fvi a
+    fvi (IWrChan a) = fvs a
+    fvi (ICust a) = fvi a
+    fvi (ISend a) = fvs a
+
+    fva (AVar a) = [a]
+    fva (ARdChan a) = fvs a
+    fva (AProd as) = concatMap fva as
+
+    fvs (SVar a) = [a]
+    fvs (SProd as) = concatMap fvs as
+    fvs (SCon _) = []
+
+    normtype (IType a) = IType (normtypei a)
+    normtype (AType a) = AType (normtypea a)
     
-    normtype (TVar a)   =
+    normtypei (IVar a)   =
         case Prelude.lookup a ord of
-            Just x -> TVar x
+            Just x -> IVar x
             Nothing -> error "type variable not in signature"
-    normtype (TCon a)   = TCon a
-    normtype (TArr a b) = TArr (normtype a) (normtype b)
-    normtype (TList a)   = TList (normtype a)
-    normtype (TProd as)   = TProd (map normtype as)
-    normtype (TWrChan a)   = TWrChan (normtype a)
-    normtype (TCust a)   = TCust (normtype a)
+    normtypei (ICon a)   = ICon a
+    normtypei (IProd as)   = IProd (map normtypei as)    
+    normtypei (IArr a b) = IArr (normtypei a) (normtype b)
+    normtypei (IList a)   = IList (normtypei a)
+    normtypei (IWrChan a)   = IWrChan (normtypes a)
+    normtypei (ICust a)   = ICust (normtypei a)
+    normtypei (ISend a)   = ISend (normtypes a)
+
+    normtypea (AVar a)   =
+        case Prelude.lookup a ord of
+            Just x -> AVar x
+            Nothing -> error "type variable not in signature"
+    normtypea (AProd as)   = AProd (map normtypea as)    
+    normtypea (ARdChan a)   = ARdChan (normtypes a)
+
+    normtypes (SVar a)   =
+        case Prelude.lookup a ord of
+            Just x -> SVar x
+            Nothing -> error "type variable not in signature"
+    normtypes (SProd as)   = SProd (map normtypes as)                
+    normtypes (SCon a)   = SCon a
     
 -------------------------------------------------------------------------------
 -- Constraint Solver
@@ -775,24 +841,85 @@ runSolve :: [Constraint] -> Either TypeError Subst
 runSolve cs = runIdentity $ runExceptT $ solver st
   where st = (emptySubst, cs)
 
-unifyMany :: [Type] -> [Type] -> Solve Subst
-unifyMany [] []  = return emptySubst
-unifyMany (t1 : ts1) (t2 : ts2) =
-  do su1 <- unifies t1 t2
-     su2 <- unifyMany (apply su1 ts1) (apply su1 ts2)
-     return (su2 `compose` su1)
-unifyMany t1 t2 = throwError $ UnificationMismatch t1 t2
-
 unifies :: Type -> Type -> Solve Subst
 unifies t1 t2 | t1 == t2 = return emptySubst
-unifies (TVar v) t = v `bind` t
-unifies t (TVar v) = v `bind` t
-unifies (TArr t1 t2) (TArr t3 t4) = unifyMany [t1, t2] [t3, t4]
-unifies (TList t1) (TList t2) = unifies (t1) (t2)
-unifies (TProd ts1) (TProd ts2) = unifyMany ts1 ts2
-unifies (TWrChan t1) (TWrChan t2) = unifies t1 t2
-unifies (TCust t1) (TCust t2) = unifies t1 t2
+unifies (IType t1) (IType t2) = unifiesi t1 t2
+unifies (AType t1) (AType t2) = unifiesa t1 t2
 unifies t1 t2 = throwError $ UnificationFail t1 t2
+
+unifiesi :: IType -> IType -> Solve Subst
+unifiesi (IVar v) t = v `bindi` t
+unifiesi t (IVar v) = v `bindi` t
+unifiesi (ICon _) (ICon _) = return emptySubst
+unifiesi (IProd ts1) (IProd ts2) = unifyManyi ts1 ts2
+unifiesi (IArr t1 t2) (IArr t3 t4) = do
+  (Subst s1) <- unifiesi t1 t3
+  (Subst s2) <- unifies t2 t4
+  return $ Subst $ s1 `Map.union` s2
+unifiesi (IList t1) (IList t2) = unifiesi t1 t2
+unifiesi (IWrChan t1) (IWrChan t2) = unifiess t1 t2
+unifiesi (ICust t1) (ICust t2) = unifiesi t1 t2
+unifiesi (ISend t1) (ISend t2) = unifiess t1 t2
+
+unifiesa :: AType -> AType -> Solve Subst
+unifiesa (AVar v) t = v `binda` t
+unifiesa t (AVar v) = v `binda` t
+unifiesa (ARdChan t1) (ARdChan t2) = unifiess t1 t2
+unifiesa (AProd ts1) (AProd ts2) = unifyManya ts1 ts2
+
+unifiess :: SType -> SType -> Solve Subst
+unifiess (SVar v) t = v `binds` t
+unifiess t (SVar v) = v `binds` t
+unifiess (SProd ts1) (SProd ts2) = unifyManys ts1 ts2
+unifiess (SCon _) (SCon _) = return emptySubst
+
+unifyMany :: [Type] -> [Type] -> Solve Subst
+unifyMany [] []  = return emptySubst
+unifyMany t1@(IType{} : _) t2@(IType{} : _) = unifyManyi t1' t2'
+  where
+    t1' = map strip t1
+    t2' = map strip t2
+    strip = \(IType t) -> t
+unifyMany t1@(AType{} : _) t2@(AType{} : _) = unifyManya t1' t2'
+  where
+    t1' = map strip t1
+    t2' = map strip t2
+    strip = \(AType t) -> t
+unifyMany t1 t2 = throwError $ UnificationMismatch t1 t2
+
+unifyManyi :: [IType] -> [IType] -> Solve Subst
+unifyManyi [] []  = return emptySubst
+unifyManyi (t1 : ts1) (t2 : ts2) =
+  do su1 <- unifiesi t1 t2
+     su2 <- unifyManyi (apply su1 ts1) (apply su1 ts2)
+     return (su2 `compose` su1)
+unifyManyi t1 t2 = throwError $ UnificationMismatch t1' t2'
+  where
+    t1' = map IType t1
+    t2' = map IType t2
+
+unifyManya :: [AType] -> [AType] -> Solve Subst
+unifyManya [] []  = return emptySubst
+unifyManya (t1 : ts1) (t2 : ts2) =
+  do su1 <- unifiesa t1 t2
+     su2 <- unifyManya (apply su1 ts1) (apply su1 ts2)
+     return (su2 `compose` su1)
+unifyManya t1 t2 = throwError $ UnificationMismatch t1' t2'
+  where
+    t1' = map AType t1
+    t2' = map AType t2
+
+unifyManys :: [SType] -> [SType] -> Solve Subst
+unifyManys [] []  = return emptySubst
+unifyManys (t1 : ts1) (t2 : ts2) =
+  do su1 <- unifiess t1 t2
+     su2 <- unifyManys (apply su1 ts1) (apply su1 ts2)
+     return (su2 `compose` su1)
+unifyManys t1 t2 = throwError $ UnificationMismatch t1' t2'
+  where
+    t1' = map (IType . ISend) t1
+    t2' = map (IType . ISend) t2
+
 
 solver :: Unifier -> Solve Subst
 solver (su, cs) =
@@ -801,11 +928,21 @@ solver (su, cs) =
     ((t1, t2) : cs') -> do
       su1 <- unifies t1 t2
       solver (su1 `compose` su, apply su1 cs')
-         
-bind :: TVar -> Type -> Solve Subst
-bind a t | t == TVar a     = return emptySubst
-         | occursCheck a t = throwError $ InfiniteType a t
-         | otherwise       = return (Subst $ Map.singleton a t)
+
+bindi :: TVar -> IType -> Solve Subst
+bindi a t | t == IVar a     = return emptySubst
+          | occursCheck a t = throwError $ InfiniteType a (IType t)
+          | otherwise       = return (Subst $ Map.singleton a (IType t))
+
+binda :: TVar -> AType -> Solve Subst
+binda a t | t == AVar a     = return emptySubst
+          | occursCheck a t = throwError $ InfiniteType a (AType t)
+          | otherwise       = return (Subst $ Map.singleton a (AType t))
+
+binds :: TVar -> SType -> Solve Subst
+binds a t | t == SVar a     = return emptySubst
+          | occursCheck a t = throwError $ InfiniteType a (IType (ISend t))
+          | otherwise       = return (Subst $ Map.singleton a (IType (ISend t)))          
 
 occursCheck :: Substitutable a => TVar -> a -> Bool
 occursCheck a t = a `Set.member` ftv t

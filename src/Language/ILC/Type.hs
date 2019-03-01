@@ -14,6 +14,9 @@
 module Language.ILC.Type (
     TVar(..)
   , Type(..)
+  , IType(..)
+  , AType(..)
+  , SType(..)    
   , Scheme(..)
   , tyInt
   , tyBool
@@ -38,27 +41,42 @@ import Language.ILC.Syntax
 -- | Type and mode variable
 newtype TVar = TV String deriving (Eq, Ord, Show)
 
--- | Intuitionistic types.
--- TODO: Fully separate intuitionistic and linear types.
-data Type = TVar TVar            -- ^ Type variable
-          | TCon String          -- ^ Type constructor
-          | TProd [Type]         -- ^ Product type
-          | TArr Type Type       -- ^ Arrow type
-          | TList Type           -- ^ List type
-          | TWrChan Type         -- ^ Write channel type
-          | TRdChan Type         -- ^ Write channel type          
-          | TCust Type           -- ^ Custom data type
+data Type = IType IType
+          | AType AType
           deriving (Eq, Ord, Show)
+
+-- | Intuitionistic types.
+data IType = IVar TVar            -- ^ Type variable
+           | ICon String          -- ^ Type constructor
+           | IProd [IType]        -- ^ Product type
+           | IArr IType Type      -- ^ Arrow type
+           | IList IType          -- ^ List type
+           | IWrChan SType        -- ^ Write channel type
+           | ICust IType          -- ^ Custom data type
+           | ISend SType
+           deriving (Eq, Ord, Show)
+
+-- | Affine types.
+data AType = AVar TVar
+           | ARdChan SType
+           | AProd [AType]        -- ^ Product type           
+           deriving (Eq, Ord, Show)
+
+-- | Sendable types.
+data SType = SVar TVar            -- ^ Type variable
+           | SProd [SType]        -- ^ Product type
+           | SCon String          -- ^ Type constructor           
+           deriving (Eq, Ord, Show)
 
 -- | Type scheme
 data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)
 
 -- | Primitive types
-tyInt, tyBool, tyString, tyUnit :: Type
-tyInt    = TCon "Int"
-tyBool   = TCon "Bool"
-tyString = TCon "String"
-tyUnit   = TCon "Unit"
+tyInt, tyBool, tyString, tyUnit :: IType
+tyInt    = ISend $ SCon "Int"
+tyBool   = ISend $ SCon "Bool"
+tyString = ISend $ SCon "String"
+tyUnit   = ISend $ SCon "Unit"
 
 -- | Type environment
 newtype TypeEnv = TypeEnv { types :: Map.Map Name Scheme }
@@ -91,17 +109,32 @@ instance Pretty TVar where
   pretty (TV x) = text x
 
 instance Pretty Type where
-  pretty (TVar a)    = pretty a
-  pretty (TCon a)    = pretty a
-  pretty (TArr a b)  = maybeParens (isArrow a) (pretty a) <+> text "->"
+  pretty (IType a) = pretty a
+  pretty (AType a) = pretty a
+
+instance Pretty IType where
+  pretty (IVar a)    = pretty a
+  pretty (ICon a)    = pretty a
+  pretty (IProd as)  = _prettyTuple as
+  pretty (IArr a b)  = maybeParens (isArrow a) (pretty a) <+> text "->"
                                                           <+> pretty b
       where
-        isArrow TArr {} = True
+        isArrow IArr {} = True
         isArrow _       = False
-  pretty (TList a)   = brackets $ pretty a
-  pretty (TProd as)  = _prettyTuple as
-  pretty (TWrChan a) = text "Wr" <+> pretty a
-  pretty (TCust a)  = pretty a
+  pretty (IList a)   = brackets $ pretty a
+  pretty (IWrChan a) = text "Wr" <+> pretty a
+  pretty (ICust a)  = pretty a
+  pretty (ISend a)  = pretty a  
+
+instance Pretty AType where
+  pretty (AVar a)    = pretty a
+  pretty (ARdChan a) = text "Rd" <+> pretty a
+  pretty (AProd as)  = _prettyTuple as  
+
+instance Pretty SType where
+  pretty (SVar a)    = pretty a
+  pretty (SProd as)  = _prettyTuple as
+  pretty (SCon a)    = pretty a  
 
 instance Pretty Scheme where
   pretty (Forall [] t) = pretty t

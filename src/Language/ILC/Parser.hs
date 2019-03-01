@@ -191,6 +191,11 @@ eChoice :: Expr -> Parser Expr
 eChoice e = do
   reservedOp "<|>"
   EChoice e <$> expr
+
+eSeq :: Expr -> Parser Expr
+eSeq e = do
+  reserved ";"
+  ELet PUnit e <$> expr
   
 table :: [[Ex.Operator String () Identity Expr]]
 table = [ [ binaryOp "*" (EBin Mul) Ex.AssocLeft
@@ -227,7 +232,7 @@ eUn = ePrint
 
 expr :: Parser Expr
 expr = expr' >>= \e ->
-       eFork e <|> eChoice e <|> return e
+       eFork e <|> eChoice e <|> eSeq e <|> return e
 
 expr' :: Parser Expr
 expr' = Ex.buildExpressionParser table term
@@ -356,37 +361,42 @@ parseValCon :: Name -> Parser ValCon
 parseValCon tyCon = do
   valCon <- constructor
   params <- sepBy ty whitespace
-  let ps = params ++ [TCon valCon]
-  return $ (valCon, foldr (\a b -> TArr a b) (TCon tyCon) params)
+  let ps = (map (\(IType x) -> x) params) ++ [ICon valCon]
+  return $ (valCon, (foldr (\a b -> IType (IArr a b)) (IType (ICon tyCon)) ps))
 
 decl :: Parser TopDecl
 decl = dDeclCon <|> dDeclLetRec <|> try dExpr <|> dDeclFun
 
 -- | Parse types
 tInt, tBool, tString, tUnit :: Parser Type  
-tInt = mklexer (const tyInt) $ reserved "Int"
-tBool = mklexer (const tyBool) $ reserved "Bool"
-tString = mklexer (const tyString) $ reserved "String"
-tUnit = mklexer (const tyUnit) $ reserved "Unit"
+tInt = mklexer (const (IType tyInt)) $ reserved "Int"
+tBool = mklexer (const (IType tyBool)) $ reserved "Bool"
+tString = mklexer (const (IType tyString)) $ reserved "String"
+tUnit = mklexer (const (IType tyUnit)) $ reserved "Unit"
 
 tPrim :: Parser Type
 tPrim = tInt <|> tBool <|> tString <|> tUnit
 
-tVar = mklexer (TVar . TV) identifier
-tCon = mklexer TCon constructor
-tList = mklexer TList $ brackets $ ty
-tProd = mklexer TProd $ parens $ commaSep2 ty
-tRd = mklexer TRdChan $ reserved "Rd" >> ty'
-tWr = mklexer TWrChan $ reserved "Wr" >> ty'
+stripi = \(IType x) -> return x
+strips = \(IType (ISend x)) -> return x
+
+tVar = mklexer (IType . IVar . TV) identifier
+tCon = mklexer (IType . ICon) constructor
+tList = mklexer (IType . IList) $ brackets $ (ty >>= stripi)
+tProd = mklexer (IType . IProd) $ parens $ commaSep2 (ty >>= stripi)
+tRd = mklexer (AType . ARdChan) $ reserved "Rd" >> (ty' >>= strips)
+tWr = mklexer (IType . IWrChan) $ reserved "Wr" >> (ty' >>= strips)
 
 tArrow = do
-  t1 <- ty'
+  IType t1 <- ty'
   reserved "->"
   t2 <- ty
-  return $ TArr t1 t2
-  
+  return $ IType (IArr t1 t2)
+
+ty :: Parser Type  
 ty = try tArrow <|> ty'
 
+ty' :: Parser Type
 ty' = tPrim
   <|> tVar
   <|> tCon
