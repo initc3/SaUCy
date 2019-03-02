@@ -28,6 +28,7 @@ module Language.ILC.Type (
   , extendTyEnv
   , lookupTyEnv
   , mergeTyEnv
+  , intersectTyEnv  
   , prettySignature
   , prettyTyEnv
   ) where
@@ -59,7 +60,8 @@ data IType = IVar TVar            -- ^ Type variable
 -- | Affine types.
 data AType = AVar TVar
            | ARdChan SType
-           | AProd [AType]        -- ^ Product type           
+           | AProd [AType]        -- ^ Product type
+           | ABang IType
            deriving (Eq, Ord, Show)
 
 -- | Sendable types.
@@ -97,6 +99,9 @@ lookupTyEnv key (TypeEnv tys) = Map.lookup key tys
 mergeTyEnv :: TypeEnv -> TypeEnv -> TypeEnv
 mergeTyEnv (TypeEnv a) (TypeEnv b) = TypeEnv (Map.union a b)
 
+intersectTyEnv :: TypeEnv -> TypeEnv -> TypeEnv
+intersectTyEnv (TypeEnv a) (TypeEnv b) = TypeEnv (Map.intersection a b)
+
 instance Monoid TypeEnv where
   mempty  = emptyTyEnv
   mappend = mergeTyEnv
@@ -129,7 +134,8 @@ instance Pretty IType where
 instance Pretty AType where
   pretty (AVar a)    = pretty a
   pretty (ARdChan a) = text "Rd" <+> pretty a
-  pretty (AProd as)  = _prettyTuple as  
+  pretty (AProd as)  = _prettyTuple as
+  pretty (ABang a)    = text "!" <+> pretty a  
 
 instance Pretty SType where
   pretty (SVar a)    = pretty a

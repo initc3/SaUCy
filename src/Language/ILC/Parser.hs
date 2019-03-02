@@ -195,7 +195,7 @@ eChoice e = do
 eSeq :: Expr -> Parser Expr
 eSeq e = do
   reserved ";"
-  ELet PUnit e <$> expr
+  ELet PWildcard e <$> expr
   
 table :: [[Ex.Operator String () Identity Expr]]
 table = [ [ binaryOp "*" (EBin Mul) Ex.AssocLeft
