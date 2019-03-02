@@ -314,21 +314,40 @@ inferPat pat expr = case (pat, expr) of
 --    return (tyString, constraints, [])
 --  (PString _, Nothing) -> return (tyString, [], [])
 --
---  (PTuple ps, Just (ETuple es)) -> do
---    when (length ps /= length es) (error "fail") -- TODO: -- Custom error
---    (tes, ces, _) <- infer $ ETuple es
---    (ts, cs, env) <- inferPatList ps $ map Just es
---    let constraints = (TProd ts, tes) : ces ++ cs
---    return (TProd ts, constraints, env)
---  (PTuple ps, Just e) -> do
---    (ts, cs, env) <- inferPatList ps $ repeat Nothing
---    (te, ce, _) <- infer e
---    let constraints = (TProd ts, te) : cs ++ ce
---    return (TProd ts, constraints, env)
---  (PTuple ps, Nothing) -> do
---    (ts, cs, env) <- inferPatList ps $ repeat Nothing
---    return (TProd ts, cs, env)
---
+  (PTuple ps, Just (ETuple es)) -> do
+    when (length ps /= length es) (error "fail") -- TODO: -- Custom error
+    (tes, ces, _) <- infer $ ETuple es
+    case tes of
+      IType _ -> do
+        (ts, cs, ctxt) <- inferPatList ps $ map Just es
+        let ts'         = map (\(IType x) -> x) ts
+            constraints = (IType (IProd ts'), tes) : ces ++ cs
+        return (IType (IProd ts'), constraints, ctxt)
+      AType _ -> do
+        (ts, cs, ctxt) <- inferPatList ps $ map Just es
+        let ts'         = map (\(AType x) -> x) ts
+            constraints = (AType (AProd ts'), tes) : ces ++ cs
+        return (AType (AProd ts'), constraints, ctxt)        
+  (PTuple ps, Just e) -> do
+    (ts, cs, ctxt) <- inferPatList ps $ repeat Nothing
+    (te, ce, _) <- infer e
+    case te of
+      IType _ -> do
+        let ts' = map (\(IType x) -> x) ts            
+        return (IType (IProd ts'), (IType (IProd ts'), te) : cs ++ ce, ctxt)
+      AType _ -> do
+        let ts' = map (\(AType x) -> x) ts            
+        return (AType (AProd ts'), (AType (AProd ts'), te) : cs ++ ce, ctxt)
+  (PTuple ps, Nothing) -> do
+    (ts, cs, ctxt) <- inferPatList ps $ repeat Nothing
+    case head ts of
+      IType _ -> do
+        let ts' = map (\(IType x) -> x) ts        
+        return (IType (IProd ts'), cs, ctxt)
+      AType _ -> do
+        let ts' = map (\(AType x) -> x) ts        
+        return (AType (AProd ts'), cs, ctxt)        
+
 --  (PList ps, Just (EList es)) -> do
 --    when (length ps /= length es) (error "fail") -- TODO
 --    (tes, ces, _) <- infer $ EList es
@@ -476,7 +495,11 @@ infer expr = case expr of
   ETuple es -> do
     ctxt1 <- ask
     (tys, cs, ctxt2) <- infers ([],[],ctxt1) es
-    return (IType . IProd . (map  (\(IType x) -> x)) . reverse $ tys, cs, ctxt2)
+    case (head tys) of
+      IType _ -> do
+        return (IType . IProd . (map  (\(IType x) -> x)) . reverse $ tys, cs, ctxt2)
+      AType _ -> do
+        return (AType . AProd . (map  (\(AType x) -> x)) . reverse $ tys, cs, ctxt2)        
 
   EList [] -> do
     ctxt <- ask
@@ -535,7 +558,7 @@ infer expr = case expr of
                               (local (apply sub) (infer e2))
                               binds)
         return (tyU, cs1 ++ cs2 ++ cs3, ctxt3)
---
+
 --  ELetBang p e1 e2 -> do
 --    env <- ask
 --    tyV <- fresh (TVar . TV)
@@ -556,58 +579,7 @@ infer expr = case expr of
   EBang e -> do
     (IType tyA, cs, ctxt2) <- infer e
     return (AType (ABang tyA), cs, ctxt2)
-
---  ELetRd (PTuple [PVar v, PVar c]) (ERd e1) e2 -> do
---    env <- ask
---    tyV <- fresh (TVar . TV)
---    let binds = [(v, TLin (LBang tyV)), (c, TLin (LRdChan tyV))]
---    (tye1, c1, _Γ2) <- infer (ERd e1)
---    let c1' = TypeConstraint (TLin (LTensor (LBang tyV) (LRdChan tyV))) tye1 : c1
---    case runSolve c1' of
---      Left err -> throwError err
---      Right sub -> do
---        let sc t = generalize (apply sub env) (apply sub t)
---        (tyB, c2, _Γ3) <- (local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
---                              (local (apply sub) (infer e2))
---                              binds))
---        let tyConstraints = c1' ++ c2
---            constraints = tyConstraints
---        return (tyB, constraints, _Γ3)
---
---  -- TODO: Reduce duplication
---  ELetRd (PTuple [PWildcard, PVar c]) (ERd e1) e2 -> do
---    env <- ask
---    tyV <- fresh (TVar . TV)
---    let binds = [(c, TLin (LRdChan tyV))]
---    (tye1, c1, _Γ2) <- infer (ERd e1)
---    let c1' = TypeConstraint (TLin (LTensor (LBang tyV) (LRdChan tyV))) tye1 : c1
---    case runSolve c1' of
---      Left err -> throwError err
---      Right sub -> do
---        let sc t = generalize (apply sub env) (apply sub t)
---        (tyB, c2, _Γ3) <- (local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
---                              (local (apply sub) (infer e2))
---                              binds))
---        let tyConstraints = c1' ++ c2
---            constraints = tyConstraints
---        return (tyB, constraints, _Γ3)
---
---  ELetRd PWildcard (ERd e1) e2 -> do
---    env <- ask
---    tyV <- fresh (TVar . TV)
---    let binds = []
---    (tye1, c1, _Γ2) <- infer (ERd e1)
---    let c1' = TypeConstraint (TLin (LTensor (LBang tyV) (LRdChan tyV))) tye1 : c1
---    case runSolve c1' of
---      Left err -> throwError err
---      Right sub -> do
---        let sc t = generalize (apply sub env) (apply sub t)
---        (tyB, c2, _Γ3) <- (local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
---                              (local (apply sub) (infer e2))
---                              binds))
---        let tyConstraints = c1' ++ c2
---            constraints = tyConstraints
---        return (tyB, constraints, _Γ3)
+    
 --
 --  EMatch e bs -> do
 --    tcmes <- mapM (inferBranch e) bs
@@ -624,6 +596,12 @@ infer expr = case expr of
 --        constraints = tyConstraints
 --    return (ty, constraints, head _Γs)
 --
+
+  ELam (PVar x) e -> do
+      ty <- fresh (IVar . TV)
+      (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty))) (infer e)
+      return (IType (ty `IArr` tyU), cs, ctxt2)
+      
 --  ELam (PVar x) e -> do
 --    tyV <- fresh (TVar . TV)
 --    (tyA, c, _Γ2) <- inEnv (x, Forall [] tyV) (infer e)
@@ -692,13 +670,29 @@ infer expr = case expr of
 --            return  (tyV, TypeConstraint tyA2B (TArr tyA tyV) : c1 ++ c2)
 --    let constraints = tyConstraints
 --    return (tyRet, constraints, _Γ3)
---
---  ERd e -> do
---    (tyA, c, _Γ2) <- infer e
---    tyV <- fresh (TVar . TV)
---    let tyConstraints = TypeConstraint tyA (TLin (LRdChan tyV)) : c
---        constraints = tyConstraints
---    return (TLin (LTensor (LBang tyV) (LRdChan tyV)), constraints, _Γ2)
+
+  EApp e1 e2 -> do
+    (IType tyA, cs1, ctxt2) <- infer e2    
+    (IType (IArr tyA2 tyU), cs2, ctxt3) <- infer e1
+    return (tyU, cs1 ++ cs2 ++ [(IType tyA, IType tyA2)], ctxt3)    
+
+  ERd e -> do
+    (AType tyRdS, cs, ctxt2) <- infer e
+    tv <- fresh (SVar . TV)
+    return (AType (AProd [ABang (ISend tv),tyRdS]), (AType tyRdS, AType (ARdChan tv)): cs, ctxt2)
+
+  ELetRd p e1 e2 -> do
+    ctxt1 <- ask
+    (_, cs1, binds) <- inferPat p $ Just e1
+    (_, cs2, ctxt2) <- infer e1
+    case runSolve cs1 of
+      Left err -> throwError err
+      Right sub -> do
+        let sc t = generalize (apply sub ctxt1) (apply sub t)
+        (tyU, cs3, ctxt3) <- local (const ctxt2) (foldr (\(x, t) -> inEnv (x, sc t))
+                              (local (apply sub) (infer e2))
+                              binds)
+        return (tyU, cs1 ++ cs2 ++ cs3, ctxt3)
 
   EWr e1 e2 -> do
     (IType (ISend tyS), cs1, ctxt2) <- infer e1
