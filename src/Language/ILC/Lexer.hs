@@ -55,6 +55,8 @@ langDef = Tok.LanguageDef
                           , "in"
                           , "letrec"
                           , "lam"
+                          , "lamw"                          
+                          , "lam1"                          
                           , "rd"
                           , "wr"
                           , "nu"

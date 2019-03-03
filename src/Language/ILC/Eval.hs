@@ -68,6 +68,16 @@ evalPut env m expr = case expr of
     where
       f (PVar x) = Just x
       f _        = Nothing
+
+  ELam1 p e -> putMVar m $ VClosure (f p) env e
+    where
+      f (PVar x) = Just x
+      f _        = Nothing
+
+  ELamw p e -> putMVar m $ VClosure (f p) env e
+    where
+      f (PVar x) = Just x
+      f _        = Nothing      
       
   EApp e1 e2 -> do
     (v1, v2) <- evalSubs env e1 e2

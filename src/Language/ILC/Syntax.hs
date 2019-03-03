@@ -36,7 +36,9 @@ data Expr = EVar Name                            -- ^ Variable
           | ELit Lit                             -- ^ Literal
           | ETuple [Expr]                        -- ^ Tuple
           | EList [Expr]                         -- ^ List
-          | ELam Pattern Expr                    -- ^ Lambda abstraction
+          | ELam Pattern Expr                    -- ^ Intuitionistic abstraction
+          | ELamw Pattern Expr                   -- ^ Write abstraction
+          | ELam1 Pattern Expr                   -- ^ Affine abstraction
           | EApp Expr Expr                       -- ^ Function application
           | EFix Expr                            -- ^ Fixpoint
           | ELet Pattern Expr Expr               -- ^ Let binding

@@ -3,6 +3,7 @@
 {-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE TypeSynonymInstances       #-}
 {-# LANGUAGE TupleSections              #-}
+-- {-# OPTIONS_GHC -Wall  #-}
 
 --------------------------------------------------------------------------------
 -- |
@@ -80,6 +81,7 @@ instance Substitutable IType where
   apply _ (ICon a) = ICon a
   apply s (IProd ts) = IProd (apply s ts)
   apply s (IArr t1 t2) = IArr (apply s t1) (apply s t2)
+  apply s (IArrW t1 t2) = IArrW (apply s t1) (apply s t2)  
   apply s (IList t) = IList (apply s t)
   apply s (IWrChan t) = IWrChan (apply s t)
   apply s (ICust t) = ICust (apply s t)
@@ -89,6 +91,7 @@ instance Substitutable IType where
   ftv ICon{} = Set.empty
   ftv (IProd ts) = ftv ts  
   ftv (IArr t1 t2) = ftv t1 `Set.union` ftv t2
+  ftv (IArrW t1 t2) = ftv t1 `Set.union` ftv t2  
   ftv (IList t) = ftv t
   ftv (IWrChan t) = ftv t
   ftv (ICust t) = ftv t
@@ -101,11 +104,13 @@ instance Substitutable AType where
   apply s (ARdChan t) = ARdChan (apply s t)  
   apply s (AProd ts) = AProd (apply s ts)
   apply s (ABang t) = ABang (apply s t)
+  apply s (AArr t1 t2) = AArr (apply s t1) (apply s t2)  
 
   ftv (AVar a) = Set.singleton a
   ftv (ARdChan t) = ftv t  
   ftv (AProd ts) = ftv ts
-  ftv (ABang t) = ftv t    
+  ftv (ABang t) = ftv t
+  ftv (AArr t1 t2) = ftv t1 `Set.union` ftv t2  
 
 instance Substitutable SType where
   apply (Subst s) t@(SVar a) = strip $ Map.findWithDefault (IType (ISend t)) a s
@@ -173,6 +178,11 @@ inEnv :: (Name, Scheme) -> Infer a -> Infer a
 inEnv (x, sc) m = do
   let scope e = removeTyEnv e x `extendTyEnv` (x, sc)
   local scope m
+
+inEnvClearAffine :: (Name, Scheme) -> Infer a -> Infer a
+inEnvClearAffine (x, sc) m = do
+  let scope e = (removeTyEnv (clearAffineTyEnv e) x `extendTyEnv` (x, sc))
+  local scope m  
 
 lookupEnv :: Name -> Infer Type
 lookupEnv x = do
@@ -594,16 +604,47 @@ infer expr = case expr of
     case p of
       PVar x -> do
         ty <- fresh (IVar . TV)
-        (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty))) (infer e)
+        (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty))) (local clearAffineTyEnv (infer e))
         return (IType (ty `IArr` tyU), cs, ctxt2)
       PUnit -> do
-        (tyU, cs, ctxt2) <- infer e
+        (tyU, cs, ctxt2) <- local clearAffineTyEnv $ infer e
         return (IType (tyUnit `IArr` tyU), cs, ctxt2)
       PWildcard -> do
         ty <- fresh (IVar . TV)
-        (tyU, cs, ctxt2) <- infer e        
+        (tyU, cs, ctxt2) <- local clearAffineTyEnv $ infer e        
         return (IType (ty `IArr` tyU), cs, ctxt2)
       _ -> error "Infer.infer: ELam"
+
+  ELamw p e -> do
+    case p of
+      PVar x -> do
+        ty <- fresh (IVar . TV)
+        (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty))) (local clearAffineTyEnv (infer e))        
+        return (IType (ty `IArrW` tyU), cs, ctxt2)
+      PUnit -> do
+        (tyU, cs, ctxt2) <- local clearAffineTyEnv $ infer e        
+        return (IType (tyUnit `IArrW` tyU), cs, ctxt2)
+      PWildcard -> do
+        ty <- fresh (IVar . TV)
+        (tyU, cs, ctxt2) <- local clearAffineTyEnv $ infer e        
+        return (IType (ty `IArrW` tyU), cs, ctxt2)
+      _ -> error "Infer.infer: ELamW"      
+
+  ELam1 p e -> do
+    case p of
+      PVar x -> do
+        ty <- fresh (AVar . TV)
+        (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (AType ty))) (infer e)
+        return (AType (ty `AArr` tyU), cs, ctxt2)
+        -- TODO
+--      PUnit -> do
+--        (tyU, cs, ctxt2) <- infer e
+--        return (IType (tyUnit `IArr` tyU), cs, ctxt2)
+      PWildcard -> do
+        ty <- fresh (AVar . TV)
+        (tyU, cs, ctxt2) <- infer e        
+        return (AType (ty `AArr` tyU), cs, ctxt2)
+      _ -> error "Infer.infer: ELam1"      
 
 --  EFix e -> do
 --    (tyA2A, c,  _Γ2) <- infer e
@@ -699,6 +740,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fvi (ICon _) = []
     fvi (IProd as) = concatMap fvi as    
     fvi (IArr a b) = fvi a ++ fv b
+    fvi (IArrW a b) = fvi a ++ fv b    
     fvi (IList a) = fvi a
     fvi (IWrChan a) = fvs a
     fvi (ICust a) = fvi a
@@ -708,6 +750,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fva (ARdChan a) = fvs a
     fva (AProd as) = concatMap fva as
     fva (ABang a) = fvi a
+    fva (AArr a b) = fva a ++ fv b    
 
     fvs (SVar a) = [a]
     fvs (SProd as) = concatMap fvs as
@@ -723,6 +766,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     normtypei (ICon a)   = ICon a
     normtypei (IProd as)   = IProd (map normtypei as)    
     normtypei (IArr a b) = IArr (normtypei a) (normtype b)
+    normtypei (IArrW a b) = IArrW (normtypei a) (normtype b)    
     normtypei (IList a)   = IList (normtypei a)
     normtypei (IWrChan a)   = IWrChan (normtypes a)
     normtypei (ICust a)   = ICust (normtypei a)
@@ -735,6 +779,7 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     normtypea (AProd as)   = AProd (map normtypea as)
     normtypea (ABang a)   = ABang (normtypei a)    
     normtypea (ARdChan a)   = ARdChan (normtypes a)
+    normtypea (AArr a b) = AArr (normtypea a) (normtype b)    
 
     normtypes (SVar a)   =
         case Prelude.lookup a ord of
@@ -772,6 +817,10 @@ unifiesi (IArr t1 t2) (IArr t3 t4) = do
   (Subst s1) <- unifiesi t1 t3
   (Subst s2) <- unifies t2 t4
   return $ Subst $ s1 `Map.union` s2
+unifiesi (IArrW t1 t2) (IArrW t3 t4) = do
+  (Subst s1) <- unifiesi t1 t3
+  (Subst s2) <- unifies t2 t4
+  return $ Subst $ s1 `Map.union` s2  
 unifiesi (IList t1) (IList t2) = unifiesi t1 t2
 unifiesi (IWrChan t1) (IWrChan t2) = unifiess t1 t2
 unifiesi (ICust t1) (ICust t2) = unifiesi t1 t2
@@ -787,9 +836,13 @@ unifiesa t (AVar v) = v `binda` t
 unifiesa (ARdChan t1) (ARdChan t2) = unifiess t1 t2
 unifiesa (AProd ts1) (AProd ts2) = unifyManya ts1 ts2
 unifiesa (ABang t1) (ABang t2) = unifiesi t1 t2
+unifiesa (AArr t1 t2) (AArr t3 t4) = do
+  (Subst s1) <- unifiesa t1 t3
+  (Subst s2) <- unifies t2 t4
+  return $ Subst $ s1 `Map.union` s2
 unifiesa t1 t2 = throwError $ UnificationFail (wrap t1) (wrap t2)
   where
-    wrap = AType
+    wrap = AType  
 
 unifiess :: SType -> SType -> Solve Subst
 unifiess t1 t2 | t1 == t2 = return emptySubst

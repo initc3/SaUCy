@@ -64,6 +64,20 @@ eLam = do
   reserved "."
   ELam x <$> expr
 
+eLam1 :: Parser Expr
+eLam1 = do
+  reserved "lam1"
+  x <- pat
+  reserved "."
+  ELam1 x <$> expr
+
+eLamw :: Parser Expr
+eLamw = do
+  reserved "lamw"
+  x <- pat
+  reserved "."
+  ELamw x <$> expr    
+
 eApp :: Expr -> Parser Expr
 eApp f = do
   -- f <- atomExpr
@@ -242,7 +256,9 @@ atomExpr =
 
 term :: Parser Expr
 term = atoms
-  <|> eLam
+  <|> eLam  
+  <|> eLam1
+  <|> eLamw
   <|> eLets
   <|> eIf
   <|> eMatch

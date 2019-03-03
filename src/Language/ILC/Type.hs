@@ -28,7 +28,8 @@ module Language.ILC.Type (
   , extendTyEnv
   , lookupTyEnv
   , mergeTyEnv
-  , intersectTyEnv  
+  , intersectTyEnv
+  , clearAffineTyEnv
   , prettySignature
   , prettyTyEnv
   ) where
@@ -51,6 +52,7 @@ data IType = IVar TVar            -- ^ Type variable
            | ICon String          -- ^ Type constructor
            | IProd [IType]        -- ^ Product type
            | IArr IType Type      -- ^ Arrow type
+           | IArrW IType Type     -- ^ Arrow type           
            | IList IType          -- ^ List type
            | IWrChan SType        -- ^ Write channel type
            | ICust IType          -- ^ Custom data type
@@ -62,6 +64,7 @@ data AType = AVar TVar
            | ARdChan SType
            | AProd [AType]        -- ^ Product type
            | ABang IType
+           | AArr AType Type      -- ^ Arrow type           
            deriving (Eq, Ord, Show)
 
 -- | Sendable types.
@@ -102,6 +105,11 @@ mergeTyEnv (TypeEnv a) (TypeEnv b) = TypeEnv (Map.union a b)
 intersectTyEnv :: TypeEnv -> TypeEnv -> TypeEnv
 intersectTyEnv (TypeEnv a) (TypeEnv b) = TypeEnv (Map.intersection a b)
 
+clearAffineTyEnv :: TypeEnv -> TypeEnv
+clearAffineTyEnv (TypeEnv a) = TypeEnv $ Map.filter isInt a
+  where isInt (Forall _ IType{}) = True
+        isInt (Forall _ AType{}) = False
+
 instance Monoid TypeEnv where
   mempty  = emptyTyEnv
   mappend = mergeTyEnv
@@ -126,6 +134,11 @@ instance Pretty IType where
       where
         isArrow IArr {} = True
         isArrow _       = False
+  pretty (IArrW a b)  = maybeParens (isArrow a) (pretty a) <+> text "-*"
+                                                           <+> pretty b
+      where
+        isArrow IArrW {} = True
+        isArrow _       = False        
   pretty (IList a)   = brackets $ pretty a
   pretty (IWrChan a) = text "Wr" <+> pretty a
   pretty (ICust a)  = pretty a
@@ -135,7 +148,12 @@ instance Pretty AType where
   pretty (AVar a)    = pretty a
   pretty (ARdChan a) = text "Rd" <+> pretty a
   pretty (AProd as)  = _prettyTuple as
-  pretty (ABang a)    = text "!" <+> pretty a  
+  pretty (ABang a)    = text "!" <+> pretty a
+  pretty (AArr a b)  = maybeParens (isArrow a) (pretty a) <+> text "-o"
+                                                          <+> pretty b
+      where
+        isArrow AArr {} = True
+        isArrow _       = False  
 
 instance Pretty SType where
   pretty (SVar a)    = pretty a
