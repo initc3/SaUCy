@@ -297,30 +297,31 @@ inferPat pat expr = case (pat, expr) of
         return (tv, (tv, ty) : cs, [(x, tv)])
       AType _ -> do
         tv <- fresh (AType . AVar . TV)
-        return (tv, (tv, ty) : cs, [(x, tv)])        
-    
-  (PVar x, Nothing) -> do
-    tv <- fresh (AVar . TV)
-    return (AType tv, [], [(x, AType tv)])
+        return (tv, (tv, ty) : cs, [(x, tv)])
 
---  (PInt _, Just e) -> do
---    (te, ce, _) <- infer e
---    let constraints = (te, tyInt) : ce
---    return (tyInt, constraints, [])
---  (PInt _, Nothing) -> return (tyInt, [], [])
---
---  (PBool _, Just e) -> do
---    (te, ce, _) <- infer e
---    let constraints = (te, tyBool) : ce
---    return (tyBool, constraints, [])
---  (PBool _, Nothing) -> return (tyBool, [], [])
---
---  (PString _, Just e) -> do
---    (te, ce, _) <- infer e
---    let constraints = (te, tyString) : ce
---    return (tyString, constraints, [])
---  (PString _, Nothing) -> return (tyString, [], [])
---
+  -- TODO: Universal type variable
+  (PVar x, Nothing) -> do
+    tv <- fresh (IVar . TV)
+    return (IType tv, [], [(x, IType tv)])
+
+  (PInt _, Just e) -> do
+    (te, ce, _) <- infer e
+    let constraints = (te, IType tyInt) : ce
+    return (IType tyInt, constraints, [])
+  (PInt _, Nothing) -> return (IType tyInt, [], [])
+
+  (PBool _, Just e) -> do
+    (te, ce, _) <- infer e
+    let constraints = (te, IType tyBool) : ce
+    return (IType tyBool, constraints, [])
+  (PBool _, Nothing) -> return (IType tyBool, [], [])
+
+  (PString _, Just e) -> do
+    (te, ce, _) <- infer e
+    let constraints = (te, IType tyString) : ce
+    return (IType tyString, constraints, [])
+  (PString _, Nothing) -> return (IType tyString, [], [])
+
   (PTuple ps, Just (ETuple es)) -> do
     when (length ps /= length es) (error "fail") -- TODO: -- Custom error
     (tes, ces, _) <- infer $ ETuple es
@@ -334,7 +335,12 @@ inferPat pat expr = case (pat, expr) of
         (ts, cs, ctxt) <- inferPatList ps $ map Just es
         let ts'         = map (\(AType x) -> x) ts
             constraints = (AType (AProd ts'), tes) : ces ++ cs
-        return (AType (AProd ts'), constraints, ctxt)        
+        return (AType (AProd ts'), constraints, ctxt)
+  (PTuple [PGnab (PVar v), PVar c], Just e@(ERd _)) -> do
+    tyS <- fresh (SVar . TV)        
+    (te, cs, _) <- infer e
+    let tyR = AType (AProd [ABang . ISend $ tyS, ARdChan tyS])
+    return (tyR, (tyR, te) : cs, [(v, IType . ISend $ tyS), (c, AType . ARdChan $ tyS)])        
   (PTuple ps, Just e) -> do
     (ts, cs, ctxt) <- inferPatList ps $ repeat Nothing
     (te, ce, _) <- infer e
@@ -343,7 +349,7 @@ inferPat pat expr = case (pat, expr) of
         let ts' = map (\(IType x) -> x) ts            
         return (IType (IProd ts'), (IType (IProd ts'), te) : cs ++ ce, ctxt)
       AType _ -> do
-        let ts' = map (\(AType x) -> x) ts            
+        let ts' = map (\(AType x) -> x) (traceShow ts ts)
         return (AType (AProd ts'), (AType (AProd ts'), te) : cs ++ ce, ctxt)
   (PTuple ps, Nothing) -> do
     (ts, cs, ctxt) <- inferPatList ps $ repeat Nothing
@@ -426,12 +432,14 @@ inferPat pat expr = case (pat, expr) of
 --    tces <- zipWithM inferPat ps $ repeat Nothing
 --    let (ts, cs, env) = concatTCEs tces
 --    return (tyx', cs, env)
-
-  (PGnab p, Just e) -> do
-    (typ, cs1, ctxt) <- inferPat (traceShow p p) $ Just e
-    (AType (ABang tyA), cs2,  _) <- infer e
-    return (IType tyA, (typ, AType (ABang tyA)) : cs1 ++ cs2, ctxt)
-  (PGnab p, Nothing) -> return (IType tyUnit, [], [])
+--
+--  (PGnab p, Just e) -> do
+--    (typ, cs1, ctxt) <- inferPat (traceShow p p) $ Just e
+--    (AType (ABang tyA), cs2,  _) <- infer e
+--    return (IType tyA, (typ, AType (ABang tyA)) : cs1 ++ cs2, ctxt)
+--  (PGnab p, Nothing) -> do
+--    tv <- fresh (IVar . TV)    
+--    return (AType . ABang $ tv, [], [])
 
 -- | This function computes the type of a deconstructed sum type. The type of a
 -- value constructor should either be an arrow type leading to a custom type
@@ -575,59 +583,28 @@ infer expr = case expr of
     (IType tyA, cs, ctxt2) <- infer e
     return (AType (ABang tyA), cs, ctxt2)
     
-
-  {-EMatch e bs -> do
+  EMatch e bs -> do
     tcmes <- mapM (inferBranch e) bs
-    let (ts, cs, _Γs) = concatTCEnvs tcmes
-        ty       = head ts
-        cs'      = map (ty,) (tail ts)
-    let envs = map (\case{TypeEnv binds -> Map.filter (\x -> x == Forall []
-    TUsed) binds}) _Γs
-    _ <- case sameThings envs  of
-             Left err -> throwError err
-             Right _Γ  -> return _Γ
-    let tyConstraints = cs ++ cs'
-        constraints = tyConstraints
-    return (ty, constraints, head _Γs)-}
+    let (tys, cs, ctxts) = concatTCEnvs tcmes
+        ty       = head tys
+        cs'      = map (ty,) (tail tys)
+    return (ty, cs ++ cs', ctxts)
 
-  ELam (PVar x) e -> do
-      ty <- fresh (IVar . TV)
-      (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty))) (infer e)
-      return (IType (ty `IArr` tyU), cs, ctxt2)
-      
---  ELam (PVar x) e -> do
---    tyV <- fresh (TVar . TV)
---    (tyA, c, _Γ2) <- inEnv (x, Forall [] tyV) (infer e)
---    (tyV', tyA') <- case runSolve c of
---             Left err -> throwError err
---             Right sub -> return (apply sub tyV, apply sub tyA)
---    case (tyV', tyA') of
---      (TLin lV', TLin lA') -> return (TLin (LArr lV' lA'), c, V, _Γ2)
---      (TLin lV', t)        -> return (TLin (LArr lV' (linearize t)), c, V, _Γ2)
---      _                    -> return (TArr tyV' tyA', c, V, _Γ2)
---
---  ELam PUnit e -> do
---    (tyA, c, _Γ2) <- infer e
---    tyA' <- case runSolve c of
---              Left err -> throwError err
---              Right sub -> return $ apply sub tyA
---    case tyA' of
---      TLin lA' ->
---        return (TLin (LArr (LBang tyUnit) lA'), c, _Γ2)
---      _                    ->
---        return (TArr tyUnit tyA' m, c, _Γ2)
---
---  {-ELam PUnit e -> do
---    (tyA, c, m, _Γ2) <- infer e
---    return (TArr tyUnit tyA m, c, V, _Γ2)-}
---
---  ELam PWildcard e -> do
---    tyV <- fresh (TVar . TV)
---    (tyA, c, _Γ2) <- infer e
---    return (TArr tyV tyA m , c,  _Γ2)
---
---  ELam _ _ -> error "Infer.infer: ELam"
---
+  ELam p e -> do
+    case p of
+      PVar x -> do
+        ty <- fresh (IVar . TV)
+        (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty))) (infer e)
+        return (IType (ty `IArr` tyU), cs, ctxt2)
+      PUnit -> do
+        (tyU, cs, ctxt2) <- infer e
+        return (IType (tyUnit `IArr` tyU), cs, ctxt2)
+      PWildcard -> do
+        ty <- fresh (IVar . TV)
+        (tyU, cs, ctxt2) <- infer e        
+        return (IType (ty `IArr` tyU), cs, ctxt2)
+      _ -> error "Infer.infer: ELam"
+
 --  EFix e -> do
 --    (tyA2A, c,  _Γ2) <- infer e
 --    tyA2A' <- case runSolve c of
