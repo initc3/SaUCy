@@ -41,7 +41,6 @@ data Expr = EVar Name                            -- ^ Variable
           | EFix Expr                            -- ^ Fixpoint
           | ELet Pattern Expr Expr               -- ^ Let binding
           | ELetRd Pattern Expr Expr             -- ^ Rd binding
-          | ELetBang Pattern Expr Expr           -- ^ Unpack linear binding
           | EBang Expr                           -- ^ Bang TODO: Make unop
           | EIf Expr Expr Expr                   -- ^ Conditional
           | EMatch Expr [(Pattern, Expr, Expr)]  -- ^ Pattern match 
@@ -97,6 +96,7 @@ data Pattern = PVar Name              -- ^ Variable pattern
              | PList [Pattern]        -- ^ List pattern
              | PCons Pattern Pattern  -- ^ Cons pattern
              | PCust Name [Pattern]   -- ^ Custom data type pattern
+             | PGnab Pattern          -- ^ Gnab
              deriving (Eq, Show)
 
 --------------------------------------------------------------------------------
@@ -115,3 +115,4 @@ instance Pretty Pattern where
   pretty (PList ps)    = prettyList ps
   pretty (PCons hd tl) = pretty hd <+> text ":" <+> pretty tl
   pretty (PCust x ps)  = text x <+> prettySpace (map pretty ps)
+  pretty (PGnab p)     = text "!" <+> pretty p

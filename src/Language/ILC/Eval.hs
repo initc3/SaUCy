@@ -87,12 +87,6 @@ evalPut env m expr = case expr of
     res <- eval (Map.union binds env) e2
     putMVar m res
 
-  ELetBang p e1 e2 -> do
-    v1 <- eval env e1
-    let !binds = letBinds p v1
-    res <- eval (Map.union env binds) e2
-    putMVar m res
-
   EBang e -> do
     res <- eval env e
     putMVar m res

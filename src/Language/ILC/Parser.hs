@@ -108,16 +108,6 @@ eLetRec = do
   reserved "in"
   ELet p (EFix $ foldr ELam e (p:args)) <$> expr-}
 
-eLetBang :: Parser Expr
-eLetBang = do
-  reserved "let!"
-  ps <- commaSep1 pat
-  reservedOp "="
-  e1 <- expr
-  reserved "in"
-  e2 <- expr
-  return $ foldr (`ELetBang` e1) e2 ps
-
 eIf :: Parser Expr
 eIf = do
   reserved "if"
@@ -253,7 +243,6 @@ atomExpr =
 term :: Parser Expr
 term = atoms
   <|> eLam
-  <|> eLetBang
   <|> eLets
   <|> eIf
   <|> eMatch
@@ -304,6 +293,11 @@ pCust = do
   ps <- many pat
   optional $ char ')' <* whitespace
   return $ PCust con ps
+
+pGnab :: Parser Pattern
+pGnab = do
+  reservedOp "!"
+  PGnab <$> pat
   
 -- TODO: Use chainl1?
 pat :: Parser Pattern
@@ -320,6 +314,7 @@ pat' =
   <|> try pTuple
   <|> pList
   <|> pCust
+  <|> pGnab  
 
 -- | Parse toplevel declarations
 

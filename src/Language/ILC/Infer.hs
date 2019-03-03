@@ -1,5 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE TypeSynonymInstances       #-}
 {-# LANGUAGE TupleSections              #-}
 
@@ -257,6 +258,12 @@ concatTCEs = foldr f ([], [], [])
   where
     f (t, c, e) (t', c', e') = (t : t', c ++ c', e ++ e')
 
+concatTCEnvs :: [(Type, [Constraint], TypeEnv)]
+           -> ([Type], [Constraint], TypeEnv)
+concatTCEnvs = foldr f ([], [], emptyTyEnv)
+  where
+    f (t, c, e) (t', c', e') = (t : t', c ++ c', mergeTyEnv e e')    
+
 concatTCs :: [(Type, [Constraint])] -> ([Type], [Constraint])
 concatTCs = foldr f ([], [])
   where
@@ -420,6 +427,12 @@ inferPat pat expr = case (pat, expr) of
 --    let (ts, cs, env) = concatTCEs tces
 --    return (tyx', cs, env)
 
+  (PGnab p, Just e) -> do
+    (typ, cs1, ctxt) <- inferPat (traceShow p p) $ Just e
+    (AType (ABang tyA), cs2,  _) <- infer e
+    return (IType tyA, (typ, AType (ABang tyA)) : cs1 ++ cs2, ctxt)
+  (PGnab p, Nothing) -> return (IType tyUnit, [], [])
+
 -- | This function computes the type of a deconstructed sum type. The type of a
 -- value constructor should either be an arrow type leading to a custom type
 -- constructor (in the non-nullary case) or simply the custom type constructor
@@ -454,9 +467,8 @@ inferBranch expr (pat, guard, branch) = do
                         (local (apply sub) (infer branch))
                         binds)
       let _Γ4' = foldl (\_Γ (x, _) -> removeTyEnv _Γ x) _Γ4 binds
-          tyConstraints = (t2, IType tyBool) :c1 ++ c2 ++ c3
-          constraints = tyConstraints
-      return (t3, constraints, _Γ4')
+          cs = (t2, IType tyBool) : c1 ++ c2 ++ c3
+      return (t3, cs, _Γ4')
 
 sameThings :: Eq a => [a] -> Either TypeError a
 sameThings (m:ms) = if (all (m ==) ms) then Right m else Left (TypeFail "Not same things.")
@@ -559,43 +571,24 @@ infer expr = case expr of
                               binds)
         return (tyU, cs1 ++ cs2 ++ cs3, ctxt3)
 
---  ELetBang p e1 e2 -> do
---    env <- ask
---    tyV <- fresh (TVar . TV)
---    (_, c1, binds) <- inferPatLin p $ Just e1
---    (tye1, _, _Γ2) <- infer e1
---    let c1' = (tye1, (TLin (LBang tyV))) : c1
---    case runSolve c1' of
---      Left err -> throwError err
---      Right sub -> do
---        let sc t = generalize (apply sub env) (apply sub t)
---        (tyB, c2, _Γ3) <- local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
---                              (local (apply sub) (infer e2))
---                              binds)
---        let tyConstraints = c1' ++ c2
---            constraints = tyConstraints
---        return (tyB, constraints, _Γ3)
-
   EBang e -> do
     (IType tyA, cs, ctxt2) <- infer e
     return (AType (ABang tyA), cs, ctxt2)
     
---
---  EMatch e bs -> do
---    tcmes <- mapM (inferBranch e) bs
---    let (ts, cs, _Γs) = concatTCEs tcmes
---        ty       = head ts
---        cs'      = map (`TypeConstraint` ty) (tail ts)
---    -- TODO: Clean up
---    let envs = map (\case {TypeEnv binds -> Map.filter (\x -> x == Forall []
---    TUsed) binds}) _Γs
---    _ <- case sameThings envs  of
---             Left err -> throwError err
---             Right _Γ  -> return _Γ
---    let tyConstraints = cs ++ cs'
---        constraints = tyConstraints
---    return (ty, constraints, head _Γs)
---
+
+  {-EMatch e bs -> do
+    tcmes <- mapM (inferBranch e) bs
+    let (ts, cs, _Γs) = concatTCEnvs tcmes
+        ty       = head ts
+        cs'      = map (ty,) (tail ts)
+    let envs = map (\case{TypeEnv binds -> Map.filter (\x -> x == Forall []
+    TUsed) binds}) _Γs
+    _ <- case sameThings envs  of
+             Left err -> throwError err
+             Right _Γ  -> return _Γ
+    let tyConstraints = cs ++ cs'
+        constraints = tyConstraints
+    return (ty, constraints, head _Γs)-}
 
   ELam (PVar x) e -> do
       ty <- fresh (IVar . TV)
@@ -649,27 +642,6 @@ infer expr = case expr of
 --        return (tyV, TypeConstraint tyA2A (TArr tyV tyV) : c)
 --    let constraints = tyConstraints
 --    return (tyRes, constraints, _Γ2)
---    
---  EApp e1 e2 -> do
---    (tyA, c1, _Γ2) <- infer e2
---    (tyA2B, c2, _Γ3) <- local (const _Γ2) (infer e1)
---    (tyA2B', tyA') <- case runSolve (c1 ++ c2) of
---             Left err -> throwError err
---             Right sub -> return (apply sub tyA2B, apply sub tyA)
---    (tyRet, tyConstraints) <- case (tyA2B', tyA') of
---          (t, TLin l) -> do
---            tyV <- fresh (LVar . TV)
---            tyA'' <- fresh (LVar . TV)
---            return (TLin tyV, TypeConstraint tyA2B (TLin (LArr tyA'' tyV)) : TypeConstraint (TLin tyA'') tyA : c1 ++ c2)
---          (TLin l, t) -> do
---            tyV  <- fresh (LVar . TV)
---            tyA'' <- fresh (LVar . TV)
---            return (TLin tyV, TypeConstraint tyA2B (TLin (LArr tyA'' tyV)) : TypeConstraint (TLin tyA'') tyA : c1 ++ c2)
---          (t1, t2)    -> do
---            tyV <- fresh (TVar . TV)
---            return  (tyV, TypeConstraint tyA2B (TArr tyA tyV) : c1 ++ c2)
---    let constraints = tyConstraints
---    return (tyRet, constraints, _Γ3)
 
   EApp e1 e2 -> do
     (IType tyA, cs1, ctxt2) <- infer e2    
