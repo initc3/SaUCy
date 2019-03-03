@@ -30,6 +30,8 @@ module Language.ILC.Type (
   , mergeTyEnv
   , intersectTyEnv
   , clearAffineTyEnv
+  , checkWrTok
+  , rmWrTok  
   , prettySignature
   , prettyTyEnv
   ) where
@@ -109,6 +111,17 @@ clearAffineTyEnv :: TypeEnv -> TypeEnv
 clearAffineTyEnv (TypeEnv a) = TypeEnv $ Map.filter isInt a
   where isInt (Forall _ IType{}) = True
         isInt (Forall _ AType{}) = False
+
+checkWrTok :: TypeEnv -> Bool
+checkWrTok (TypeEnv env) =
+  case Map.lookup "WrTok" env of
+    Nothing -> False
+    Just _  -> True
+
+rmWrTok :: TypeEnv -> TypeEnv
+rmWrTok (TypeEnv a) = TypeEnv $ Map.filterWithKey isWrTok a
+  where isWrTok "WrTok" _ = False
+        isWrTok _       _ = True
 
 instance Monoid TypeEnv where
   mempty  = emptyTyEnv

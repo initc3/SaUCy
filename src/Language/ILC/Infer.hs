@@ -619,14 +619,18 @@ infer expr = case expr of
     case p of
       PVar x -> do
         ty <- fresh (IVar . TV)
-        (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty))) (local clearAffineTyEnv (infer e))        
+        (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty)))
+                            (inEnv ("WrTok", (Forall [] (IType tyUnit)))
+                            (local clearAffineTyEnv (infer e)))
         return (IType (ty `IArrW` tyU), cs, ctxt2)
       PUnit -> do
-        (tyU, cs, ctxt2) <- local clearAffineTyEnv $ infer e        
+        (tyU, cs, ctxt2) <- inEnv ("WrTok", (Forall [] (IType tyUnit)))      
+                            (local clearAffineTyEnv (infer e))                
         return (IType (tyUnit `IArrW` tyU), cs, ctxt2)
       PWildcard -> do
         ty <- fresh (IVar . TV)
-        (tyU, cs, ctxt2) <- local clearAffineTyEnv $ infer e        
+        (tyU, cs, ctxt2) <- inEnv ("WrTok", (Forall [] (IType tyUnit)))        
+                            (local clearAffineTyEnv (infer e))                        
         return (IType (ty `IArrW` tyU), cs, ctxt2)
       _ -> error "Infer.infer: ELamW"      
 
@@ -673,6 +677,8 @@ infer expr = case expr of
 
   ELetRd p e1 e2 -> do
     ctxt1 <- ask
+    -- TODO
+    when (checkWrTok ctxt1) (throwError $ UnboundVariable "WrTok")    
     (_, cs1, binds) <- inferPat p $ Just e1
     (_, cs2, ctxt2) <- infer e1
     case runSolve cs1 of
@@ -685,7 +691,9 @@ infer expr = case expr of
         return (tyU, cs1 ++ cs2 ++ cs3, ctxt3)
 
   EWr e1 e2 -> do
-    (IType (ISend tyS), cs1, ctxt2) <- infer e1
+    ctxt <- ask
+    when (not (checkWrTok ctxt)) (throwError $ UnboundVariable "WrTok")
+    (IType (ISend tyS), cs1, ctxt2) <- local (rmWrTok) (infer e1)
     (tyWrS, cs2, ctxt3) <- local (const ctxt2) (infer e2)
     return (IType tyUnit, (IType (IWrChan tyS), tyWrS) : cs1 ++ cs2, ctxt3)
 
