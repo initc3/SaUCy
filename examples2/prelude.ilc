@@ -1,0 +1,160 @@
+{- ILC Standard Prelude -}
+
+data Maybe a = Just a | Nothing
+
+data Either a b = Left a | Right b
+
+letrec lookup x assoc =
+  match assoc with
+  | []                      => error "lookup: not in list"
+  | (k, v):rest when x == k => v
+  | _:rest                  => lookup x rest
+
+let head lst =
+  match lst with
+  | [] => error "head: empty list"
+  | x:xs => x
+
+let tail lst =
+  match lst with
+  | [] => error "tail: empty list"
+  | x:xs => xs
+
+letrec map f lst =
+  match lst with
+  | []   => []
+  | x:xs => (f x) : map f xs
+
+letrec filter f lst =
+  match lst with
+  | []            => []
+  | x:xs when f x => x : filter f xs
+  | _:xs          => filter f xs
+
+letrec foldl f acc lst =
+  match lst with
+  | []   => acc
+  | x:xs => foldl f (f acc x) xs
+
+letrec foldl1 f lst =
+  match lst with
+  | []   => error "empty list"
+  | x:xs => foldl f x xs
+
+letrec scanl f s lst =
+  s : (match lst with
+       | []    => []
+       | x:xs => scanl f (f s x) xs)
+
+letrec scanl1 f lst =
+  match lst with
+  | []   => []
+  | x:xs => scanl f x xs
+
+letrec foldr f lst acc =
+  match lst with
+  | []   => acc
+  | x:xs => f x (foldr f xs acc)
+
+letrec foldr1 f lst =
+  match lst with
+  | [] => error "empty list"
+  | x:xs => foldr f xs x
+  
+
+letrec all f lst =
+  match lst with
+  | []            => true
+  | x:xs when f x => all f xs
+  | _             => false
+
+letrec any f lst =
+  match lst with
+  | []            => false
+  | x:xs when f x => true
+  | _:xs          => any f xs
+
+letrec nth n lst =
+  match (n, lst) with
+  | (_, []) => error "not found"
+  | (1, x:xs)  => x
+  | (n', x:xs) => nth (n'-1) xs
+
+letrec take n lst =
+  match lst with
+  | []               => []
+  | x:xs when n == 1 => [x]
+  | x:xs             => x : take (n-1) xs
+
+letrec drop n lst =
+  match lst with
+  | []               => []
+  | x:xs when n <= 0 => x:xs
+  | x:xs             => drop (n-1) xs
+
+let splitAt n lst =
+  (take n lst, drop n lst)
+
+letrec takeWhile f lst =
+  match lst with
+  | []            => []
+  | x:xs when f x => x : takeWhile f xs
+  | _             => []
+
+letrec dropWhile f lst =
+  match lst with
+  | []            => []
+  | x:xs when f x => dropWhile f xs
+  | xs            => xs
+
+letrec zip lst1 lst2 =
+  match (lst1, lst2) with
+  | ([]  , _   ) => []
+  | (_   , []  ) => []
+  | (x:xs, y:ys) => (x, y) : zip xs ys
+
+let null lst = lst == []
+
+letrec sum lst =
+  match lst with
+  | []   => 0
+  | x:xs => x + sum xs
+
+letrec product lst =
+  match lst with
+  | []   => 0
+  | x:xs => x + product xs
+
+let min x y =
+  if x < y then x else y
+
+let max x y =
+  if x > y then x else y
+
+let minimum lst = foldl1 min lst
+
+let maximum lst = foldl1 max lst
+
+letrec init lst =
+  match lst with
+  | [x] => []
+  | x:xs => x : init xs
+
+letrec replicate n x =
+  match n with
+  | 0 => []
+  | n => x : replicate (n - 1) x
+
+letrec insert x lst =
+  match lst with
+  | []    => [x]
+  | x':xs => if x < x' then x : x' : xs
+	     else x' : (insert x xs)
+
+letrec sort lst =
+  match lst with
+  | []   => []
+  | x:xs => insert x (sort xs)
+
+letrec iterate n f acc =
+  if n <= 0 then acc else iterate (n - 1) f (f acc)

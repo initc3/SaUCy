@@ -1,0 +1,46 @@
+data Msg = Commit Int
+         | Open
+	 | Opened Int
+	 | Receipt
+
+let fCom frA toB =
+  let (msg, frA) = rd frA in
+  let! (Commit b) = msg in
+    wr Receipt -> toB ;
+    let (msg', frA) = rd frA in
+    let! Open = msg' in
+      wr (Opened b) -> toB
+
+{-let fCom frA toB =
+  let (msg, frA) = rd frA in
+  let! (Commit b) = msg in
+    wr Receipt -> toB ;
+    let (msg', frA) = rd frA in
+    let! Open = msg' in
+      wr (Opened b) -> toB-}
+
+let pA frZ toF =
+  let (_, frZ) = rd frZ in
+    wr (Commit 0) -> toF ;
+    let _ = rd frZ in
+      wr Open -> toF
+
+let pB frF toZ =
+  let _ = rd frF in
+    wr () -> toZ
+
+let pZ frB toA =
+  wr () -> toA ;
+  let _ = rd frB in
+    wr () -> toA
+
+let execUC () =
+  nu (rA2F, wA2F)
+  , (rF2B, wF2B)
+  , (rF2S, wF2S)
+  , (rZ2A, wZ2A)
+  , (rB2Z, wB2Z)
+  . (fCom rA2F !wF2B)
+  |> (pA rZ2A !wA2F)
+  |> (pB rF2B !wB2Z)
+  |> (pZ rB2Z !wZ2A)

@@ -309,10 +309,10 @@ pCons = do
 -- TODO: Fix parens parsing
 pCust :: Parser Pattern
 pCust = do
-  optional $ whitespace *> char '('
+  --optional $ whitespace *> char '('
   con <- constructor
   ps <- many pat
-  optional $ char ')' <* whitespace
+  --optional $ char ')' <* whitespace
   return $ PCust con ps
 
 pGnab :: Parser Pattern
@@ -335,7 +335,8 @@ pat' =
   <|> try pTuple
   <|> pList
   <|> pCust
-  <|> pGnab  
+  <|> pGnab
+  <|> parens pat    
 
 -- | Parse toplevel declarations
 

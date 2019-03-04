@@ -347,10 +347,16 @@ inferPat pat expr = case (pat, expr) of
             constraints = (AType (AProd ts'), tes) : ces ++ cs
         return (AType (AProd ts'), constraints, ctxt)
   (PTuple [PGnab (PVar v), PVar c], Just e@(ERd _)) -> do
-    tyS <- fresh (SVar . TV)        
+    tyS <- fresh (SVar . TV)
     (te, cs, _) <- infer e
     let tyR = AType (AProd [ABang . ISend $ tyS, ARdChan tyS])
-    return (tyR, (tyR, te) : cs, [(v, IType . ISend $ tyS), (c, AType . ARdChan $ tyS)])        
+    return (tyR, (tyR, te) : cs, [(v, IType . ISend $ tyS), (c, AType . ARdChan $ tyS)])
+  (PTuple [PGnab p, PVar c], Just e@(ERd _)) -> do
+    (ty, cs, binds) <- inferPat p Nothing
+    tyS <- fresh (SVar . TV)
+    (te, cs, _) <- infer e
+    let tyR = AType (AProd [ABang . ISend $ tyS, ARdChan tyS])
+    return (tyR, (tyR, te) : cs, (c, AType . ARdChan $ tyS) : binds)
   (PTuple ps, Just e) -> do
     (ts, cs, ctxt) <- inferPatList ps $ repeat Nothing
     (te, ce, _) <- infer e
@@ -420,7 +426,8 @@ inferPat pat expr = case (pat, expr) of
   (PUnit, Nothing) -> return (IType tyUnit, [], [])
 
   (PWildcard, _) -> do
-    return (IType tyUnit, [], [])
+    tv <- fresh (IType . IVar . TV)            
+    return (tv, [], [])
 
   (PCust x ps, Just (ECustom x' es)) -> do
     tyx <- lookupEnv x
@@ -442,14 +449,6 @@ inferPat pat expr = case (pat, expr) of
     tces <- zipWithM inferPat ps $ repeat Nothing
     let (ts, cs, env) = concatTCEs tces
     return (tyx', cs, env)
-
---  (PGnab p, Just e) -> do
---    (typ, cs1, ctxt) <- inferPat (traceShow p p) $ Just e
---    (AType (ABang tyA), cs2,  _) <- infer e
---    return (IType tyA, (typ, AType (ABang tyA)) : cs1 ++ cs2, ctxt)
---  (PGnab p, Nothing) -> do
---    tv <- fresh (IVar . TV)    
---    return (AType . ABang $ tv, [], [])
 
 -- | This function computes the type of a deconstructed sum type. The type of a
 -- value constructor should either be an arrow type leading to a custom type
@@ -732,11 +731,11 @@ infer expr = case expr of
     (_, cs, ctxt2) <- infer e
     return (IType tyUnit, cs, ctxt2)
 
---  TODO: Universal type variable
---  EError e  -> do
---    tv <- fresh (IVar . TV)
---    (IType tyString, cs, ctxt2) <- infer e
---    return (tv, cs, ctxt2)
+  -- TODO: Universal type variable
+  EError e  -> do
+    tv <- fresh (IType . IVar . TV)
+    (IType tyString, cs, ctxt2) <- infer e
+    return (tv, cs, ctxt2)
 
   ECustom x es -> do
     ctxt1 <- ask
