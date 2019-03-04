@@ -88,7 +88,11 @@ atoms = atomExpr >>= \a ->
         eApp a <|> return a
 
 eFix :: Parser Expr
-eFix = $(todo "Parse fixed point expressions")
+eFix = do
+  reserved "fix"
+  x <- identifier
+  reserved "."
+  EFix x <$> expr
 
 eLets :: Parser Expr
 eLets = reserved "let" *> (try normalLet <|> eLetRd)
@@ -259,6 +263,7 @@ term = atoms
   <|> eLam  
   <|> eLam1
   <|> eLamw
+  <|> eFix    
   <|> eLets
   <|> eIf
   <|> eMatch
@@ -351,7 +356,7 @@ dDeclLetRec :: Parser TopDecl
 dDeclLetRec = do
   reserved "letrec"
   (x, ps, e) <- parseLet
-  return $ Decl x (EFix $ foldr ELam e (PVar x : ps))
+  return $ Decl x (EFix x $ foldr ELam e (ps))  
 
 dDeclFun :: Parser TopDecl
 dDeclFun = do

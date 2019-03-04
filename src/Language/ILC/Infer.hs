@@ -488,9 +488,6 @@ inferBranch expr (pat, guard, branch) = do
           cs = (t2, IType tyBool) : c1 ++ c2 ++ c3
       return (t3, cs, _Γ4')
 
-sameThings :: Eq a => [a] -> Either TypeError a
-sameThings (m:ms) = if (all (m ==) ms) then Right m else Left (TypeFail "Not same things.")
-
 infers :: ([Type], [Constraint], TypeEnv) -> [Expr] -> Infer ([Type], [Constraint], TypeEnv)
 infers = foldM (\(tys, cs, ctxt) e -> do
                    (ty', cs', ctxt') <- local (const ctxt) (infer e) 
@@ -648,10 +645,15 @@ infer expr = case expr of
         ty <- fresh (AVar . TV)
         (tyU, cs, ctxt2) <- infer e        
         return (AType (ty `AArr` tyU), cs, ctxt2)
-      _ -> error "Infer.infer: ELam1"      
+      _ -> error "Infer.infer: ELam1"
+
+  EFix x e -> do
+    ty <- fresh (IVar . TV)    
+    (tyA2U, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty))) (infer e)
+    return (tyA2U, (IType ty, tyA2U) : cs, ctxt2)
 
 --  EFix e -> do
---    (tyA2A, c,  _Γ2) <- infer e
+--    (tyA2A, c,  ctxt2) <- infer e
 --    tyA2A' <- case runSolve c of
 --             Left err -> throwError err
 --             Right sub -> return $ apply sub tyA2A
@@ -663,11 +665,11 @@ infer expr = case expr of
 --        tyV <- fresh (TVar . TV)
 --        return (tyV, TypeConstraint tyA2A (TArr tyV tyV) : c)
 --    let constraints = tyConstraints
---    return (tyRes, constraints, _Γ2)
+--    return (tyRes, constraints, ctxt2)
 
   EApp e1 e2 -> do
     (tyU1, cs1, ctxt2) <- infer e2
-    (tyU12U2, cs2, ctxt3) <- infer e1    
+    (tyU12U2, cs2, ctxt3) <- infer e1
     case (tyU1, tyU12U2) of
       (IType tyA1, IType (IArr tyA2 tyU2)) -> do
         return (tyU2, cs1 ++ cs2 ++ [(IType tyA1, IType tyA2)], ctxt3)
@@ -675,6 +677,10 @@ infer expr = case expr of
         return (tyU2, cs1 ++ cs2 ++ [(IType tyA1, IType tyA2)], ctxt3)
       (AType tyX1, AType (AArr tyX2 tyU2)) -> do
         return (tyU2, cs1 ++ cs2 ++ [(AType tyX1, AType tyX2)], ctxt3)
+      (IType tyA1, IType tyA12U2) -> do
+        tyU2 <- fresh (IType . IVar . TV)
+        return (tyU2, cs1 ++ cs2 ++ [(IType tyA12U2, IType (IArr tyA1 tyU2))], ctxt3)
+      _ -> error (show (tyU1, tyU12U2, cs1 ++ cs2))
 
   ERd e -> do
     (AType tyRdS, cs, ctxt2) <- infer e

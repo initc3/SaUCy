@@ -40,7 +40,8 @@ data Expr = EVar Name                            -- ^ Variable
           | ELamw Pattern Expr                   -- ^ Write abstraction
           | ELam1 Pattern Expr                   -- ^ Affine abstraction
           | EApp Expr Expr                       -- ^ Function application
-          | EFix Expr                            -- ^ Fixpoint
+          -- | EFix Expr                            -- ^ Fixpoint
+          | EFix Name Expr                            -- ^ Fixpoint          
           | ELet Pattern Expr Expr               -- ^ Let binding
           | ELetRd Pattern Expr Expr             -- ^ Rd binding
           | EBang Expr                           -- ^ Bang TODO: Make unop

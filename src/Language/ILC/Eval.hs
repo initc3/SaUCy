@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RecursiveDo #-}
 {-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind #-}
 
 --------------------------------------------------------------------------------
@@ -84,9 +85,8 @@ evalPut env m expr = case expr of
     res <- betaReduce env v1 v2
     putMVar m res
 
-  EFix e -> do
-    -- TODO: Use de Bruijn indicies.
-    res <- eval env $ ELam (PVar "_x") (EApp (EApp e (EFix e)) (EVar "_x"))
+  EFix x e -> do
+    rec res <- eval (Map.union env $ Map.fromList [(x,res)]) e
     putMVar m res
       
   ELet p e1 e2 -> do
