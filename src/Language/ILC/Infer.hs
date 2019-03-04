@@ -666,9 +666,15 @@ infer expr = case expr of
 --    return (tyRes, constraints, _Γ2)
 
   EApp e1 e2 -> do
-    (IType tyA, cs1, ctxt2) <- infer e2    
-    (IType (IArr tyA2 tyU), cs2, ctxt3) <- infer e1
-    return (tyU, cs1 ++ cs2 ++ [(IType tyA, IType tyA2)], ctxt3)    
+    (tyU1, cs1, ctxt2) <- infer e2
+    (tyU12U2, cs2, ctxt3) <- infer e1    
+    case (tyU1, tyU12U2) of
+      (IType tyA1, IType (IArr tyA2 tyU2)) -> do
+        return (tyU2, cs1 ++ cs2 ++ [(IType tyA1, IType tyA2)], ctxt3)
+      (IType tyA1, IType (IArrW tyA2 tyU2)) -> do
+        return (tyU2, cs1 ++ cs2 ++ [(IType tyA1, IType tyA2)], ctxt3)
+      (AType tyX1, AType (AArr tyX2 tyU2)) -> do
+        return (tyU2, cs1 ++ cs2 ++ [(AType tyX1, AType tyX2)], ctxt3)
 
   ERd e -> do
     (AType tyRdS, cs, ctxt2) <- infer e
