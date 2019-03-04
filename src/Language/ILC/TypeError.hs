@@ -23,6 +23,9 @@ import Language.ILC.Type
 data TypeError = UnificationFail Type Type
                | InfiniteType TVar Type
                | UnboundVariable Name
+               | WrTokenInChoice
+               | WrTokenInRd               
+               | NoWrTok
                | Ambiguous [(Type, Type)]
                | UnificationMismatch [Type] [Type]
                | TypeFail String
@@ -54,6 +57,12 @@ instance Pretty TypeError where
                 ] | (a, b) <- cs ]
          
   pretty (UnboundVariable a) = text "Not in scope:" <+> pretty a
+
+  pretty (WrTokenInChoice) = text "Write token cannot be present in choice expression"
+
+  pretty (WrTokenInRd) = text "Write token cannot be present in read expression"  
+
+  pretty (NoWrTok) = text "Write expression requires write token"  
   
   pretty (TypeFail s)  = text s
   

@@ -371,49 +371,49 @@ inferPat pat expr = case (pat, expr) of
         let ts' = map (\(AType x) -> x) ts        
         return (AType (AProd ts'), cs, ctxt)        
 
---  (PList ps, Just (EList es)) -> do
---    when (length ps /= length es) (error "fail") -- TODO
---    (tes, ces, _) <- infer $ EList es
---    (ts, cs, env) <- inferPatList ps $ map Just es
---    (thd, cs') <- listConstraints ts cs
---    let constraints = (TList thd, tes) : ces ++ cs'
---    return (TList thd, constraints, env)
---  (PList ps, Just e) -> do
---    (te, ce, _) <- infer e
---    (ts, cs, env) <- inferPatList ps $ repeat Nothing
---    (thd, cs') <- listConstraints ts cs
---    let constraints = (TList thd, te) : ce ++ cs'
---    return (TList thd, constraints, env)
---  (PList ps, Nothing) -> do
---    tces <- zipWithM inferPat ps $ repeat Nothing
---    let (ts, cs, env) = concatTCEs tces
---    (thd, cs') <- listConstraints ts cs
---    return (TList thd, cs', env)
---
---  (PCons phd ptl, Just e@(EList (hd:tl))) -> do
---    (te, ce, _) <- infer e
---    (thd, chd, ehd) <- inferPat phd $ Just hd
---    (ttl, ctl, etl) <- inferPat ptl $ Just $ EList tl
---    let cs = ce ++ chd ++ ctl ++ [ (TList thd, te)
---                                 , (te, ttl) ]
---        env = ehd ++ etl
---    return (TList thd, cs, env)
---  (PCons phd ptl, Just e) -> do
---    (te, ce, _) <- infer e
---    (thd, chd, ehd) <- inferPat phd Nothing
---    (ttl, ctl, etl) <- inferPat ptl Nothing
---    let cs = ce ++ chd ++ ctl ++ [ (TList thd, te)
---                                 , (te, ttl)
---                                 , (TList thd, ttl) ]
---        env = ehd ++ etl
---    return (TList thd, cs, env)
---  (PCons phd ptl, Nothing) -> do
---    (thd, chd, ehd) <- inferPat phd Nothing
---    (ttl, ctl, etl) <- inferPat ptl Nothing
---    let cs = (TList thd, ttl) : chd ++ ctl
---        env = ehd ++ etl
---    return (TList thd, cs, env)
---
+  (PList ps, Just (EList es)) -> do
+    when (length ps /= length es) (error "fail") -- TODO
+    (tes, ces, _) <- infer $ EList es
+    (ts, cs, env) <- inferPatList ps $ map Just es
+    (thd, cs') <- listConstraints ts cs
+    let constraints = (IType (IList ((\(IType x) -> x) thd)), tes) : ces ++ cs'
+    return (IType (IList ((\(IType x) -> x) thd)), constraints, env)
+  (PList ps, Just e) -> do
+    (te, ce, _) <- infer e
+    (ts, cs, env) <- inferPatList ps $ repeat Nothing
+    (thd, cs') <- listConstraints ts cs
+    let constraints = (IType (IList ((\(IType x) -> x) thd)), te) : ce ++ cs'
+    return (IType (IList ((\(IType x) -> x) thd)), constraints, env)
+  (PList ps, Nothing) -> do
+    tces <- zipWithM inferPat ps $ repeat Nothing
+    let (ts, cs, env) = concatTCEs tces
+    (thd, cs') <- listConstraints ts cs
+    return (IType (IList ((\(IType x) -> x) thd)), cs', env)
+
+  (PCons phd ptl, Just e@(EList (hd:tl))) -> do
+    (te, ce, _) <- infer e
+    (thd, chd, ehd) <- inferPat phd $ Just hd
+    (ttl, ctl, etl) <- inferPat ptl $ Just $ EList tl
+    let cs = ce ++ chd ++ ctl ++ [ (IType (IList ((\(IType x) -> x) thd)), te)
+                                 , (te, ttl) ]
+        env = ehd ++ etl
+    return (IType (IList ((\(IType x) -> x) thd)), cs, env)
+  (PCons phd ptl, Just e) -> do
+    (te, ce, _) <- infer e
+    (thd, chd, ehd) <- inferPat phd Nothing
+    (ttl, ctl, etl) <- inferPat ptl Nothing
+    let cs = ce ++ chd ++ ctl ++ [ (IType (IList ((\(IType x) -> x) thd)), te)
+                                 , (te, ttl)
+                                 , (IType (IList ((\(IType x) -> x) thd)), ttl) ]
+        env = ehd ++ etl
+    return (IType (IList ((\(IType x) -> x) thd)), cs, env)
+  (PCons phd ptl, Nothing) -> do
+    (thd, chd, ehd) <- inferPat phd Nothing
+    (ttl, ctl, etl) <- inferPat ptl Nothing
+    let cs = (IType (IList ((\(IType x) -> x) thd)), ttl) : chd ++ ctl
+        env = ehd ++ etl
+    return (IType (IList ((\(IType x) -> x) thd)), cs, env)
+
   (PUnit, Just e) -> do
     (ty, cs,  _) <- infer e
     return (IType tyUnit, (ty, IType tyUnit) : cs, [])
@@ -421,28 +421,28 @@ inferPat pat expr = case (pat, expr) of
 
   (PWildcard, _) -> do
     return (IType tyUnit, [], [])
---
---  (PCust x ps, Just (ECustom x' es)) -> do
---    tyx <- lookupEnv x
---    let tyx' = typeSumDeconstruction tyx ps
---    when (length ps /= length es) (error "fail1") -- TODO
---    when (x /= x') (error "fail2") -- TODO
---    (ts, cs, env) <- inferPatList ps $ map Just es
---    return (tyx', cs, env)
---  (PCust x ps, Just e) -> do
---    tyx <- lookupEnv x
---    let tyx' = typeSumDeconstruction tyx ps
---    (te, ce, _) <- infer e
---    (ts, cs, env) <- inferPatList ps $ repeat Nothing
---    let constraints = (tyx', te) : ce ++ cs
---    return (tyx', constraints, env)
---  (PCust x ps, Nothing) -> do
---    tyx <- lookupEnv x
---    let tyx' = typeSumDeconstruction tyx ps
---    tces <- zipWithM inferPat ps $ repeat Nothing
---    let (ts, cs, env) = concatTCEs tces
---    return (tyx', cs, env)
---
+
+  (PCust x ps, Just (ECustom x' es)) -> do
+    tyx <- lookupEnv x
+    let tyx' = typeSumDeconstruction tyx ps
+    when (length ps /= length es) (error "fail1") -- TODO
+    when (x /= x') (error "fail2") -- TODO
+    (ts, cs, env) <- inferPatList ps $ map Just es
+    return (tyx', cs, env)
+  (PCust x ps, Just e) -> do
+    tyx <- lookupEnv x
+    let tyx' = typeSumDeconstruction tyx ps
+    (te, ce, _) <- infer e
+    (ts, cs, env) <- inferPatList ps $ repeat Nothing
+    let constraints = (tyx', te) : ce ++ cs
+    return (tyx', constraints, env)
+  (PCust x ps, Nothing) -> do
+    tyx <- lookupEnv x
+    let tyx' = typeSumDeconstruction tyx ps
+    tces <- zipWithM inferPat ps $ repeat Nothing
+    let (ts, cs, env) = concatTCEs tces
+    return (tyx', cs, env)
+
 --  (PGnab p, Just e) -> do
 --    (typ, cs1, ctxt) <- inferPat (traceShow p p) $ Just e
 --    (AType (ABang tyA), cs2,  _) <- infer e
@@ -678,7 +678,7 @@ infer expr = case expr of
   ELetRd p e1 e2 -> do
     ctxt1 <- ask
     -- TODO
-    when (checkWrTok ctxt1) (throwError $ UnboundVariable "WrTok")    
+    when (checkWrTok ctxt1) (throwError $ WrTokenInRd)
     (_, cs1, binds) <- inferPat p $ Just e1
     (_, cs2, ctxt2) <- infer e1
     case runSolve cs1 of
@@ -692,7 +692,7 @@ infer expr = case expr of
 
   EWr e1 e2 -> do
     ctxt <- ask
-    when (not (checkWrTok ctxt)) (throwError $ UnboundVariable "WrTok")
+    when (not (checkWrTok ctxt)) (throwError NoWrTok)
     (IType (ISend tyS), cs1, ctxt2) <- local (rmWrTok) (infer e1)
     (tyWrS, cs2, ctxt3) <- local (const ctxt2) (infer e2)
     return (IType tyUnit, (IType (IWrChan tyS), tyWrS) : cs1 ++ cs2, ctxt3)
@@ -710,6 +710,8 @@ infer expr = case expr of
     return (tyV, cs1 ++ cs2,ctxt3)
 
   EChoice e1 e2 -> do
+    ctxt1 <- ask
+    when (checkWrTok ctxt1) (throwError WrTokenInChoice)    
     (tyU1, cs1, ctxt2) <- infer e1
     (tyU2, cs2, ctxt3) <- infer e2
     return (tyU1, (tyU1, tyU2) : cs1 ++ cs2, intersectTyEnv ctxt2 ctxt3)
