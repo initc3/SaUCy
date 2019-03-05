@@ -66,7 +66,7 @@ of local process termination as follows:\smallskip
 Informally, $\Lterm{e}$ holds when $e$ is a value, $e$ is reading, or $e$ is writing.
 
 \begin{theorem}[Local Progress]
-  For all expressions $e$ and types $U$, if $|- e : U$, then either $\Lterm{e}$
+  If $|- e : U$, then either $\Lterm{e}$
   or there exists $e'$ such that $e -> e'$.
   \begin{proof}
     By structural induction on the derivation of $|- e : U$.
@@ -74,8 +74,7 @@ Informally, $\Lterm{e}$ holds when $e$ is a value, $e$ is reading, or $e$ is wri
 \end{theorem}
 
 \begin{theorem}[Local Preservation]
-  For all expressions $e, e'$ and types $U$, if $|- e : U$ and $e -> e'$, then
-  $|- e' : U$.
+  If $|- e : U$ and $e -> e'$, then $|- e' : U$.
   \begin{proof}
     By structural induction on the derivation of $e -> e'$.
   \end{proof}
@@ -106,12 +105,12 @@ follows:\smallskip
 \begin{mathpar}
 \Infer{Cterm}
 {\textrm{RdChans}(\pi) = \Sigma_1 \\ \textrm{WrChans}(\pi) = \Sigma_2\\\\
- \Sigma_1 \cap \Sigma_2 = \emptyset}
+\{ (c_1,c_2) \mid c_1 \in \Sigma_1, c_2 \in \Sigma_2, c_2 \leadsto c_1\} = \varnothing}
 {\JCterm{\Config{\Names}{}{\Procs}}}
 \end{mathpar}
 \begin{align*}
-  \textrm{RdChans}(\emptyctxt) &= \emptyctxt
-  &\textrm{WrChans}(\emptyctxt) &= \emptyctxt\\
+  \textrm{RdChans}(\emptyProcs) &= \emptyctxt
+  &\textrm{WrChans}(\emptyProcs) &= \emptyctxt\\
   \textrm{RdChans}(\pi, p:\eLetRd{c}{x}{e}) &= \textrm{RdChans}(\pi),c
   &\textrm{WrChans}(\pi, p:\eWr{c}{v}) &= \textrm{WrChans}(\pi),c
 \end{align*}
@@ -126,62 +125,142 @@ Informally, $\JCterm{C}$ holds when either:
    however, no reader-writer pair exists for a common channel~$c$.
 \end{enumerate}
 
-\begin{lemma}[Substitution (Intuitionistic)]
-  If $\Delta; \Gamma, x : A |- e : A'$ and $\Delta; \Gamma |- e : A$, then $\Delta; \Gamma |- [e/x]e' : A'$.
+\begin{lemma}[\todo{}]
+  If $\ChTy |- C : \PrTy$ and $C \equiv C'$, then $\ChTy |- C' : \PrTy$.
   \begin{proof}
-    By structural induction on the derivation of $\Delta; \Gamma, x : A |- e : A'$.
+    By structural induction on \todo{}.
+  \end{proof}
+\end{lemma}
+
+\begin{lemma}[Typability of Subterms]
+  If $\mathcal{D}$ is a derivation of $\Delta; \Gamma |- E[e] : U$, then there exists $\Delta_1, \Delta_2,
+  \Gamma_1,\Gamma_2$ and $V$ such that $\Delta = \Delta_1,\Delta_2$, $\Gamma = \Gamma_1,\Gamma_2$, $\mathcal{D}$ has a
+  subderivation $\mathcal{D}'$ concluding $\Delta_1;\Gamma_1 |- e : V$, and the position of $\mathcal{D}'$ in
+  $\mathcal{D}$ corresponds to the position of the hole in $E$.
+  \begin{proof}
+    By structural induction on the structure of $E$.
+  \end{proof}
+\end{lemma}
+
+\begin{lemma}[Replacement (Evaluation Contexts)]
+  If
+  \begin{enumerate}
+  \item $\mathcal{D}$ is a subderivation of $\Delta_1,\Delta_2;\Gamma_1,\Gamma_2 |- E[e] : U$,
+  \item $\mathcal{D}'$ is a subderivation of $\mathcal{D}$ concluding $\Delta_2;
+    \Gamma_2 |- e : V$,
+  \item the position of $\mathcal{D}'$ in $\mathcal{D}$ corresponds to the
+    position of the hole in $E$,
+  \item $\Delta_3;\Gamma_3 |- e' : V$,
+  \item $\Delta_1,\Delta_3;\Gamma_1,\Gamma_3$ is defined,
+  \end{enumerate}
+  then $\Delta_1,\Delta_3;\Gamma_1,\Gamma_3 |- E[e'] : U$.
+  \begin{proof}
+    By structural induction on the structure of $E$.
+  \end{proof}  
+\end{lemma}
+
+\begin{lemma}[Substitution (Intuitionistic)]
+  If
+  \begin{enumerate}
+  \item $\Delta_1; \Gamma_1, x : A |- e : U$,
+  \item $\Delta_2; \Gamma_2 |- e' : A$,
+  \item $\Delta_1,\Delta_2 ; \Gamma_1,\Gamma_2$ is defined,
+  \end{enumerate}
+  then $\Delta_1,\Delta_2; \Gamma_1,\Gamma_2 |- [e'/x]e : U$.
+  \begin{proof}
+    By structural induction on the derivation of $\Delta_1; \Gamma_1, x : A |- e : U$.
   \end{proof}
 \end{lemma}
 
 \begin{lemma}[Substitution (Affine)]
-  If $\Delta, x:X; \Gamma |- e : X'$ and $\Delta; \Gamma |- e : X$, then $\Delta; \Gamma |- [e/x]e' : X'$.
+  If
+  \begin{enumerate}
+  \item $\Delta_1, x : X; \Gamma_1 |- e : U$,
+  \item $\Delta_2; \Gamma_2 |- e' : X$,
+  \item $\Delta_1,\Delta_2 ; \Gamma_1,\Gamma_2$ is defined,
+  \end{enumerate}
+  then $\Delta_1,\Delta_2; \Gamma_1,\Gamma_2 |- [e'/x]e : U$.
   \begin{proof}
-    By structural induction on the derivation of $\Delta, x ; X; \Gamma |- e : X'$.
+    By structural induction on the derivation of $\Delta_1; \Gamma_1, x : A |- e : U$.
   \end{proof}
 \end{lemma}
 
 \begin{lemma}[Non-progress]
-For all configurations $C$,
-channel typings~$\ChTy$,
-and process typings~$\PrTy$,
-%
-if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
-and $\JCterm{C}$,
-then there does not exist $C'$ such that $\JCred{C}{C'}$.
-%\begin{proof}
-%  TODO
-%\end{proof}
+If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ and $\JCterm{C}$, then there does not exist
+$C'$ such that $\JCred{C}{C'}$.
+\begin{proof}
+    By structural induction on the derivation of $\JCty{\StTy}{\ChTy}{C}{\PrTy}$.
+\end{proof}
 \end{lemma}
+%\begin{lemma}[Non-progress]
+%For all configurations $C$,
+%channel typings~$\ChTy$,
+%and process typings~$\PrTy$,
+%%
+%if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
+%and $\JCterm{C}$,
+%then there does not exist $C'$ such that $\JCred{C}{C'}$.
+%\begin{proof}
+%    By structural induction on the derivation of $\JCty{\StTy}{\ChTy}{C}{\PrTy}$.
+%\end{proof}
+%\end{lemma}
 
 \begin{theorem}[Progress]
-For all configurations $C$,
-channel typings~$\ChTy$,
-and process typings~$\PrTy$,
-%
-if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
-then 
-either $\JCterm{C}$,
-or $\exists C'$ such that $\JCred{C}{C'}$.
-%\begin{proof}
-%   TODO
-%\end{proof}
+If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ then either $\JCterm{C}$, or $\exists C'$ such that
+$\JCred{C}{C'}$.
+
+%For all configurations $C$,
+%channel typings~$\ChTy$,
+%and process typings~$\PrTy$,
+%%
+%if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
+%then 
+%either $\JCterm{C}$,
+%or $\exists C'$ such that $\JCred{C}{C'}$.
+\begin{proof}
+    By structural induction on the derivation of
+    $\JCty{\StTy}{\ChTy}{C}{\PrTy}$.
+    \begin{itemize}[leftmargin=*]
+    \item[] \textbf{Case}
+      \begin{mathpar}
+      \Infer{empty}
+      { 
+        %\StTy ; \ChTy |- \Store : \StTy
+      }
+      {\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\emptyProcs}}{\cdot}}
+      \end{mathpar}
+      \begin{llproof}
+        %\Pf{\ChTy}{|-}{{\Config{\Names}{\Store}{\emptyProcs}}: \cdot}{By assumption}
+        \Pf{}{}{\Sigma_1 = \textrm{RdChans}(\emptyProcs)=\emptyctxt}{By definition of RdChans}
+        \Pf{}{}{\Sigma_2 = \textrm{WrChans}(\emptyProcs)=\emptyctxt}{By definition of
+          WrChans}
+        \Pf{}{}{\{ (c_1,c_2) \mid c_1 \in \Sigma_1, c_2 \in \Sigma_2, c_2 \leadsto c_1\} = \varnothing}{}        
+        \Pf{}{}{\JCterm{{\Config{\Names}{\Store}{\emptyProcs}}}}{By Cterm}
+      \end{llproof}
+
+    \item[] \textbf{Case}
+      \begin{mathpar}
+      \Infer{cons}
+      { \ChTy |- e : U
+        \\
+       \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
+      { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:U}}
+      \end{mathpar}
+      \begin{llproof}
+        \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs,p:e}{\PrTy,p:U}}{By assumption}
+      \end{llproof}            
+    \end{itemize}    
+\end{proof}  
 \end{theorem}
 
 \begin{theorem}[Preservation]
-For all configurations $C, C'$,
-channel typings~$\ChTy$
-and process typings~$\PrTy$,
-%
- if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
-and $\JCred{C}{C'}$ 
-then there exists 
-channel typing extension $\ChTy' \supseteq \ChTy$
-and process typing extension $\PrTy' \supseteq \PrTy$
-such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
+If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ and $\JCred{C}{C'}$, then there exists
+$\ChTy' \supseteq \ChTy$ and $\PrTy' \supseteq \PrTy$ such that
+$\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 \begin{proof}
     By structural induction on the derivation of $\JCred{C}{C'}$.
   \begin{itemize}[leftmargin=*]
-  \item \textbf{Case}
+  \item[] \textbf{Case}
     \begin{mathpar}
     \Infer{rw}
     { c_2 \leadsto c_1 }
