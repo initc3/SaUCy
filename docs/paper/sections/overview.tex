@@ -264,7 +264,7 @@ for forking a process (fork), reading a message (rd), and writing a message
 $\Delta$ and intuitionistic context $\Gamma$, expression $e$ has type $U$.''
 \begin{mathpar}
 \Infer{fork}
-{\Delta_1; \Gamma |- e_1 : U\\\\
+{\Delta_1; \Gamma |- e_1 : U\\
 \Delta_2; \Gamma |- e_2 : V}
 {\Delta_1, \Delta_2; \Gamma |- \eFork{e_1}{e_2} : V}
 \end{mathpar}
@@ -277,7 +277,7 @@ must be partitioned between the two processes, and so each read channel and the
 write token is owned by at most one process.
 \begin{mathpar}
 \Infer{wr}
-{\Delta_1; \Gamma |- e_1 : S\\\\
+{\Delta_1; \Gamma |- e_1 : S\\
 \Delta_2; \Gamma |- e_2 : \tyWr{S}}
 {\Delta_1,\Delta_2,\wrtok; \Gamma|- \eWr{e_1}{e_2} : \tyUnit}
 \end{mathpar}

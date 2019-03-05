@@ -32,10 +32,11 @@
 %%
 %% This initial definition of R is too limiting: It's not general enough to support the progress theorem:
 %     & $\bnfas$ & $\bullet \bnfalt \eRd{\eChan{c}} \oplus R \bnfalt R \oplus \eRd{\eChan{c}}$
-     & $\bnfas$ & $\bullet \bnfalt e \oplus R \bnfalt R \oplus e$
+     & $\bnfas$ & $\bullet \bnfalt e \boxplus R \bnfalt R \boxplus e$
 \end{grammar}
 \end{subfigure}
-\caption{Channel names, process names, configurations and evaluation contexts.}
+\caption{Channel names, process names, configurations, evaluation contexts, and
+  read contexts.}
 \label{fig:configs}
 \end{figure*}
 
@@ -77,9 +78,14 @@ C_2' \equiv C_2
 \and
 \Infer{rw}
 { c_2 \leadsto c_1 }
-{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
-  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \ePair{!v}{\eChan{c_1}}{\wm}], \ProcNm{q}
+{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
+  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q}
     E_2[ \eUnit ]} }
+%\Infer{rw}
+%{ c_2 \leadsto c_1 }
+%{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
+%  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \ePair{!v}{\eChan{c_1}}{\wm}], \ProcNm{q}
+%    E_2[ \eUnit ]} }
 %\Infer{rw}
 %{ c_2 \leadsto c_1 }
 %{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->

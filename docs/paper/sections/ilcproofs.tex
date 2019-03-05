@@ -1,7 +1,7 @@
 \section{ILC Metatheory}
 \label{sec:ilcproofs}
 
-\subsection{Additional syntax}
+\subsection{Additional Syntax}
 
 We define syntax for process and channel typings, which each map a kind of
 identifier (process name, or channel name) to its associated type:
@@ -15,18 +15,13 @@ identifier (process name, or channel name) to its associated type:
     Channel pool typings
     %(maps channel names to their types)
     & $\ChTy$
-    &$\bnfas$& $\emptyctxt \bnfalt \ChTy,c:A \bnfalt \ChTy,c:X$
-    \\
-    Channel pool typings?
-    %(maps channel names to their types)
-    & $\ChTy$
     &$\bnfas$& $\emptyctxt \bnfalt \ChTy,c:\tyRd{S} \bnfalt \ChTy,c:\tyWr{S}$
 \end{grammar}
 
-\subsection{Configuration typings}
+\subsection{Configuration Typings}
 
 Using the syntax above, we define configuration typing as a straightforward extension
-of single-process typing, given in \Secref{subsec:types}:
+of single-process typing, given in \Secref{subsec:types}:\smallskip
 
 \judgbox{\JCty{\StTy}{\ChTy}{C}{\PrTy}}{Configuration $C$ is well-typed}
 \begin{mathpar}
@@ -36,30 +31,114 @@ of single-process typing, given in \Secref{subsec:types}:
 }
 {\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\emptyProcs}}{\cdot}}
 \and
-\Infer{aff}
-{ \ChTy |- e : X
+\Infer{cons}
+{ \ChTy |- e : U
   \\
  \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
-{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:X}}
-\and
-\Infer{aff?}
-{ \ChTy |- \Config{\Names}{}{p:e} : X
-  \\
- \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
-{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:X}}
-\and
-\Infer{int}
-{ \ChTy |- e : A
-  \\
- \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
-{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:A}}
+{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:U}}
 \end{mathpar}
 
 %Notably, parallel procesess with modes $m_1$ and $m_2$ must have modes
 %that compose, where $m_1 || m_2$ is defined; this invariant ensures that there
 %is at most one write mode process in a well-typed pool.
 
-\subsection{Type soundness}
+\subsection{Local Type Soundness}
+
+We prove type soundness of the functional fragment of ILC (local type soundness)
+via mostly-standard notions of progress and preservation. To state these
+theorems, we follow the usual recipe, except that we give a special definition
+of local process termination as follows:\smallskip
+
+\judgbox{\Lterm{e}}{Expression $e$ is locally terminated.}
+\begin{mathpar}
+\Infer{val}
+{ }
+{\Lterm{v}}
+\and  
+\Infer{rdterm}
+{ }
+{\Lterm{\eLetRd{c}{x}{e}}}
+\and
+\Infer{wrterm}
+{ }
+{\Lterm{\eWr{c}{v}}}
+\end{mathpar}
+Informally, $\Lterm{e}$ holds when $e$ is a value, $e$ is reading, or $e$ is writing.
+
+\begin{theorem}[Local Progress]
+  For all expressions $e$ and types $U$, if $|- e : U$, then either $\Lterm{e}$
+  or there exists $e'$ such that $e -> e'$.
+  \begin{proof}
+    By structural induction on the derivation of $|- e : U$.
+  \end{proof}
+\end{theorem}
+
+\begin{theorem}[Local Preservation]
+  For all expressions $e, e'$ and types $U$, if $|- e : U$ and $e -> e'$, then
+  $|- e' : U$.
+  \begin{proof}
+    By structural induction on the derivation of $e -> e'$.
+  \end{proof}
+\end{theorem}
+
+%\begin{theorem}[Local Progress]
+%  If $|- e : U$, then either $\Lterm{e}$ or there exists $e'$ such that $e ->
+%  e'$.
+%  \begin{proof}
+%    By structural induction on the derivation of $|- e : U$.
+%  \end{proof}
+%\end{theorem}
+%
+%\begin{theorem}[Local Preservation]
+%  If $|- e : U$ and $e -> e'$, then $|- e' : U$.
+%  \begin{proof}
+%    By structural induction on the derivation of $e -> e'$.
+%  \end{proof}
+%\end{theorem}
+
+\subsection{Type Soundness}
+
+To prove type soundness of ILC, we follow the usual recipe, except that we give
+a special definition of ``program termination'' (which permits deadlocks) as
+follows:\smallskip
+
+\judgbox{\JCterm{C}}{Configuration $C$ is terminated.}
+\begin{mathpar}
+\Infer{Cterm}
+{\textrm{RdChans}(\pi) = \Sigma_1 \\ \textrm{WrChans}(\pi) = \Sigma_2\\\\
+ \Sigma_1 \cap \Sigma_2 = \emptyset}
+{\JCterm{\Config{\Names}{}{\Procs}}}
+\end{mathpar}
+\begin{align*}
+  \textrm{RdChans}(\emptyctxt) &= \emptyctxt
+  &\textrm{WrChans}(\emptyctxt) &= \emptyctxt\\
+  \textrm{RdChans}(\pi, p:\eLetRd{c}{x}{e}) &= \textrm{RdChans}(\pi),c
+  &\textrm{WrChans}(\pi, p:\eWr{c}{v}) &= \textrm{WrChans}(\pi),c
+\end{align*}
+Informally, $\JCterm{C}$ holds when either:
+\begin{enumerate}
+ \item $C$ is fully normal: every process in~$C$ is normalized (consists of a
+   value).
+ \item $C$ is (at least partially) deadlocked: 
+   some (possibly-empty) portion of $C$ is normal, and
+   there exists one or more reading processes in $C$, or
+   there exists one or more writing processes in $C$,
+   however, no reader-writer pair exists for a common channel~$c$.
+\end{enumerate}
+
+\begin{lemma}[Substitution (Intuitionistic)]
+  If $\Delta; \Gamma, x : A |- e : A'$ and $\Delta; \Gamma |- e : A$, then $\Delta; \Gamma |- [e/x]e' : A'$.
+  \begin{proof}
+    By structural induction on the derivation of $\Delta; \Gamma, x : A |- e : A'$.
+  \end{proof}
+\end{lemma}
+
+\begin{lemma}[Substitution (Affine)]
+  If $\Delta, x:X; \Gamma |- e : X'$ and $\Delta; \Gamma |- e : X$, then $\Delta; \Gamma |- [e/x]e' : X'$.
+  \begin{proof}
+    By structural induction on the derivation of $\Delta, x ; X; \Gamma |- e : X'$.
+  \end{proof}
+\end{lemma}
 
 \begin{lemma}[Non-progress]
 For all configurations $C$,
@@ -68,60 +147,11 @@ and process typings~$\PrTy$,
 %
 if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
 and $\JCterm{C}$,
-then $\not\exists C'$ such that $\JCred{C}{C'}$.
+then there does not exist $C'$ such that $\JCred{C}{C'}$.
 %\begin{proof}
 %  TODO
 %\end{proof}
 \end{lemma}
-
-\judgbox{\Lterm{e}}{Expression $e$ is locally terminated.}
-\begin{mathpar}
-\Infer{rd}
-{ }
-{\Lterm{\eLetRd{c}{x}{e}}}
-\and
-\Infer{wr}
-{ }
-{\Lterm{\eWr{c}{v}}}
-\end{mathpar}
-
-\begin{theorem}[Progress (local)]
-  If $|- e : U$, then either $\Lterm{e}$ or there exists $e'$ such that $e ->
-  e'$.
-  \begin{proof}
-    By structural induction on the derivation of $|- e : U$.
-  \end{proof}
-\end{theorem}
-
-\judgbox{\Norm{C}}{Configuration $C$ is fully normal.}
-\begin{mathpar}
-\Infer{empty}
-{ }
-{\Norm{\Config{\Names}{}{\emptyProcs}}}
-\and
-\Infer{fnorm}
-{\Norm{\Config{\Names}{}{\Procs}}}
-{\Norm{\Config{\Names}{}{\Procs,\proc{p:v}}}}
-\end{mathpar}
-
-\judgbox{\JCterm{C}}{Configuration $C$ is terminated.}
-\begin{mathpar}
-%\Infer{empty}
-%{ }
-%{\Norm{\Config{\Names}{}{\emptyProcs}}}
-%\and
-%\Infer{norm}
-%{\Norm{\Config{\Names}{}{\Procs}}}
-%{\Norm{\Config{\Names}{}{\Procs,\proc{p:v}}}}
-%\and
-\Infer{tnorm}
-{\Norm{\Config{\Names}{}{\Procs,\proc{p:v}}}}
-{\JCterm{\Config{\Names}{}{\Procs,\proc{p:v}}}}
-\and
-\Infer{dlock}
-{\Norm{\Config{\Names}{}{\Procs_1}} \\ \Norw{\Config{\Names}{}{\Procs_2,\proc{p:\Lterm{e}}}}}
-{\JCterm{\Config{\Names}{}{\Procs_1,\Procs_2,\proc{p:e}}}}
-\end{mathpar}
 
 \begin{theorem}[Progress]
 For all configurations $C$,
@@ -135,13 +165,6 @@ or $\exists C'$ such that $\JCred{C}{C'}$.
 %\begin{proof}
 %   TODO
 %\end{proof}
-\end{theorem}
-
-\begin{theorem}[Preservation (local)]
-  If $|- e : U$ and $e -> e'$, then $|- e' : U$.
-  \begin{proof}
-    By structural induction on the derivation of $e -> e'$.
-  \end{proof}
 \end{theorem}
 
 \begin{theorem}[Preservation]
@@ -162,26 +185,51 @@ such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
     \begin{mathpar}
     \Infer{rw}
     { c_2 \leadsto c_1 }
-    { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]}\\\\ --->
-    \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \ePair{!v}{\eChan{c_1}}{\wm}], \ProcNm{q}
-      E_2[ \eUnit ]} }
+    { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
+      \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q}
+        E_2[ \eUnit ]} }
     \end{mathpar}
-    Assume $|- \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[
-          \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} :
-    \PrTy$. We show $|- \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \ePair{!v}{\eChan{c_1}}{\wm}], \ProcNm{q}
-      E_2[ \eUnit ]} : \PrTy$ by preservation of the types of contexts $E_1$ and
-    $E_2$.
-
-    Preservation of $E_2$: By inversion, we have $|- E_2[\eWr{\eChan{c_2}}{v}] :
-    \tyUnit$ such that $\Names(\eChan{c_2}) = \tyWr{S}$ and $|- v : S$ for some
-    $S$. Also by inversion, $|- E_2[ \eUnit ] : \tyUnit$.
-
-    Preservation of $E_1$: Because $\Names(\eChan{c_2}) = \tyWr{S}$ and $c_2 \leadsto
-    c_1$, we have $\Names(\eChan{c_1}) = \tyRd{S}$. By inversion and the fact
-    $\Names(\eChan{c_1}) = \tyRd{S}$, we have $|- E_1[R[ \eRd{\eChan{c_1}}] ] :
-    \tyTensor{\tyBang{S}}{\tyRd{S}}$. By $|- v : S$ and $\Names(\eChan{c_1}) =
-    \tyRd{S}$, we have $|- E_2[ \ePair{!v}{\eChan{c_1}}{\wm}] :
-    \tyTensor{\tyBang{S}}{\tyRd{S}}$.
+    \begin{llproof}
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[
+              \eLetRd{\eChan{c_1}}{x}{e}]], \ProcNm{q} E_2[
+            \eWr{\eChan{c_2}}{v}]} : \PrTy}{By assumption}
+      \Pf{}{|-}{E_2[\eWr{\eChan{c_2}}{v}] : \tyUnit~\textrm{s.t.}~\ChTy(\eChan{c_2}) = \tyWr{S}~\textrm{and}~|- v : S~\textrm{for some}~S}{By inversion (wr)}
+      \Pf{}{|-}{E_2[\eUnit] : \tyUnit}{By inversion (unit)}
+      \Pf{}{}{c_2 \leadsto c_1}{By assumption}
+      \Pf{}{}{\ChTy(\eChan{c_2}) = \tyWr{S}}{Above}      
+      \Pf{}{}{\ChTy(\eChan{c_1}) = \tyRd{S}}{By definition of $\leadsto$ and
+        $\ChTy(\eChan{c_2}) = \tyWr{S}$}
+      \Pf{}{|-}{E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ] :
+        \tyTensor{\tyBang{S}}{\tyRd{S}}}{By inversion (rd) and
+        $\ChTy(\eChan{c_1}) = \tyRd{S}$}
+      \Pf{}{|-}{v : S}{Above}
+      \Pf{}{|-}{E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e] :
+        \tyTensor{\tyBang{S}}{\tyRd{S}}}{By $|- v : S$, $\ChTy(\eChan{c_1})
+        = \tyRd{S}$, and Lemma X (Substitution)}
+%      \Pf{}{}{\Sigma(p) = \Sigma(p')}{By above equalities}
+%      \Pf{}{}{\Sigma(q) = \Sigma(q')}{By above equalities}
+      \Pf{}{}{\exists \ChTy', \PrTy'~\textrm{s.t.}~\ChTy' = \ChTy~\textrm{and}~\PrTy'
+        = \PrTy}{}
+      \Pf{\ChTy'}{|-}{\Config{\ChTy}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q}
+        E_2[ \eUnit ]} : \PrTy'}{}      
+    \end{llproof}
+    
+%    Assume $|- \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[
+%          \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} :
+%    \PrTy$. We show $|- \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \ePair{!v}{\eChan{c_1}}{\wm}], \ProcNm{q}
+%      E_2[ \eUnit ]} : \PrTy$ by preservation of the types of contexts $E_1$ and
+%    $E_2$.
+%
+%    Preservation of $E_2$: By inversion, we have $|- E_2[\eWr{\eChan{c_2}}{v}] :
+%    \tyUnit$ such that $\Names(\eChan{c_2}) = \tyWr{S}$ and $|- v : S$ for some
+%    $S$. Also by inversion, $|- E_2[ \eUnit ] : \tyUnit$.
+%
+%    Preservation of $E_1$: Because $\Names(\eChan{c_2}) = \tyWr{S}$ and $c_2 \leadsto
+%    c_1$, we have $\Names(\eChan{c_1}) = \tyRd{S}$. By inversion and the fact
+%    $\Names(\eChan{c_1}) = \tyRd{S}$, we have $|- E_1[R[ \eRd{\eChan{c_1}}] ] :
+%    \tyTensor{\tyBang{S}}{\tyRd{S}}$. By $|- v : S$ and $\Names(\eChan{c_1}) =
+%    \tyRd{S}$, we have $|- E_2[ \ePair{!v}{\eChan{c_1}}{\wm}] :
+%    \tyTensor{\tyBang{S}}{\tyRd{S}}$.
   \end{itemize}
 
 \end{proof}
