@@ -111,6 +111,8 @@ world with $\mc{F}$, the idealized version of $\pi$.
 %for $\mc{F}$ any protocol that emulates it without fear of something going
 %wrong.
 
+\todo{Recap of ITMs here.}
+
 \begin{comment}
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
 the commitment scheme defined previously. The real world is shown on the left
@@ -230,64 +232,71 @@ three properties hold trivially.
 In Figure~\ref{func:com} (right), we define a simplified version of
 $\Func_{\textsc{com}}$ in ILC to highlight some key features of the
 language. The function \textsf{fCom} takes two channels as arguments: a write
-channel \textsf{toQ : Wr Msg} (for writing messages to $Q$) and a read channel
-\textsf{frP : Rd Msg} (for reading messages from $P$). It should be fairly
-straightforward to see how the communication pattern in \textsf{fCom} follows
-that in $\Func_{\textsc{com}}$.  There are a few details that require some
-explanation, so for these, we give a taste of the type system.
+channel \textsf{toQ : Wr Msg} (for sending messages of type \textsf{Msg} to $Q$)
+and a read channel \textsf{frP : Rd Msg} (for receiving messages of type
+\textsf{Msg} from $P$). At a high level, it should be clear how the
+communication pattern in \textsf{fCom} follows that in $\Func_{\textsc{com}}$,
+but there are a few details that require further explanation. These details are
+better explained in the context of ILC's type system, which we give a quick tour
+of next.
 
 \subsection{ILC Type System}
 \label{subsec:type-tour}
 
 ILC terms are either intuitionistically typed, meaning they can be freely
-copied, or affinely typed, meaning they can be used at most once. Here, affine
-typing serves a special purpose: to ensure that \emph{well-typed ILC programs
-  are expressible in ITMs}. To make this happen, the typing rules maintain these
-invariants:
+copied, or affinely typed, meaning they can be used at most once. Affine typing
+serves a special purpose, namely, to ensure that \emph{well-typed ILC programs
+  are expressible in ITMs}. This is achieved through the following invariants:
 
 \begin{itemize}[leftmargin=*]
-\item \emph{Only one process is ``active'' at any given time.} Processes
-  implicitly pass around an affine ``write token'' $\wrtok$ by virtue of where
-  they perform read and write effects. Because the write token is affine
-  (unique), at most one process owns the write token (is ``active'') at any
-  given time.
+\item \emph{Only one process is active at any given time.} Processes implicitly
+  pass around an affine ``write token'' $\wrtok$ by virtue of where they perform
+  read and write effects. Because the write token is unique, at most one process
+  owns the write token (``is active'' or ``can write'') at any given time.
   
-\item \emph{The sequence of activations is deterministic.} Each channel (or
+\item \emph{The order of activations is deterministic.} Each channel (or
   ``tape'' in ITM parlance) has a read end and a write end. The read end is an
   affine resource, and so it is owned by at most one process. This ensures that
-  there is a unique process at the receiving end of a communication.
+  each write operation corresponds to a single, unique read operation.
 \end{itemize}
 
-To showcase these invariants, we give a taste of the typing rules, namely, those
-for forking a process (fork), reading a message (rd), and writing a message
-(wr). We read the typing judgement $\Delta ; \Gamma |- e : U$ as ``under affine context
-$\Delta$ and intuitionistic context $\Gamma$, expression $e$ has type $U$.''
+To see these invariants in action, we give a taste of the typing rules. We read
+the typing judgement $\Delta ; \Gamma |- e : U$ as ``under affine context $\Delta$ and
+intuitionistic context $\Gamma$, expression $e$ has type $U$.'' The metavariables $U$
+and $V$ range over all types (both intuitionistic and affine).
+
+The fork expression $\eFork{e_1}{e_2}$ says to fork a child process $e_1$ and
+continue as $e_2$.
 \begin{mathpar}
 \Infer{fork}
 {\Delta_1; \Gamma |- e_1 : U\\
 \Delta_2; \Gamma |- e_2 : V}
 {\Delta_1, \Delta_2; \Gamma |- \eFork{e_1}{e_2} : V}
 \end{mathpar}
+Its typing rule says that if we can partition the affine context as $\Delta_1, \Delta_2$
+such that $e_1$ has type $U$ under contexts $\Delta_1; \Gamma$ and $e_2$ has type $V$
+under contexts $\Delta_2; \Gamma$, then the expression has type $V$.  Notice that affine
+resources (read channels, the write token) must be split between the child
+process and the parent process, and so each can be owned by at most one process.
 
-The fork rule says that if we can partition the affine context as $\Delta_1, \Delta_2$
-such that $e_1$ has type $U$ under contexts $\Delta_1; \Gamma$, and $e_2$ has type $V$
-under contexts $\Delta_2; \Gamma$, then the expression has type $V$. Here, $e_1$ is the
-child process, and $e_2$ is the parent process. Notice that affine resources
-must be partitioned between the two processes, and so each read channel and the
-write token is owned by at most one process.
+The write expression $\eWr{e_1}{e_2}$ sends the evaluation of $e_1$ on the
+channel evaluation of $e_2$. One thing to mention is that only sendable-typed
+values (ranged over by $S$) can be sent over channels (more on this later).
 \begin{mathpar}
 \Infer{wr}
 {\Delta_1; \Gamma |- e_1 : S\\
 \Delta_2; \Gamma |- e_2 : \tyWr{S}}
 {\Delta_1,\Delta_2,\wrtok; \Gamma|- \eWr{e_1}{e_2} : \tyUnit}
 \end{mathpar}
+Its typing rule says that if we own the write token, and we can partition the
+affine context as $\Delta_1, \Delta_2$ such that $e_1$ has type $S$ under contexts $\Delta_1;
+\Gamma$ and $e_2$ has a type $\tyWr{S}$ under contexts $\Delta_2; \Gamma$, then the expression
+has type $\tyUnit$ (unit).  Notice that typing a write expression spends the
+write token.
 
-The wr rule says that if we own the write token and we can partition the affine
-context as $\Delta_1, \Delta_2$ such that $e_1$ has type $S$ under contexts $\Delta_1; \Gamma$, and
-$e_2$ has a type $\tyWr{S}$ under contexts $\Delta_2; \Gamma$, then the \textsf{wr}
-expression has type $\tyUnit$. Here, $S$ ranges over the types of values that
-are ``sendable.'' Notice that typing a write expression ``spends'' the write
-token.
+The read expression $\eLetRd{e_1}{x}{e_2}$ reads a value from the channel
+evaluation of $e_1$ and binds the value-channel pair as $x$ in the affine
+context of $e_2$. Rebinding the read channel allows it to be reused.
 \begin{mathpar}
 \Infer{rd}
 {\wrtok \not \in \Delta_2\\
@@ -295,16 +304,30 @@ token.
 \Delta_2,\wrtok, x : \tyTensor{\tyBang{S}}{\tyRd{S}} ; \Gamma |- e_2 : U}
 {\Delta_1,\Delta_2 ; \Gamma |- \eLetRd{e_1}{x}{e_2} : U}  
 \end{mathpar}
+Its typing rule says that if we can partition the affine context as $\Delta_1, \Delta_2$
+such that $e_1$ has type $\tyRd{S}$ under contexts $\Delta_1; \Gamma$, and $e_2$ has type
+$U$ under contexts $\Delta_2, \wrtok, x:\tyTensor{\tyBang{S}}{{\tyRd{S}}} ; \Gamma$, then
+the expression has type $U$.
 
-The rd rule says that if we do not own the write token, and we can partition the
-affine context as $\Delta_1, \Delta_2$ such that $e_1$ has type $\tyRd{S}$ under contexts
-$\Delta_1; \Gamma$, and $e_2$ has type $U$ under contexts $\Delta_2, \wrtok,
-x:\tyTensor{\tyBang{S}}{{\tyRd{S}}} ; \Gamma$, then the \textsf{rd} expression has
-type $U$. Here, an affine pair is bound to the variable $x$, with the (sendable
-and intuitionistic) value read over the channel (wrapped in a $!$ operator to
-make it affine) as the first coordinate and the read
-channel as the second coordinate (so it can be reused). Notice, that typing a
-read expression allows the write token to be spent in $e_2$.
+There are a few things to unpack here. The first is the affine product type
+$\tyTensor{\tyBang{S}}{{\tyRd{S}}}$, which is type of the value-channel pair
+bound to $x$. Since sendable values are intuitionistic and read channels are
+affine, the value is wrapped in a $!$ operator (pronounced ``bang'') so that it
+can be placed in an affine pair. Next, observe that the write token is available
+in the body of the read expression ($e_2$), but only under the condition that it
+is not already in the affine context $\Delta_2$ (otherwise, a process could
+arbitrarily ``mint'' write tokens).
+
+Having gone through several of the typing rules, we can now revisit
+\textsf{fCom} from Figure~\ref{func:com} (right). In particular, we should be
+convinced that \textsf{fCom} respects invariants of the type system. The type
+signature tells us that \textsf{toQ : Wr Msg} is intuitionistic ($->$ is the
+type connective for intuitionistic arrows) and \textsf{frP : Rd Msg} is affine
+($\multimap$ is the type connective for affine arrows) as expected. To see that
+\textsf{frP} is being used affinely, notice that it is rebound when
+deconstructing the value-channel pair from each read operation. To see that the
+write token is being passed around appropriately, notice that the read and write
+effects are interleaved.
 
 %\todo{Revisit example.}
 

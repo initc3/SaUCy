@@ -26,7 +26,7 @@ include unit ($\tyUnit$), products ($\tyProdd{}{S}{T}$), sums
 ($\tySum{S}{}{T}$). The intuitionistic types include the sendable types, write
 channel types ($\tyWr{S}$), products ($\tyProdd{}{A}{B}$), sums
 ($\tySum{A}{}{B}$), arrows ($\tyArr{A}{\infty}{U}$ or simply $A -> U$), and special
-write arrows ($\tyArr{A}{\wm}{U}$).
+write arrows ($\tyArr{A}{\wm}{U}$). \todo{Why do we need sendable types?}
 
 The affine types include bang types ($\tyBang{A}$), read channel types
 ($\tyRd{S}$), products ($\tyTensor{X}{Y}$), sums ($\tyOplus{X}{Y}$), and arrows
@@ -36,19 +36,18 @@ ILC supports a fairly standard feature set of expressions, with intuitionistic
 variants parameterized by the label $\infty$ and affine variants parameterized by the
 label $1$. The remaining syntax label $\wm$ on various introduction and
 elimination forms serves two different meanings: on products and sums, it
-denotes the sendable variants; on functions, it denotes a special ``write''
+denotes the sendable variants; on functions, it denotes the special write
 function.
 
-The more interesting expressions are those
-related to message-passing and concurrency:
+The more interesting expressions are those related to communication and
+concurrency:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     a corresponding write channel $x_2$ in $e$.
-  \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the result of evaluating $e_1$ on
-    the write channel result of evaluating $e_2$.
+  \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the evaluation of $e_1$ on
+    the write channel evaluation of $e_2$.
   \item \emph{Read:} $\eLetRd{e_1}{x}{e_2}$ reads a value from the read channel
-    result of evaluating $e_1$ and binds it (and the read channel) as $x$ in
-    $e_2$.
+    evaluation of $e_1$ and binds the value-channel pair as $x$ in $e_2$.
   \item \emph{Fork:} $\eFork{e_1}{e_2}$ forks a child process $e_1$ and
     continues as $e_2$.
   \item \emph{Choice:} $\eChoice{e_1}{e_2}$ allows a process to continue as
@@ -59,20 +58,21 @@ related to message-passing and concurrency:
 \subsection{Static Semantics}
 \label{subsec:types}
 
-The full set of typing rules is given in Figure~\ref{fig:type-expressions}. An
-algorithmic version of these rules appears in the Appendix.
+The typing rules of ILC are given in
+Figure~\ref{fig:type-expressions}.\footnote{For brevity, we elide the typing
+rules for sendable products and sums, since they are analagous to the
+intuitionistic variants.} An algorithmic version of these rules appears in the
+Appendix.
 
 To recap, we read the typing judgement $\Delta; \Gamma |- e : U$ as ``under affine context
 $\Delta$ and intuitionistic context $\Gamma$, expression~$e$ has type $U$.'' The typing
 rules maintain that only one process is active at any given time (unique
-ownership of the affine write token), and the sequence of activations is
-deterministic (unique ownership of affine read channels).
+ownership of the write token), and the sequence of activations is deterministic
+(unique ownership of read channels).
 
-The typing rules for the functional fragment of ILC are fairly
-standard.\footnote{For brevity, we elide the typing rules for sendable products
-and sums, since they are analagous to the intuitionistic variants.} We comment
-on the nonobvious rules, such as the ones for various forms of abstraction
-(iabs, wabs, aabs) and application (wapp).
+The typing rules for the functional fragment of ILC are fairly standard. We
+comment on the nonobvious rules, such as the ones for various forms of
+abstraction (iabs, wabs, aabs) and application (wapp).
 
 Intuitionistic abstraction (iabs) is standard, except the body of a lambda
 expression must be closed with respect to affine variables to prevent their
@@ -82,16 +82,17 @@ Write abstraction (wabs) is a special kind of intuitionistic abstraction that
 provides a write token in the body of a lambda expression. Dually, in order to
 apply a write abstraction, a process must own the write token (wapp). Without
 write abstractions, all functions would be initially read blocked, and so one
-could not write a ``starting process'' function that is initially activated.
+would not be able to specify a ``starting process'' function that is initially
+activated.
 
 Affine abstraction (aabs) is similar to intuitionistic abstraction, except it
-takes an affine argument, and the body of an affine lambda expression \emph{can}
+takes an affine argument. The body of an affine lambda expression \emph{can}
 contain free affine variables, since an affine function can only be applied
 once. Note that if an affine function $f : X \multimap U$ contains no free affine
-variables, then it can be transformed into a reusable intuitionistic function $g
-: A -> X \multimap U$.
+variables, then it can be transformed into an intuitionistic function $g : A ->
+X \multimap U$.
 
-The typing rules for message-passing and concurrency were mostly covered in
+The typing rules for communication and concurrency were mostly covered in
 Section~\ref{sec:overview}, except for channel restriction (nu) and external
 choice (choice). The nu rule extends the affine context with a read channel and
 the intuitionistic context with a corresponding write channel. The choice

@@ -23,9 +23,9 @@ adversarial behavior in the real world can also be exhibited in the ideal world.
 \end{comment}
 %
 Thus, the benefit of using UC is
-modularity---it supports analyzing complex protocols by composing simpler
+\emph{modularity}---it supports analyzing complex protocols by composing simpler
 building blocks.
-However, the cost of UC is that security proofs tend to be quite
+However, the cost of using UC is that security proofs tend to be quite
 complicated.
 We believe that applying a PL-style of systemization to UC can help
 simplify its use, bring new clarity, and provide useful tooling.
@@ -62,8 +62,8 @@ would frustrate such reduction proofs.
 ITMs avoid this issue by having a deterministic
 (modulo random coin tosses), single-threaded execution semantics. That is,
 processes pass control from one to another each time a message is sent so that
-\emph{exactly one process is active at any given time}, and, moreover, this
-order of activations is fully determined.
+\emph{exactly one process is active at any given time}, and, moreover, \emph{the
+order of activations is fully determined}.
 
 %Moreover, the order
 %of activations is completely determined by the protocol definition, random coin
@@ -111,50 +111,30 @@ framework, dubbed SaUCy.
 %framework itself (SaUCy).
 
 \subsection{Interactive Lambda Calculus}
-Where have existing concurrency models fallen short with respect to ITMs? On the
-one hand, some existing process calculi, such as the standard
-$\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
-variants~\cite{abadi1999calculus, abadi2001mobile, lincoln1998probabilistic},
-are not a good fit to ITMs, since they permit non-confluent reductions by design
-(i.e., non-probabilistic nondeterminism).
-%One could quite easily write programs in these languages that
-%are not expressible as ITMs.
-On the other hand, the various calculi that do enjoy confluence are
-restrictive, only allowing for fixed or two-party
+Where do existing process calculi fall short? On the one hand, process calculi
+such as the $\pi$-calculus~\cite{milner1999communicating} or its
+cryptography-oriented variants~\cite{abadi1999calculus, abadi2001mobile,
+  lincoln1998probabilistic} are not a good fit to ITMs, since they permit
+non-confluent reductions by design (i.e., non-probabilistic nondeterminism).  On
+the other hand, various other calculi that do enjoy confluence are restrictive,
+for example, only allowing for fixed or two-party
 communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 
 ILC fills this gap by adapting ITMs to a subset of the $\pi$-calculus through an
 affine typing discipline. In other words, \emph{well-typed ILC programs are
   expressible as ITMs}. To maintain that only one process is active (can write)
 at any given time, processes implicitly pass around an affine ``write token'' by
-virtue of where they perform read and write effects. Moreover, to maintain that
-this order of activations is fully determined, read channels are an affine
-resource, so each write operation corresponds with a single, unique read
-operation. Together, these give ILC its central metatheoretic property of
-confluence. The only nondeterminism in an ILC program is due to random coin
-tosses taken by processes, which have a well-defined distribution. Additionally,
-any apparent concurrency hazards, such as adversarial scheduling of messages in
-an asynchronous network, are due to an explicit adversary process rather than
+virtue of where they perform read and write effects: When process $A$ writes to
+process $B$, process $A$ ``spends'' the write token and process $B$ acquires
+it. Moreover, to maintain that the order of activations is fully determined, the
+read endpoints of a channel are an \emph{affine} resource, so each write
+operation corresponds to a single, unique read operation. Together, these give
+ILC its central metatheoretic property of \emph{confluence}. The only
+nondeterminism in an ILC program is due to random coin tosses taken by
+processes, which have a well-defined distribution. Additionally, any apparent
+concurrency hazards, such as adversarial scheduling of messages in an
+asynchronous network, are due to an explicit adversary process rather than
 uncertainty built into the model itself.
-
-\begin{comment}
-To give a quick tour of ILC's type system, judgments have the form $\Delta ; \Gamma |- e
-: A |> m$, where $\Delta$ is an affine typing context, $\Gamma$ is an intuitionistic typing
-context, and $m \in \{\Wm, \Rm, \Vm\}$ is a mode (write, read, and value,
-respectively). Importantly, it maintains these invariants:
-
-\begin{itemize}[leftmargin=*]
-\item \emph{No duplication of read channel ends.} Each channel (or ``tape'' in
-  ITM parlance) has a read end and a write end. The read end of the channel is
-  protected against duplication by binding it in the affine context $\Delta$. This
-  ensures that no nondeterminism arises at the receiving end of communications.
-
-\item \emph{No parallel composition of write mode processes.} The typing rules
-  do not allow parallel composition of two write mode processes ($\Wm ||
-  \Wm$). This ensures that no nondeterminism arises at the sending end of
-  communications.
-\end{itemize}
-\end{comment}
 
 %We have implemented an ILC interpreter in Haskell. For economy of use, our
 %implementation performs polymorphic type inference, bounded polymorphic mode
