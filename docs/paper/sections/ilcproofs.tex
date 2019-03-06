@@ -247,20 +247,48 @@ $\JCred{C}{C'}$.
       { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:U}}
       \end{mathpar}
       \begin{llproof}
-%        \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs,p:e}{\PrTy,p:U}}{By
-%          assumption}
         \Pf{}{}{\Lterm{e}~\textrm{or}~\exists e'~\textrm{s.t.}~e->e'}{By i.h.}
-        \Pf{}{}{\Config{\Names}{\Store}{\Procs,p:E[e]} ->
-          \Config{\Names}{\Store}{\Procs,p:E[e']}}{By $\exists e'~\textrm{s.t.}~e->e'$
-          and local}
         \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs}}~\textrm{or}~\exists
           \Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{By
           i.h.}
-        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{By $\Lterm{e}$ and
-          $\JCterm{\Config{\Names}{\Store}{\Procs}}$}
-        \Pf{}{}{\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{Above}
-        \Pf{}{}{\Config{\Names_1,\Names_2}{\Store}{\Procs,p:e} -> \Config{{\Names_1}',\Names_2}{\Store}{\Procs',p:e}}{By frame}
-      \end{llproof}            
+        \proofsep
+        \Pf{}{}{\textbf{Subcase}~\exists e'~\textrm{s.t.}~e->e'}{}
+        \Pf{}{}{\Config{\Names}{\Store}{\Procs,p:E[e]} ->
+          \Config{\Names}{\Store}{\Procs,p:E[e']}}{By rule local}
+
+        \proofsep
+        \Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{}
+        \Pf{}{}{\Sigma = \Sigma_1,\Sigma_2}{Suppose}
+        \Pf{}{}{\Config{\Names_1,\Names_2}{\Store}{\Procs,p:e} ->
+          \Config{{\Names_1}',\Names_2}{\Store}{\Procs',p:e}}{By rule frame}
+        \proofsep
+        \Pf{}{}{\textbf{Subcase}~\Lterm{e}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
+        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{?}
+
+      \end{llproof}
+%    \item[] \textbf{Case}
+%      \begin{mathpar}
+%      \Infer{cons}
+%      { \ChTy |- e : U
+%        \\
+%       \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
+%      { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:U}}
+%      \end{mathpar}
+%      \begin{llproof}
+%%        \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs,p:e}{\PrTy,p:U}}{By
+%%          assumption}
+%        \Pf{}{}{\Lterm{e}~\textrm{or}~\exists e'~\textrm{s.t.}~e->e'}{By i.h.}
+%        \Pf{}{}{\Config{\Names}{\Store}{\Procs,p:E[e]} ->
+%          \Config{\Names}{\Store}{\Procs,p:E[e']}}{By $\exists e'~\textrm{s.t.}~e->e'$
+%          and local}
+%        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs}}~\textrm{or}~\exists
+%          \Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{By
+%          i.h.}
+%        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{By $\Lterm{e}$ and
+%          $\JCterm{\Config{\Names}{\Store}{\Procs}}$}
+%        \Pf{}{}{\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{Above}
+%        \Pf{}{}{\Config{\Names_1,\Names_2}{\Store}{\Procs,p:e} -> \Config{{\Names_1}',\Names_2}{\Store}{\Procs',p:e}}{By frame}
+%      \end{llproof}                  
     \end{itemize}    
 \end{proof}  
 \end{theorem}
