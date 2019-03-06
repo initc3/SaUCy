@@ -277,11 +277,21 @@ $\JCred{C}{C'}$.
           c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} \neq \varnothing}{}
         \Pf{}{}{\qquad \exists~c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
           c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}}{Above}
-        \Pf{}{}{\qquad\exists~p', q' \in \Sigma~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs,
-            \ProcNm{p'} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q'} E_2[
-              \eWr{\eChan{c_2}}{v}]} --->}{}
-        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p'} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q'}
-        E_2[ \eUnit ]}}{By rule rw}
+        \Pf{}{}{\qquad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[R[
+                \eLetRd{\eChan{c_1}}{x}{e}] ]} --->
+          \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
+              [\ePair{!v}{\eChan{c_1}}{\wm}/x]e]}~\textrm{or}}{}
+        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
+              \eWr{\eChan{c_2}}{v}}] --->
+          \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ \eUnit ]}}{By rule rw}        
+
+%        \Pf{}{}{\qquad\exists~\Procs', p', q' \in \Sigma~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs',
+%            \ProcNm{p'} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q'} E_2[
+%              \eWr{\eChan{c_2}}{v}]} --->}{}
+%        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs', \ProcNm{p'} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q'}
+%            E_2[ \eUnit ]}}{By rule rw}
+%        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs', \ProcNm{p'} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q'}
+%        E_2[ \eUnit ]}}{By rule rw}                
 
       \end{llproof}
 %    \item[] \textbf{Case}
