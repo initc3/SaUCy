@@ -253,32 +253,32 @@ $\JCred{C}{C'}$.
           i.h.}
         \proofsep
         \Pf{}{}{\textbf{Subcase}~\exists e'~\textrm{s.t.}~e->e'}{}
-        \Pf{}{}{\Config{\Names}{\Store}{\Procs,p:E[e]} ->
+        \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:E[e]} ->
           \Config{\Names}{\Store}{\Procs,p:E[e']}}{By rule local}
 
         \proofsep
         \Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{}
-        \Pf{}{}{\Config{\Names}{\Store}{\Procs,p:e} ->
+        \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} ->
           \Config{\Names'}{\Store}{\Procs',p:e}}{By rule frame}
         \proofsep
         \Pf{}{}{\textbf{Subcase}~\Lterm{e}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
-        \Pf{}{}{\Sigma_\pi^{\textrm{R}} =
+        \Pf{}{}{\quad\Sigma_\pi^{\textrm{R}} =
           \textrm{RdChans}(\pi)~\textrm{and}~\Sigma_\pi^{\textrm{W}} =
           \textrm{WrChans}(\pi)}{Suppose}        
-        \Pf{}{}{\Sigma_p^{\textrm{R}} =
+        \Pf{}{}{\quad\Sigma_p^{\textrm{R}} =
           \textrm{RdChans}(p:e)~\textrm{and}~\Sigma_p^{\textrm{W}} =
           \textrm{WrChans}(p:e)}{Suppose}
         \proofsep
-        \Pf{}{}{\textbf{Subcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+        \Pf{}{}{\quad\textbf{Subcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
           c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} = \varnothing}{}
-        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{By rule Cterm}
+        \Pf{}{}{\qquad\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{By rule Cterm}
         \proofsep        
-        \Pf{}{}{\textbf{Subcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+        \Pf{}{}{\quad\textbf{Subcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
           c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} = \{ (c_1,c_2)
           \}}{}
-        \Pf{}{}{c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+        \Pf{}{}{\qquad c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
           c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}}{Above}
-        \Pf{}{}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
+        \Pf{}{}{\qquad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
       \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q}
         E_2[ \eUnit ]}}{By rule rw}      
 
