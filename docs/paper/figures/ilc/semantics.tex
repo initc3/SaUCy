@@ -64,8 +64,12 @@
   \Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1}, \ProcNm{p} \proc{E[ e_2 ]}}}
 \and
 \Infer{frame}{
-\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_1'}{\Store}{\Procs_1'}}
-{\Config{\Names_1,\Names_2}{\Store}{\Procs_1,\Procs_2} -> \Config{\Names_1',\Names_2}{\Store}{\Procs_1',\Procs_2}}
+\Config{\Names}{\Store}{\Procs_1} -> \Config{\Names'}{\Store}{\Procs_1'}}
+{\Config{\Names}{\Store}{\Procs_1, \Procs_2} ->
+  \Config{\Names'}{\Store}{\Procs_1',\Procs_2}}
+%
+%\Store}{\Procs_1'}}
+%\Config{\Names_1',\Names_2}{\Store}{\Procs_1',\Procs_2}}
 \and
 \Infer{congr}{
 C_1 \equiv C_1' 

@@ -258,9 +258,8 @@ $\JCred{C}{C'}$.
 
         \proofsep
         \Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{}
-        \Pf{}{}{\Sigma = \Sigma_1,\Sigma_2}{Suppose}
-        \Pf{}{}{\Config{\Names_1,\Names_2}{\Store}{\Procs,p:e} ->
-          \Config{{\Names_1}',\Names_2}{\Store}{\Procs',p:e}}{By rule frame}
+        \Pf{}{}{\Config{\Names}{\Store}{\Procs,p:e} ->
+          \Config{\Names'}{\Store}{\Procs',p:e}}{By rule frame}
         \proofsep
         \Pf{}{}{\textbf{Subcase}~\Lterm{e}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
         \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{?}
@@ -298,7 +297,7 @@ If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ and $\JCred{C}{C'}$, then there exists
 $\ChTy' \supseteq \ChTy$ and $\PrTy' \supseteq \PrTy$ such that
 $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 \begin{proof}
-    By structural induction on the derivation of $\JCred{C}{C'}$.
+    By structural induction on the derivation of $\JCred{C}{C'}$. \todo{Fix}
   \begin{itemize}[leftmargin=*]
   \item[] \textbf{Case}
     \begin{mathpar}
