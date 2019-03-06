@@ -251,16 +251,16 @@ $\JCred{C}{C'}$.
         \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs}}~\textrm{or}~\exists
           \Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{By
           i.h.}
-        \proofsep
+        %\proofsep
         \Pf{}{}{\textbf{Subcase}~\exists e'~\textrm{s.t.}~e->e'}{}
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:E[e]} ->
           \Config{\Names}{\Store}{\Procs,p:E[e']}}{By rule local}
 
-        \proofsep
+        %\proofsep
         \Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{}
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} ->
           \Config{\Names'}{\Store}{\Procs',p:e}}{By rule frame}
-        \proofsep
+        %\proofsep
         \Pf{}{}{\textbf{Subcase}~\Lterm{e}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
         \Pf{}{}{\quad\Sigma_\pi^{\textrm{R}} =
           \textrm{RdChans}(\pi)~\textrm{and}~\Sigma_\pi^{\textrm{W}} =
@@ -268,19 +268,20 @@ $\JCred{C}{C'}$.
         \Pf{}{}{\quad\Sigma_p^{\textrm{R}} =
           \textrm{RdChans}(p:e)~\textrm{and}~\Sigma_p^{\textrm{W}} =
           \textrm{WrChans}(p:e)}{Suppose}
-        \proofsep
-        \Pf{}{}{\quad\textbf{Subcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+        %\proofsep
+        \Pf{}{}{\quad\textbf{Subsubcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
           c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} = \varnothing}{}
         \Pf{}{}{\qquad\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{By rule Cterm}
-        \proofsep        
-        \Pf{}{}{\quad\textbf{Subcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} = \{ (c_1,c_2)
-          \}}{}
-        \Pf{}{}{\qquad c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+        %\proofsep        
+        \Pf{}{}{\quad\textbf{Subsubcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} \neq \varnothing}{}
+        \Pf{}{}{\qquad \exists~c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
           c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}}{Above}
-        \Pf{}{}{\qquad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
-      \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q}
-        E_2[ \eUnit ]}}{By rule rw}      
+        \Pf{}{}{\qquad\exists~p', q' \in \Sigma~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs,
+            \ProcNm{p'} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q'} E_2[
+              \eWr{\eChan{c_2}}{v}]} --->}{}
+        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p'} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q'}
+        E_2[ \eUnit ]}}{By rule rw}
 
       \end{llproof}
 %    \item[] \textbf{Case}
