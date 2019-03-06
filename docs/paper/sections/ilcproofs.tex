@@ -235,7 +235,7 @@ $\JCred{C}{C'}$.
         \Pf{}{}{\Sigma_2 = \textrm{WrChans}(\emptyProcs)=\emptyctxt}{By definition of
           WrChans}
         \Pf{}{}{\{ (c_1,c_2) \mid c_1 \in \Sigma_1, c_2 \in \Sigma_2, c_2 \leadsto c_1\} = \varnothing}{}        
-        \Pf{}{}{\JCterm{{\Config{\Names}{\Store}{\emptyProcs}}}}{By Cterm}
+        \Pf{}{}{\JCterm{{\Config{\Names}{\Store}{\emptyProcs}}}}{By rule Cterm}
       \end{llproof}
 
     \item[] \textbf{Case}
@@ -262,7 +262,25 @@ $\JCred{C}{C'}$.
           \Config{\Names'}{\Store}{\Procs',p:e}}{By rule frame}
         \proofsep
         \Pf{}{}{\textbf{Subcase}~\Lterm{e}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
-        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{?}
+        \Pf{}{}{\Sigma_\pi^{\textrm{R}} =
+          \textrm{RdChans}(\pi)~\textrm{and}~\Sigma_\pi^{\textrm{W}} =
+          \textrm{WrChans}(\pi)}{Suppose}        
+        \Pf{}{}{\Sigma_p^{\textrm{R}} =
+          \textrm{RdChans}(p:e)~\textrm{and}~\Sigma_p^{\textrm{W}} =
+          \textrm{WrChans}(p:e)}{Suppose}
+        \proofsep
+        \Pf{}{}{\textbf{Subcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} = \varnothing}{}
+        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{By rule Cterm}
+        \proofsep        
+        \Pf{}{}{\textbf{Subcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} = \{ (c_1,c_2)
+          \}}{}
+        \Pf{}{}{c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}}{Above}
+        \Pf{}{}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
+      \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q}
+        E_2[ \eUnit ]}}{By rule rw}      
 
       \end{llproof}
 %    \item[] \textbf{Case}
