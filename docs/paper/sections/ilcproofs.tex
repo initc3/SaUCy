@@ -66,15 +66,15 @@ of local process termination as follows:\smallskip
 Informally, $\Lterm{e}$ holds when $e$ is a value, $e$ is reading, or $e$ is writing.
 
 \begin{theorem}[Local Progress]
-  If $|- e : U$, then either $\Lterm{e}$
+  If $\Delta; \Gamma|- e : U$, then either $\Lterm{e}$
   or there exists $e'$ such that $e -> e'$.
   \begin{proof}
-    By structural induction on the derivation of $|- e : U$.
+    By structural induction on the derivation of $\Delta ; \Gamma|- e : U$.
   \end{proof}
 \end{theorem}
 
 \begin{theorem}[Local Preservation]
-  If $|- e : U$ and $e -> e'$, then $|- e' : U$.
+  If $\Delta; \Gamma|- e : U$ and $e -> e'$, then $\Delta; \Gamma|- e' : U$.
   \begin{proof}
     By structural induction on the derivation of $e -> e'$.
   \end{proof}
@@ -206,7 +206,7 @@ $C'$ such that $\JCred{C}{C'}$.
 %\end{lemma}
 
 \begin{theorem}[Progress]
-If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ then either $\JCterm{C}$, or $\exists C'$ such that
+If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$, then either $\JCterm{C}$, or $\exists C'$ such that
 $\JCred{C}{C'}$.
 
 %For all configurations $C$,
@@ -247,7 +247,19 @@ $\JCred{C}{C'}$.
       { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:U}}
       \end{mathpar}
       \begin{llproof}
-        \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs,p:e}{\PrTy,p:U}}{By assumption}
+%        \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs,p:e}{\PrTy,p:U}}{By
+%          assumption}
+        \Pf{}{}{\Lterm{e}~\textrm{or}~\exists e'~\textrm{s.t.}~e->e'}{By i.h.}
+        \Pf{}{}{\Config{\Names}{\Store}{\Procs,p:E[e]} ->
+          \Config{\Names}{\Store}{\Procs,p:E[e']}}{By $\exists e'~\textrm{s.t.}~e->e'$
+          and local}
+        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs}}~\textrm{or}~\exists
+          \Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{By
+          i.h.}
+        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{By $\Lterm{e}$ and
+          $\JCterm{\Config{\Names}{\Store}{\Procs}}$}
+        \Pf{}{}{\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{Above}
+        \Pf{}{}{\Config{\Names_1,\Names_2}{\Store}{\Procs,p:e} -> \Config{{\Names_1}',\Names_2}{\Store}{\Procs',p:e}}{By frame}
       \end{llproof}            
     \end{itemize}    
 \end{proof}  
