@@ -260,7 +260,7 @@ serves a special purpose, namely, to ensure that \emph{well-typed ILC programs
   each write operation corresponds to a single, unique read operation.
 \end{itemize}
 
-To see these invariants in action, we run through the typing rules for fork,
+\paragraph{A Selection of Typing Rules.} To see these invariants in action, we run through the typing rules for fork,
 write, and read expressions. We read the typing judgement $\Delta ; \Gamma |- e : U$ as
 ``under affine context $\Delta$ and intuitionistic context $\Gamma$, expression $e$ has
 type $U$.'' The metavariables $U$ and $V$ range over all types (both
@@ -319,7 +319,7 @@ observe that $\wrtok$ is available in the body of the read expression ($e_2$),
 but only under the condition that it is not already in the affine context $\Delta_2$
 (otherwise, a process could arbitrarily ``mint'' write tokens).
 
-Having gone through several typing rules, we can now revisit \textsf{fCom} from
+\paragraph{Revisiting \textsf{fCom}.} Having gone through several typing rules, we can now revisit \textsf{fCom} from
 Figure~\ref{func:com} (right). In particular, we should convince ourselves that
 \textsf{fCom} respects invariants of the type system. The type signature tells
 us that \textsf{toQ : Wr Msg} is intuitionistic ($->$ is the type connective for
