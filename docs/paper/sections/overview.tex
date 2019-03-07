@@ -111,7 +111,7 @@ world with $\mc{F}$, the idealized version of $\pi$.
 %for $\mc{F}$ any protocol that emulates it without fear of something going
 %wrong.
 
-\todo{Recap of ITMs here.}
+\todo{Recap of ITMs here?}
 
 \begin{comment}
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
@@ -218,15 +218,15 @@ which roughly prevents an attacker from using one commitment to derive another r
 %%   related in any way.
 %% \end{itemize}
 %
-All of these
-properties are captured at once using an ideal functionality. In Figure~\ref{func:com}
-(left), we show $\Func_{\textsc{com}}$, an ideal functionality for one-time bit
-commitment, as it would appear in the cryptography
-literature~\cite{canetti2001commitments}. The functionality simply waits for the
-committer $P$ to commit to some bit $b$, notifies the receiver $Q$ that it has
-taken place, and reveals $b$ to $Q$ upon request by $P$. Notice that $Q$ never
-actually sees a commitment to $b$ (only the (\textsf{Receipt}) message), so the
-three properties hold trivially.
+All of these properties are captured at once using an ideal functionality. In
+Figure~\ref{func:com} (left), we show $\Func_{\textsc{com}}$, an ideal
+functionality for one-time bit commitment, as it would appear in the
+cryptography literature~\cite{canetti2001commitments}.\footnote{\todo{Only
+    realizable in perfect model of communication.}} The functionality simply
+waits for the committer $P$ to commit to some bit $b$, notifies the receiver $Q$
+that it has taken place, and reveals $b$ to $Q$ upon request by $P$. Notice that
+$Q$ never actually sees a commitment to $b$ (only the (\textsf{Receipt})
+message), so the three properties hold trivially.
 %
 
 In Figure~\ref{func:com} (right), we define a simplified version of
@@ -260,10 +260,11 @@ serves a special purpose, namely, to ensure that \emph{well-typed ILC programs
   each write operation corresponds to a single, unique read operation.
 \end{itemize}
 
-To see these invariants in action, we give a taste of the typing rules. We read
-the typing judgement $\Delta ; \Gamma |- e : U$ as ``under affine context $\Delta$ and
-intuitionistic context $\Gamma$, expression $e$ has type $U$.'' The metavariables $U$
-and $V$ range over all types (both intuitionistic and affine).
+To see these invariants in action, we run through the typing rules for fork,
+write, and read expressions. We read the typing judgement $\Delta ; \Gamma |- e : U$ as
+``under affine context $\Delta$ and intuitionistic context $\Gamma$, expression $e$ has
+type $U$.'' The metavariables $U$ and $V$ range over all types (both
+intuitionistic and affine).
 
 The fork expression $\eFork{e_1}{e_2}$ says to fork a child process $e_1$ and
 continue as $e_2$.
@@ -276,12 +277,13 @@ continue as $e_2$.
 Its typing rule says that if we can partition the affine context as $\Delta_1, \Delta_2$
 such that $e_1$ has type $U$ under contexts $\Delta_1; \Gamma$ and $e_2$ has type $V$
 under contexts $\Delta_2; \Gamma$, then the expression has type $V$.  Notice that affine
-resources (read channels, the write token) must be split between the child
-process and the parent process, and so each can be owned by at most one process.
+resources (e.g., read channels, the write token) must be split between the child
+process and the parent process to prevent their duplication.
 
 The write expression $\eWr{e_1}{e_2}$ sends the evaluation of $e_1$ on the
 channel evaluation of $e_2$. One thing to mention is that only sendable-typed
-values (ranged over by $S$) can be sent over channels (more on this later).
+values (ranged over by $S$) can be sent over channels (more on this
+later). \todo{Or maybe explain it now.}
 \begin{mathpar}
 \Infer{wr}
 {\Delta_1; \Gamma |- e_1 : S\\
@@ -296,7 +298,7 @@ write token.
 
 The read expression $\eLetRd{e_1}{x}{e_2}$ reads a value from the channel
 evaluation of $e_1$ and binds the value-channel pair as $x$ in the affine
-context of $e_2$. Rebinding the read channel allows it to be reused.
+context of $e_2$ (rebinding the read channel allows it to be reused).
 \begin{mathpar}
 \Infer{rd}
 {\wrtok \not \in \Delta_2\\
@@ -309,25 +311,23 @@ such that $e_1$ has type $\tyRd{S}$ under contexts $\Delta_1; \Gamma$, and $e_2$
 $U$ under contexts $\Delta_2, \wrtok, x:\tyTensor{\tyBang{S}}{{\tyRd{S}}} ; \Gamma$, then
 the expression has type $U$.
 
-There are a few things to unpack here. The first is the affine product type
-$\tyTensor{\tyBang{S}}{{\tyRd{S}}}$, which is type of the value-channel pair
-bound to $x$. Since sendable values are intuitionistic and read channels are
-affine, the value is wrapped in a $!$ operator (pronounced ``bang'') so that it
-can be placed in an affine pair. Next, observe that the write token is available
-in the body of the read expression ($e_2$), but only under the condition that it
-is not already in the affine context $\Delta_2$ (otherwise, a process could
-arbitrarily ``mint'' write tokens).
+There are a few things to unpack here. First, we explain the affine product type
+$\tyTensor{\tyBang{S}}{{\tyRd{S}}}$. Since sendable values are intuitionistic
+and read channels are affine, the value read on the channel is wrapped in a $!$
+operator (pronounced ``bang'') so that it can be placed in an affine pair. Next,
+observe that $\wrtok$ is available in the body of the read expression ($e_2$),
+but only under the condition that it is not already in the affine context $\Delta_2$
+(otherwise, a process could arbitrarily ``mint'' write tokens).
 
-Having gone through several of the typing rules, we can now revisit
-\textsf{fCom} from Figure~\ref{func:com} (right). In particular, we should be
-convinced that \textsf{fCom} respects invariants of the type system. The type
-signature tells us that \textsf{toQ : Wr Msg} is intuitionistic ($->$ is the
-type connective for intuitionistic arrows) and \textsf{frP : Rd Msg} is affine
-($\multimap$ is the type connective for affine arrows) as expected. To see that
-\textsf{frP} is being used affinely, notice that it is rebound when
-deconstructing the value-channel pair from each read operation. To see that the
-write token is being passed around appropriately, notice that the read and write
-effects are interleaved.
+Having gone through several typing rules, we can now revisit \textsf{fCom} from
+Figure~\ref{func:com} (right). In particular, we should convince ourselves that
+\textsf{fCom} respects invariants of the type system. The type signature tells
+us that \textsf{toQ : Wr Msg} is intuitionistic ($->$ is the type connective for
+intuitionistic arrows) and \textsf{frP : Rd Msg} is affine ($\multimap$ is the type
+connective for affine arrows) as expected. To see that \textsf{frP} is being
+used affinely, notice that it is rebound when deconstructing the value-channel
+pair from each read operation. To see that the write token is being passed
+around appropriately, notice that the read and write effects are interleaved.
 
 %\todo{Revisit example.}
 

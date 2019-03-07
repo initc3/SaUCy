@@ -63,7 +63,7 @@
 { \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eFork{e_1}{e_2} }] } --->
   \Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1}, \ProcNm{p} \proc{E[ e_2 ]}}}
 \and
-\Infer{frame}{
+\Infer{par}{
 \Config{\Names}{\Store}{\Procs_1} -> \Config{\Names'}{\Store}{\Procs_1'}}
 {\Config{\Names}{\Store}{\Procs_1, \Procs_2} ->
   \Config{\Names'}{\Store}{\Procs_1',\Procs_2}}

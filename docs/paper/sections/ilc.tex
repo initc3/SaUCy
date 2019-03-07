@@ -12,12 +12,12 @@ static semantics, and dynamic semantics.
 \subsection{Syntax}
 \label{subsec:syntax}
 
-The syntax of ILC given in Figure~\ref{fig:ilc-syntax} consists of types and
-expressions. To streamline the abstract syntax, some expressions are
-parameterized by a multiplicity $\pi$ to distinguish between the intuitionistic
-($\infty$) and affine ($1$) counterparts; other expressions are parameterized by a
-syntax label $\ell$, which includes the multiplicity labels along with an
-additional label $\wm$ (explained shortly).
+The syntax of ILC is given in Figure~\ref{fig:ilc-syntax}. To make the abstract
+syntax concise, certain expressions are parameterized by a multiplicity $\pi$ to
+distinguish between the intuitionistic ($\infty$) and affine ($1$) counterparts;
+other expressions are parameterized by a syntax label $\ell$, which includes the
+multiplicity labels along with an additional write label $\wm$ (explained
+shortly).
 
 Types in ILC (written $U$, $V$) are bifurcated into intuitionistic types
 (written $A$, $B$) and affine types (written $X$, $Y$). A subset of the
@@ -26,18 +26,19 @@ include unit ($\tyUnit$), products ($\tyProdd{}{S}{T}$), sums
 ($\tySum{S}{}{T}$). The intuitionistic types include the sendable types, write
 channel types ($\tyWr{S}$), products ($\tyProdd{}{A}{B}$), sums
 ($\tySum{A}{}{B}$), arrows ($\tyArr{A}{\infty}{U}$ or simply $A -> U$), and special
-write arrows ($\tyArr{A}{\wm}{U}$). \todo{Why do we need sendable types?}
+write arrows ($\tyArr{A}{\wm}{U}$). \todo{Explain why we need sendable types.}
 
 The affine types include bang types ($\tyBang{A}$), read channel types
 ($\tyRd{S}$), products ($\tyTensor{X}{Y}$), sums ($\tyOplus{X}{Y}$), and arrows
-or ``lollipops'' ($\tyArr{X}{1}{U}$ or simply $X \multimap U$).
+($\tyArr{X}{1}{U}$ or simply $X \multimap U$).
 
 ILC supports a fairly standard feature set of expressions, with intuitionistic
 variants parameterized by the label $\infty$ and affine variants parameterized by the
 label $1$. The remaining syntax label $\wm$ on various introduction and
 elimination forms serves two different meanings: on products and sums, it
-denotes the sendable variants; on functions, it denotes the special write
-function.
+denotes the sendable variants; on functions (abstraction, application, and fixed
+points), it denotes the use of the special write functions. Bang-typed values
+have introduction form $\eBang{e}$ and elimination form $\eUnbang{e}$.
 
 The more interesting expressions are those related to communication and
 concurrency:
@@ -65,40 +66,51 @@ intuitionistic variants.} An algorithmic version of these rules appears in the
 Appendix.
 
 To recap, we read the typing judgement $\Delta; \Gamma |- e : U$ as ``under affine context
-$\Delta$ and intuitionistic context $\Gamma$, expression~$e$ has type $U$.'' The typing
-rules maintain that only one process is active at any given time (unique
-ownership of the write token), and the sequence of activations is deterministic
-(unique ownership of read channels).
+$\Delta$ and intuitionistic context $\Gamma$, expression~$e$ has type $U$.'' Additionally,
+the typing rules maintain that only one process is active at any given time
+(unique ownership of the write token), and the order of activations is
+deterministic (unique ownership of read channels).
 
-The typing rules for the functional fragment of ILC are fairly standard. We
-comment on the nonobvious rules, such as the ones for various forms of
-abstraction (iabs, wabs, aabs) and application (wapp).
+The typing rules for the functional fragment of ILC are fairly standard, except
+that they now have intuitionistic and affine variants (and for some, sendable
+variants). We explain the typing rules for which we make non-obvious design
+choices for the purpose of achieving the aforementioned invariants.
 
-Intuitionistic abstraction (iabs) is standard, except the body of a lambda
-expression must be closed with respect to affine variables to prevent their
-duplication.
+The rule for intuitionistic abstraction (iabs) extends the intuitionistic
+context $\Gamma$ with $x : A$ before checking the body $e$ of the abstraction. Notice
+that the body must be closed with respect to the affine environment. Otherwise,
+intuitionistic functions with free read channel variables could be duplicated,
+thereby violating the affinity of read channels.
 
-Write abstraction (wabs) is a special kind of intuitionistic abstraction that
-provides a write token in the body of a lambda expression. Dually, in order to
-apply a write abstraction, a process must own the write token (wapp). Without
-write abstractions, all functions would be initially read blocked, and so one
-would not be able to specify a ``starting process'' function that is initially
-activated.
+The rule for write abstraction (wabs) is similar to intuitionistic
+abstraction. The only difference is that wabs extends the affine context with a
+write token before checking the body $e$ of the abstraction. Were it not for
+write abstraction, all functions would be initially read-blocked, and so one
+would not be able to write a function for an ``initially activated'' process. In
+order to maintain the uniqueness of the write token, the dual application rule
+(wapp) stipulates that a process must own the write token in order to apply a
+write abstraction.
 
-Affine abstraction (aabs) is similar to intuitionistic abstraction, except it
-takes an affine argument. The body of an affine lambda expression \emph{can}
-contain free affine variables, since an affine function can only be applied
-once. Note that if an affine function $f : X \multimap U$ contains no free affine
-variables, then it can be transformed into an intuitionistic function $g : A ->
-X \multimap U$.
+The rule for affine abstraction (aabs) extends the affine context $\Delta$ with $x :
+X$ before checking the body $e$ of the abstraction. Notice that the
+body \emph{need not} be closed with respect to the affine environment, since an
+affine function can only be applied once. While this may seem overly
+restrictive, it turns out that most affine functions we care about do not
+contain free affine variables, and so such a function $f : X \multimap U$ can be made
+into an intuitionistic function $g : A -> X \multimap U$ by adding a leading
+intuitionistic argument.
 
-The typing rules for communication and concurrency were mostly covered in
-Section~\ref{sec:overview}, except for channel restriction (nu) and external
-choice (choice). The nu rule extends the affine context with a read channel and
-the intuitionistic context with a corresponding write channel. The choice
-expression allows a process to continue in one of two ways based on some initial
-read event, and so it may not own the write token, which could otherwise lead to
-a race condition.
+The typing rules for fork, write, and read were covered in
+Section~\ref{subsec:type-tour}, so this leaves channel restriction (nu) and
+external choice (choice) as the remaining typing rules related to communication
+and concurrency. The nu rule extends the affine context $\Delta$ with a read channel
+$x_1 : \tyRd{S}$ and the intuitionistic context $\Gamma$ with a corresponding write
+channel $x_2 : \tyWr{S}$ before typing the body $e$. Because the choice
+expression allows a process to continue as either $e_1$ or $e_2$ based on some
+initial read event in each subexpression, a process waiting on an external
+choice may not own the write token. Otherwise, both subexpressions could spend
+the write token, leading to a race condition. \todo{What happens when neither
+subexpression reads?}
 
 %The write token is special and unique, and need not ever be bound to a variable
 %in the affine context.  Rather, it flows around “implicitly” in the program, by
@@ -209,7 +221,7 @@ and the local stepping judgment $e_1 \longrightarrow e_2$ for a single process~$
 The rules of local stepping follow a standard call-by-value semantics, 
 where we streamline the definition with an evaluation context~$E$.
 
-Configuration stepping consists of five rules, including a congruence
+Configuration stepping consists of five \todo{new rules} rules, including a congruence
 rule \Rule{congr} that permits some of the other rules to be simpler,
 by making the order of the pool unimportant.
 %

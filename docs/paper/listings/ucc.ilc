@@ -1,4 +1,4 @@
-committer :: $\forall$ ... . $\tyNat -> [\tyBit] -> \cdots \multimap_{\mathsf{R}} \tyUnit$
+committer :: $\forall$ ... . $\tyNat -> [\tyBit] -> \cdots \multimap \tyUnit$
 let committer k bits toZ toF toQ frZ frF frQ =
   let $\langle$!(Commit b), frZ$\rangle$= rd frZ in
     wr GetCRS $->$ toF ;
@@ -10,7 +10,7 @@ let committer k bits toZ toF toQ frZ frF frQ =
       let $\langle$!Open, frZ$\rangle$= rd frZ in
         wr (Open' b r) $->$ toQ
 
-receiver :: $\forall$ ... . $\tyNat -> [\tyBit] -> \cdots \multimap_{\mathsf{R}} \tyUnit$
+receiver :: $\forall$ ... . $\tyNat -> [\tyBit] -> \cdots \multimap \tyUnit$
 let receiver k bits toZ toF toP frZ frF frP =
   let $\langle$!(Commit' x), frP$\rangle$ = rd frP in
     wr GetCRS $->$ toF ;
