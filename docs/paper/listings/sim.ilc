@@ -7,27 +7,27 @@ let simI k bits crupt toZ toF toP toQ frZ frF frP frQ =
   let $\sigma$ = xors (prg $\mathsf{pk}_0$ $\mathsf{r}_0$) (prg $\mathsf{pk}_1$ $\mathsf{r}_1$) in
     match crupt with
     | CruptP $=>$
-      let $\langle$!GetCRS, frZ$\rangle$ = rd frZ in
+      let $($!GetCRS, frZ$)$ = rd frZ in
 	wr (X2Z (PublicStrings $\sigma$ $\mathsf{pk}_0$ $\mathsf{pk}_1$)) $->$toZ ;
-	let $\langle$!(A2P (Commit' y)), frZ$\rangle$ = rd frZ in
+	let $($!(A2P (Commit' y)), frZ$)$ = rd frZ in
 	  if check $\mathsf{td}_0$ $\mathsf{pk}_0$ y then
 	    wr (Commit 0) $->$ toP
 	  else
 	    if check $\mathsf{td}_1$ $\mathsf{pk}_1$ (xors y $\sigma$) then
 	      wr (Commit 1) $->$ toP
 	    else error "Fail" ;
-	  let $\langle$!(A2P (Open' b r)), frZ$\rangle$ = rd frZ in
+	  let $($!(A2P (Open' b r)), frZ$)$ = rd frZ in
 	    if b == 0 && y == prg $\mathsf{pk}_0$ r ||
 	      b == 1 && y == xors (prg $\mathsf{pk}_1$ r) $\sigma$
 	    then wr Open $->$ toP
 	    else error "Fail"
     | CruptQ $=>$
-      let $\langle$!GetCRS, frZ$\rangle$ = rd frZ in
+      let $($!GetCRS, frZ$)$ = rd frZ in
 	wr (X2Z (PublicStrings $\sigma$ $\mathsf{pk}_0$ $\mathsf{pk}_1$)) $->$ toZ ;  
-	let $\langle$!Receipt, frQ$\rangle$ = rd frQ in
+	let $($!Receipt, frQ$)$ = rd frQ in
 	let y = prg $\mathsf{pk}_0$ $\mathsf{r}_0$ in
 	  wr (X2Z (Commit' y)) $->$ toZ ;
-	  let $\langle$!(Opened b'), frQ$\rangle$ = rd frQ in
+	  let $($!(Opened b'), frQ$)$ = rd frQ in
 	    if (b' == 0) then
 	      wr (X2Z (Opened' $\mathsf{r}_0$)) $->$ toZ
 	    else

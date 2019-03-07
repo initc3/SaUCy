@@ -2,17 +2,17 @@ simR :: $\tyNat -> [\tyBit] -> \mathsf{Crupt} -> \cdots \multimap \mathbbm{1}$
 let simR k bits crupt toZ toF toP toQ frZ frF frP frQ =
   match crupt with
   | CruptP $=>$
-    let $\langle$!(Commit b), frZ$\rangle$ = rd frZ in
+    let $($!(Commit b), frZ$)$ = rd frZ in
       wr GetCRS $->$ toF ;
-      let $\langle$!(PublicStrings $\sigma$ $\mathsf{pk}_0$ $\mathsf{pk}_1$), frF$\rangle$ = rd frF in
+      let $($!(PublicStrings $\sigma$ $\mathsf{pk}_0$ $\mathsf{pk}_1$), frF$)$ = rd frF in
       let r = take k bits in 
       let y = if b == 0 then prg $\mathsf{pk}_0$ r else xors (prg $\mathsf{pk}_0$ r) $\sigma$ in
 	wr (Commit' y) $->$ toQ ;
-	let $\langle$!(Open), frZ$\rangle$= rd frZ in
+	let $($!(Open), frZ$)$= rd frZ in
 	  wr (Open' b r) $->$ toQ
   | CruptQ $=>$
-    let $\langle$!(Commit' y), frQ$\rangle$ = rd frQ in
+    let $($!(Commit' y), frQ$)$ = rd frQ in
       wr Receipt $->$ toZ ;
-      let $\langle$!(Open' b r), frQ$\rangle$ = rd frQ in
+      let $($!(Open' b r), frQ$)$ = rd frQ in
         wr (Opened b) $->$ toZ
   | CruptNone $=>$ error "Fail"

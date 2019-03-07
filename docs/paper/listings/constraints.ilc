@@ -1,11 +1,11 @@
 ${-}{-}\ \mathsf{*E*}$ means that E must appear somewhere $\mathsf{in}$ the effect sequence
 ed_loop :: Rd a $->$ $\{ (\mathsf{a} -> \mathsf{b}) \mid \mathsf{*(W@a2r)*}\}$ $->$ b $|>$ R
 let A =
-  ${-}{-}\ $ Effect sequence is $\langle$W@a2z$\rangle || \langle$W@a2r$\rangle$
+  ${-}{-}\ $ Effect sequence is $($W@a2z$) || ($W@a2r$)$
   ${-}{-}\ $ f is $\mathsf{not}$ well typed
   let f v = match v with
-  	  ${-}{-}\ $ Effect sequence is $\langle$W@a2z$\rangle$
+  	  ${-}{-}\ $ Effect sequence is $($W@a2z$)$
           | 'Tick when $\bullet =>$ wr () $->$ a2z
-	  ${-}{-}\ $ Effect sequence is $\langle$W@a2r$\rangle$
+	  ${-}{-}\ $ Effect sequence is $($W@a2r$)$
           | 'Tick $=>$ wr ($\bullet$ :: string$)->$ a2r)
 in ed_loop _2a f

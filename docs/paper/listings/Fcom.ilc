@@ -1,6 +1,6 @@
 fCom :: Wr Msg $->$ Rd Msg $\multimap \mathbbm{1}$
 let fCom toQ frP =
-  let $\langle$!(Commit b), frP$\rangle$ = rd frP in
+  let $($!(Commit b), frP$)$ = rd frP in
     wr Receipt $->$ toQ ;
-    let $\langle$!Open, frP$\rangle$ = rd frP in
+    let $($!Open, frP$)$ = rd frP in
       wr (Opened b) $->$ toQ
