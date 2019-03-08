@@ -80,7 +80,8 @@ Matt says:
 To state progress on configurations, we give a special definition of ``program
 termination'' (that permits deadlocks) as follows:\smallskip
 
-\judgbox{\JCterm{C}}{Configuration $C$ is terminated.}
+\judgbox{\JCterm{C}}{Configuration $C$ is terminated~\todo{Change RdChans and
+    WrChans to use evaluation contexts?}}
 \begin{mathpar}
 \Infer{Cterm}
 {\textrm{RdChans}(\pi) = \Sigma_1 \\ \textrm{WrChans}(\pi) = \Sigma_2\\\\
@@ -190,24 +191,22 @@ $\JCred{C}{C'}$.
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} ->
           \Config{\Names'}{\Store}{\Procs',p:e}}{By rule par}
         \Pf{}{}{\textbf{Subcase}~\JCterm{\Config{\Names}{\Store}{p:e}}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
-        \Pf{}{}{\quad\Sigma_\pi^{\textrm{R}} =
-          \textrm{RdChans}(\pi)~\textrm{and}~\Sigma_\pi^{\textrm{W}} =
-          \textrm{WrChans}(\pi)}{Suppose}        
-        \Pf{}{}{\quad\Sigma_p^{\textrm{R}} =
-          \textrm{RdChans}(p:e)~\textrm{and}~\Sigma_p^{\textrm{W}} =
-          \textrm{WrChans}(p:e)}{Suppose}
-        \Pf{}{}{\quad\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} =
+        \Pf{}{}{\quad\Names_1 = \textrm{RdChans}(\Procs,p:e)~\textrm{and}~\Names_2 = \textrm{WrChans}(\Procs,p:e)}{Suppose}
+        \Pf{}{}{\quad\{ (c_1,c_2) \mid c_1 \in \Names_1,
+          c_2 \in \Names_2, c_2 \leadsto c_1\} =
           \varnothing~\textrm{or}}{}
-        \Pf{}{}{\qquad\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} \neq \varnothing}{}        
-        \Pf{}{}{\quad\textbf{Subsubcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} = \varnothing}{}
+        \Pf{}{}{\qquad\{ (c_1,c_2) \mid c_1 \in \Names_1,
+          c_2 \in \Names_2, c_2 \leadsto c_1\} \neq
+          \varnothing}{}
+        \Pf{}{}{\quad\textbf{Subsubcase}~\{ (c_1,c_2) \mid c_1 \in \Names_1,
+          c_2 \in \Names_2, c_2 \leadsto c_1\} =
+          \varnothing}{}
         \Pf{}{}{\qquad\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{By rule Cterm}
-        \Pf{}{}{\quad\textbf{Subsubcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} \neq \varnothing}{}
-        \Pf{}{}{\qquad \exists~c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}}{Above}
+        \Pf{}{}{\quad\textbf{Subsubcase}~\{ (c_1,c_2) \mid c_1 \in \Names_1,
+          c_2 \in \Names_2, c_2 \leadsto c_1\} \neq
+          \varnothing}{}
+        \Pf{}{}{\qquad \exists~c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_1,
+          c_2 \in \Sigma_2}{Above}
         \Pf{}{}{\qquad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[R[
                 \eLetRd{\eChan{c_1}}{x}{e}] ]} --->
           \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
@@ -215,6 +214,32 @@ $\JCred{C}{C'}$.
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
               \eWr{\eChan{c_2}}{v}]} --->
           \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ \eUnit ]}}{By rule rw}
+
+%        \Pf{}{}{\quad\Sigma_\pi^{\textrm{R}} =
+%          \textrm{RdChans}(\pi)~\textrm{and}~\Sigma_\pi^{\textrm{W}} =
+%          \textrm{WrChans}(\pi)}{Suppose}        
+%        \Pf{}{}{\quad\Sigma_p^{\textrm{R}} =
+%          \textrm{RdChans}(p:e)~\textrm{and}~\Sigma_p^{\textrm{W}} =
+%          \textrm{WrChans}(p:e)}{Suppose}
+%        \Pf{}{}{\quad\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+%          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} =
+%          \varnothing~\textrm{or}}{}
+%        \Pf{}{}{\qquad\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+%          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} \neq \varnothing}{}        
+%        \Pf{}{}{\quad\textbf{Subsubcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+%          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} = \varnothing}{}
+%        \Pf{}{}{\qquad\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{By rule Cterm}
+%        \Pf{}{}{\quad\textbf{Subsubcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+%          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} \neq \varnothing}{}
+%        \Pf{}{}{\qquad \exists~c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
+%          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}}{Above}
+%        \Pf{}{}{\qquad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[R[
+%                \eLetRd{\eChan{c_1}}{x}{e}] ]} --->
+%          \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
+%              [\ePair{!v}{\eChan{c_1}}{1}/x]e]}~\textrm{or}}{}
+%        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
+%              \eWr{\eChan{c_2}}{v}]} --->
+%          \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ \eUnit ]}}{By rule rw}        
       \end{llproof}
     \end{itemize}    
 \end{proof}  
