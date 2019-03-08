@@ -52,12 +52,22 @@ of local process termination as follows:\smallskip
 { }
 {\Lterm{\eLetRd{c}{x}{e}}}
 \and
+\Infer{chterm}
+{\Lterm{e_1} \\ \Lterm{e_2}}
+{\Lterm{\eChoice{e_1}{e_2}}}
+\and
 \Infer{wrterm}
 { }
 {\Lterm{\eWr{c}{v}}}
 \end{mathpar}
 In other words, $\Lterm{e}$ holds when $e$ is a value, $e$ is reading, or $e$ is
-writing. \todo{What about fork and choice?}
+writing. \todo{What about fork and choice?
+%%%%%%%%%%%%%%
+Matt says:
+  Ah, good point.
+  I added some cases above, and below to drill (for config termination) 
+  into choice expressions to the reads at their leaves.
+}
 
 \begin{lemma}[Local Progress]
   If $\Delta; \Gamma|- e : U$, then either $\Lterm{e}$
@@ -79,11 +89,16 @@ termination'' (that permits deadlocks) as follows:\smallskip
 \end{mathpar}
 \begin{align*}
   \textrm{RdChans}(\emptyProcs) &= \emptyctxt
-  &\textrm{WrChans}(\emptyProcs) &= \emptyctxt\\
+  &\textrm{WrChans}(\emptyProcs) &= \emptyctxt
+  \\
   \textrm{RdChans}(\pi, p:\eLetRd{c}{x}{e}) &= \textrm{RdChans}(\pi),c
-  &\textrm{WrChans}(\pi, p:\eWr{c}{v}) &= \textrm{WrChans}(\pi),c\\
+  &\textrm{WrChans}(\pi, p:\eWr{c}{v}) &= \textrm{WrChans}(\pi),c
+  \\
   \textrm{RdChans}(\pi, p:v) &= \textrm{RdChans}(\pi),c
   &\textrm{WrChans}(\pi, p:v) &= \textrm{WrChans}(\pi),c
+  \\
+  \textrm{RdChans}(\pi, p:\eChoice{e_1}{e_2}) &=
+  \textrm{RdChans}(p:e_1) \cup \textrm{RdChans}(p:e_2)
 \end{align*}
 Informally, $\JCterm{C}$ holds when either:
 \begin{enumerate}
