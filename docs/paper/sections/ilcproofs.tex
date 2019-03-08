@@ -81,7 +81,9 @@ termination'' (that permits deadlocks) as follows:\smallskip
   \textrm{RdChans}(\emptyProcs) &= \emptyctxt
   &\textrm{WrChans}(\emptyProcs) &= \emptyctxt\\
   \textrm{RdChans}(\pi, p:\eLetRd{c}{x}{e}) &= \textrm{RdChans}(\pi),c
-  &\textrm{WrChans}(\pi, p:\eWr{c}{v}) &= \textrm{WrChans}(\pi),c
+  &\textrm{WrChans}(\pi, p:\eWr{c}{v}) &= \textrm{WrChans}(\pi),c\\
+  \textrm{RdChans}(\pi, p:v) &= \textrm{RdChans}(\pi),c
+  &\textrm{WrChans}(\pi, p:v) &= \textrm{WrChans}(\pi),c
 \end{align*}
 Informally, $\JCterm{C}$ holds when either:
 \begin{enumerate}
