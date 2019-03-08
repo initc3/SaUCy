@@ -329,7 +329,8 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}_2'~\textrm{corresponds to
           position of}~\mathcal{D}_2~\textrm{in}~E_2}{Assumption}
 
-      \Pf{}{}{c_2 \leadsto c_1~\text{s.t.}~c_2 : \tyWr{S}~\textrm{and}~c_1 : \tyRd{S}}{Given}      
+      \Pf{}{}{c_2 \leadsto c_1~\text{s.t.}~\ChTy(c_2) =
+        \tyWr{S}~\textrm{and}~\ChTy(c_1) = \tyRd{S}}{Given}      
 
       \Pf{\Delta_1';\Gamma_1',x : \tyTensor{\tyBang{S}}{\tyRd{S}}}{|-}{e : V_1'}{By
         inversion (rd)}
