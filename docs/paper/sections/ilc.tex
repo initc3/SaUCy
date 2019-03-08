@@ -53,7 +53,7 @@ concurrency:
     continues as $e_2$.
   \item \emph{Choice:} $\eChoice{e_1}{e_2}$ allows a process to continue as
     either $e_1$ or $e_2$ based on some initial read event in each of the
-    processes.
+    processes. \todo{What happens when neither subexpression reads?}
 \end{itemize}
 
 \subsection{Static Semantics}
@@ -109,8 +109,7 @@ channel $x_2 : \tyWr{S}$ before typing the body $e$. Because the choice
 expression allows a process to continue as either $e_1$ or $e_2$ based on some
 initial read event in each subexpression, a process waiting on an external
 choice may not own the write token. Otherwise, both subexpressions could spend
-the write token, leading to a race condition. \todo{What happens when neither
-subexpression reads?}
+the write token, leading to a race condition.
 
 %The write token is special and unique, and need not ever be bound to a variable
 %in the affine context.  Rather, it flows around “implicitly” in the program, by
