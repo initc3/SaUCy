@@ -87,7 +87,7 @@ C_2' \equiv C_2
 \Infer{rw}
 { c_2 \leadsto c_1 }
 { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
-  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q}
+  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e], \ProcNm{q}
     E_2[ \eUnit ]} }
 %\Infer{rw}
 %{ c_2 \leadsto c_1 }
