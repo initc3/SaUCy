@@ -214,32 +214,6 @@ $\JCred{C}{C'}$.
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
               \eWr{\eChan{c_2}}{v}]} --->
           \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ \eUnit ]}}{By rule rw}
-
-%        \Pf{}{}{\quad\Sigma_\pi^{\textrm{R}} =
-%          \textrm{RdChans}(\pi)~\textrm{and}~\Sigma_\pi^{\textrm{W}} =
-%          \textrm{WrChans}(\pi)}{Suppose}        
-%        \Pf{}{}{\quad\Sigma_p^{\textrm{R}} =
-%          \textrm{RdChans}(p:e)~\textrm{and}~\Sigma_p^{\textrm{W}} =
-%          \textrm{WrChans}(p:e)}{Suppose}
-%        \Pf{}{}{\quad\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-%          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} =
-%          \varnothing~\textrm{or}}{}
-%        \Pf{}{}{\qquad\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-%          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} \neq \varnothing}{}        
-%        \Pf{}{}{\quad\textbf{Subsubcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-%          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} = \varnothing}{}
-%        \Pf{}{}{\qquad\JCterm{\Config{\Names}{\Store}{\Procs,p:e}}}{By rule Cterm}
-%        \Pf{}{}{\quad\textbf{Subsubcase}~\{ (c_1,c_2) \mid c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-%          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}, c_2 \leadsto c_1\} \neq \varnothing}{}
-%        \Pf{}{}{\qquad \exists~c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_\pi^{\textrm{R}},\Sigma_p^{\textrm{R}},
-%          c_2 \in \Sigma_\pi^{\textrm{W}},\Sigma_p^{\textrm{W}}}{Above}
-%        \Pf{}{}{\qquad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[R[
-%                \eLetRd{\eChan{c_1}}{x}{e}] ]} --->
-%          \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
-%              [\ePair{!v}{\eChan{c_1}}{1}/x]e]}~\textrm{or}}{}
-%        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
-%              \eWr{\eChan{c_2}}{v}]} --->
-%          \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ \eUnit ]}}{By rule rw}        
       \end{llproof}
     \end{itemize}    
 \end{proof}  
@@ -338,6 +312,62 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
   \begin{itemize}[leftmargin=*]
   \item[] \textbf{Case}
     \begin{mathpar}
+      \Infer{local}{e_1 ---> e_2 }
+      { \Config{\Names}{\Store_1}{\Procs, \ProcNm{p} \proc{E[e_1]}} --->
+        \Config{\Names}{\Store_2}{\Procs, \ProcNm{p} \proc{E[e_2]}} }
+    \end{mathpar}
+    \begin{llproof}
+      \todo{}
+    \end{llproof}
+
+  \item[] \textbf{Case}
+    \begin{mathpar}
+      \Infer{fork}{ q \notin \Names }
+      { \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eFork{e_1}{e_2} }] } --->
+        \Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1}, \ProcNm{p} \proc{E[ e_2 ]}}}      
+    \end{mathpar}
+    \begin{llproof}
+      \todo{}
+    \end{llproof}
+
+  \item[] \textbf{Case}
+    \begin{mathpar}
+      \Infer{par}{
+      \Config{\Names}{\Store}{\Procs_1} -> \Config{\Names'}{\Store}{\Procs_1'}}
+      {\Config{\Names}{\Store}{\Procs_1, \Procs_2} ->
+       \Config{\Names'}{\Store}{\Procs_1',\Procs_2}}
+    \end{mathpar}
+    \begin{llproof}
+      \todo{}
+    \end{llproof}
+
+  \item[] \textbf{Case}
+    \begin{mathpar}
+      \Infer{congr}{
+      C_1 \equiv C_1' 
+      \\
+      C_1' ---> C_2'
+      \\
+      C_2' \equiv C_2
+      }
+      { C_1 ---> C_2 }
+    \end{mathpar}
+    \begin{llproof}
+      \todo{}
+    \end{llproof}
+
+  \item[] \textbf{Case}
+    \begin{mathpar}
+      \Infer{nu}{ c_1, c_2 \notin \Names }
+      { \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eNu{(x_1, x_2)}{e} ]}} --->
+        \Config{\Names, c_1, c_2}{\Store}{\Procs, \ProcNm{p} \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}}}
+    \end{mathpar}
+    \begin{llproof}
+      \todo{}
+    \end{llproof}    
+    
+  \item[] \textbf{Case}
+    \begin{mathpar}
     \Infer{rw}
     { c_2 \leadsto c_1 }
     { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
@@ -412,31 +442,6 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy' = \ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e], \ProcNm{q}
         E_2[ \eUnit ]} : U_{\pi}, U_p, U_q = \PrTy = \PrTy'}{By rule cons}
     \end{llproof}
-%    \begin{llproof}
-%      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[
-%              \eLetRd{\eChan{c_1}}{x}{e}]], \ProcNm{q} E_2[
-%            \eWr{\eChan{c_2}}{v}]} : \PrTy~\textrm{s.t.}}{}
-%      %\Pf{}{}{\PrTy(p) = U~\textrm{and}~\PrTy(q) = V}{By assumption}
-%      \Pf{}{|-}{E_2[\eWr{\eChan{c_2}}{v}] : \tyUnit~\textrm{s.t.}~\ChTy(\eChan{c_2}) = \tyWr{S}~\textrm{and}~|- v : S~\textrm{for some}~S}{By inversion (wr)}
-%      \Pf{}{|-}{E_2[\eUnit] : \tyUnit}{By inversion (unit)}
-%      \Pf{}{}{c_2 \leadsto c_1}{By assumption}
-%      \Pf{}{}{\ChTy(\eChan{c_2}) = \tyWr{S}}{Above}      
-%      \Pf{}{}{\ChTy(\eChan{c_1}) = \tyRd{S}}{By definition of $\leadsto$ and
-%        $\ChTy(\eChan{c_2}) = \tyWr{S}$}
-%      \Pf{}{|-}{E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ] :
-%        \tyTensor{\tyBang{S}}{\tyRd{S}}}{By inversion (rd) and
-%        $\ChTy(\eChan{c_1}) = \tyRd{S}$}
-%      \Pf{}{|-}{v : S}{Above}
-%      \Pf{}{|-}{E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e] :
-%        \tyTensor{\tyBang{S}}{\tyRd{S}}}{By $|- v : S$, $\ChTy(\eChan{c_1})
-%        = \tyRd{S}$, and Lemma X (Substitution)}
-%%      \Pf{}{}{\Sigma(p) = \Sigma(p')}{By above equalities}
-%%      \Pf{}{}{\Sigma(q) = \Sigma(q')}{By above equalities}
-%      \Pf{}{}{\exists \ChTy', \PrTy'~\textrm{s.t.}~\ChTy' = \ChTy~\textrm{and}~\PrTy'
-%        = \PrTy}{}
-%      \Pf{\ChTy'}{|-}{\Config{\ChTy}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{\wm}/x]e], \ProcNm{q}
-%        E_2[ \eUnit ]} : \PrTy'}{}      
-%    \end{llproof}    
   \end{itemize}
 
 \end{proof}
