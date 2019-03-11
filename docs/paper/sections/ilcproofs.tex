@@ -350,7 +350,35 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
         \Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1}, \ProcNm{p} \proc{E[ e_2 ]}}}      
     \end{mathpar}
     \begin{llproof}
-      \todo{}
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs, \ProcNm{p} \proc{E[\eFork{e_1}{e_2}]}}
+        : \PrTy~\textrm{s.t.}~\PrTy_{\pi} = \{ \PrTy(x) \mid x:e \in \pi\},~U_{p} =
+        \PrTy(p)}{Assumption}
+      
+      \Pf{}{}{\mathcal{D}~\textrm{is a derivation of}~\Delta_1,\Delta_2;\Gamma_1,\Gamma_2|-
+        E[\eFork{e_1}{e_2}] : U_p,}{}
+      \Pf{}{}{\quad\mathcal{D}'~\textrm{is a subderivation
+          of}~\mathcal{D}~\textrm{concluding}~\Delta_2;\Gamma_2|- \eFork{e_1}{e_2} : U,}{}
+      \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}'~\textrm{corresponds to
+          position of}~\mathcal{D}~\textrm{in}~E}{Assumption}
+
+      \Pf{\Delta_2; \Gamma_2}{|-}{e_2 : U}{By inversion (fork)}
+
+      \Pf{\Delta_1,\Delta_2; \Gamma_1,\Gamma_2}{|-}{E[e_2] : U_p}{By Lemma~\ref{lem:replacement}
+        (Replacement)}
+
+      \Pf{\Delta_2; \Gamma_2}{|-}{e_1 : U_q}{By inversion (fork)}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} \proc{E[e_2]}} :
+        U_p}{Above}
+
+      \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1}} : \PrTy_{\pi},
+        q : U_q}{By rule cons}
+
+      \Pf{\ChTy' = \ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs, \ProcNm{q}
+          \proc{e_1}}, \ProcNm{p} \proc{E[e_2]} : \PrTy_{\pi}, q : U_q, p : U_p =
+        \PrTy, p : U_p = \PrTy'}{By rule cons}
     \end{llproof}
 
   \item[] \textbf{Case}
