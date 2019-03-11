@@ -50,24 +50,18 @@ of local process termination as follows:\smallskip
 \and  
 \Infer{rdterm}
 { }
-{\Lterm{\eLetRd{c}{x}{e}}}
+{\Lterm{E[\eLetRd{c}{x}{e}]}}
 \and
 \Infer{chterm}
 {\Lterm{e_1} \\ \Lterm{e_2}}
-{\Lterm{\eChoice{e_1}{e_2}}}
+{\Lterm{E[\eChoice{e_1}{e_2}]}}
 \and
 \Infer{wrterm}
 { }
-{\Lterm{\eWr{c}{v}}}
+{\Lterm{E[\eWr{c}{v}]}}
 \end{mathpar}
 In other words, $\Lterm{e}$ holds when $e$ is a value, $e$ is reading, or $e$ is
-writing. \todo{What about fork and choice?
-%%%%%%%%%%%%%%
-Matt says:
-  Ah, good point.
-  I added some cases above, and below (for config termination) 
-  that recurse beneath choice expressions to get to the reads at their leaves.
-}
+writing.
 
 \begin{lemma}[Local Progress]
   If $\Delta; \Gamma|- e : U$, then either $\Lterm{e}$

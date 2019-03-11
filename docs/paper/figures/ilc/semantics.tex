@@ -12,20 +12,25 @@
   \\
   Process pools
   & $\Procs$ 
-    & $\bnfas$ & $\emptyProcs ~|~ \Procs, p{:}\proc{e}$
+  & $\bnfas$ & $\emptyProcs ~|~ \Procs, p{:}\proc{e}$
+  \\
+  Configurations
+  & $C$
+     & $\bnfas$ & $\Config{\Names}{}{\Procs} $
 \end{grammar}
 \end{subfigure}%
 \begin{subfigure}{0.5\textwidth}
   \begin{grammar}
-  Configurations
-  & $C$
-     & $\bnfas$ & $\Config{\Names}{}{\Procs} $
-     \\
  Evaluation contexts
   & $E$
-     & $\bnfas$ & 
- $\bullet \bnfalt \eLet{x}{E}{e} \bnfalt \eApp{E}{e}{\ell} \bnfalt \eApp{v}{E}{\ell}$
-\\ &&& $\bnfaltbrk \eSplitt{\ell}{E}{x_1}{x_2}{e} \bnfalt \eCase{\ell}{E}{x_1}{e_1}{x_2}{e_2}$
+ & $\bnfas$ &
+$\bullet \bnfalt \ePair{E}{e}{\ell} \bnfalt \ePair{v}{E}{\ell} \bnfalt \eInjj{\ell}{i}{E}$ 
+\\ &&& $\bnfaltbrk \eSplitt{\ell}{E}{x_1}{x_2}{e} \bnfalt
+\eCase{\ell}{E}{x_1}{e_1}{x_2}{e_2}$
+\\ &&& $\bnfaltbrk \eApp{E}{e}{\ell} \bnfalt \eApp{v}{E}{\ell}  \bnfalt \eLet{x}{E}{e}
+\bnfalt \eBang{E} \bnfalt \eUnbang{E}$
+\\ &&& $\bnfaltbrk \eChoicee{E}{x_1}{y_1}{e_2}{e_3}{x_2}{y_2}{e_4}$
+\\ &&& $\bnfaltbrk \eChoicee{v}{x_1}{y_1}{e_2}{E}{x_2}{y_2}{e_4}$
 \\
  Read contexts
   & $R$
@@ -62,11 +67,11 @@
 \Infer{fork}{ q \notin \Names }
 { \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eFork{e_1}{e_2} }] } --->
   \Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1}, \ProcNm{p} \proc{E[ e_2 ]}}}
-\and
-\Infer{par}{
-\Config{\Names}{\Store}{\Procs_1} -> \Config{\Names'}{\Store}{\Procs_1'}}
-{\Config{\Names}{\Store}{\Procs_1, \Procs_2} ->
-  \Config{\Names'}{\Store}{\Procs_1',\Procs_2}}
+%\and
+%\Infer{par}{
+%\Config{\Names}{\Store}{\Procs_1} -> \Config{\Names'}{\Store}{\Procs_1'}}
+%{\Config{\Names}{\Store}{\Procs_1, \Procs_2} ->
+%  \Config{\Names'}{\Store}{\Procs_1',\Procs_2}}
 %
 %\Store}{\Procs_1'}}
 %\Config{\Names_1',\Names_2}{\Store}{\Procs_1',\Procs_2}}
@@ -80,7 +85,7 @@ C_2' \equiv C_2
 }
 { C_1 ---> C_2 }
 \and
-\Infer{nu}{ c_1, c_2 \notin \Names }
+\Infer{nu}{ c_1, c_2 \notin \Names \\ c_2 \leadsto c_1}
 { \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eNu{(x_1, x_2)}{e} ]}} --->
   \Config{\Names, c_1, c_2}{\Store}{\Procs, \ProcNm{p} \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}}}
 \and
@@ -122,6 +127,10 @@ C_2' \equiv C_2
 \Infer{fix}
 { }
 { \eFixx{\ell}{x}{e} ---> [\eFixx{\ell}{x}{e} / x] e }
+\and
+\Infer{gnab}
+{ }
+{ \eUnbang{(\eBang{v})} ---> v }
 \end{mathpar}
 \caption{Reduction semantics.}
 \label{fig:semantics}
