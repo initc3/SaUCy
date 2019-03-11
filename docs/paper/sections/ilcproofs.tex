@@ -368,9 +368,9 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 
       \Pf{\Delta_2; \Gamma_2}{|-}{e_1 : U_q}{By inversion (fork)}
 
-      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
+      \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
 
-      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} \proc{E[e_2]}} :
+      \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\ProcNm{p} \proc{E[e_2]}} :
         U_p}{Above}
 
       \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1}} : \PrTy_{\pi},
@@ -384,12 +384,19 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
   \item[] \textbf{Case}
     \begin{mathpar}
       \Infer{par}{
-      \Config{\Names}{\Store}{\Procs_1} -> \Config{\Names'}{\Store}{\Procs_1'}}
+      \Config{\Names}{\Store}{\Procs_2} -> \Config{\Names}{\Store}{\Procs_2'}}
       {\Config{\Names}{\Store}{\Procs_1, \Procs_2} ->
-       \Config{\Names'}{\Store}{\Procs_1',\Procs_2}}
+       \Config{\Names}{\Store}{\Procs_1,\Procs_2'}}
     \end{mathpar}
     \begin{llproof}
-      \todo{}
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs_1, \Procs_2} :
+        \PrTy~\textrm{s.t.}~\PrTy_{\Procs_1} = \{ \PrTy(x) \mid x:e \in
+        \Procs_1\},~\PrTy_{\Procs_2} = \{ \PrTy(x) \mid x:e \in
+        \Procs_2\}}{Assumption}
+
+      \Pf{\ChTy'\supseteq\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs_2'} :
+        \PrTy_{\Procs_2'}\supseteq\PrTy_{\Procs_2}}{By i.h.}
+      \Pf{}{}{}{\todo{}}
     \end{llproof}
 
   \item[] \textbf{Case}
@@ -404,7 +411,11 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       { C_1 ---> C_2 }
     \end{mathpar}
     \begin{llproof}
-      \todo{}
+      \Pf{\ChTy}{|-}{C_1 : \PrTy}{Assumption}
+      \Pf{}{}{C_1 \equiv C_1'}{Given}
+      \Pf{\ChTy}{|-}{C_1' : \PrTy}{By Lemma~\ref{lem:equiv}}
+      \Pf{\ChTy'\supseteq\ChTy}{|-}{C_2' : \PrTy'\supseteq\PrTy}{By i.h.}
+      \Pf{\ChTy'}{|-}{C_2 : \PrTy'}{By Lemma~\ref{lem:equiv}}
     \end{llproof}
 
   \item[] \textbf{Case}
