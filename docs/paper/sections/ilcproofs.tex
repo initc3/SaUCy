@@ -125,10 +125,21 @@ Informally, $\JCterm{C}$ holds when either:
 %\end{proof}
 %\end{lemma}
 
-\begin{lemma}[Parallel Reduction]
+%\begin{lemma}[Parallel Reduction]
+%If $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$,
+%then there exists $\Names_4 \supseteq \Names_3 \supseteq \Names_2$ such that $\Config{\Names_3}{\Store}{\Procs_1, \Procs_3} ->
+%\Config{\Names_4}{\Store}{\Procs_2,\Procs_3}$.
+%\begin{proof}
+%  By structural induction on the derivation of
+%  $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$.
+%\end{proof}
+%\end{lemma}
+
+\begin{lemma}[Parallel Reduction]\label{lem:par}
 If $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$,
-then there exists $\Names_4 \supseteq \Names_3 \supseteq \Names_2$ such that $\Config{\Names_3}{\Store}{\Procs_1, \Procs_3} ->
-\Config{\Names_4}{\Store}{\Procs_2,\Procs_3}$.
+then there exists $\Config{\Names_3}{\Store}{\Procs_3}$ such that
+$\Config{\Names_1,\Names_3}{\Store}{\Procs_1, \Procs_3} ->
+\Config{\Names_2,\Names_3}{\Store}{\Procs_2,\Procs_3}$.
 \begin{proof}
   By structural induction on the derivation of
   $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$.
@@ -192,7 +203,7 @@ $C'$ such that $\JCred{C}{C'}$.
 
 \Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{}
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} ->
-          \Config{\Names'}{\Store}{\Procs',p:e}}{By rule par~\todo{}}
+          \Config{\Names'}{\Store}{\Procs',p:e}}{By Lemma~\ref{lem:par}}
         \Pf{}{}{\textbf{Subcase}~\JCterm{\Config{\Names}{\Store}{p:e}}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
         \Pf{}{}{\quad\Names_1 = \textrm{RdChans}(\Procs,p:e)~\textrm{and}~\Names_2 = \textrm{WrChans}(\Procs,p:e)}{Suppose}
         \Pf{}{}{\quad\{ (c_1,c_2) \mid c_1 \in \Names_1,
