@@ -74,8 +74,7 @@ writing.
 To state progress on configurations, we give a special definition of ``program
 termination'' (that permits deadlocks) as follows:\smallskip
 
-\judgbox{\JCterm{C}}{Configuration $C$ is terminated~\todo{Change RdChans and
-    WrChans to use evaluation contexts?}}
+\judgbox{\JCterm{C}}{Configuration $C$ is terminated~\todo{lterm}}
 \begin{mathpar}
 \Infer{Cterm}
 {\textrm{RdChans}(\pi) = \Sigma_1 \\ \textrm{WrChans}(\pi) = \Sigma_2\\\\
@@ -89,8 +88,8 @@ termination'' (that permits deadlocks) as follows:\smallskip
   \textrm{RdChans}(\pi, p:\eLetRd{c}{x}{e}) &= \textrm{RdChans}(\pi),c
   &\textrm{WrChans}(\pi, p:\eWr{c}{v}) &= \textrm{WrChans}(\pi),c
   \\
-  \textrm{RdChans}(\pi, p:v) &= \textrm{RdChans}(\pi),c
-  &\textrm{WrChans}(\pi, p:v) &= \textrm{WrChans}(\pi),c
+  \textrm{RdChans}(\pi, p:v) &= \textrm{RdChans}(\pi)
+  &\textrm{WrChans}(\pi, p:v) &= \textrm{WrChans}(\pi)
   \\
   \textrm{RdChans}(\pi, p:\eChoice{e_1}{e_2}) &=
   \textrm{RdChans}(p:e_1) \cup \textrm{RdChans}(p:e_2)
@@ -106,13 +105,13 @@ Informally, $\JCterm{C}$ holds when either:
    however, no reader-writer pair exists for a common channel~$c$.
 \end{enumerate}
 
-\begin{lemma}[Non-progress]
-If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ and $\JCterm{C}$, then there does not exist
-$C'$ such that $\JCred{C}{C'}$.
-\begin{proof}
-    By structural induction on the derivation of $\JCty{\StTy}{\ChTy}{C}{\PrTy}$.
-\end{proof}
-\end{lemma}
+%\begin{lemma}[Non-progress]
+%If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ and $\JCterm{C}$, then there does not exist
+%$C'$ such that $\JCred{C}{C'}$.
+%\begin{proof}
+%    By structural induction on the derivation of $\JCty{\StTy}{\ChTy}{C}{\PrTy}$.
+%\end{proof}
+%\end{lemma}
 %\begin{lemma}[Non-progress]
 %For all configurations $C$,
 %channel typings~$\ChTy$,
@@ -126,9 +125,19 @@ $C'$ such that $\JCred{C}{C'}$.
 %\end{proof}
 %\end{lemma}
 
+\begin{lemma}[Parallel Reduction]
+If $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$,
+then there exists $\Names_4 \supseteq \Names_3 \supseteq \Names_2$ such that $\Config{\Names_3}{\Store}{\Procs_1, \Procs_3} ->
+\Config{\Names_4}{\Store}{\Procs_2,\Procs_3}$.
+\begin{proof}
+  By structural induction on the derivation of
+  $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$.
+\end{proof}
+\end{lemma}
+
 \begin{theorem}[Progress]
-If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$, then either $\JCterm{C}$, or $\exists C'$ such that
-$\JCred{C}{C'}$.
+If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$, then either $\JCterm{C}$ or there exists
+$C'$ such that $\JCred{C}{C'}$.
 
 %For all configurations $C$,
 %channel typings~$\ChTy$,
@@ -183,7 +192,7 @@ $\JCred{C}{C'}$.
 
 \Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{}
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} ->
-          \Config{\Names'}{\Store}{\Procs',p:e}}{By rule par}
+          \Config{\Names'}{\Store}{\Procs',p:e}}{By rule par~\todo{}}
         \Pf{}{}{\textbf{Subcase}~\JCterm{\Config{\Names}{\Store}{p:e}}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
         \Pf{}{}{\quad\Names_1 = \textrm{RdChans}(\Procs,p:e)~\textrm{and}~\Names_2 = \textrm{WrChans}(\Procs,p:e)}{Suppose}
         \Pf{}{}{\quad\{ (c_1,c_2) \mid c_1 \in \Names_1,
@@ -373,23 +382,23 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
         \PrTy, p : U_p = \PrTy'}{By rule cons}
     \end{llproof}
 
-  \item[] \textbf{Case}
-    \begin{mathpar}
-      \Infer{par}{
-      \Config{\Names}{\Store}{\Procs_2} -> \Config{\Names}{\Store}{\Procs_2'}}
-      {\Config{\Names}{\Store}{\Procs_1, \Procs_2} ->
-       \Config{\Names}{\Store}{\Procs_1,\Procs_2'}}
-    \end{mathpar}
-    \begin{llproof}
-      \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs_1, \Procs_2} :
-        \PrTy~\textrm{s.t.}~\PrTy_{\Procs_1} = \{ \PrTy(x) \mid x:e \in
-        \Procs_1\},~\PrTy_{\Procs_2} = \{ \PrTy(x) \mid x:e \in
-        \Procs_2\}}{Assumption}
-
-      \Pf{\ChTy'\supseteq\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs_2'} :
-        \PrTy_{\Procs_2'}\supseteq\PrTy_{\Procs_2}}{By i.h.}
-      \Pf{}{}{}{\todo{}}
-    \end{llproof}
+%  \item[] \textbf{Case}
+%    \begin{mathpar}
+%      \Infer{par}{
+%      \Config{\Names}{\Store}{\Procs_2} -> \Config{\Names}{\Store}{\Procs_2'}}
+%      {\Config{\Names}{\Store}{\Procs_1, \Procs_2} ->
+%       \Config{\Names}{\Store}{\Procs_1,\Procs_2'}}
+%    \end{mathpar}
+%    \begin{llproof}
+%      \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs_1, \Procs_2} :
+%        \PrTy~\textrm{s.t.}~\PrTy_{\Procs_1} = \{ \PrTy(x) \mid x:e \in
+%        \Procs_1\},~\PrTy_{\Procs_2} = \{ \PrTy(x) \mid x:e \in
+%        \Procs_2\}}{Assumption}
+%
+%      \Pf{\ChTy'\supseteq\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs_2'} :
+%        \PrTy_{\Procs_2'}\supseteq\PrTy_{\Procs_2}}{By i.h.}
+%      \Pf{}{}{}{\todo{}}
+%    \end{llproof}
 
   \item[] \textbf{Case}
     \begin{mathpar}
