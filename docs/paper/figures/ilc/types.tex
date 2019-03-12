@@ -15,89 +15,45 @@
 %
 \and
 %
-\Infer{unit}
-{ }
-{\Delta ; \Gamma |- \eUnit : \tyUnit}
+\Infer{iabs}
+{\emptyctxt ; \Gamma, x:A |- e : U}
+{\Delta ; \Gamma |- \eLamm{\infty}{x}{e} : \tyArr{A}{\infty}{U}}
 %
 \and
 %
-\Infer{ipair}
-{\Delta_1; \Gamma |- e_1 : A_1\\
-\Delta_2; \Gamma |- e_2 : A_2}
-{\Delta_1, \Delta_2; \Gamma |- \ePair{e_1}{e_2}{\infty} : \tyProdd{}{A_1}{A_2}}
+\Infer{wabs}
+{\wrtok ; \Gamma, x:A |- e : U}
+{\Delta ; \Gamma |- \eLamm{\wm}{x}{e} : \tyArr{A}{\wm}{U}}
 %
 \and
 %
-\Infer{apair}
-{\Delta_1; \Gamma |- e_1 : X_1\\
-\Delta_2; \Gamma |- e_2 : X_2}
-{\Delta_1, \Delta_2; \Gamma |- \ePair{e_1}{e_2}{1} : \tyTensor{X_1}{X_2}}
+\Infer{aabs}
+{\Delta,x : X; \Gamma |- e : U}
+{\Delta ; \Gamma |- \eLamm{1}{x}{e} : \tyArr{X}{1}{U}}
 %
 \and
 %
-\Infer{iinj}
-{i \in \{1, 2\}\\
-\Delta; \Gamma |- e : A_i}
-{\Delta ; \Gamma |- \eInjj{\infty}{i}{e} : \tySum{A_1}{}{A_2}}
+\Infer{iapp}
+{\Delta_1; \Gamma |- e_2 : A\\
+\Delta_2; \Gamma |- e_1 : \tyArr{A}{\infty}{U}}
+{\Delta_1, \Delta_2; \Gamma |- \eApp{e_1}{e_2}{\infty} : U}
 %
 \and
 %
-\Infer{ainj}
-{i \in \{1, 2\}\\
-\Delta; \Gamma |- e : X_i}
-{\Delta ; \Gamma |- \eInjj{1}{i}{e} : \tyOplus{X_1}{X_2}}
+\Infer{wapp}
+{\Delta_1; \Gamma |- e_2 : A\\
+\Delta_2; \Gamma |- e_1 : \tyArr{A}{\wm}{U}}
+{\Delta_1,\Delta_2,\wrtok; \Gamma |- \eApp{e_1}{e_2}{\wm} : U}
 %
 \and
 %
-%\Infer{ref}
-%{\Delta_1; \Gamma |- e : A -| \Delta_2}
-%{\Delta_1; \Gamma |- \eRef{e} : \tyRef{A} -| \Delta_2}
-%%
-%\and
-%%
-\Infer{isplit}
-{\Delta_1; \Gamma |- e_1 : \tyProdd{}{A_1}{A_2}\\
-\Delta_2; \Gamma,x_1:A_1, x_2: A_2 |- e : U}
-{\Delta_1, \Delta_2; \Gamma |- \eSplitt{\infty}{e_1}{x_1}{x_2}{e_2} : U}
-%
-\and
-%  
-\Infer{asplit}
-{\Delta_1; \Gamma |- e_1 : \tyTensor{X_1}{X_2}\\
-\Delta_2,x_1:X_1, x_2:X_2; \Gamma |- e : U}
-{\Delta_1, \Delta_2; \Gamma |- \eSplitt{1}{e_1}{x_1}{x_2}{e_2} : U}
-%
-\and
-%  
-\Infer{icase}
-{\Delta_1; \Gamma |- e : \tySum{A_1}{}{A_2}\\\\
-\Delta_2; \Gamma,x_1:A_1 |- e_1 : U\\
-\Delta_2; \Gamma,x_2:A_2 |- e_2 : U}
-{\Delta_1, \Delta_2; \Gamma |- \eCase{\infty}{e}{x_1}{e_1}{x_2}{e_2} : U}
+\Infer{aapp}
+{\Delta_1; \Gamma |- e_2 : X\\
+\Delta_2; \Gamma |- e_1 : \tyArr{X}{1}{U}}
+{\Delta_1, \Delta_2; \Gamma |- \eApp{e_1}{e_2}{1} : U}
 %
 \and
 %
-\Infer{acase}
-{\Delta_1; \Gamma |- e : \tyOplus{X_1}{X_2}\\\\
-\Delta_2,x_1:X_1; \Gamma |- e_1 : U\\
-\Delta_2,x_2:X_2; \Gamma |- e_2 : U}
-{\Delta_1, \Delta_2; \Gamma |- \eCase{1}{e}{x_1}{e_1}{x_2}{e_2} : U}
-%
-\and
-%
-%\Infer{get}
-%{\Delta_1; \Gamma |- e : \tyRef{A} -| \Delta_2}
-%{\Delta_1, \wrtok; \Gamma |- \eGet{e} : A -| \Delta_2, \wrtok}
-%%
-%\and
-%%
-%\Infer{set}
-%{\Delta_1; \Gamma |- e_1 : \tyRef{A} -| \Delta_2\\\\
-%\Delta_2; \Gamma |- e_2 : A -| \Delta_3}
-%{\Delta_1, \wrtok; \Gamma |- \eSet{e_1}{e_2} : \tyUnit -| \Delta_3, \wrtok}
-%%
-%\and
-%%
 \Infer{ifix}
 {\emptyctxt; \Gamma,x : \tyArr{A}{\infty}{U} |- e : \tyArr{A}{\infty}{U}}
 {\Delta; \Gamma |- \eFixx{\infty}{x}{e} : \tyArr{A}{\infty}{U}}
@@ -142,52 +98,6 @@
 %
 \and
 %
-\Infer{iabs}
-{\emptyctxt ; \Gamma, x:A |- e : U}
-{\Delta ; \Gamma |- \eLamm{\infty}{x}{e} : \tyArr{A}{\infty}{U}}
-%
-\and
-%
-\Infer{wabs}
-{\wrtok ; \Gamma, x:A |- e : U}
-{\Delta ; \Gamma |- \eLamm{\wm}{x}{e} : \tyArr{A}{\wm}{U}}
-%\Infer{wabs}
-%{\wrtok ; \Gamma |- e : U -| \Delta_2}
-%{\Delta_1 ; \Gamma |- \eLamm{\wm}{\eUnit}{e} : \mathbbm{1} \sep U -| \Delta_1}
-%
-\and
-%
-\Infer{aabs}
-{\Delta,x : X; \Gamma |- e : U}
-{\Delta ; \Gamma |- \eLamm{1}{x}{e} : \tyArr{X}{1}{U}}
-%\Infer{aabs}
-%{\wrtok \in \Delta_1 => \Delta_3 \coloneqq \Delta_2, \wrtok\\\\
-%\Delta_1,x : X \div \wrtok ; \Gamma |- e : U -| \Delta_2}
-%{\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U -| \Delta_3 \div (x:X)}
-%
-\and
-%
-\Infer{iapp}
-{\Delta_1; \Gamma |- e_2 : A\\
-\Delta_2; \Gamma |- e_1 : \tyArr{A}{\infty}{U}}
-{\Delta_1, \Delta_2; \Gamma |- \eApp{e_1}{e_2}{\infty} : U}
-%
-\and
-%
-\Infer{wapp}
-{\Delta_1; \Gamma |- e_2 : A\\
-\Delta_2; \Gamma |- e_1 : \tyArr{A}{\wm}{U}}
-{\Delta_1,\Delta_2,\wrtok; \Gamma |- \eApp{e_1}{e_2}{\wm} : U}
-%
-\and
-%
-\Infer{aapp}
-{\Delta_1; \Gamma |- e_2 : X\\
-\Delta_2; \Gamma |- e_1 : \tyArr{X}{1}{U}}
-{\Delta_1, \Delta_2; \Gamma |- \eApp{e_1}{e_2}{1} : U}
-%
-\and
-%
 \Infer{nu}
 {\Delta, x_1: \tyRd{S} ; \Gamma, x_2 : \tyWr{S} |- e : U}
 {\Delta; \Gamma |- \eNu{(x_1, x_2)}{e} : U}
@@ -216,197 +126,13 @@
 %
 \and
 %
-%\Infer{choice}
-%{\wrtok \not \in \Delta \\\\
-%\Delta; \Gamma |- e_1 : U\\
-%\Delta; \Gamma |- e_2 : U}
-%{\Delta; \Gamma |- \eChoice{e_1}{e_2} : U}
 \Infer{choice}
 {\wrtok \not \in \Delta_1,\Delta_2 \\ \Delta_1 ; \Gamma |- e_1 : \tyRd{S}\\
-\Delta_2 ; \Gamma |- e_3 : \tyRd{T}\\\\
-\Delta_3, \wrtok, x_1 : \tyRd{S}, x_2 : \tyRd{T}; \Gamma, y_1 : S |- e_2 : U\\\\
-\Delta_3, \wrtok, x_1 : \tyRd{S}, x_2 : \tyRd{T}; \Gamma, y_2 : T |- e_4 : U
-}
-{\Delta_1, \Delta_2, \Delta_3; \Gamma |- \eChoicee{e_1}{x_1}{y_1}{e_2}{e_3}{x_2}{y_2}{e_4} : U}
+\Delta_2 ; \Gamma |- e_2 : \tyRd{T}\\\\
+\Delta_3, \wrtok, x_1 : \tyTensor{\tyBang{S}}{\tyTensor{\tyRd{S}}{\tyRd{T}}}; \Gamma |- e_3 : U\\\\
+\Delta_3, \wrtok, x_2 : \tyTensor{\tyBang{T}}{\tyTensor{\tyRd{T}}{\tyRd{S}}}; \Gamma |- e_4 : U}
+{\Delta_1, \Delta_2, \Delta_3; \Gamma |- \eChoicee{e_1}{x_1}{e_3}{e_2}{x_2}{e_4} : U}
 \end{mathpar}
-\caption{Typing rules.}
+\caption{Selected typing rules.}
 \label{fig:type-expressions}
 \end{figure*}
-
-\begin{comment}
-\begin{figure*}[h]
-\centering
-\judgbox{\Delta ; \Gamma |- e : U}{~~Under affine context $\Delta$ and intuitionistic context
-    $\Gamma$, expression~$e$ has type $U$.}
-\begin{mathpar}
-\Infer{ivar}
-{\Gamma(x) = A}
-{\Delta; \Gamma |- x : A}
-%
-\and
-%
-\Infer{avar}
-{\Delta(x) = X}
-{\Delta; \Gamma |- x : X}
-%
-\and
-%
-\Infer{unit}
-{ }
-{\Delta ; \Gamma |- \eUnit : \tyUnit}
-%
-\and
-%
-\Infer{pair}
-{\Delta_1; \Gamma |- e_1 : U_1\\
-\Delta_2; \Gamma |- e_2 : U_2}
-{\Delta_1, \Delta_2; \Gamma |- \ePair{e_1}{e_2}{\pi} : \tyProdd{\pi}{U_1}{U_2}}
-%
-\and
-%
-\Infer{inj}
-{i \in \{1, 2\}\\
-\Delta; \Gamma |- e : U_i}
-{\Delta ; \Gamma |- \eInj{i}{e} : \tySum{U_1}{\pi}{U_2}}
-%
-\and
-%
-%\Infer{ref}
-%{\Delta_1; \Gamma |- e : A -| \Delta_2}
-%{\Delta_1; \Gamma |- \eRef{e} : \tyRef{A} -| \Delta_2}
-%%
-%\and
-%%
-\Infer{split}
-{\Delta_1; \Gamma |- e_1 : \tyProd{U_1}{U_2}\\
-[\Delta_2; \Gamma],x_1:U_1, x_2: U_2 |- e : V}
-{\Delta_1, \Delta_2; \Gamma |- \eSplit{e_1}{x_1}{x_2}{e_2} : V}
-%
-\and
-%  
-\Infer{case}
-{\Delta_1; \Gamma |- e : \tySum{U_1}{\pi}{U_2}\\\\
-[\Delta_2; \Gamma],x_1:U_1 |- e_1 : V\\
-[\Delta_2; \Gamma],x_2:U_2 |- e_2 : V}
-{\Delta_1, \Delta_2; \Gamma |- \eCase{\pi}{e}{x_1}{e_1}{x_2}{e_2} : V}
-%
-\and
-%
-%\Infer{get}
-%{\Delta_1; \Gamma |- e : \tyRef{A} -| \Delta_2}
-%{\Delta_1, \wrtok; \Gamma |- \eGet{e} : A -| \Delta_2, \wrtok}
-%%
-%\and
-%%
-%\Infer{set}
-%{\Delta_1; \Gamma |- e_1 : \tyRef{A} -| \Delta_2\\\\
-%\Delta_2; \Gamma |- e_2 : A -| \Delta_3}
-%{\Delta_1, \wrtok; \Gamma |- \eSet{e_1}{e_2} : \tyUnit -| \Delta_3, \wrtok}
-%%
-%\and
-%%
-\Infer{fix}
-{[\emptyctxt; \Gamma],x : \tyArr{U}{\ell}{V} |- e : \tyArr{U}{\ell}{V}}
-{\Delta; \Gamma |- \eFixx{\ell}{x}{e} : \tyArr{U}{\ell}{V}}
-%\Infer{fix}
-%{\emptyctxt; \Gamma,x : \tyArr{U}{\ell}{V} |- e : \tyArr{U}{\ell}{V} -| \Delta_2}
-%{\Delta_1; \Gamma |- \eFixx{\ell}{x}{e} : \tyArr{U}{\ell}{V} -| \Delta_1}
-%
-\and
-%
-\Infer{let}
-{\Delta_1; \Gamma |- e_1 : U\\\\
-[\Delta_2; \Gamma], x:U |- e_2 : V}
-{\Delta_1, \Delta_2; \Gamma |- \eLet{x}{e_1}{e_2} : V}
-%
-\and
-%
-\Infer{bang}
-{\Delta ; \Gamma |- e : A}
-{\Delta ; \Gamma |- \eBang{e} : \tyBang{A}}
-%
-\and
-%
-\Infer{gnab}
-{\Delta ; \Gamma |- e : \tyBang{A}}
-{\Delta ; \Gamma |- \eUnbang{e} : A}
-%
-\and
-%
-\Infer{iabs}
-{\emptyctxt ; \Gamma, x:A |- e : U}
-{\Delta ; \Gamma |- \eLamm{\infty}{x}{e} : A -> U}
-%
-\and
-%
-\Infer{wabs}
-{\wrtok ; \Gamma, x:A |- e : U}
-{\Delta ; \Gamma |- \eLamm{\wm}{x}{e} : \tyArr{A}{\wm}{U}}
-%\Infer{wabs}
-%{\wrtok ; \Gamma |- e : U -| \Delta_2}
-%{\Delta_1 ; \Gamma |- \eLamm{\wm}{\eUnit}{e} : \mathbbm{1} \sep U -| \Delta_1}
-%
-\and
-%
-\Infer{aabs}
-{\Delta,x : X; \Gamma |- e : U}
-{\Delta ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U}
-%\Infer{aabs}
-%{\wrtok \in \Delta_1 => \Delta_3 \coloneqq \Delta_2, \wrtok\\\\
-%\Delta_1,x : X \div \wrtok ; \Gamma |- e : U -| \Delta_2}
-%{\Delta_1 ; \Gamma |- \eLamm{1}{x}{e} : X \multimap U -| \Delta_3 \div (x:X)}
-%
-\and
-%
-\Infer{app}
-{\Delta_1; \Gamma |- e_2 : U\\
-\Delta_2; \Gamma |- e_1 : U {->}_{\pi} V}
-{\Delta_1, \Delta_2; \Gamma |- \eApp{e_1}{e_2}{\pi} : V}
-%
-\and
-%
-\Infer{wapp}
-{\Delta_1; \Gamma |- e_2 : A\\\\
-\Delta_2; \Gamma |- e_1 : \tyArr{A}{\wm}{U}}
-{\Delta_1,\Delta_2,\wrtok; \Gamma |- \eApp{e_1}{e_2}{\wm} : U}
-%
-\and
-%
-\Infer{nu}
-{\Delta, x_1: \tyRd{S} ; \Gamma, x_2 : \tyWr{S} |- e : A}
-{\Delta; \Gamma |- \eNu{(x_1, x_2)}{e} : A}
-%
-\and
-%
-\Infer{wr}
-{\Delta_1; \Gamma |- e_1 : S\\\\
-\Delta_2; \Gamma |- e_2 : \tyWr{S}}
-{\Delta_1,\Delta_2,\wrtok; \Gamma|- \eWr{e_1}{e_2} : \tyUnit}
-%
-\and
-%
-\Infer{rd}
-{\wrtok \not \in \Delta\\
-\Delta_1 ; \Gamma |- e_1 : \tyRd{S}\\\\
-\Delta_2,\wrtok, x : \tyTensor{\tyBang{S}}{\tyRd{S}} ; \Gamma |- e_2 : U}
-{\Delta_1,\Delta_2 ; \Gamma |- \eLetRd{e_1}{x}{e_2} : U}
-%
-\and
-%
-\Infer{fork}
-{\Delta_1; \Gamma |- e_1 : U\\\\
-\Delta_2; \Gamma |- e_2 : V}
-{\Delta_1, \Delta_2; \Gamma |- \eFork{e_1}{e_2} : V}
-%
-\and
-%
-\Infer{choice}
-{\wrtok \not \in \Delta \\\\
-\Delta; \Gamma |- e_1 : U\\
-\Delta; \Gamma |- e_2 : U}
-{\Delta; \Gamma |- \eChoice{e_1}{e_2} : U}
-\end{mathpar}
-\caption{Typing rules.}
-\label{fig:type-expressions}
-\end{figure*}
-\end{comment}

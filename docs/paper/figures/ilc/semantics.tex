@@ -29,15 +29,16 @@ $\bullet \bnfalt \ePair{E}{e}{\ell} \bnfalt \ePair{v}{E}{\ell} \bnfalt \eInjj{\e
 \eCase{\ell}{E}{x_1}{e_1}{x_2}{e_2}$
 \\ &&& $\bnfaltbrk \eApp{E}{e}{\ell} \bnfalt \eApp{v}{E}{\ell}  \bnfalt \eLet{x}{E}{e}
 \bnfalt \eBang{E} \bnfalt \eUnbang{E}$
-\\ &&& $\bnfaltbrk \eChoicee{E}{x_1}{y_1}{e_2}{e_3}{x_2}{y_2}{e_4}$
-\\ &&& $\bnfaltbrk \eChoicee{v}{x_1}{y_1}{e_2}{E}{x_2}{y_2}{e_4}$
-\\
- Read contexts
-  & $R$
-%%
-%% This initial definition of R is too limiting: It's not general enough to support the progress theorem:
-%     & $\bnfas$ & $\bullet \bnfalt \eRd{\eChan{c}} \oplus R \bnfalt R \oplus \eRd{\eChan{c}}$
-     & $\bnfas$ & $\bullet \bnfalt e \boxplus R \bnfalt R \boxplus e$
+\\ &&& $\bnfaltbrk \eWr{E}{e} \bnfalt \eLetRd{E}{x}{e}$
+\\ &&& $\bnfaltbrk \eChoicee{E}{x_1}{e_3}{e_2}{x_2}{e_4}$
+\\ &&& $\bnfaltbrk \eChoicee{c}{x_1}{e_3}{E}{x_2}{e_4}$
+%\\
+% Read contexts
+%  & $R$
+%%%
+%%% This initial definition of R is too limiting: It's not general enough to support the progress theorem:
+%%     & $\bnfas$ & $\bullet \bnfalt \eRd{\eChan{c}} \oplus R \bnfalt R \oplus \eRd{\eChan{c}}$
+%     & $\bnfas$ & $\bullet \bnfalt e \boxplus R \bnfalt R \boxplus e$
 \end{grammar}
 \end{subfigure}
 \caption{Channel names, process names, configurations, evaluation contexts, and
@@ -94,6 +95,17 @@ C_2' \equiv C_2
 { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
   \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e], \ProcNm{q}
     E_2[ \eUnit ]} }
+\and
+\Infer{cw}
+{ c \leadsto c_i \\ i \in \{1, 2\} }
+{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{\eChan{c}}{v}]} --->
+  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{c_i,
+          c_{3-i}}{1}/x_i]e_{i}], \ProcNm{q} E_2[ \eUnit ]} }
+%\Infer{cw}
+%{ c \leadsto c_i \\ i \in \{1, 2\} }
+%{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{\eChan{c}}{v}]} --->
+%  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{\ePair{!v}{\eChan{c_i}}{1}}{\eChan{c_{3-i}}}{1}/x_i]e_{i}], \ProcNm{q}
+%    E_2[ \eUnit ]} }
 %\Infer{rw}
 %{ c_2 \leadsto c_1 }
 %{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eRd{\eChan{c_1}}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
