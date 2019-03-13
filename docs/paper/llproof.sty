@@ -123,7 +123,8 @@
 \RequirePackage{longtable}
 
 % Line-by-line proofs
-\newcommand{\BeginProof}{\smallskip \renewcommand{\arraystretch}{1.1} \begin{longtable}[b]{r@{}r @{} l  l}}
+\setlength\LTleft{0.5cm}
+\newcommand{\BeginProof}{\smallskip \renewcommand{\arraystretch}{1.1} \begin{longtable}{r@{}r @{} l  l}}
 \newcommand{\EndProof}{\end{longtable} \renewcommand{\arraystretch}{\mydefaultarraystretch} \smallskip}
 \newenvironment{llproof}{\BeginProof}{\EndProof}
 
