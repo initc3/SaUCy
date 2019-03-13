@@ -12,7 +12,7 @@
   \\
   Process pools
   & $\Procs$ 
-  & $\bnfas$ & $\emptyProcs ~|~ \Procs, p{:}\proc{e}$
+  & $\bnfas$ & $\emptyProcs ~|~ \Procs, \ProcNm{p} \proc{e}$
   \\
   Configurations
   & $C$
@@ -92,7 +92,7 @@ C_2' \equiv C_2
 \and
 \Infer{rw}
 { c_2 \leadsto c_1 }
-{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
+{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \eLetRd{\eChan{c_1}}{x}{e} ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
   \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e], \ProcNm{q}
     E_2[ \eUnit ]} }
 \and

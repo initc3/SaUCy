@@ -8,7 +8,7 @@ identifier (process name, or channel name) to its associated type:
     Process pool typings
     %(maps process names to their types)
     & $\PrTy$
-    &$\bnfas$& $\emptyctxt \bnfalt \PrTy,p:A \bnfalt \PrTy,p:X$
+    &$\bnfas$& $\emptyctxt \bnfalt \PrTy,\ProcNm{p} A \bnfalt \PrTy,\ProcNm{p} X$
     \\
     Channel pool typings
     %(maps channel names to their types)
@@ -52,16 +52,19 @@ of local process termination as follows:\smallskip
 { }
 {\Lterm{E[\eLetRd{c}{x}{e}]}}
 \and
+%\Infer{chterm}
+%{\Lterm{e_1} \\ \Lterm{e_2}}
+%{\Lterm{E[\eChoice{e_1}{e_2}]}}
 \Infer{chterm}
-{\Lterm{e_1} \\ \Lterm{e_2}}
-{\Lterm{E[\eChoice{e_1}{e_2}]}}
+{ }
+{\Lterm{E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}]}}
 \and
 \Infer{wrterm}
 { }
 {\Lterm{E[\eWr{c}{v}]}}
 \end{mathpar}
-In other words, $\Lterm{e}$ holds when $e$ is a value, $e$ is reading, or $e$ is
-writing.
+In other words, $\Lterm{e}$ holds when $e$ is a value, $e$ is reading, $e$ is
+waiting on an external choice, or $e$ is writing.
 
 \begin{lemma}[Local Progress]
   If $\Delta; \Gamma|- e : U$, then either $\Lterm{e}$
@@ -74,10 +77,11 @@ writing.
 To state progress on configurations, we give a special definition of ``program
 termination'' (that permits deadlocks) as follows:\smallskip
 
-\judgbox{\JCterm{C}}{Configuration $C$ is terminated~\todo{lterm}}
+\judgbox{\JCterm{C}}{Configuration $C$ is terminated}
 \begin{mathpar}
 \Infer{Cterm}
-{\textrm{RdChans}(\pi) = \Sigma_1 \\ \textrm{WrChans}(\pi) = \Sigma_2\\\\
+{\forall (p:e) \in \pi.~\Lterm{e}\\\\
+\textrm{RdChans}(\pi) = \Sigma_1 \\ \textrm{WrChans}(\pi) = \Sigma_2\\\\
 \{ (c_1,c_2) \mid c_1 \in \Sigma_1, c_2 \in \Sigma_2, c_2 \leadsto c_1\} = \varnothing}
 {\JCterm{\Config{\Names}{}{\Procs}}}
 \end{mathpar}
@@ -85,14 +89,18 @@ termination'' (that permits deadlocks) as follows:\smallskip
   \textrm{RdChans}(\emptyProcs) &= \emptyctxt
   &\textrm{WrChans}(\emptyProcs) &= \emptyctxt
   \\
-  \textrm{RdChans}(\pi, p:\eLetRd{c}{x}{e}) &= \textrm{RdChans}(\pi),c
-  &\textrm{WrChans}(\pi, p:\eWr{c}{v}) &= \textrm{WrChans}(\pi),c
+  \textrm{RdChans}(\pi, p:E[\eLetRd{c}{x}{e}]) &= \textrm{RdChans}(\pi),c
+  &\textrm{WrChans}(\pi, p:E[\eLetRd{c}{x}{e}]) &= \textrm{WrChans}(\pi)
+  \\
+  \textrm{RdChans}(\pi, p:E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}]) &=
+  \textrm{RdChans}(\pi),c_1,c_2
+  &\textrm{WrChans}(\pi, p:E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}]) &= \textrm{WrChans}(\pi)  
+  \\
+  \textrm{RdChans}(\pi, p:E[\eWr{c}{v}]) &= \textrm{RdChans}(\pi)
+  &\textrm{WrChans}(\pi, p:E[\eWr{c}{v}]) &= \textrm{WrChans}(\pi),c
   \\
   \textrm{RdChans}(\pi, p:v) &= \textrm{RdChans}(\pi)
   &\textrm{WrChans}(\pi, p:v) &= \textrm{WrChans}(\pi)
-  \\
-  \textrm{RdChans}(\pi, p:\eChoice{e_1}{e_2}) &=
-  \textrm{RdChans}(p:e_1) \cup \textrm{RdChans}(p:e_2)
 \end{align*}
 Informally, $\JCterm{C}$ holds when either:
 \begin{enumerate}
@@ -171,7 +179,9 @@ $C'$ such that $\JCred{C}{C'}$.
       {\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\emptyProcs}}{\cdot}}
       \end{mathpar}
       \begin{llproof}
-        %\Pf{\ChTy}{|-}{{\Config{\Names}{\Store}{\emptyProcs}}: \cdot}{By assumption}
+        %\Pf{\ChTy}{|-}{{\Config{\Names}{\Store}{\emptyProcs}}: \cdot}{By
+        %assumption}
+        \Pf{}{}{\forall (p:e) \in \emptyProcs.~\Lterm{e}}{Vacuous}
         \Pf{}{}{\Sigma_1 = \textrm{RdChans}(\emptyProcs)=\emptyctxt}{By definition of RdChans}
         \Pf{}{}{\Sigma_2 = \textrm{WrChans}(\emptyProcs)=\emptyctxt}{By definition of
           WrChans}
@@ -221,10 +231,58 @@ $C'$ such that $\JCred{C}{C'}$.
           \varnothing}{}
         \Pf{}{}{\qquad \exists~c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_1,
           c_2 \in \Sigma_2}{Above}
-        \Pf{}{}{\qquad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[R[
-                \eLetRd{\eChan{c_1}}{x}{e}] ]} --->
+
+        \Pf{}{}{\qquad\Lterm{e}}{By inversion (Cterm)}
+        
+        \Pf{}{}{\qquad\ProcNm{p} v~\textrm{or}~\ProcNm{p} E[ \eLetRd{\eChan{c_1}}{x}{e}
+          ]~\textrm{or}~\ProcNm{p}
+          E[\eChoicee{c_1}{x_1}{e_1}{c_3}{x_2}{e_2}]~\textrm{or}}{}
+        \Pf{}{}{\qquad\quad\ProcNm{p}
+          E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}]~\textrm{or}~\ProcNm{p} E[
+            \eWr{\eChan{c_2}}{v}]}{By definition of \textbf{lterm}}
+
+        \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} v}{Not possible}
+
+        \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} E[ \eLetRd{\eChan{c_1}}{x}{e}
+        ]}{}
+
+        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{\eChan{c_2}}{v}] \in \pi}{By $c_2 \leadsto c_1$}
+        
+        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
+                \eLetRd{\eChan{c_1}}{x}{e} ]} --->
           \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
-              [\ePair{!v}{\eChan{c_1}}{1}/x]e]}~\textrm{or}}{}
+              [\ePair{!v}{\eChan{c_1}}{1}/x]e]}}{By rule rw}
+
+        \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p}
+          E[\eChoicee{c_1}{x_1}{e_1}{c_3}{x_2}{e_2}]}{}
+
+        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{\eChan{c_2}}{v}] \in \pi}{By $c_2 \leadsto c_1$}        
+
+        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p}
+          E[\eChoicee{c_1}{x_1}{e_1}{c_3}{x_2}{e_2}]} --->
+          \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ [\ePair{!v}{c_1,
+                  c_{3}}{1}/x_1]e_{1}]}}{By rule cw}
+
+
+        \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p}
+          E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}]}{}
+
+        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{\eChan{c_2}}{v}] \in \pi}{By $c_2 \leadsto c_1$}        
+
+        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p}
+          E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}]} --->
+          \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ [\ePair{!v}{c_3,
+          c_1}{1}/x_2]e_{2}]}}{By rule cw}        
+
+        \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} E[
+            \eWr{\eChan{c_2}}{v}]}{}
+
+        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eLetRd{\eChan{c_1}}{x}{e}
+          ] \in \pi~\textrm{or}~\ProcNm{q}
+          E[\eChoicee{c_1}{x_1}{e_1}{c_3}{x_2}{e_2}] \in \pi~\textrm{or}}{}
+        \Pf{}{}{\qquad\qquad\ProcNm{q}
+          E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}] \in \pi}{By $c_2 \leadsto c_1$}        
+        
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
               \eWr{\eChan{c_2}}{v}]} --->
           \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ \eUnit ]}}{By rule rw}
@@ -349,10 +407,13 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
 
-      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} \proc{E[e_2]}} : U_p}{Above}
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} \proc{E[e_2]}} :
+        U_p}{Above}
 
-      \Pf{\ChTy' = \ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[e_2]} : \PrTy_{\pi},
-        p : U_p = \PrTy = \PrTy'}{By rule cons}
+      \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}
+
+      \Pf{\ChTy'}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[e_2]} :
+        \PrTy_{\pi}, p : U_p = \PrTy'}{By rule cons}
     \end{llproof}
 
   \item[] \textbf{Case}
@@ -388,7 +449,9 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1}} : \PrTy_{\pi},
         q : U_q}{By rule cons}
 
-      \Pf{\ChTy' = \ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs, \ProcNm{q}
+      \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
+
+      \Pf{\ChTy'}{|-}{\Config{\Names,q}{\Store}{\Procs, \ProcNm{q}
           \proc{e_1}}, \ProcNm{p} \proc{E[e_2]} : \PrTy_{\pi}, q : U_q, p : U_p =
         \PrTy, p : U_p = \PrTy'}{By rule cons}
     \end{llproof}
@@ -474,22 +537,24 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} \proc{E[
               [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}} : U_p}{Above}
 
-      \Pf{\ChTy' = \ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p}
+      \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
+
+      \Pf{\ChTy'}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p}
           \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}} : \PrTy_{\pi}, p : U_p
-        = \PrTy = \PrTy'}{By rule cons}
+        = \PrTy'}{By rule cons}
     \end{llproof}    
     
   \item[] \textbf{Case}
     \begin{mathpar}
     \Infer{rw}
     { c_2 \leadsto c_1 }
-    { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
+    { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \eLetRd{\eChan{c_1}}{x}{e} ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
       \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e], \ProcNm{q}
         E_2[ \eUnit ]} }
     \end{mathpar}
     \begin{llproof}
-      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[
-              \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
+              \eLetRd{\eChan{c_1}}{x}{e} ], \ProcNm{q} E_2[
             \eWr{\eChan{c_2}}{v}]} : \PrTy~\textrm{s.t.}}{}
       \Pf{}{}{\quad\{ \PrTy(x) \mid x:e \in \pi\} = \PrTy_{\pi},~\PrTy(p) =
         U_{p},~\PrTy(q) = U_{q}}{Assumption}
@@ -499,7 +564,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 %            \eWr{\eChan{c_2}}{v}]} : \PrTy}{Assumption}
       
       \Pf{}{}{\mathcal{D}_p~\textrm{is a derivation of}~\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'|-
-        E_1[R[ \eLetRd{\eChan{c_1}}{x}{e}] ] : U_p,}{}
+        E_1[ \eLetRd{\eChan{c_1}}{x}{e} ] : U_p,}{}
       \Pf{}{}{\quad\mathcal{D}_p'~\textrm{is a subderivation
           of}~\mathcal{D}_p~\textrm{concluding}~\Delta_1';\Gamma_1'|-
         \eLetRd{\eChan{c_1}}{x}{e} : U_p',}{}
@@ -551,9 +616,11 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{q} E_2[ \eUnit ]} : q :
         U_q}{Above}
+
+      \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
       
-      \Pf{\ChTy' = \ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e], \ProcNm{q}
-        E_2[ \eUnit ]} : \PrTy_{\pi}, U_p, U_q = \PrTy = \PrTy'}{By rule cons}
+      \Pf{\ChTy'}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e], \ProcNm{q}
+        E_2[ \eUnit ]} : \PrTy_{\pi}, U_p, U_q = \PrTy'}{By rule cons}
     \end{llproof}
   \end{itemize}
 
