@@ -120,10 +120,11 @@
 \ProvidesPackage{llproof}[2015/06/09 - First release]
 
 \RequirePackage{joshuadunfield}
+\RequirePackage{longtable}
 
 % Line-by-line proofs
-\newcommand{\BeginProof}{\smallskip \renewcommand{\arraystretch}{1.1} \begin{tabular}[b]{r@{}r @{} l  l}}
-\newcommand{\EndProof}{\end{tabular} \renewcommand{\arraystretch}{\mydefaultarraystretch} \smallskip}
+\newcommand{\BeginProof}{\smallskip \renewcommand{\arraystretch}{1.1} \begin{longtable}[b]{r@{}r @{} l  l}}
+\newcommand{\EndProof}{\end{longtable} \renewcommand{\arraystretch}{\mydefaultarraystretch} \smallskip}
 \newenvironment{llproof}{\BeginProof}{\EndProof}
 
 \newcommand{\Pf}[4] {&$#1$ $#2$\, & $#3$ & #4 \\}

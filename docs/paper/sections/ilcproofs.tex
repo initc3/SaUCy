@@ -514,23 +514,19 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{}{}{c_2 \leadsto c_1~\text{s.t.}~\ChTy(c_2) =
         \tyWr{S}~\textrm{and}~\ChTy(c_1) = \tyRd{S}}{Given}      
 
-      \Pf{\Delta_2, x_1: \tyRd{S} ; \Gamma_2, x_2 : \tyWr{S}}{|-}{e : U}{By inversion
-        (nu)}
+      \Pf{\Delta ; \Gamma_2, x_2 : \tyWr{S}}{|-}{e : U~\textrm{where}~\Delta=\Delta_2, x_1:
+        \tyRd{S}}{By inversion (nu)}
 
       \Pf{\emptyctxt;\emptyctxt}{|-}{c_1 : \tyRd{S}}{Above}            
 
       \Pf{\emptyctxt;\emptyctxt}{|-}{c_2 : \tyWr{S}}{Above}
-
-      \Pf{\Delta_2, x_1: \tyRd{S} ; \Gamma_2, x_2 : \tyWr{S}}{|-}{e : U}{By inversion
-        (nu)}      
 
       \Pf{\Delta_2; \Gamma_2}{|-}{e : \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}}{By
         Lemmas~\ref{lem:sub-int} and~\ref{lem:sub-aff}}
       \Pf{}{}{}{\quad(Substitution)}
 
       \Pf{\Delta_1,\Delta_2; \Gamma_1,\Gamma_2}{|-}{\proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}
-        : U_p}{By Lemma~\ref{lem:replacement}}
-      \Pf{}{}{}{\quad(Replacement)}      
+        : U_p}{By Lemma~\ref{lem:replacement}~(Replacement)}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
 
@@ -559,10 +555,6 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{}{}{\quad\{ \PrTy(x) \mid x:e \in \pi\} = \PrTy_{\pi},~\PrTy(p) =
         U_{p},~\PrTy(q) = U_{q}}{Assumption}
       
-%      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[R[
-%              \eLetRd{\eChan{c_1}}{x}{e}] ], \ProcNm{q} E_2[
-%            \eWr{\eChan{c_2}}{v}]} : \PrTy}{Assumption}
-      
       \Pf{}{}{\mathcal{D}_p~\textrm{is a derivation of}~\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'|-
         E_1[ \eLetRd{\eChan{c_1}}{x}{e} ] : U_p,}{}
       \Pf{}{}{\quad\mathcal{D}_p'~\textrm{is a subderivation
@@ -582,8 +574,8 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{}{}{c_2 \leadsto c_1~\text{s.t.}~\ChTy(c_2) =
         \tyWr{S}~\textrm{and}~\ChTy(c_1) = \tyRd{S}}{Given}
 
-      \Pf{\Delta_1';\Gamma_1',x : \tyTensor{\tyBang{S}}{\tyRd{S}}}{|-}{e : U_p'}{By
-        inversion (rd)}
+      \Pf{\Delta;\Gamma_1'}{|-}{e : U_p'~\textrm{where}~\Delta=\Delta_1',\wrtok,x :
+        \tyTensor{\tyBang{S}}{\tyRd{S}}}{By inversion (rd)}
 
       \Pf{\emptyctxt;\emptyctxt}{|-}{v : S}{By inversion (wr)}
 
@@ -622,6 +614,127 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy'}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e], \ProcNm{q}
         E_2[ \eUnit ]} : \PrTy_{\pi}, U_p, U_q = \PrTy'}{By rule cons}
     \end{llproof}
+
+  \item[] \textbf{Case}
+    \begin{mathpar}
+    \Infer{cw}
+    { c \leadsto c_i \\ i \in \{1, 2\} }
+    { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{\eChan{c}}{v}]} --->
+      \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{c_i,
+              c_{3-i}}{1}/x_i]e_{i}], \ProcNm{q} E_2[ \eUnit ]} }      
+    \end{mathpar}
+    \begin{llproof}
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{\eChan{c}}{v}]} : \PrTy~\textrm{s.t.}}{}
+      \Pf{}{}{\quad\{ \PrTy(x) \mid x:e \in \pi\} = \PrTy_{\pi},~\PrTy(p) =
+        U_{p},~\PrTy(q) = U_{q}}{Assumption}
+      
+      \Pf{}{}{\mathcal{D}_p~\textrm{is a derivation of}~\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'|-
+        E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}] : U_p,}{}
+      \Pf{}{}{\quad\mathcal{D}_p'~\textrm{is a subderivation
+          of}~\mathcal{D}_p~\textrm{concluding}}{}
+      \Pf{}{}{\qquad\quad~\Delta_1';\Gamma_1'|-
+        \eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2} : U_p',}{}
+      \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}_p'~\textrm{corresponds to
+          position of}~\mathcal{D}_p~\textrm{in}~E_1}{Assumption}
+
+      \Pf{}{}{\mathcal{D}_q~\textrm{is a derivation of}~\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'|-
+        E_2[\eWr{\eChan{c_2}}{v}] : U_q,}{}
+      \Pf{}{}{\quad\mathcal{D}_q'~\textrm{is a subderivation
+          of}~\mathcal{D}_q~\textrm{concluding}~\Delta_2';\Gamma_2'|-
+        \eWr{\eChan{c_2}}{v} : U_q',}{}
+      \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}_q'~\textrm{corresponds to
+          position of}~\mathcal{D}_q~\textrm{in}~E_2}{Assumption}
+      \Pf{}{}{c \leadsto c_1~\text{s.t.}~\ChTy(c) =
+        \tyWr{S},~\ChTy(c_1) = \tyRd{S},~\ChTy(c_2) = \tyRd{T}~\textrm{or}}{}
+      \Pf{}{}{\quad c \leadsto c_2~\text{s.t.}~\ChTy(c) =
+        \tyWr{T},~\ChTy(c_2) = \tyRd{T},~\ChTy(c_1) = \tyRd{S}}{Given}
+
+      \Pf{}{}{\textbf{Subcase}~c \leadsto c_1}{}      
+
+      \Pf{\Delta;\Gamma_1'}{|-}{e : U_p'~\textrm{where}~\Delta = \Delta_1',\wrtok, x_1 :
+        \tyTensor{\tyBang{S}}{\tyTensor{\tyRd{S}}{\tyRd{T}}}}{By
+        inversion (choice)}
+
+      \Pf{\emptyctxt;\emptyctxt}{|-}{v : S}{By inversion (wr)}
+
+      \Pf{\emptyctxt,\emptyctxt}{|-}{\eBang{v} : \tyBang{S}}{By rule bang}
+
+      \Pf{\emptyctxt,\emptyctxt}{|-}{\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1} :
+        \tyTensor{\tyBang{S}}{\tyTensor{\tyRd{S}}{\tyRd{T}}}}{By rule apair}
+
+      \Pf{\Delta_1';\Gamma_1'}{|-}{\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1 : U_p'}{By
+          Lemma~\ref{lem:sub-aff} (Substitution)}
+
+      \Pf{\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'}{|-}{E_1[ [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1] : U_p}{By
+        Lemma~\ref{lem:replacement} (Replacement)}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} E_1[
+            [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1]} : p : U_p}{Above}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
+            [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1]} : \PrTy_{\pi}, p : U_p}{By rule cons}
+
+      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion (unit)}
+
+      \Pf{\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'}{|-}{E_2[ \eUnit ] : U_q}{By
+        Lemma~\ref{lem:replacement} (Replacement)}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} E_1[
+            [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1]} : \PrTy_{\pi}, p : U_p}{Above}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{q} E_2[ \eUnit ]} : q :
+        U_q}{Above}
+
+      \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
+      
+      \Pf{\ChTy'}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1], \ProcNm{q}
+          E_2[ \eUnit ]} : \PrTy_{\pi}, U_p, U_q = \PrTy'}{By rule cons}
+
+      \Pf{}{}{\textbf{Subcase}~c \leadsto c_2}{}      
+
+      \Pf{\Delta;\Gamma_1'}{|-}{e : U_p'~\textrm{where}~\Delta = \Delta_1',\wrtok, x_2 :
+        \tyTensor{\tyBang{T}}{\tyTensor{\tyRd{T}}{\tyRd{S}}}}{By
+        inversion (choice)}
+
+      \Pf{\emptyctxt;\emptyctxt}{|-}{v : T}{By inversion (wr)}
+
+      \Pf{\emptyctxt,\emptyctxt}{|-}{\eBang{v} : \tyBang{T}}{By rule bang}
+
+      \Pf{\emptyctxt,\emptyctxt}{|-}{\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1} :
+        \tyTensor{\tyBang{T}}{\tyTensor{\tyRd{T}}{\tyRd{S}}}}{By rule apair}
+
+      \Pf{\Delta_1';\Gamma_1'}{|-}{\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2 : U_p'}{By
+          Lemma~\ref{lem:sub-aff} (Substitution)}
+
+      \Pf{\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'}{|-}{E_1[ [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2] : U_p}{By
+        Lemma~\ref{lem:replacement} (Replacement)}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} E_1[
+            [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2]} : p : U_p}{Above}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
+            [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2]} : \PrTy_{\pi}, p : U_p}{By rule cons}
+
+      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion (unit)}
+
+      \Pf{\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'}{|-}{E_2[ \eUnit ] : U_q}{By
+        Lemma~\ref{lem:replacement} (Replacement)}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} E_1[
+            [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2]} : \PrTy_{\pi}, p : U_p}{Above}
+
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{q} E_2[ \eUnit ]} : q :
+        U_q}{Above}
+
+      \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
+      
+      \Pf{\ChTy'}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2], \ProcNm{q}
+        E_2[ \eUnit ]} : \PrTy_{\pi}, U_p, U_q = \PrTy'}{By rule cons}      
+    \end{llproof}    
   \end{itemize}
 
 \end{proof}
