@@ -743,14 +743,24 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 
 \section{Confluence}
 
-The following lemmas state structural
-invariants over write effects and read channels of a well-typed
-configuration: no two writes are in parallel composition, and every read channel end is a non-duplicable (affine) resource.
+The following lemmas state structural invariants over write effects and read
+channels of a well-typed configuration: at most one process owns the write token
+$\wrtok$, and every read channel end is a non-duplicable (affine) resource.
+
+%\begin{lemma}[Unique writer process]
+%\label{lem:UniqueWriter}
+%If $C$ is a well-typed configuration with process pool~$\pi$, 
+%then there exists at most one write-mode process in $\pi$.
+%\begin{proof}
+%By structural induction over the typing derivation for $C$.
+%\end{proof}
+%\end{lemma}
 
 \begin{lemma}[Unique writer process]
 \label{lem:UniqueWriter}
-If $C$ is a well-typed configuration with process pool~$\pi$, 
-then there exists at most one write-mode process in $\pi$.
+If $C$ is a well-typed configuration with process pool~$\pi$, then there exists at
+most one process in $\pi$ that owns the write token $\wrtok$ (i.e., has $\wrtok$
+in its affine context).
 \begin{proof}
 By structural induction over the typing derivation for $C$.
 \end{proof}
@@ -778,7 +788,7 @@ such that either:
 \item %$\JCterm{C_1}$ and 
 $C_1 = f(C_2)$,
 or
-\item $\exists C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
+\item there exists $C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
 \end{enumerate}
 \begin{proof}
    By induction on the pair of steps 
@@ -786,29 +796,40 @@ or
    $\left.\JCred{C}{C_2} \right>$.
 
    We consider the following cases:
+   \begin{itemize}[leftmargin=*]
+   \item[] \textbf{Case} congruence
+     \begin{itemize}[leftmargin=*]
+       \item[] If either step uses \Rule{congr}, we apply
+     the inductive hypothesis.
+     \end{itemize}     
 
-   \emph{Case: congruence:} if either step uses \Rule{congr}, we apply the inductive hypothesis.
-   
-   \emph{Case: independent processes:} 
-     the two steps advance distinct processes, using any of the rules \Rule{local}, \Rule{fork} and \Rule{nu},
-     we produce $C_3$ by combining those two (independent) steps.     
+   \item[] \textbf{Case} independent processes
+     \begin{itemize}[leftmargin=*]
+       \item[] The two steps advance distinct processes, using any of the rules
+         \Rule{local}, \Rule{fork} and \Rule{nu}, we produce $C_3$ by combining
+         those two (independent) steps.
+     \end{itemize}
 
-   \emph{Case: one process:}    
-   the two steps advance the same process, we show that this was
-   determinisitic (up to naming) by constructing the naming function
-   $f$ such that $C_2 = f(C_1)$.  Most cases are straightforward since
-   they perform no non-determinisitic choices.  The only source of
-   non-determinism is the name choices, in rules \Rule{nu},
-   \Rule{fork}, and \Rule{new}; in each case, we map the name choice
-   from the second step to that of the first step.
 
-   \emph{Case: read-write interaction:}
-   In the case that either step uses \Rule{rw}, 
-   we rely on
-   lemmas \ref{lem:UniqueWriter} and \ref{lem:UniqueReader}.
-   to show that both steps use \Rule{rw},
-   and that the reader-writer process pair is unique.
-   
+   \item[] \textbf{Case} one process
+     \begin{itemize}[leftmargin=*]
+       \item[] The two steps advance the same process, we show that this was
+         determinisitic (up to naming) by constructing the naming function $f$
+         such that $C_2 = f(C_1)$.  Most cases are straightforward since they
+         perform no non-determinisitic choices.  The only source of
+         non-determinism is the name choices, in rules \Rule{nu}, \Rule{fork},
+         and \Rule{new}; in each case, we map the name choice from the second
+         step to that of the first step.
+     \end{itemize}
+
+
+   \item[] \textbf{Case} read-write interaction
+     \begin{itemize}[leftmargin=*]
+       \item[] In the case that either step uses \Rule{rw}, we rely on lemmas
+         \ref{lem:UniqueWriter} and \ref{lem:UniqueReader}.  to show that both
+         steps use \Rule{rw}, and that the reader-writer process pair is unique.
+     \end{itemize}
+   \end{itemize}
 \end{proof}
 \end{theorem}
 
@@ -831,7 +852,7 @@ such that either:
 \item %$\JCterm{C_1}$ and 
 $C_1 = g(C_2)$,
 or
-\item $\exists C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{g(C_2)}{C_3}$.
+\item there exists $C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{g(C_2)}{C_3}$.
 \end{enumerate}
 \begin{proof}
   (Analogous to first single-step confluence proof.)
@@ -839,7 +860,7 @@ or
 \end{theorem}
 
 We prove a full confluence theorem that is generalized similarly, by
-accepting a renaming function~$f$ to produce a new one~$g$:
+accepting a renaming function~$f$ to produce a new function~$g$:
 
 \begin{theorem}[Full confluence]
 For all well-typed configurations $C$,
@@ -850,25 +871,33 @@ and $\JCredm{f(C)}{C_2}$
 and $\JCterm{C_1}$
 and $\JCterm{C_2}$
 then 
-there exists renaming function~$g$ 
+there exists a renaming function~$g$ 
 such that $C_1 = g(C_2)$.
 \begin{proof}
   By induction on the reduction sequence pair
   $\left< \JCredm{C}{C_1}\right.$, 
   $\left.\JCredm{f(C)}{C_2} \right>$.
-  Because of single-step confluence, we know that if
+  Because of single-step confluence, we know that
   if either reduction sequence is empty, then the other must be empty,
   and that
   if either takes a step, the other must take a step.
-  
-  \emph{Empty case:}
-  When empty, we have the resulting renaming function~$g$ via single-step confluence.
 
-  \emph{Step case:}
-  We consider the case where each reduction consists of at least one step:
-  $\JCred{C}{C_1'}$ and $\JCredm{C_1'}{C_1}$ and
-  $\JCred{f(C)}{C_2'}$ and $\JCredm{C_2'}{C_2}$.
-  By single-step confluence, we have that there exists $g_0$ such that $g_0(C_2') = C_1'$.
-  By the inductive hypothesis, we have that there exists $g$ such that $C_1 = g(C_2)$.  
+   \begin{itemize}[leftmargin=*]
+   \item[] \textbf{Case} empty
+     \begin{itemize}[leftmargin=*]
+       \item[] When empty, we have the resulting renaming function~$g$ via
+         single-step confluence.
+     \end{itemize}
+
+   \item[] \textbf{Case} step
+     \begin{itemize}[leftmargin=*]
+       \item[] We consider the case where each reduction consists of at least
+         one step: $\JCred{C}{C_1'}$ and $\JCredm{C_1'}{C_1}$ and
+         $\JCred{f(C)}{C_2'}$ and $\JCredm{C_2'}{C_2}$.  By single-step
+         confluence, we have that there exists $g_0$ such that $g_0(C_2') =
+         C_1'$.  By the inductive hypothesis, we have that there exists $g$ such
+         that $C_1 = g(C_2)$.
+     \end{itemize}     
+   \end{itemize}
 \end{proof}
 \end{theorem}
