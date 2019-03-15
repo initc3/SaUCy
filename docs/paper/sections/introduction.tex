@@ -41,8 +41,8 @@ complexity)~\cite{bohl2016symbolic}, do not support message-passing concurrency 
 or are too expressive (allow for expressing nondeterminism with no computational interpretation)~\cite{abadi1999calculus}.
 
 Our observation is that these approaches diverge from UC at a low level: UC is
-defined atop the underlying computational model of \emph{interactive Turing
-  machines} (ITMs).
+defined atop the underlying (concurrent) computational model of
+\emph{interactive Turing machines} (ITMs).
 %
 %Because the UC framework most exists ``on paper,'' protocol
 %descriptions, specifications, and other proof components are
@@ -99,10 +99,12 @@ time a message is sent so that \emph{exactly one process is active at any given
 %\end{comment}
 
 In this paper, we take up the challenge of faithfully capturing the idioms of
-ITMs by adapting them to a subset of the $\pi$-calculus through an affine type
-discipline. We call this process calculus the Interactive Lambda Calculus (ILC),
-and we use it to build a concrete, executable implementation of the UC
-framework, dubbed SaUCy.
+ITMs by designing a new process calculus called the Interactive Lambda Calculus
+(ILC), which adapts ITMs to a subset of the
+$\pi$-calculus~\cite{milner1999communicating} through an affine typing
+discipline. In other words, \emph{well-typed ILC programs are expressible as
+  ITMs}. We then use ILC to build a concrete, executable implementation of the
+UC framework, dubbed SaUCy.
 
 %In sum, the goal of this work is twofold: first, to develop a foundational
 %calculus for the purpose of systematizing UC (ILC), which importantly admits
@@ -110,8 +112,8 @@ framework, dubbed SaUCy.
 %framework itself (SaUCy).
 
 \subsection{Interactive Lambda Calculus}
-Why do we need to design another process calculus in the first place? Where do
-existing ones fall short? On the one hand, process calculi such as the
+Why do we need another process calculus in the first place? Where do existing
+ones fall short? On the one hand, process calculi such as the
 $\pi$-calculus~\cite{milner1999communicating} or its cryptography-oriented
 variants~\cite{abadi1999calculus, abadi2001mobile, lincoln1998probabilistic} are
 not a good fit to ITMs, since they permit non-confluent reductions by design
@@ -121,20 +123,21 @@ or two-party
 communications~\cite{kobayashi1999linearity,bohl2016symbolic,fowler2018session}.
 
 ILC fills this gap by adapting ITMs to a subset of the $\pi$-calculus through an
-affine typing discipline. In other words, \emph{well-typed ILC programs are
-  expressible as ITMs}. To maintain that only one process is active (can write)
-at any given time, processes implicitly pass around an affine ``write token'' by
-virtue of where they perform read and write effects: When process $A$ writes to
-process $B$, process $A$ ``spends'' the write token and process $B$ ``earns''
-the write token. Moreover, to maintain that the order of activations is fully
-determined, the read endpoints of a channel are an \emph{affine} resource, so
+affine typing discipline. To maintain that only one process is active (can
+write) at any given time, processes implicitly pass around an affine ``write
+token'' by virtue of where they perform read and write effects: When process $A$
+writes to process $B$, process $A$ ``spends'' the write token and process $B$
+``earns'' the write token. Moreover, to maintain that the order of activations
+is fully determined, the read endpoints of channels are an affine resource, so
 each write operation corresponds to a single, unique read operation. Together,
-these give ILC its central metatheoretic property of
-\emph{confluence}. Consequently, the only nondeterminism in an ILC program is
-due to random coin tosses taken by processes, which have a well-defined
+these give ILC its central metatheoretic property of \emph{confluence}.
+
+The importance of confluence is that the only nondeterminism in an ILC program
+is due to random coin tosses taken by processes, which have a well-defined
 distribution. Additionally, any apparent concurrency hazards, such as
 adversarial scheduling of messages in an asynchronous network, are due to an
-explicit adversary process rather than uncertainty built into the model itself.
+explicit adversary process rather than uncertainty built into the model
+itself. \todo{Recap the benefit of computational interpretation.}
 
 %We have implemented an ILC interpreter in Haskell. For economy of use, our
 %implementation performs polymorphic type inference, bounded polymorphic mode

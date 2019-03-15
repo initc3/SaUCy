@@ -13,8 +13,8 @@ static semantics, and dynamic semantics.
 \label{subsec:syntax}
 
 The syntax of ILC is given in Figure~\ref{fig:ilc-syntax}. To make the abstract
-syntax concise, certain expressions are parameterized by a multiplicity $\pi$ to
-distinguish between the intuitionistic ($\infty$) and affine ($1$) counterparts;
+syntax more concise, certain expressions are parameterized by a multiplicity $\pi$
+to distinguish between the intuitionistic ($\infty$) and affine ($1$) counterparts;
 other expressions are parameterized by a syntax label $\ell$, which includes the
 multiplicity labels along with an additional write label $\wm$ (explained
 shortly).
@@ -32,7 +32,8 @@ The affine types include bang types ($\tyBang{A}$), read channel types
 ($\tyRd{S}$), products ($\tyTensor{X}{Y}$), sums ($\tyOplus{X}{Y}$), and arrows
 ($\tyArr{X}{1}{U}$ or simply $X \multimap U$).
 
-\todo{Explain values, are lambdas a value?}
+Values in ILC (written $v$) include unit, pairs, sums, lambda expressions,
+channels (written $c$), and banged values.
 
 ILC supports a fairly standard feature set of expressions, with intuitionistic
 variants parameterized by the label $\infty$ and affine variants parameterized by the
@@ -51,11 +52,13 @@ concurrency:
     the write channel evaluation of $e_2$.
   \item \emph{Read:} $\eLetRd{e_1}{x}{e_2}$ reads a value from the read channel
     evaluation of $e_1$ and binds the value-channel pair as $x$ in $e_2$.
+  \item \emph{Choice:} $\eChoicee{e_1}{x_1}{e_3}{e_2}{x_2}{e_4}$ allows a
+    process to continue as either $e_3$ or $e_4$ based on some initial read
+    event on the read channel evaluations of $e_1$ and $e_2$. The value read
+    over the channel and the two read channels are rebound in a 3-tuple as $x_1$
+    in $e_3$ or $x_2$ in $e_4$.
   \item \emph{Fork:} $\eFork{e_1}{e_2}$ forks a child process $e_1$ and
     continues as $e_2$.
-  \item \emph{Choice:} $\eChoice{e_1}{e_2}$ allows a process to continue as
-    either $e_1$ or $e_2$ based on some initial read event in each of the
-    processes. \todo{What happens when neither subexpression reads?}
 \end{itemize}
 
 \subsection{Static Semantics}
@@ -103,13 +106,19 @@ intuitionistic argument.
 The typing rules for fork, write, and read were covered in
 Section~\ref{subsec:type-tour}, so this leaves channel restriction (nu) and
 external choice (choice) as the remaining typing rules related to communication
-and concurrency. The nu rule extends the affine context $\Delta$ with a read channel
+and concurrency.
+
+The nu rule extends the affine context $\Delta$ with a read channel
 $x_1 : \tyRd{S}$ and the intuitionistic context $\Gamma$ with a corresponding write
-channel $x_2 : \tyWr{S}$ before typing the body $e$. Because the choice
-expression allows a process to continue as either $e_1$ or $e_2$ based on some
-initial read event in each subexpression, a process waiting on an external
-choice may not own the write token. Otherwise, both subexpressions could spend
-the write token, leading to a race condition.
+channel $x_2 : \tyWr{S}$ before typing the body $e$.
+
+The choice rule partitions the affine context as $\Delta_1,\Delta_2,\Delta_3$. The first two
+affine contexts are used to type $e_1 : \tyRd{S}$ and $e_2 : \tyRd{T}$,
+respectively. The third affine context $\Delta_3$ is extended with the affine write
+token and a variable $x_1$ (or $x_2$) binding an affine 3-tuple containing the
+read value and the two read channels before checking the continuation $e_3$ (or
+$e_4$). While somewhat cumbersome, this rule is general in that it allows both
+read channels to be used in either continuation.
 
 %The write token is special and unique, and need not ever be bound to a variable
 %in the affine context.  Rather, it flows around “implicitly” in the program, by
@@ -199,7 +208,9 @@ to affine variables.
 \subsection{Dynamic Semantics}
 \label{subsec:semantics}
 
-Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic syntax and semantics of ILC, respectively.
+Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic syntax and
+semantics of ILC, respectively. \todo{The metavariable $c$ is used for both
+channel values and channel names. Is this ok?}
 %
 We define a \emph{configuration}~$C$ as a tuple of dynamic channel and process names~$\Sigma$, 
 and a pool of running and terminated processes~$\pi$.
@@ -220,20 +231,21 @@ and the local stepping judgment $e_1 \longrightarrow e_2$ for a single process~$
 The rules of local stepping follow a standard call-by-value semantics, 
 where we streamline the definition with an evaluation context~$E$.
 
-Configuration stepping consists of five \todo{new rules} rules, including a congruence
+Configuration stepping consists of six rules, including a congruence
 rule \Rule{congr} that permits some of the other rules to be simpler,
 by making the order of the pool unimportant.
 %
-The other four rules consist of local stepping (via \Rule{local}),
+The other fix rules consist of local stepping (via \Rule{local}),
 creating new processes (via \Rule{fork}),
 creating new channels (via \Rule{nu}),
-and read-write interactions (via \Rule{rw}).
+read-write interactions (via \Rule{rw}),
+and choice-write interactions (via \Rule{cw}).
 %
 To avoid allocating the same name twice, 
 the name set~$\Names$ records names of allocated channels and processes.
 %
 Rule~\Rule{rw} uses the syntax~$R$ for a combination of several (mutually exclusive) 
-reading processes, with a chosen read filling the (single) hole.
+reading processes, with a chosen read filling the (single) hole. \todo{Update}
 %
 When synchronized, 
 the rule uses this syntax to eliminate all of the unchosen reading processes 
