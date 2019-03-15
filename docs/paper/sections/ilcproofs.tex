@@ -1,8 +1,8 @@
 \section{Type Soundness}
 \label{sec:ilcproofs}
 
-We define syntax for process and channel typings, which each map a kind of
-identifier (process name, or channel name) to its associated type:
+We first define syntax for process and channel typings, which each map a kind of
+identifier (process name or channel name) to its associated type:
 
 \begin{grammar}
     Process pool typings
@@ -21,7 +21,7 @@ identifier (process name, or channel name) to its associated type:
 Using the syntax above, we define configuration typing as a straightforward extension
 of single-process typing, given in \Secref{subsec:types}:\smallskip
 
-\judgbox{\JCty{\StTy}{\ChTy}{C}{\PrTy}}{Configuration $C$ is well-typed}
+\judgbox{\JCty{\StTy}{\ChTy}{C}{\PrTy}}{Configuration $C$ is well-typed.}
 \begin{mathpar}
 \Infer{empty}
 { 
@@ -40,7 +40,7 @@ of single-process typing, given in \Secref{subsec:types}:\smallskip
 
 Progress for the functional fragment of ILC (local progress) is fairly
 standard. We follow the usual recipe, except that we give a special definition
-of local process termination as follows:\smallskip
+of local process termination:\smallskip
 
 \judgbox{\Lterm{e}}{Expression $e$ is locally terminated.}
 \begin{mathpar}
@@ -63,8 +63,8 @@ of local process termination as follows:\smallskip
 { }
 {\Lterm{E[\eWr{v}{c}]}}
 \end{mathpar}
-In other words, $\Lterm{e}$ holds when $e$ is a value, $e$ is reading, $e$ is
-waiting on an external choice, or $e$ is writing.
+In other words, $\Lterm{e}$ holds when $e$ is a value, is reading (either as a
+standalone read or an external choice), or is writing.
 
 \begin{lemma}[Local Progress]
   If $\Delta; \Gamma|- e : U$, then either $\Lterm{e}$
@@ -75,9 +75,9 @@ waiting on an external choice, or $e$ is writing.
 \end{lemma}
 
 To state progress on configurations, we give a special definition of ``program
-termination'' (that permits deadlocks) as follows:\smallskip
+termination'' that permits deadlocks:\smallskip
 
-\judgbox{\JCterm{C}}{Configuration $C$ is terminated}
+\judgbox{\JCterm{C}}{Configuration $C$ is terminated.}
 \begin{mathpar}
 \Infer{Cterm}
 {\forall (p:e) \in \pi.~\Lterm{e}\\\\
@@ -102,15 +102,15 @@ termination'' (that permits deadlocks) as follows:\smallskip
   \textrm{RdChans}(\pi, p:v) &= \textrm{RdChans}(\pi)
   &\textrm{WrChans}(\pi, p:v) &= \textrm{WrChans}(\pi)
 \end{align*}
-Informally, $\JCterm{C}$ holds when either:
+In other words, $\JCterm{C}$ holds when either:
 \begin{enumerate}
- \item $C$ is fully normal: every process in~$C$ is normalized (consists of a
+ \item $C$ is fully normal: Every process in~$C$ is normalized (consists of a
    value).
  \item $C$ is (at least partially) deadlocked: 
-   some (possibly-empty) portion of $C$ is normal, and
-   there exists one or more reading processes in $C$, or
-   there exists one or more writing processes in $C$,
-   however, no reader-writer pair exists for a common channel~$c$.
+   Some (possibly empty) portion of $C$ is normal, and there exists one or more
+   reading processes in $C$, or there exists one or more writing processes in
+   $C$, however, no read-write channel pair~$(c_1,c_2)$ exists such that $c_2 \leadsto
+   c_1$.
 \end{enumerate}
 
 %\begin{lemma}[Non-progress]
@@ -142,6 +142,9 @@ Informally, $\JCterm{C}$ holds when either:
 %  $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$.
 %\end{proof}
 %\end{lemma}
+
+To state progress on configurations, we will make use of Lemma~\ref{lem:par},
+which allows a portion of a process pool $\pi$ to take a reduction step. \todo{Check}
 
 \begin{lemma}[Parallel Reduction]\label{lem:par}
 If $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$,
@@ -200,20 +203,20 @@ $C'$ such that $\JCred{C}{C'}$.
       
       \begin{llproof}
         \Pf{}{}{\JCterm{\Config{\Names}{\Store}{p:e}}~\textrm{or}~\exists
-          \Config{\Names'}{\Store}{p:e'}~\textrm{s.t.}~\Config{\Names}{\Store}{p:e}->\Config{\Names'}{\Store}{p:e'}}{By
+          \Config{\Names'}{\Store}{\Procs',p:e'}~\textrm{s.t.}~\Config{\Names}{\Store}{p:e}->\Config{\Names'}{\Store}{\Procs',p:e'}}{By
           i.h.}        
         \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs}}~\textrm{or}~\exists
           \Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{By
           i.h.}
         \Pf{}{}{\textbf{Subcase}~\exists
-          \Config{\Names'}{\Store}{p:e'}~\textrm{s.t.}~\Config{\Names}{\Store}{p:e}->\Config{\Names'}{\Store}{p:e'}}{}
+          \Config{\Names'}{\Store}{p:e'}~\textrm{s.t.}~\Config{\Names}{\Store}{p:e}->\Config{\Names'}{\Store}{p:e'}}{\todo{Check}}
         \Pf{}{}{\quad e -> e'}{Above}
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:E[e]} ->
           \Config{\Names'}{\Store}{\Procs,p:E[e']}}{By rule local}
 
 \Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{}
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} ->
-          \Config{\Names'}{\Store}{\Procs',p:e}}{By Lemma~\ref{lem:par}}
+          \Config{\Names'}{\Store}{\Procs',p:e}}{By Lemma~\ref{lem:par}~\todo{check}}
         \Pf{}{}{\textbf{Subcase}~\JCterm{\Config{\Names}{\Store}{p:e}}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
         \Pf{}{}{\quad\Names_1 = \textrm{RdChans}(\Procs,p:e)~\textrm{and}~\Names_2 = \textrm{WrChans}(\Procs,p:e)}{Suppose}
         \Pf{}{}{\quad\{ (c_1,c_2) \mid c_1 \in \Names_1,
@@ -241,12 +244,12 @@ $C'$ such that $\JCred{C}{C'}$.
           E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}]~\textrm{or}~\ProcNm{p} E[
             \eWr{v}{\eChan{c_2}}]}{By definition of \textbf{lterm}}
 
-        \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} v}{Not possible}
+        \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} v}{Impossible}
 
         \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} E[ \eLetRd{\eChan{c_1}}{x}{e}
         ]}{}
 
-        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{v}{\eChan{c_2}}] \in \pi}{By $c_2 \leadsto c_1$}
+        \Pf{}{}{\qquad\quad\exists~\ProcNm{q} E[ \eWr{v}{\eChan{c_2}}] \in \pi}{By $c_2 \leadsto c_1$}
         
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
                 \eLetRd{\eChan{c_1}}{x}{e} ]} --->
@@ -256,7 +259,7 @@ $C'$ such that $\JCred{C}{C'}$.
         \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p}
           E[\eChoicee{c_1}{x_1}{e_1}{c_3}{x_2}{e_2}]}{}
 
-        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{v}{\eChan{c_2}}] \in \pi}{By $c_2 \leadsto c_1$}        
+        \Pf{}{}{\qquad\quad\exists~\ProcNm{q} E[ \eWr{v}{\eChan{c_2}}] \in \pi}{By $c_2 \leadsto c_1$}        
 
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p}
           E[\eChoicee{c_1}{x_1}{e_1}{c_3}{x_2}{e_2}]} --->
@@ -267,7 +270,7 @@ $C'$ such that $\JCred{C}{C'}$.
         \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p}
           E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}]}{}
 
-        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{v}{\eChan{c_2}}] \in \pi}{By $c_2 \leadsto c_1$}        
+        \Pf{}{}{\qquad\quad\exists~\ProcNm{q} E[ \eWr{v}{\eChan{c_2}}] \in \pi}{By $c_2 \leadsto c_1$}        
 
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p}
           E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}]} --->
@@ -277,10 +280,10 @@ $C'$ such that $\JCred{C}{C'}$.
         \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} E[
             \eWr{v}{\eChan{c_2}}]}{}
 
-        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eLetRd{\eChan{c_1}}{x}{e}
-          ] \in \pi~\textrm{or}~\ProcNm{q}
+        \Pf{}{}{\qquad\quad\exists~\ProcNm{q} E[ \eLetRd{\eChan{c_1}}{x}{e}
+          ] \in \pi~\textrm{or}~\exists~\ProcNm{q}
           E[\eChoicee{c_1}{x_1}{e_1}{c_3}{x_2}{e_2}] \in \pi~\textrm{or}}{}
-        \Pf{}{}{\qquad\qquad\ProcNm{q}
+        \Pf{}{}{\qquad\qquad\exists~\ProcNm{q}
           E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}] \in \pi}{By $c_2 \leadsto c_1$}        
         
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
@@ -293,18 +296,19 @@ $C'$ such that $\JCred{C}{C'}$.
 
 \subsection{Preservation}
 
-Preservation for the functional fragment of ILC (local preservation) is also
-fairly standard.
+Preservation for the functional fragment of ILC (local preservation) is standard.
 
-\begin{theorem}[Local Preservation]
+\begin{lemma}[Local Preservation]\label{lem:local-preservation}
   If $\Delta; \Gamma|- e : U$ and $e -> e'$, then $\Delta; \Gamma|- e' : U$.
   \begin{proof}
     By structural induction on the derivation of $e -> e'$.
   \end{proof}
-\end{theorem}
+\end{lemma}
 
-First, Lemma~\ref{lem:equiv} shows that typing of configurations is preserved
-under configuration equivalence.
+To state preservation on configurations, we start with several auxiliary
+results, which follow the formulation of Gay and
+Vasconcelos~\cite{gay2010linear}.  Lemma~\ref{lem:equiv} shows that typing of
+configurations is preserved under configuration equivalence.
 
 \begin{lemma}[Preservation Modulo Equivalence]\label{lem:equiv}
   If $\ChTy |- C : \PrTy$ and $C \equiv C'$, then $\ChTy |- C' : \PrTy$.
@@ -314,12 +318,9 @@ under configuration equivalence.
 \end{lemma}
 
 Lemma~\ref{lem:subterms} shows that a subterm of a well-typed evaluation context
-is typeable with a subset of the type contexts. Lemma~\ref{lem:replacement}
-shows that the subterm of a well-typed evaluation context can be replaced. Both
-of these lemmas follow the formulation of Gay and
-Vasconcelos~\cite{gay2010linear}.
+is typeable with a subset of the type contexts. 
 
-\begin{lemma}[Typability of Subterms]\label{lem:subterms}
+\begin{lemma}[Typeability of Subterms]\label{lem:subterms}
   If $\mathcal{D}$ is a derivation of $\Delta; \Gamma |- E[e] : U$, then there exists $\Delta_1, \Delta_2,
   \Gamma_1,\Gamma_2$ and $V$ such that $\Delta = \Delta_1,\Delta_2$, $\Gamma = \Gamma_1,\Gamma_2$, $\mathcal{D}$ has a
   subderivation $\mathcal{D}'$ concluding $\Delta_1;\Gamma_1 |- e : V$, and the position of $\mathcal{D}'$ in
@@ -329,14 +330,17 @@ Vasconcelos~\cite{gay2010linear}.
   \end{proof}
 \end{lemma}
 
+Lemma~\ref{lem:replacement} shows that the subterm of a well-typed evaluation
+context can be replaced.
+
 \begin{lemma}[Replacement (Evaluation Contexts)]\label{lem:replacement}
   If
   \begin{enumerate}
-  \item $\mathcal{D}$ is a derivation of $\Delta_1,\Delta_2;\Gamma_1,\Gamma_2 |- E[e] : U$,
-  \item $\mathcal{D}'$ is a subderivation of $\mathcal{D}$ concluding $\Delta_2;
-    \Gamma_2 |- e : V$,
+  \item $\mathcal{D}$ is a derivation of $\Delta_1,\Delta_2;\Gamma_1,\Gamma_2 |- E[e] : U$ (written $\mathcal{D} :: \Delta;\Gamma |- e : U$),
+  \item $\mathcal{D}'$ is a subderivation of $\mathcal{D}$ (written
+    $\mathcal{D}' \sqsubseteq \mathcal{D}$) concluding $\Delta_2; \Gamma_2 |- e : V$,
   \item the position of $\mathcal{D}'$ in $\mathcal{D}$ corresponds to the
-    position of the hole in $E$,
+    position of the hole in $E$ (written $E[\mathcal{D}' \sqsubseteq \mathcal{D}]$),
   \item $\Delta_3;\Gamma_3 |- e' : V$,
   \item $\Delta_1,\Delta_3;\Gamma_1,\Gamma_3$ is defined,
   \end{enumerate}
@@ -346,8 +350,9 @@ Vasconcelos~\cite{gay2010linear}.
   \end{proof}  
 \end{lemma}
 
-Finally, Lemmas~\ref{lem:sub-int} and~\ref{lem:sub-aff} show that typing of
-terms is preserved by substitution.
+For brevity, we write ``$\mathcal{D}$ is a derivation of $\Delta;\Gamma |- e : U$'' as
+$\mathcal{D} :: \Delta;\Gamma |- e : U$. Finally, Lemmas~\ref{lem:sub-int}
+and~\ref{lem:sub-aff} show that typing of terms is preserved by substitution.
 
 \begin{lemma}[Substitution (Intuitionistic)]\label{lem:sub-int}
   If
@@ -390,24 +395,21 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
     \end{mathpar}
     \begin{llproof}
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs, \ProcNm{p} \proc{E[e_1]}}
-        : \PrTy~\textrm{s.t.}~\PrTy_{\pi} = \{ \PrTy(x) \mid x:e \in \pi\},~U_{p} =
+        : \PrTy~\textrm{s.t.}~\PrTy_{\pi} = \{ \PrTy(x) \mid x:e \in \pi\}~\textrm{and}}{}
+      \Pf{}{}{\quad \mathcal{D} :: \Delta_1,\Delta_2;\Gamma_1,\Gamma_2|- E[e_1] :U_{p} =
         \PrTy(p)}{Assumption}
-      
-      \Pf{}{}{\mathcal{D}~\textrm{is a derivation of}~\Delta_1,\Delta_2;\Gamma_1,\Gamma_2|-
-        E[e_1] : U_p,}{}
-      \Pf{}{}{\quad\mathcal{D}'~\textrm{is a subderivation
-          of}~\mathcal{D}~\textrm{concluding}~\Delta_2;\Gamma_2|- e_1 : U,}{}
-      \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}'~\textrm{corresponds to
-          position of}~\mathcal{D}~\textrm{in}~E}{Assumption}      
 
-      \Pf{\Delta_2; \Gamma_2}{|-}{e_2 : U}{By i.h.}
+      \Pf{}{}{\exists~\mathcal{D}'\sqsubseteq\mathcal{D}~\textrm{s.t.}~\mathcal{D}' :: \Delta_2;\Gamma_2|-
+        e_1 : U~\textrm{and}~E[\mathcal{D}'\sqsubseteq\mathcal{D}]}{By
+        Lemma~\ref{lem:subterms}}
 
-      \Pf{\Delta_1,\Delta_2; \Gamma_1,\Gamma_2}{|-}{E[e_2] : U_p}{By Lemma~\ref{lem:replacement}
-        (Replacement)}
+      \Pf{\Delta_2; \Gamma_2}{|-}{e_2 : U}{By i.h. and Lemma~\ref{lem:local-preservation}}
+
+      \Pf{\Delta_1,\Delta_2; \Gamma_1,\Gamma_2}{|-}{E[e_2] : U_p}{By Lemma~\ref{lem:replacement}}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
 
-      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} \proc{E[e_2]}} :
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} \proc{E[e_2]}} : p :
         U_p}{Above}
 
       \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}
@@ -424,55 +426,34 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
     \end{mathpar}
     \begin{llproof}
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs, \ProcNm{p} \proc{E[\eFork{e_1}{e_2}]}}
-        : \PrTy~\textrm{s.t.}~\PrTy_{\pi} = \{ \PrTy(x) \mid x:e \in \pi\},~U_{p} =
+        : \PrTy~\textrm{s.t.}~\PrTy_{\pi} = \{ \PrTy(x) \mid x:e \in \pi\}~\textrm{and}}{}
+      \Pf{}{}{\quad \mathcal{D} :: \Delta_1,\Delta_2;\Gamma_1,\Gamma_2|- E[\eFork{e_1}{e_2}] :U_{p} =
         \PrTy(p)}{Assumption}
-      
-      \Pf{}{}{\mathcal{D}~\textrm{is a derivation of}~\Delta_1,\Delta_2;\Gamma_1,\Gamma_2|-
-        E[\eFork{e_1}{e_2}] : U_p,}{}
-      \Pf{}{}{\quad\mathcal{D}'~\textrm{is a subderivation
-          of}~\mathcal{D}~\textrm{concluding}~\Delta_2;\Gamma_2|- \eFork{e_1}{e_2} : U,}{}
-      \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}'~\textrm{corresponds to
-          position of}~\mathcal{D}~\textrm{in}~E}{Assumption}
 
-      \Pf{\Delta_2; \Gamma_2}{|-}{e_2 : U}{By inversion (fork)}
+      \Pf{}{}{\exists~\mathcal{D}'\sqsubseteq\mathcal{D}~\textrm{s.t.}~\mathcal{D}' :: \Delta_2;\Gamma_2|-
+        \eFork{e_1}{e_2} : U~\textrm{and}~E[\mathcal{D}'\sqsubseteq\mathcal{D}]}{By
+        Lemma~\ref{lem:subterms}}
 
-      \Pf{\Delta_1,\Delta_2; \Gamma_1,\Gamma_2}{|-}{E[e_2] : U_p}{By Lemma~\ref{lem:replacement}
-        (Replacement)}
+      \Pf{\Delta_2; \Gamma_2}{|-}{e_2 : U}{By inversion on fork}
 
-      \Pf{\Delta_2; \Gamma_2}{|-}{e_1 : U_q}{By inversion (fork)}
+      \Pf{\Delta_1,\Delta_2; \Gamma_1,\Gamma_2}{|-}{E[e_2] : U_p}{By Lemma~\ref{lem:replacement}}
 
-      \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
+      \Pf{\Delta_2; \Gamma_2}{|-}{e_1 : U_q}{By inversion on fork}
 
-      \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\ProcNm{p} \proc{E[e_2]}} :
+      \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs} : \PrTy_{\pi}}{Above \todo{check}}
+
+      \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\ProcNm{p} \proc{E[e_2]}} : p :
         U_p}{Above}
 
       \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1}} : \PrTy_{\pi},
         q : U_q}{By rule cons}
 
-      \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
+      \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy, q : U_q}{Suppose}      
 
-      \Pf{\ChTy'}{|-}{\Config{\Names,q}{\Store}{\Procs, \ProcNm{q}
-          \proc{e_1}}, \ProcNm{p} \proc{E[e_2]} : \PrTy_{\pi}, q : U_q, p : U_p =
-        \PrTy, p : U_p = \PrTy'}{By rule cons}
+      \Pf{\ChTy'}{|-}{\Config{\Names,q}{\Store}{\Procs, \ProcNm{q} \proc{e_1},
+          \ProcNm{p} \proc{E[e_2]}} : \PrTy_{\pi}, q : U_q, p : U_p = \PrTy'}{By
+        rule cons}
     \end{llproof}
-
-%  \item[] \textbf{Case}
-%    \begin{mathpar}
-%      \Infer{par}{
-%      \Config{\Names}{\Store}{\Procs_2} -> \Config{\Names}{\Store}{\Procs_2'}}
-%      {\Config{\Names}{\Store}{\Procs_1, \Procs_2} ->
-%       \Config{\Names}{\Store}{\Procs_1,\Procs_2'}}
-%    \end{mathpar}
-%    \begin{llproof}
-%      \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs_1, \Procs_2} :
-%        \PrTy~\textrm{s.t.}~\PrTy_{\Procs_1} = \{ \PrTy(x) \mid x:e \in
-%        \Procs_1\},~\PrTy_{\Procs_2} = \{ \PrTy(x) \mid x:e \in
-%        \Procs_2\}}{Assumption}
-%
-%      \Pf{\ChTy'\supseteq\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs_2'} :
-%        \PrTy_{\Procs_2'}\supseteq\PrTy_{\Procs_2}}{By i.h.}
-%      \Pf{}{}{}{\todo{}}
-%    \end{llproof}
 
   \item[] \textbf{Case}
     \begin{mathpar}
@@ -495,43 +476,41 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 
   \item[] \textbf{Case}
     \begin{mathpar}
-      \Infer{nu}{ c_1, c_2 \notin \Names }
+      \Infer{nu}{ c_1, c_2 \notin \Names \\ c_2 \leadsto c_1}
       { \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eNu{(x_1, x_2)}{e} ]}} --->
         \Config{\Names, c_1, c_2}{\Store}{\Procs, \ProcNm{p} \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}}}
     \end{mathpar}
     \begin{llproof}
-      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eNu{(x_1, x_2)}{e} ]}}
-        : \PrTy~\textrm{s.t.}~\PrTy_{\pi} = \{ \PrTy(x) \mid x:e \in \pi\},~U_{p} =
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs, \ProcNm{p} \proc{E[
+              \eNu{(x_1, x_2)}{e} ]}} : \PrTy~\textrm{s.t.}~\PrTy_{\pi} = \{
+        \PrTy(x) \mid x:e \in \pi\}~\textrm{and}}{}
+      \Pf{}{}{\quad \mathcal{D} :: \Delta_1,\Delta_2;\Gamma_1,\Gamma_2|- \proc{E[ \eNu{(x_1, x_2)}{e} ]} :U_{p} =
         \PrTy(p)}{Assumption}
-      
-      \Pf{}{}{\mathcal{D}~\textrm{is a derivation of}~\Delta_1,\Delta_2;\Gamma_1,\Gamma_2|-
-        E[ \eNu{(x_1, x_2)}{e} ] : U_p,}{}
-      \Pf{}{}{\quad\mathcal{D}'~\textrm{is a subderivation
-          of}~\mathcal{D}~\textrm{concluding}~\Delta_2;\Gamma_2|- \eNu{(x_1, x_2)}{e} : U,}{}
-      \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}'~\textrm{corresponds to
-          position of}~\mathcal{D}~\textrm{in}~E}{Assumption}
+
+      \Pf{}{}{\exists~\mathcal{D}'\sqsubseteq\mathcal{D}~\textrm{s.t.}~\mathcal{D}' :: \Delta_2;\Gamma_2|-
+        \eNu{(x_1, x_2)}{e} : U~\textrm{and}~E[\mathcal{D}'\sqsubseteq\mathcal{D}]}{By
+        Lemma~\ref{lem:subterms}}      
 
       \Pf{}{}{c_2 \leadsto c_1~\text{s.t.}~\ChTy(c_2) =
         \tyWr{S}~\textrm{and}~\ChTy(c_1) = \tyRd{S}}{Given}      
 
       \Pf{\Delta ; \Gamma_2, x_2 : \tyWr{S}}{|-}{e : U~\textrm{where}~\Delta=\Delta_2, x_1:
-        \tyRd{S}}{By inversion (nu)}
+        \tyRd{S}}{By inversion on nu}
 
-      \Pf{\emptyctxt;\emptyctxt}{|-}{c_1 : \tyRd{S}}{Above}            
+      \Pf{\emptyctxt;\emptyctxt}{|-}{c_1 : \tyRd{S}}{Above \todo{check}}            
 
       \Pf{\emptyctxt;\emptyctxt}{|-}{c_2 : \tyWr{S}}{Above}
 
-      \Pf{\Delta_2; \Gamma_2}{|-}{e : \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}}{By
+      \Pf{\Delta_2; \Gamma_2}{|-}{[\eChan{c_1}/x_1][\eChan{c_2}/x_2]e : U}{By
         Lemmas~\ref{lem:sub-int} and~\ref{lem:sub-aff}}
-      \Pf{}{}{}{\quad(Substitution)}
 
       \Pf{\Delta_1,\Delta_2; \Gamma_1,\Gamma_2}{|-}{\proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}
-        : U_p}{By Lemma~\ref{lem:replacement}~(Replacement)}
+        : U_p}{By Lemma~\ref{lem:replacement}}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} \proc{E[
-              [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}} : U_p}{Above}
+              [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}} : p : U_p}{Above}
 
       \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
 
@@ -549,35 +528,32 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
         E_2[ \eUnit ]} }
     \end{mathpar}
     \begin{llproof}
-      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs, \ProcNm{p} E_1[
               \eLetRd{\eChan{c_1}}{x}{e} ], \ProcNm{q} E_2[
-            \eWr{v}{\eChan{c_2}}]} : \PrTy~\textrm{s.t.}}{}
-      \Pf{}{}{\quad\{ \PrTy(x) \mid x:e \in \pi\} = \PrTy_{\pi},~\PrTy(p) =
-        U_{p},~\PrTy(q) = U_{q}}{Assumption}
-      
-      \Pf{}{}{\mathcal{D}_p~\textrm{is a derivation of}~\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'|-
-        E_1[ \eLetRd{\eChan{c_1}}{x}{e} ] : U_p,}{}
-      \Pf{}{}{\quad\mathcal{D}_p'~\textrm{is a subderivation
-          of}~\mathcal{D}_p~\textrm{concluding}~\Delta_1';\Gamma_1'|-
-        \eLetRd{\eChan{c_1}}{x}{e} : U_p',}{}
-      \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}_p'~\textrm{corresponds to
-          position of}~\mathcal{D}_p~\textrm{in}~E_1}{Assumption}
+            \eWr{v}{\eChan{c_2}}]} : \PrTy~\textrm{s.t.}~\PrTy_{\pi} = \{
+        \PrTy(x) \mid x:e \in \pi\},}{}
+      \Pf{}{}{\quad \mathcal{D}_p :: \Delta_1,\Delta_1';\Gamma_1,\Gamma_1'|- \proc{E_1[
+              \eLetRd{\eChan{c_1}}{x}{e} ]} :U_{p} =
+        \PrTy(p),~\textrm{and}}{}
+      \Pf{}{}{\quad \mathcal{D}_q :: \Delta_2,\Delta_2';\Gamma_2,\Gamma_2'|- \proc{E_2[
+            \eWr{v}{\eChan{c_2}}]} :U_{q} =
+        \PrTy(q)}{Assumption}
 
-      \Pf{}{}{\mathcal{D}_q~\textrm{is a derivation of}~\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'|-
-        E_2[\eWr{v}{\eChan{c_2}}] : U_q,}{}
-      \Pf{}{}{\quad\mathcal{D}_q'~\textrm{is a subderivation
-          of}~\mathcal{D}_q~\textrm{concluding}~\Delta_2';\Gamma_2'|-
-        \eWr{v}{\eChan{c_2}} : U_q',}{}
-      \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}_q'~\textrm{corresponds to
-          position of}~\mathcal{D}_q~\textrm{in}~E_2}{Assumption}
+      \Pf{}{}{\exists~\mathcal{D}_p'\sqsubseteq\mathcal{D}_p~\textrm{s.t.}~\mathcal{D}_p' :: \Delta_1';\Gamma_1'|-
+        \eLetRd{\eChan{c_1}}{x}{e} : U_p'~\textrm{and}~E_1[\mathcal{D}_p'\sqsubseteq\mathcal{D}_p]}{By
+        Lemma~\ref{lem:subterms}}
+
+      \Pf{}{}{\exists~\mathcal{D}_q'\sqsubseteq\mathcal{D}_q~\textrm{s.t.}~\mathcal{D}_q' :: \Delta_2';\Gamma_2'|-
+        \eWr{v}{\eChan{c_2}} : U_q'~\textrm{and}~E_2[\mathcal{D}_q'\sqsubseteq\mathcal{D}_q]}{By
+        Lemma~\ref{lem:subterms}}      
 
       \Pf{}{}{c_2 \leadsto c_1~\text{s.t.}~\ChTy(c_2) =
         \tyWr{S}~\textrm{and}~\ChTy(c_1) = \tyRd{S}}{Given}
 
       \Pf{\Delta;\Gamma_1'}{|-}{e : U_p'~\textrm{where}~\Delta=\Delta_1',\wrtok,x :
-        \tyTensor{\tyBang{S}}{\tyRd{S}}}{By inversion (rd)}
+        \tyTensor{\tyBang{S}}{\tyRd{S}}}{By inversion on rd}
 
-      \Pf{\emptyctxt;\emptyctxt}{|-}{v : S}{By inversion (wr)}
+      \Pf{\emptyctxt;\emptyctxt}{|-}{v : S}{By inversion on wr \todo{check}}
 
       \Pf{\emptyctxt,\emptyctxt}{|-}{\eBang{v} : \tyBang{S}}{By rule bang}
 
@@ -585,10 +561,10 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
         \tyTensor{\tyBang{S}}{\tyRd{S}}}{By rule apair}
 
       \Pf{\Delta_1';\Gamma_1'}{|-}{[\ePair{!v}{\eChan{c_1}}{1}/x]e : U_p'}{By
-          Lemma~\ref{lem:sub-aff} (Substitution)}
+          Lemma~\ref{lem:sub-aff}}
 
       \Pf{\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'}{|-}{E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e] : U_p}{By
-        Lemma~\ref{lem:replacement} (Replacement)}
+        Lemma~\ref{lem:replacement}}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
 
@@ -598,10 +574,10 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
             [\ePair{!v}{\eChan{c_1}}{1}/x]e]} : \PrTy_{\pi}, p : U_p}{By rule cons}
 
-      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion (unit)}
+      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion on unit \todo{check}}
 
       \Pf{\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'}{|-}{E_2[ \eUnit ] : U_q}{By
-        Lemma~\ref{lem:replacement} (Replacement)}
+        Lemma~\ref{lem:replacement}}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} E_1[
             [\ePair{!v}{\eChan{c_1}}{1}/x]e]} : \PrTy_{\pi}, p : U_p}{Above}
@@ -612,7 +588,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
       
       \Pf{\ChTy'}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e], \ProcNm{q}
-        E_2[ \eUnit ]} : \PrTy_{\pi}, U_p, U_q = \PrTy'}{By rule cons}
+        E_2[ \eUnit ]} : \PrTy_{\pi}, p:U_p, q:U_q = \PrTy'}{By rule cons}
     \end{llproof}
 
   \item[] \textbf{Case}
@@ -624,26 +600,24 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
               c_{3-i}}{1}/x_i]e_{i}], \ProcNm{q} E_2[ \eUnit ]} }      
     \end{mathpar}
     \begin{llproof}
-      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{v}{\eChan{c}}]} : \PrTy~\textrm{s.t.}}{}
-      \Pf{}{}{\quad\{ \PrTy(x) \mid x:e \in \pi\} = \PrTy_{\pi},~\PrTy(p) =
-        U_{p},~\PrTy(q) = U_{q}}{Assumption}
-      
-      \Pf{}{}{\mathcal{D}_p~\textrm{is a derivation of}~\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'|-
-        E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}] : U_p,}{}
-      \Pf{}{}{\quad\mathcal{D}_p'~\textrm{is a subderivation
-          of}~\mathcal{D}_p~\textrm{concluding}}{}
-      \Pf{}{}{\qquad\quad~\Delta_1';\Gamma_1'|-
-        \eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2} : U_p',}{}
-      \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}_p'~\textrm{corresponds to
-          position of}~\mathcal{D}_p~\textrm{in}~E_1}{Assumption}
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs, \ProcNm{p}
+          E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[
+            \eWr{v}{\eChan{c}}]} : \PrTy}{}
+      \Pf{}{}{\quad\textrm{s.t.}~\PrTy_{\pi} = \{
+        \PrTy(x) \mid x:e \in \pi\},}{}
+      \Pf{}{}{\quad \mathcal{D}_p :: \Delta_1,\Delta_1';\Gamma_1,\Gamma_1'|- \proc{E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}]} :U_{p} =
+        \PrTy(p),~\textrm{and}}{}
+      \Pf{}{}{\quad \mathcal{D}_q :: \Delta_2,\Delta_2';\Gamma_2,\Gamma_2'|- \proc{E_2[ \eWr{v}{\eChan{c}}]} :U_{q} =
+        \PrTy(q)}{Assumption}
 
-      \Pf{}{}{\mathcal{D}_q~\textrm{is a derivation of}~\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'|-
-        E_2[\eWr{v}{\eChan{c_2}}] : U_q,}{}
-      \Pf{}{}{\quad\mathcal{D}_q'~\textrm{is a subderivation
-          of}~\mathcal{D}_q~\textrm{concluding}~\Delta_2';\Gamma_2'|-
-        \eWr{v}{\eChan{c_2}} : U_q',}{}
-      \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}_q'~\textrm{corresponds to
-          position of}~\mathcal{D}_q~\textrm{in}~E_2}{Assumption}
+      \Pf{}{}{\exists~\mathcal{D}_p'\sqsubseteq\mathcal{D}_p~\textrm{s.t.}~\mathcal{D}_p' :: \Delta_1';\Gamma_1'|-
+        \eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2} : U_p'~\textrm{and}~E_1[\mathcal{D}_p'\sqsubseteq\mathcal{D}_p]}{By
+        Lemma~\ref{lem:subterms}}
+
+      \Pf{}{}{\exists~\mathcal{D}_q'\sqsubseteq\mathcal{D}_q~\textrm{s.t.}~\mathcal{D}_q' :: \Delta_2';\Gamma_2'|-
+        \eWr{v}{\eChan{c_2}} : U_q'~\textrm{and}~E_2[\mathcal{D}_q'\sqsubseteq\mathcal{D}_q]}{By
+        Lemma~\ref{lem:subterms}}
+      
       \Pf{}{}{c \leadsto c_1~\text{s.t.}~\ChTy(c) =
         \tyWr{S},~\ChTy(c_1) = \tyRd{S},~\ChTy(c_2) = \tyRd{T}~\textrm{or}}{}
       \Pf{}{}{\quad c \leadsto c_2~\text{s.t.}~\ChTy(c) =
@@ -653,9 +627,9 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 
       \Pf{\Delta;\Gamma_1'}{|-}{e : U_p'~\textrm{where}~\Delta = \Delta_1',\wrtok, x_1 :
         \tyTensor{\tyBang{S}}{\tyTensor{\tyRd{S}}{\tyRd{T}}}}{By
-        inversion (choice)}
+        inversion on choice}
 
-      \Pf{\emptyctxt;\emptyctxt}{|-}{v : S}{By inversion (wr)}
+      \Pf{\emptyctxt;\emptyctxt}{|-}{v : S}{By inversion on wr}
 
       \Pf{\emptyctxt,\emptyctxt}{|-}{\eBang{v} : \tyBang{S}}{By rule bang}
 
@@ -663,10 +637,10 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
         \tyTensor{\tyBang{S}}{\tyTensor{\tyRd{S}}{\tyRd{T}}}}{By rule apair}
 
       \Pf{\Delta_1';\Gamma_1'}{|-}{\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1 : U_p'}{By
-          Lemma~\ref{lem:sub-aff} (Substitution)}
+          Lemma~\ref{lem:sub-aff}}
 
       \Pf{\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'}{|-}{E_1[ [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1] : U_p}{By
-        Lemma~\ref{lem:replacement} (Replacement)}
+        Lemma~\ref{lem:replacement}}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
 
@@ -676,10 +650,10 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
             [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1]} : \PrTy_{\pi}, p : U_p}{By rule cons}
 
-      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion (unit)}
+      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion on unit}
 
       \Pf{\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'}{|-}{E_2[ \eUnit ] : U_q}{By
-        Lemma~\ref{lem:replacement} (Replacement)}
+        Lemma~\ref{lem:replacement}}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} E_1[
             [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1]} : \PrTy_{\pi}, p : U_p}{Above}
@@ -690,15 +664,15 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
       
       \Pf{\ChTy'}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1], \ProcNm{q}
-          E_2[ \eUnit ]} : \PrTy_{\pi}, U_p, U_q = \PrTy'}{By rule cons}
+          E_2[ \eUnit ]} : \PrTy_{\pi}, p : U_p, q : U_q = \PrTy'}{By rule cons}
 
       \Pf{}{}{\textbf{Subcase}~c \leadsto c_2}{}      
 
       \Pf{\Delta;\Gamma_1'}{|-}{e : U_p'~\textrm{where}~\Delta = \Delta_1',\wrtok, x_2 :
         \tyTensor{\tyBang{T}}{\tyTensor{\tyRd{T}}{\tyRd{S}}}}{By
-        inversion (choice)}
+        inversion on choice}
 
-      \Pf{\emptyctxt;\emptyctxt}{|-}{v : T}{By inversion (wr)}
+      \Pf{\emptyctxt;\emptyctxt}{|-}{v : T}{By inversion on wr}
 
       \Pf{\emptyctxt,\emptyctxt}{|-}{\eBang{v} : \tyBang{T}}{By rule bang}
 
@@ -706,10 +680,10 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
         \tyTensor{\tyBang{T}}{\tyTensor{\tyRd{T}}{\tyRd{S}}}}{By rule apair}
 
       \Pf{\Delta_1';\Gamma_1'}{|-}{\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2 : U_p'}{By
-          Lemma~\ref{lem:sub-aff} (Substitution)}
+          Lemma~\ref{lem:sub-aff}}
 
       \Pf{\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'}{|-}{E_1[ [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2] : U_p}{By
-        Lemma~\ref{lem:replacement} (Replacement)}
+        Lemma~\ref{lem:replacement}}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
 
@@ -719,10 +693,10 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
             [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2]} : \PrTy_{\pi}, p : U_p}{By rule cons}
 
-      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion (unit)}
+      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion on unit}
 
       \Pf{\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'}{|-}{E_2[ \eUnit ] : U_q}{By
-        Lemma~\ref{lem:replacement} (Replacement)}
+        Lemma~\ref{lem:replacement}}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\ProcNm{p} E_1[
             [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2]} : \PrTy_{\pi}, p : U_p}{Above}
@@ -733,13 +707,11 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
       
       \Pf{\ChTy'}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2], \ProcNm{q}
-        E_2[ \eUnit ]} : \PrTy_{\pi}, U_p, U_q = \PrTy'}{By rule cons}      
+        E_2[ \eUnit ]} : \PrTy_{\pi}, p : U_p, q : U_q = \PrTy'}{By rule cons}      
     \end{llproof}    
   \end{itemize}
-
 \end{proof}
 \end{theorem}
-
 
 \section{Confluence}
 
@@ -826,9 +798,16 @@ or
    \item[] \textbf{Case} read-write interaction
      \begin{itemize}[leftmargin=*]
        \item[] In the case that either step uses \Rule{rw}, we rely on lemmas
-         \ref{lem:UniqueWriter} and \ref{lem:UniqueReader}.  to show that both
+         \ref{lem:UniqueWriter} and \ref{lem:UniqueReader} to show that both
          steps use \Rule{rw}, and that the reader-writer process pair is unique.
      \end{itemize}
+
+   \item[] \textbf{Case} choice-write interaction \todo{?}
+     \begin{itemize}[leftmargin=*]
+       \item[] In the case that either step uses \Rule{cw}, we rely on lemmas
+         \ref{lem:UniqueWriter} and \ref{lem:UniqueReader} to show that both
+         steps use \Rule{cw}, and that the reader-writer process pair is unique.
+     \end{itemize}     
    \end{itemize}
 \end{proof}
 \end{theorem}
