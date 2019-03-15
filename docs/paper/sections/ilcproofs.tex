@@ -235,7 +235,7 @@ $C'$ such that $\JCred{C}{C'}$.
         \Pf{}{}{\qquad \exists~c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_1,
           c_2 \in \Sigma_2}{Above}
 
-        \Pf{}{}{\qquad\Lterm{e}}{By inversion (Cterm)}
+        \Pf{}{}{\qquad\Lterm{e}}{By inversion on Cterm}
         
         \Pf{}{}{\qquad\ProcNm{p} v~\textrm{or}~\ProcNm{p} E[ \eLetRd{\eChan{c_1}}{x}{e}
           ]~\textrm{or}~\ProcNm{p}
@@ -574,7 +574,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
             [\ePair{!v}{\eChan{c_1}}{1}/x]e]} : \PrTy_{\pi}, p : U_p}{By rule cons}
 
-      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion on unit \todo{check}}
+      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By rule unit}
 
       \Pf{\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'}{|-}{E_2[ \eUnit ] : U_q}{By
         Lemma~\ref{lem:replacement}}
@@ -650,7 +650,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
             [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1]} : \PrTy_{\pi}, p : U_p}{By rule cons}
 
-      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion on unit}
+      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By rule unit}
 
       \Pf{\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'}{|-}{E_2[ \eUnit ] : U_q}{By
         Lemma~\ref{lem:replacement}}
@@ -693,7 +693,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
             [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2]} : \PrTy_{\pi}, p : U_p}{By rule cons}
 
-      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By inversion on unit}
+      \Pf{\Delta_2';\Gamma_2'}{|-}{\eUnit : \tyUnit }{By rule unit}
 
       \Pf{\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'}{|-}{E_2[ \eUnit ] : U_q}{By
         Lemma~\ref{lem:replacement}}
