@@ -61,7 +61,7 @@ of local process termination as follows:\smallskip
 \and
 \Infer{wrterm}
 { }
-{\Lterm{E[\eWr{c}{v}]}}
+{\Lterm{E[\eWr{v}{c}]}}
 \end{mathpar}
 In other words, $\Lterm{e}$ holds when $e$ is a value, $e$ is reading, $e$ is
 waiting on an external choice, or $e$ is writing.
@@ -96,8 +96,8 @@ termination'' (that permits deadlocks) as follows:\smallskip
   \textrm{RdChans}(\pi),c_1,c_2
   &\textrm{WrChans}(\pi, p:E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}]) &= \textrm{WrChans}(\pi)  
   \\
-  \textrm{RdChans}(\pi, p:E[\eWr{c}{v}]) &= \textrm{RdChans}(\pi)
-  &\textrm{WrChans}(\pi, p:E[\eWr{c}{v}]) &= \textrm{WrChans}(\pi),c
+  \textrm{RdChans}(\pi, p:E[\eWr{v}{c}]) &= \textrm{RdChans}(\pi)
+  &\textrm{WrChans}(\pi, p:E[\eWr{v}{c}]) &= \textrm{WrChans}(\pi),c
   \\
   \textrm{RdChans}(\pi, p:v) &= \textrm{RdChans}(\pi)
   &\textrm{WrChans}(\pi, p:v) &= \textrm{WrChans}(\pi)
@@ -239,14 +239,14 @@ $C'$ such that $\JCred{C}{C'}$.
           E[\eChoicee{c_1}{x_1}{e_1}{c_3}{x_2}{e_2}]~\textrm{or}}{}
         \Pf{}{}{\qquad\quad\ProcNm{p}
           E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}]~\textrm{or}~\ProcNm{p} E[
-            \eWr{\eChan{c_2}}{v}]}{By definition of \textbf{lterm}}
+            \eWr{v}{\eChan{c_2}}]}{By definition of \textbf{lterm}}
 
         \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} v}{Not possible}
 
         \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} E[ \eLetRd{\eChan{c_1}}{x}{e}
         ]}{}
 
-        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{\eChan{c_2}}{v}] \in \pi}{By $c_2 \leadsto c_1$}
+        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{v}{\eChan{c_2}}] \in \pi}{By $c_2 \leadsto c_1$}
         
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
                 \eLetRd{\eChan{c_1}}{x}{e} ]} --->
@@ -256,7 +256,7 @@ $C'$ such that $\JCred{C}{C'}$.
         \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p}
           E[\eChoicee{c_1}{x_1}{e_1}{c_3}{x_2}{e_2}]}{}
 
-        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{\eChan{c_2}}{v}] \in \pi}{By $c_2 \leadsto c_1$}        
+        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{v}{\eChan{c_2}}] \in \pi}{By $c_2 \leadsto c_1$}        
 
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p}
           E[\eChoicee{c_1}{x_1}{e_1}{c_3}{x_2}{e_2}]} --->
@@ -267,7 +267,7 @@ $C'$ such that $\JCred{C}{C'}$.
         \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p}
           E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}]}{}
 
-        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{\eChan{c_2}}{v}] \in \pi}{By $c_2 \leadsto c_1$}        
+        \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eWr{v}{\eChan{c_2}}] \in \pi}{By $c_2 \leadsto c_1$}        
 
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p}
           E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}]} --->
@@ -275,7 +275,7 @@ $C'$ such that $\JCred{C}{C'}$.
           c_1}{1}/x_2]e_{2}]}}{By rule cw}        
 
         \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} E[
-            \eWr{\eChan{c_2}}{v}]}{}
+            \eWr{v}{\eChan{c_2}}]}{}
 
         \Pf{}{}{\qquad\quad\ProcNm{q} E[ \eLetRd{\eChan{c_1}}{x}{e}
           ] \in \pi~\textrm{or}~\ProcNm{q}
@@ -284,7 +284,7 @@ $C'$ such that $\JCred{C}{C'}$.
           E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}] \in \pi}{By $c_2 \leadsto c_1$}        
         
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
-              \eWr{\eChan{c_2}}{v}]} --->
+              \eWr{v}{\eChan{c_2}}]} --->
           \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ \eUnit ]}}{By rule rw}
       \end{llproof}
     \end{itemize}    
@@ -544,14 +544,14 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
     \begin{mathpar}
     \Infer{rw}
     { c_2 \leadsto c_1 }
-    { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \eLetRd{\eChan{c_1}}{x}{e} ], \ProcNm{q} E_2[ \eWr{\eChan{c_2}}{v}]} --->
+    { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ \eLetRd{\eChan{c_1}}{x}{e} ], \ProcNm{q} E_2[ \eWr{v}{\eChan{c_2}}]} --->
       \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e], \ProcNm{q}
         E_2[ \eUnit ]} }
     \end{mathpar}
     \begin{llproof}
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
               \eLetRd{\eChan{c_1}}{x}{e} ], \ProcNm{q} E_2[
-            \eWr{\eChan{c_2}}{v}]} : \PrTy~\textrm{s.t.}}{}
+            \eWr{v}{\eChan{c_2}}]} : \PrTy~\textrm{s.t.}}{}
       \Pf{}{}{\quad\{ \PrTy(x) \mid x:e \in \pi\} = \PrTy_{\pi},~\PrTy(p) =
         U_{p},~\PrTy(q) = U_{q}}{Assumption}
       
@@ -564,10 +564,10 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
           position of}~\mathcal{D}_p~\textrm{in}~E_1}{Assumption}
 
       \Pf{}{}{\mathcal{D}_q~\textrm{is a derivation of}~\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'|-
-        E_2[\eWr{\eChan{c_2}}{v}] : U_q,}{}
+        E_2[\eWr{v}{\eChan{c_2}}] : U_q,}{}
       \Pf{}{}{\quad\mathcal{D}_q'~\textrm{is a subderivation
           of}~\mathcal{D}_q~\textrm{concluding}~\Delta_2';\Gamma_2'|-
-        \eWr{\eChan{c_2}}{v} : U_q',}{}
+        \eWr{v}{\eChan{c_2}} : U_q',}{}
       \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}_q'~\textrm{corresponds to
           position of}~\mathcal{D}_q~\textrm{in}~E_2}{Assumption}
 
@@ -584,7 +584,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\emptyctxt,\emptyctxt}{|-}{\ePair{!v}{\eChan{c_1}}{1} :
         \tyTensor{\tyBang{S}}{\tyRd{S}}}{By rule apair}
 
-      \Pf{\Delta_1';\Gamma_1'}{|-}{\ePair{!v}{\eChan{c_1}}{1}/x]e : U_p'}{By
+      \Pf{\Delta_1';\Gamma_1'}{|-}{[\ePair{!v}{\eChan{c_1}}{1}/x]e : U_p'}{By
           Lemma~\ref{lem:sub-aff} (Substitution)}
 
       \Pf{\Delta_1,\Delta_1';\Gamma_1,\Gamma_1'}{|-}{E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e] : U_p}{By
@@ -619,12 +619,12 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
     \begin{mathpar}
     \Infer{cw}
     { c \leadsto c_i \\ i \in \{1, 2\} }
-    { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{\eChan{c}}{v}]} --->
+    { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{v}{\eChan{c}}]} --->
       \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{c_i,
               c_{3-i}}{1}/x_i]e_{i}], \ProcNm{q} E_2[ \eUnit ]} }      
     \end{mathpar}
     \begin{llproof}
-      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{\eChan{c}}{v}]} : \PrTy~\textrm{s.t.}}{}
+      \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{v}{\eChan{c}}]} : \PrTy~\textrm{s.t.}}{}
       \Pf{}{}{\quad\{ \PrTy(x) \mid x:e \in \pi\} = \PrTy_{\pi},~\PrTy(p) =
         U_{p},~\PrTy(q) = U_{q}}{Assumption}
       
@@ -638,10 +638,10 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
           position of}~\mathcal{D}_p~\textrm{in}~E_1}{Assumption}
 
       \Pf{}{}{\mathcal{D}_q~\textrm{is a derivation of}~\Delta_2,\Delta_2';\Gamma_2,\Gamma_2'|-
-        E_2[\eWr{\eChan{c_2}}{v}] : U_q,}{}
+        E_2[\eWr{v}{\eChan{c_2}}] : U_q,}{}
       \Pf{}{}{\quad\mathcal{D}_q'~\textrm{is a subderivation
           of}~\mathcal{D}_q~\textrm{concluding}~\Delta_2';\Gamma_2'|-
-        \eWr{\eChan{c_2}}{v} : U_q',}{}
+        \eWr{v}{\eChan{c_2}} : U_q',}{}
       \Pf{}{}{\quad\textrm{the position of}~\mathcal{D}_q'~\textrm{corresponds to
           position of}~\mathcal{D}_q~\textrm{in}~E_2}{Assumption}
       \Pf{}{}{c \leadsto c_1~\text{s.t.}~\ChTy(c) =
