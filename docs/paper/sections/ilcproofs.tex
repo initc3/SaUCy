@@ -208,11 +208,10 @@ $C'$ such that $\JCred{C}{C'}$.
         \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs}}~\textrm{or}~\exists
           \Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{By
           i.h.}
-        \Pf{}{}{\textbf{Subcase}~\exists
-          \Config{\Names'}{\Store}{p:e'}~\textrm{s.t.}~\Config{\Names}{\Store}{p:e}->\Config{\Names'}{\Store}{p:e'}}{\todo{Check}}
+       \Pf{}{}{\textbf{Subcase}~\exists~\Config{\Names'}{\Store}{\Procs',p:e'}~\textrm{s.t.}~\Config{\Names}{\Store}{p:e}->\Config{\Names'}{\Store}{\Procs',p:e'}}{\todo{Check}}
         \Pf{}{}{\quad e -> e'}{Above}
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:E[e]} ->
-          \Config{\Names'}{\Store}{\Procs,p:E[e']}}{By rule local}
+          \Config{\Names'}{\Store}{\Procs,\Procs',p:E[e']}}{By rule local}
 
 \Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{}
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} ->
