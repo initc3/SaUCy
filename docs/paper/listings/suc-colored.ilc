@@ -1,5 +1,5 @@
 wrapper :: $\forall$ ... . $A_{\mathsf{p}} -> \tyNat -> [\tyBit] -> \tyBool -> \cdots$
-let wrapperP p k bits iscrupt ${\color{red}\sf toZ}$ ${\color{Green}\sf toF}$ toA ${\color{blue}\sf toQ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf frF}$ frA ${\color{blue}\sf frQ}$=
+let wrapper p k bits iscrupt ${\color{red}\sf toZ}$ ${\color{Green}\sf toF}$ toA ${\color{blue}\sf toQ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf frF}$ frA ${\color{blue}\sf frQ}$=
       if iscrupt then
 	   loop ($\lambda$ _ . error "Z cannot write to corrupted party.") ${\color{red}\sf frZ}$
 	$\xFork$ fwd toA ${\color{Green}\sf frF}$
@@ -20,6 +20,6 @@ let execUC k r crupt z (p,q) f a =
   . let (rf,ra,rp,rq,rz) = splitBits5 r in
     $\ \ \ \,$ f k rf crupt ${\color{Green}\sf wF2P}$ ${\color{Green}\sf wF2Q}$ ${\color{orange}\sf wF2A}$ ${\color{Green}\sf rP2F}$ ${\color{Green}\sf rQ2F}$  ${\color{orange}\sf rA2F}$
     $\xFork$ a k ra crupt ${\color{Purple}\sf wA2Z}$ ${\color{orange}\sf wA2F}$ wA2P wA2Q ${\color{Purple}\sf rZ2A}$ ${\color{orange}\sf rF2A}$ rP2A rQ2A
-    $\xFork$ wrapperP p k rp crupt ${\color{red}\sf wP2Z}$ ${\color{Green}\sf wP2F}$ wP2A ${\color{blue}\sf wP2Q}$ ${\color{red}\sf rZ2P}$ ${\color{Green}\sf rF2P}$ rA2P ${\color{blue}\sf rQ2P}$
-    $\xFork$ wrapperQ q k rq crupt ${\color{red}\sf wQ2Z}$ ${\color{Green}\sf wQ2F}$ wQ2A ${\color{blue}\sf wQ2P}$ ${\color{red}\sf rZ2Q}$ ${\color{Green}\sf rF2Q}$ rA2Q ${\color{blue}\sf rP2Q}$
+    $\xFork$ wrapper p k rp (crupt == CruptP) ${\color{red}\sf wP2Z}$ ${\color{Green}\sf wP2F}$ wP2A ${\color{blue}\sf wP2Q}$ ${\color{red}\sf rZ2P}$ ${\color{Green}\sf rF2P}$ rA2P ${\color{blue}\sf rQ2P}$
+    $\xFork$ wrapper q k rq (crupt == CruptQ) ${\color{red}\sf wQ2Z}$ ${\color{Green}\sf wQ2F}$ wQ2A ${\color{blue}\sf wQ2P}$ ${\color{red}\sf rZ2Q}$ ${\color{Green}\sf rF2Q}$ rA2Q ${\color{blue}\sf rP2Q}$
     $\xFork$ z k rz ${\color{red}\sf wZ2P}$ ${\color{red}\sf wZ2Q}$ ${\color{Purple}\sf wZ2A}$ ${\color{red}\sf rP2Z}$  ${\color{red}\sf rQ2Z}$ ${\color{Purple}\sf rA2Z}$

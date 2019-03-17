@@ -18,7 +18,7 @@
 
 \section{ILC Implementation of \textsf{execUC} }
 \label{sec:full-execUC}
-The full definition of the UC execution experiment is given in Figure~\ref{fig:execUC}.
+The full implementation of the UC execution experiment is given in Figure~\ref{fig:execUC}.
 
 \begin{figure*}[h]
 \begin{subfigure}{.75\textwidth}
@@ -27,7 +27,7 @@ The full definition of the UC execution experiment is given in Figure~\ref{fig:e
 \begin{subfigure}{0.24\textwidth}
 \includegraphics[width=\linewidth]{graphics/execUC-colored}
 \end{subfigure}
-\caption{Full definition of \textsf{execUC}. The channels follow a uniform
+\caption{Full implementation of \textsf{execUC}. The channels follow a uniform
 naming scheme. The read end of a channel is prefixed with \textsf{r-} and the
 write end of a channel is prefixed with \textsf{w-}. The channel \textsf{rZ2P}
 denotes the read end of communications from the environment \textsf{z} to the
@@ -37,9 +37,7 @@ spawned in a child process (given the appropriate channels and parameters), and
 the process continues as the environment process. Notice that parties are run in
 wrapper functions, which alter their behavior depending on whether or not they
 are corrupted. If a party is corrupted, then the adversary masquerades as the
-party. The mode carried over the rightmost lollipop is derived as $\{(\mathsf{m}_{\mathsf{f}},\mathsf{m}_{\mathsf{a}},\mathsf{m_{\mathsf{z}}) \mid \mathsf{m}_{\mathsf{f}}
-|| (\mathsf{m}_{\mathsf{a}} || (\mathsf{R} || (\mathsf{R}
-|| \mathsf{m}_{\mathsf{z}}))) => \mathsf{m}}\}$.}
+party.}
 \label{fig:execUC}
 \end{figure*}
 \newpage
