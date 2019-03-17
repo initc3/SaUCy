@@ -143,19 +143,19 @@ In other words, $\JCterm{C}$ holds when either:
 %\end{proof}
 %\end{lemma}
 
-To state progress on configurations, we will make use of Lemma~\ref{lem:par},
-which allows a portion of a process pool $\pi$ to take a reduction step. \todo{Check}
-
-\begin{lemma}[Parallel Reduction]\label{lem:par}
-If $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$,
-then there exists $\Config{\Names_3}{\Store}{\Procs_3}$ such that
-$\Config{\Names_1,\Names_3}{\Store}{\Procs_1, \Procs_3} ->
-\Config{\Names_2,\Names_3}{\Store}{\Procs_2,\Procs_3}$.
-\begin{proof}
-  By structural induction on the derivation of
-  $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$.
-\end{proof}
-\end{lemma}
+%To state progress on configurations, we will make use of Lemma~\ref{lem:par},
+%which allows a portion of a process pool $\pi$ to take a reduction step. \todo{Check}
+%
+%\begin{lemma}[Parallel Reduction]\label{lem:par}
+%If $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$,
+%then there exists $\Config{\Names_3}{\Store}{\Procs_3}$ such that
+%$\Config{\Names_1,\Names_3}{\Store}{\Procs_1, \Procs_3} ->
+%\Config{\Names_2,\Names_3}{\Store}{\Procs_2,\Procs_3}$.
+%\begin{proof}
+%  By structural induction on the derivation of
+%  $\Config{\Names_1}{\Store}{\Procs_1} -> \Config{\Names_2}{\Store}{\Procs_2}$.
+%\end{proof}
+%\end{lemma}
 
 \begin{theorem}[Progress]
 If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$, then either $\JCterm{C}$ or there exists
@@ -208,14 +208,19 @@ $C'$ such that $\JCred{C}{C'}$.
         \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs}}~\textrm{or}~\exists
           \Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{By
           i.h.}
-       \Pf{}{}{\textbf{Subcase}~\exists~\Config{\Names'}{\Store}{\Procs',p:e'}~\textrm{s.t.}~\Config{\Names}{\Store}{p:e}->\Config{\Names'}{\Store}{\Procs',p:e'}}{\todo{Check}}
-        \Pf{}{}{\quad e -> e'}{Above}
-        \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:E[e]} ->
-          \Config{\Names'}{\Store}{\Procs,\Procs',p:E[e']}}{By rule local}
+        \Pf{}{}{\textbf{Subcase}~\exists~\Config{\Names'}{\Store}{\Procs',p:e'}~\textrm{s.t.}~\Config{\Names}{\Store}{p:e}->\Config{\Names'}{\Store}{\Procs',p:e'}}{\todo{Check}}
+        
+%        \Pf{}{}{\quad e -> e'}{Above}
+%        
+%        \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:E[e]} ->
+        %          \Config{\Names'}{\Store}{\Procs,\Procs',p:E[e']}}{By rule
+        %          local}
 
-\Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{}
+        \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} -> \Config{\Names'}{\Store}{\Procs,\Procs',p:e'}}{}
+
+\Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{\todo{Check}}
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} ->
-          \Config{\Names'}{\Store}{\Procs',p:e}}{By Lemma~\ref{lem:par}~\todo{check}}
+          \Config{\Names'}{\Store}{\Procs',p:e}}{}
         \Pf{}{}{\textbf{Subcase}~\JCterm{\Config{\Names}{\Store}{p:e}}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
         \Pf{}{}{\quad\Names_1 = \textrm{RdChans}(\Procs,p:e)~\textrm{and}~\Names_2 = \textrm{WrChans}(\Procs,p:e)}{Suppose}
         \Pf{}{}{\quad\{ (c_1,c_2) \mid c_1 \in \Names_1,
@@ -273,8 +278,8 @@ $C'$ such that $\JCred{C}{C'}$.
 
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p}
           E[\eChoicee{c_3}{x_1}{e_1}{c_1}{x_2}{e_2}]} --->
-          \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ [\ePair{!v}{c_3,
-          c_1}{1}/x_2]e_{2}]}}{By rule cw}        
+          \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ [\ePair{!v}{c_1,
+          c_3}{1}/x_2]e_{2}]}}{By rule cw}        
 
         \Pf{}{}{\qquad\textbf{Subsubsubcase}~\ProcNm{p} E[
             \eWr{v}{\eChan{c_2}}]}{}
@@ -304,7 +309,7 @@ Preservation for the functional fragment of ILC (local preservation) is standard
   \end{proof}
 \end{lemma}
 
-To state preservation on configurations, we start with several auxiliary
+To state preservation on configurations, we first state several auxiliary
 results, which follow the formulation of Gay and
 Vasconcelos~\cite{gay2010linear}.  Lemma~\ref{lem:equiv} shows that typing of
 configurations is preserved under configuration equivalence.
@@ -750,13 +755,13 @@ By structural induction over the typing derivation for $C$.
 \end{proof}
 \end{lemma}
 
-\begin{theorem}[Single-step confluence]
+\begin{theorem}[Single-step confluence]\label{lem:single-step-confluence}
 For all well-typed configurations $C$,
 %
  if $\JCred{C}{C_1}$ 
 and $\JCred{C}{C_2}$ 
 then 
-there exists renaming function~$f$ 
+there exists renaming a function~$f$ 
 such that either:
 \begin{enumerate}
 \item %$\JCterm{C_1}$ and 
@@ -779,7 +784,7 @@ or
 
    \item[] \textbf{Case} independent processes
      \begin{itemize}[leftmargin=*]
-       \item[] The two steps advance distinct processes, using any of the rules
+       \item[] If both steps advance distinct processes, using any of the rules
          \Rule{local}, \Rule{fork} and \Rule{nu}, we produce $C_3$ by combining
          those two (independent) steps.
      \end{itemize}
@@ -787,29 +792,21 @@ or
 
    \item[] \textbf{Case} one process
      \begin{itemize}[leftmargin=*]
-       \item[] The two steps advance the same process, we show that this was
-         determinisitic (up to naming) by constructing the naming function $f$
+       \item[] If both steps advance the same process, we show that this is
+         deterministic (up to naming) by constructing the naming function $f$
          such that $C_2 = f(C_1)$.  Most cases are straightforward since they
-         perform no non-determinisitic choices.  The only source of
-         non-determinism is the name choices, in rules \Rule{nu}, \Rule{fork},
-         and \Rule{new}; in each case, we map the name choice from the second
-         step to that of the first step.
+         perform no nondeterministic choices.  The only source of nondeterminism
+         is the name choices, in rules \Rule{nu} and \Rule{fork}. In each case,
+         we map the name choice from the second step to that of the first step.
      \end{itemize}
 
-
-   \item[] \textbf{Case} read-write interaction
+   \item[] \textbf{Case} interaction
      \begin{itemize}[leftmargin=*]
-       \item[] In the case that either step uses \Rule{rw}, we rely on lemmas
+       \item[] If either step uses \Rule{rw} or \Rule{cw}, we rely on Lemmas
          \ref{lem:UniqueWriter} and \ref{lem:UniqueReader} to show that both
-         steps use \Rule{rw}, and that the reader-writer process pair is unique.
+         steps use either \Rule{rw} or \Rule{cw}, and that the reader-writer
+         process pair is unique.
      \end{itemize}
-
-   \item[] \textbf{Case} choice-write interaction \todo{?}
-     \begin{itemize}[leftmargin=*]
-       \item[] In the case that either step uses \Rule{cw}, we rely on lemmas
-         \ref{lem:UniqueWriter} and \ref{lem:UniqueReader} to show that both
-         steps use \Rule{cw}, and that the reader-writer process pair is unique.
-     \end{itemize}     
    \end{itemize}
 \end{proof}
 \end{theorem}
@@ -836,7 +833,8 @@ or
 \item there exists $C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{g(C_2)}{C_3}$.
 \end{enumerate}
 \begin{proof}
-  (Analogous to first single-step confluence proof.)
+  Analogous to the proof of Theorem~\ref{lem:single-step-confluence}
+  (single-step confluence).
 \end{proof}
 \end{theorem}
 
