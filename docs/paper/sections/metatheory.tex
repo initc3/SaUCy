@@ -22,32 +22,31 @@ stated below.
 %
 These theorems include \emph{full confluence}:
 Any two full reductions of a configuration yield a pair of equivalent configurations
-(isomorphic, up to a renaming of non-deterministic name choices).
+(isomorphic, up to a renaming of nondeterministic name choices).
 %
-For space reasons, we omit the full proof of confluence, but we include a detailed sketch in \Secref{sec:ilcproofs}.
+The full proofs for type soundness and confluence can be found in the appendix.
 
 \subsection{Type Soundness}
 
 We prove type soundness of ILC via mostly-standard notions of progress
 and preservation.
 %
-To state these theorems, we follow the usual recipe, except that we
-give a special definition of ``program termination'' which permits
-deadlocks.
+To state these theorems, we follow the usual recipe, except that we give a
+special definition of program termination that permits deadlocks.
 %
 Informally, $\JCterm{C}$ holds when:
 \begin{enumerate}
- \item $C$ is fully normal: every process in~$C$  
-   is normalized (consists of a value).
+ \item $C$ is fully normal: Every process in~$C$ is normalized (consists of a
+   value).
  \item $C$ is (at least partially) deadlocked: 
-   some (possibly-empty) portion of $C$ is normal, and
-   there exists one or more reading processes in $C$, or
-   there exists one or more writing processes in $C$,
-   however, no reader-writer pair exists for a common channel~$c$.
+   Some (possibly empty) portion of $C$ is normal, and there exists one or more
+   reading processes in $C$, or there exists one or more writing processes in
+   $C$, however, no read-write channel pair~$(c_1,c_2)$ exists such that $c_2 \leadsto
+   c_1$.
 \end{enumerate}
 
-Recall that ILC is concerned with enforcing \emph{confluence} as its
-central meta theoretic property, \emph{not} deadlock freedom.
+Recall that ILC is concerned with enforcing \emph{confluence} as its central
+metatheoretic property, \emph{not} deadlock freedom.
 %
 Confluence implies, among other things, that the order of reduction steps is
 inconsequential, and that no process scheduling choices will affect
@@ -60,50 +59,36 @@ the final outcome.
 %TODO: define $\ChTy' \supseteq \ChTy$
 %TODO: define $\PrTy' \supseteq \PrTy$
 
-\begin{lemma}[Non-progress]
-For all configurations $C$,
-channel typings~$\ChTy$,
-and process typings~$\PrTy$,
-%
-if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
-and $\JCterm{C}$,
-then $\not\exists C'$ such that $\JCred{C}{C'}$.
-%% \begin{proof}
-%%   TODO
-%% \end{proof}
-\end{lemma}
-
+%\begin{lemma}[Non-progress]
+%For all configurations $C$,
+%channel typings~$\ChTy$,
+%and process typings~$\PrTy$,
+%%
+%if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
+%and $\JCterm{C}$,
+%then $\not\exists C'$ such that $\JCred{C}{C'}$.
+%%% \begin{proof}
+%%%   TODO
+%%% \end{proof}
+%\end{lemma}
 
 \begin{theorem}[Progress]
-For all configurations $C$,
-channel typings~$\ChTy$,
-and process typings~$\PrTy$,
-%
-if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
-then 
-either $\JCterm{C}$,
-or $\exists C'$ such that $\JCred{C}{C'}$.
-%% \begin{proof}
-%%   TODO
-%% \end{proof}
+If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$, then either $\JCterm{C}$ or there exists
+$C'$ such that $\JCred{C}{C'}$.
+\begin{proof}
+    By structural induction on the derivation of
+    $\JCty{\StTy}{\ChTy}{C}{\PrTy}$.
+\end{proof}
 \end{theorem}
 
 \begin{theorem}[Preservation]
-For all configurations $C, C'$,
-channel typings~$\ChTy$
-and process typings~$\PrTy$,
-%
- if $\JCty{\StTy}{\ChTy}{C}{\PrTy}$
-and $\JCred{C}{C'}$ 
-then there exists 
-channel typing extension $\ChTy' \supseteq \ChTy$
-and process typing extension $\PrTy' \supseteq \PrTy$
-such that $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
-%% \begin{proof}
-%%   TODO
-%% \end{proof}
+If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ and $\JCred{C}{C'}$, then there exists
+$\ChTy' \supseteq \ChTy$ and $\PrTy' \supseteq \PrTy$ such that
+$\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
+\begin{proof}
+  By structural induction on the derivation of $\JCred{C}{C'}$.
+\end{proof}
 \end{theorem}
-
 
 \subsection{Confluence}
 
@@ -111,7 +96,7 @@ ILC's type system enforces confluence
 %by enforcing a stronger
 %property: the communication effects of every reduction are
 %\emph{unique}, 
-up to non-deterministic naming choices in 
+up to nondeterministic naming choices in 
 rules \Rule{nu} and \Rule{fork} (\Figref{fig:semantics}).
 %
 To account for different choices of dynamically-named channels and processes, respectively, 
@@ -133,9 +118,11 @@ $C_1 = f(C_2)$,
 or
 \item $\exists C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
 \end{enumerate}
-%% \begin{proof}
-%%   TODO
-%% \end{proof}
+\begin{proof}
+   By induction on the pair of steps 
+   $\left< \JCred{C}{C_1}\right.$, 
+   $\left.\JCred{C}{C_2} \right>$.
+\end{proof}
 \end{theorem}
 
 Intuitively, the sister configuration $C_2$ is either different
@@ -158,7 +145,9 @@ and $\JCterm{C_2}$
 then 
 there exists renaming function~$f$ 
 such that $C_1 = f(C_2)$.
-%% \begin{proof}
-%%   TODO: corollary to single-step confluence?
-%% \end{proof}
+\begin{proof}
+    By induction on the reduction sequence pair
+  $\left< \JCredm{C}{C_1}\right.$, 
+  $\left.\JCredm{f(C)}{C_2} \right>$.
+\end{proof}
 \end{theorem}
