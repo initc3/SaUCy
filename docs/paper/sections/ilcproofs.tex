@@ -477,7 +477,8 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy}{|-}{C_1 : \PrTy}{Assumption}
       \Pf{}{}{C_1 \equiv C_1'}{Given}
       \Pf{\ChTy}{|-}{C_1' : \PrTy}{By Lemma~\ref{lem:equiv}}
-      \Pf{\ChTy'\supseteq\ChTy}{|-}{C_2' : \PrTy'\supseteq\PrTy}{By i.h.}
+      \Pf{}{}{\ChTy'\supseteq\ChTy~\textrm{and}~\PrTy'\supseteq\PrTy}{Suppose}
+      \Pf{\ChTy'}{|-}{C_2' : \PrTy'}{By i.h.}
       \Pf{\ChTy'}{|-}{C_2 : \PrTy'}{By Lemma~\ref{lem:equiv}}
     \end{llproof}
 
