@@ -30,9 +30,14 @@ of single-process typing, given in \Secref{subsec:types}:\smallskip
 {\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\emptyProcs}}{\cdot}}
 \and
 \Infer{cons}
-{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{p:e}}{p:U}\\
+{ \ChTy; \emptyctxt; \emptyctxt |- e : U\\
 \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
-{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,p:U}}
+{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
+\and
+\Infer{cons}
+{\Delta; \Gamma |- e : U\\
+\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
+{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
 \end{mathpar}
 
 \subsection{Progress}
@@ -447,7 +452,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 
       \Pf{\Delta_2; \Gamma_2}{|-}{e_1 : U_q}{By inversion on fork}
 
-      \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs} : \PrTy_{\pi}}{Above \todo{check}}
+      \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\Procs} : \PrTy_{\pi}}{Above \todo{lemma}}
 
       \Pf{\ChTy}{|-}{\Config{\Names,q}{\Store}{\ProcNm{p} \proc{E[e_2]}} : p :
         U_p}{Above}
@@ -505,7 +510,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\Delta ; \Gamma_2, x_2 : \tyWr{S}}{|-}{e : U~\textrm{where}~\Delta=\Delta_2, x_1:
         \tyRd{S}}{By inversion on nu}
 
-      \Pf{\emptyctxt;\emptyctxt}{|-}{c_1 : \tyRd{S}}{Above \todo{check}}            
+      \Pf{\emptyctxt;\emptyctxt}{|-}{c_1 : \tyRd{S}}{Above}
 
       \Pf{\emptyctxt;\emptyctxt}{|-}{c_2 : \tyWr{S}}{Above}
 
@@ -561,7 +566,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\Delta;\Gamma_1'}{|-}{e : U_p'~\textrm{where}~\Delta=\Delta_1',\wrtok,x :
         \tyTensor{\tyBang{S}}{\tyRd{S}}}{By inversion on rd}
 
-      \Pf{\emptyctxt;\emptyctxt}{|-}{v : S}{By inversion on wr \todo{check}}
+      \Pf{\emptyctxt;\emptyctxt}{|-}{v : S}{By inversion on wr}
 
       \Pf{\emptyctxt,\emptyctxt}{|-}{\eBang{v} : \tyBang{S}}{By rule bang}
 
