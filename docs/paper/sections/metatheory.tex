@@ -110,13 +110,13 @@ For all well-typed configurations $C$,
  if $\JCred{C}{C_1}$ 
 and $\JCred{C}{C_2}$ 
 then 
-there exists renaming function~$f$ 
+there exists a renaming function~$f$ 
 such that either:
 \begin{enumerate}
 \item %$\JCterm{C_1}$ and 
 $C_1 = f(C_2)$,
 or
-\item $\exists C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
+\item there exists $C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
 \end{enumerate}
 \begin{proof}
    By induction on the pair of steps 

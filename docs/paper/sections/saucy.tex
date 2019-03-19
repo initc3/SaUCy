@@ -1,8 +1,9 @@
 \section{SaUCy}
 \label{sec:saucy}
 
-Using ILC, we build a concrete, executable implementation of the UC framework,
-dubbed SaUCy. Then, we demonstrate the versatility of SaUCy in three ways:
+Using ILC, we build a concrete, executable implementation of a barebones UC
+framework, dubbed SaUCy. Then, we demonstrate the versatility of SaUCy in three
+ways:
 \begin{enumerate}[leftmargin=*]
 \item We define a protocol composition operator and its associated composition theorem.
 \item We walk through an instantiation of UC commitments.
@@ -42,13 +43,16 @@ To meet these needs we define a judgment about ILC terms that take a security pa
   The judgment that \textsf{e} is polynomial time normalizable, written \textsf{PPT e}, is defined as follows:
   \begin{mathpar}
     \Infer{ppt}
-    {\emptyctxt ~; \emptyctxt |- e : \tyNat -> [\tyBit] -> \tyBit\\
+    {\wrtok ~; \emptyctxt |- e : \tyNat {->}_{\wm}\ [\tyBit] -> \mathsf{a}\\
     \forall~\mathsf{k} \in \tyNat.~\forall~r \in {[\tyBit]}^{(poly(\mathsf{k}))}.~\mathsf{e~k~r}~{->}^{poly(\mathsf{k})}~\mathsf{v}}
     {\keyword{PPT}~ \mathsf{e} }
   \end{mathpar}
   This says that if for all security parameters \textsf{k} and all bitstrings
-  \textsf{r} with length polynomial in \textsf{k} the term \textsf{e~k~r}
-  normalizes to a value \textsf{v} in $poly(\mathsf{k})$ steps.\footnote{Note that the normalization must be polynomial time for all $\mathsf{r}$, though we could have defined it to hold with high probability.}
+  \textsf{r} with length polynomial in \textsf{k} the term \textsf{e~k~r} (when
+  fully applied to its arguments~\todo{}) normalizes to a value \textsf{v} in
+  $poly(\mathsf{k})$ steps.\footnote{Note that the normalization must be
+    polynomial time for all $\mathsf{r}$, though we could have defined it to
+    hold with high probability.}
 \end{definition}
 
 \begin{definition}[Value Distribution] 
@@ -74,7 +78,7 @@ What remains is to define a notion of indistinguishability for value distributio
   \end{mathpar}
 \end{definition}
 
-\subsection{The UC Framework, Concretely}
+\subsection{SaUCy Execution Model}
 \label{subsec:concrete-uc}
 \begingroup
 \setlength\intextsep{0pt}
@@ -462,7 +466,7 @@ defining the probability ensembles $D_{\mc{R}}$, $D_{\mc{R}}'$, and
 $D_{\mc{I}}$, without which we would not be able to reduce the problem of
 distinguishing the real world and ideal world ensembles ($D_{\mc{R}}$ and
 $D_{\mc{I}}$, respectively) to solving some computationally hard problem
-(breaking the pseudorandomness of \textsf{tdp}). \todo{Check}
+(breaking the pseudorandomness of \textsf{tdp}). \todo{Check, implement bCrs}
 
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}
@@ -485,4 +489,4 @@ Camenisch et al.~\cite{camenisch2016universal} identified several strategies for
 Alternatively, we may discard such messages arriving out of order, returning them to sender; we express this in ILC using the external choice operator,
 \lstinputlisting[style=myilc]{listings/reentrant-ignore.ilc}
 
-\todo{conclude}
+\todo{Explain choice syntax, conclude}
