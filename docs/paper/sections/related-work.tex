@@ -128,29 +128,38 @@ ILC requires a sophisticated type system to achieve confluence.
 
 \subsection{Tools for Cryptographic Analysis}
 \label{subsec:tools}
-There are a variety of computer-aided tools for cryptographic analysis, some of
-which operate in the symbolic model of cryptography while others operate in the
-computational model of cryptography. The survey by
-Blanchet~\cite{blanchet2012security} details the differences between these two
-approaches.
+Computed-aided tools for cryptographic analysis operate in either the symbolic
+model or the computational model. The survey by
+Blanchet~\cite{blanchet2012security} highlights some of their differences.
 
-In the symbolic model, cryptographic operations are abstracted as term algebras,
-and adversary capabilities are defined by nondeterministic applications of
-deduction rules over these terms. This abstract view of protocols leads to a
-high degree of automation, but weaker guarantees compared to analysis done in
-the computational model. Among the symbolic tools include the NRL protocol
-analyzer~\cite{meadows1996nrl}, Maude-NPA~\cite{escobar2009maude}, and
-Proverif~\cite{blanchet2010proverif}.
+%In the symbolic model, cryptographic operations are abstracted as term algebras,
+%and adversary capabilities are nondeterministic applications of deduction rules
+%over these terms. This abstract view of protocols leads to a high degree of
+%automation, but weaker security guarantees than in the computational
+%model. Symbolic tools include the NRL protocol analyzer~\cite{meadows1996nrl},
+%Maude-NPA~\cite{escobar2009maude}, and Proverif~\cite{blanchet2010proverif}.
 
-In the computational model, \todo{\ldots} Among the computational tools include
-CertiCrypt~\cite{barthe2009formal}, EasyCrypt~\cite{barthe2011computer},
-CryptoVerif~\cite{blanchet2007cryptoverif}, Cryptol~\cite{lewis2003cryptol}, and
-$\text{F}^{*}$~\cite{swamy2016dependent}. The focus of these tools is on
-game-based security proofs, which, in contrast to simulation-based security
-definitions (such as UC), only guarantee security in a standalone
-setting. Although the computational tools do not support message-passing
-concurrency, it would be interesting to embed ILC into EasyCrypt or F* in order
-to use its tooling.
+Symbolic tools include the NRL protocol analyzer~\cite{meadows1996nrl},
+Maude-NPA~\cite{escobar2009maude}, and Proverif~\cite{blanchet2010proverif}. In
+the symbolic setting, cryptographic operations are abstracted as term algebras
+(a variant of the applied $\pi$-calculus in the case of Proverif), and adversary
+capabilities are nondeterministic applications of deduction rules over these
+terms. Here, nondeterminism allows the adversary to find attack traces (if there
+are any), whereas the presence of nondeterminism in the computational setting
+would frustrate cryptographic reduction proofs.
+
+Computational tools include CertiCrypt~\cite{barthe2009formal},
+EasyCrypt~\cite{barthe2011computer}, CryptoVerif~\cite{blanchet2007cryptoverif},
+Cryptol~\cite{lewis2003cryptol}, and
+$\text{F}^{*}$~\cite{swamy2016dependent}. These tools focus on game-based
+security, which, in contrast to simulation-based definitions (such as UC), only
+guarantee security in a standalone setting (no composition guarantees). To our
+knowledge, these have not been used for simulation-based proofs, but it would be
+interesting to embed ILC into EasyCrypt or $\textnormal{F}^{*}$ in order to use
+their tooling.
+%Although the computational
+%tools do not support message-passing concurrency, it would be interesting to
+%embed ILC into EasyCrypt or F* in order to use its tooling.
 
 %CertiCrypt~\cite{barthe2009formal} is a framework (built on
 %Coq~\cite{barras1997coq}) that supports machine-checked game-based proofs of
@@ -181,7 +190,7 @@ goals to ours, namely to provide a simple basis for UC.
 However, our approach is simpler, for example our type system subsumes
 their notion of \emph{compatibility} and \emph{connectability}, we avoid
 the distinctions of \emph{net}, \emph{external}, \emph{io}, etc. tapes,
-and give a concrete programming model.
+and give a concrete programming model. \todo{Abstract Cryptography~\cite{maurer2011abstract}.}
 %As one example, RSIM defines a particular
 %communication model in terms of ports and schedulers, whereas in our
 %case the scheduler 

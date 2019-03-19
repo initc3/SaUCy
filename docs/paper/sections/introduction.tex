@@ -103,8 +103,8 @@ ITMs by designing a new process calculus called the Interactive Lambda Calculus
 (ILC), which adapts ITMs to a subset of the
 $\pi$-calculus~\cite{milner1999communicating} through an affine typing
 discipline. In other words, \emph{well-typed ILC programs are expressible as
-  ITMs}. We then use ILC to build a concrete, executable implementation of the
-UC framework, dubbed SaUCy.
+  ITMs}. We then use ILC to build a concrete, executable implementation of a
+simplified UC framework, dubbed SaUCy.
 
 %In sum, the goal of this work is twofold: first, to develop a foundational
 %calculus for the purpose of systematizing UC (ILC), which importantly admits
@@ -173,11 +173,13 @@ To summarize, our main contributions are these:
 
 \begin{itemize}[leftmargin=*]
   \item We design a foundational calculus for the purpose of systemizing UC
-    called the Interactive Lambda Calculus, which exhibits confluence and is a faithful abstraction of ITMs.
-  \item We use ILC to build a concrete, executable implementation of the UC
-    framework called SaUCy.
-  \item We then use SaUCy to port over a sampling of theory from UC
-literature, including a composition theorem,
-an instantiation proof of UC commitments~\cite{canetti2001commitments},
-and an examination of a subtle definitional issue involving reentrant concurrency~\cite{camenisch2016universal}.
+    called the Interactive Lambda Calculus, which exhibits confluence and is a
+    faithful abstraction of ITMs.
+  \item We use ILC to build a concrete, executable implementation of a
+    simplified UC framework called SaUCy.
+  \item We then use SaUCy to port over a sampling of theory from UC literature,
+    including a composition theorem, an instantiation proof of UC
+    commitments~\cite{canetti2001commitments}, and an examination of a subtle
+    definitional issue involving reentrant
+    concurrency~\cite{camenisch2016universal}.
 \end{itemize}
