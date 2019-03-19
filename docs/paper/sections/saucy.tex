@@ -399,7 +399,8 @@ $\Func_{\textsc{crs}}$).
 \paragraph{Extending ILC with cryptographic primitives.}
 UC Commitments are realized from cryptographic primitives, such as trapdoor
 permutations, which require extensions to ILC. The new syntactic forms are given
-with their static and dynamic semantics in Figure~\ref{fig:extended-ilc}.
+with their static and dynamic semantics in the Appendix.
+%Figure~\ref{fig:extended-ilc}.
 
 \paragraph{Commitment Protocol.}
 The commitment protocol by Canetti and Fischlin~\cite{canetti2001commitments} is
@@ -466,7 +467,7 @@ defining the probability ensembles $D_{\mc{R}}$, $D_{\mc{R}}'$, and
 $D_{\mc{I}}$, without which we would not be able to reduce the problem of
 distinguishing the real world and ideal world ensembles ($D_{\mc{R}}$ and
 $D_{\mc{I}}$, respectively) to solving some computationally hard problem
-(breaking the pseudorandomness of \textsf{tdp}). \todo{Check, implement bCrs}
+(breaking the pseudorandomness of \textsf{tdp}). \todo{Check, include bCrs}
 
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}
@@ -489,4 +490,10 @@ Camenisch et al.~\cite{camenisch2016universal} identified several strategies for
 Alternatively, we may discard such messages arriving out of order, returning them to sender; we express this in ILC using the external choice operator,
 \lstinputlisting[style=myilc]{listings/reentrant-ignore.ilc}
 
-\todo{Explain choice syntax, conclude}
+Still, the observation from Camenisch~\etal~\cite{camenisch2016universal} is
+that neither of the above two solutions are completely satisfactory. The
+reentrancy problem arises mainly due to the exchange of metamessages, and so
+their main solution is to restrict the environment/adversary. ILC provides the
+ideal starting point---restrictions on metamessages could be expressed by behavior
+refinements, i.e., on receiving a message on channel A, the process P must not
+send a message on its other channels until sending a message on B. \todo{Check}
