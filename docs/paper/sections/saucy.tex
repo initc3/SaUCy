@@ -89,16 +89,16 @@ What remains is to define a notion of indistinguishability for value distributio
 \caption{\textsf{execUC}.}
 \label{fig:execUC-diagram}
 \end{wrapfigure}
-The implementation of SaUCy
- is centered around a definition of UC execution model in ILC.
-For the most part, this just involves connecting channels as illustrated in
-Figure~\ref{fig:execUC-diagram}. For demonstration, we only show
-the case of two-party protocols (\`{a} la Simplified
-UC~\cite{canetti2015simpler}), which will suffice for our example of
-instantiating universally composable commitments.  Also, we will only aim to
-show the case of \emph{static} corruptions, in which parties are corrupted at
-the onset of the execution. This is in contrast to \emph{adaptive} corruptions,
-in which parties can be corrupted as the execution proceeds.
+\todo{``Too short to be useful'' needs more intuition.} The implementation of
+SaUCy is centered around a definition of UC execution model in ILC.  For the
+most part, this just involves connecting channels as illustrated in
+Figure~\ref{fig:execUC-diagram}. For demonstration, we only show the case of
+two-party protocols (\`{a} la Simplified UC~\cite{canetti2015simpler}), which
+will suffice for our example of instantiating universally composable
+commitments.  Also, we will only aim to show the case of \emph{static}
+corruptions, in which parties are corrupted at the onset of the execution. This
+is in contrast to \emph{adaptive} corruptions, in which parties can be corrupted
+as the execution proceeds.
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
 
 \noindent The function \textsf{execUC} is parameterized by an environment \textsf{z},
@@ -110,9 +110,11 @@ when party \textsf{p} is corrupt, party \textsf{q} is corrupt, or no party is
 corrupt, respectively.
 \lstinputlisting[style=myilc]{listings/crupt.ilc}
 \endgroup
-\noindent Some careful programming is needed to handle the cases
-when the adversary sends messages on behalf of corrupted parties; this is 
-captured by \textsf{wrapper} (shown in the Appendix).
+\noindent Some careful programming is needed to handle the cases when the
+adversary sends messages on behalf of corrupted parties: For each party there
+are two cases: corrupt (the adversary controls them), or honest (they follow the
+protocol). This logic is captured by an ILC \textsf{wrapper} function (shown in
+the Appendix).
 
 Note that for space and readability, we elide channel allocation/distribution
 and wrapper definitions (with ellipses). We also abbreviate the type signature
@@ -392,8 +394,8 @@ finally complete the relational analysis on paper.
 
 UC commitments can be instantiated with standard cryptographic assumptions, for
 example the RSA problem~\cite{lindell2014introduction}.  They also rely on a
-``trusted setup,'' or common reference string, which are essentially public
-parameters generated ahead of time (modeled as an ideal functionality
+``trusted setup,'' or common reference string (CRS), which are essentially
+public parameters generated ahead of time (modeled as an ideal functionality
 $\Func_{\textsc{crs}}$).
 
 \paragraph{Extending ILC with cryptographic primitives.}
@@ -490,10 +492,12 @@ Camenisch et al.~\cite{camenisch2016universal} identified several strategies for
 Alternatively, we may discard such messages arriving out of order, returning them to sender; we express this in ILC using the external choice operator,
 \lstinputlisting[style=myilc]{listings/reentrant-ignore.ilc}
 
-Still, the observation from Camenisch~\etal~\cite{camenisch2016universal} is
-that neither of the above two solutions are completely satisfactory. The
-reentrancy problem arises mainly due to the exchange of metamessages, and so
-their main solution is to restrict the environment/adversary. ILC provides the
-ideal starting point---restrictions on metamessages could be expressed by behavior
-refinements, i.e., on receiving a message on channel A, the process P must not
-send a message on its other channels until sending a message on B. \todo{Check}
+Still, the observation of Camenisch~\etal~\cite{camenisch2016universal} is that
+neither of the above two solutions are completely satisfactory. The reentrancy
+problem arises mainly due to the exchange of metamessages between processes, and
+so the most compelling solution is to restrict how the environment/adversary
+respond to these metamessages. While we leave modeling this solution as future
+work, ILC provides the ideal starting point---restrictions on metamessages could
+be expressed by behavior refinements, i.e., on receiving a message on channel A,
+the process P must not send a message on its other channels until sending a
+message on B. \todo{Check, need more explanation of problem earlier}
