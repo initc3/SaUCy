@@ -228,8 +228,14 @@ world and vice versa.
     {\mc{S_\mc{R},S_\mc{I}} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
 \end{mathpar}
 \end{definition}
-\noindent We remark this definition goes against the UC convention of requiring simulation in one direction only. One direction is preferable intuitively because it should be OK if the protocol is even more secure than its specification. Requiring both could be too restrictive, although we have not encountered such problem in our examples.
-In any case, the benefit is this simplifies the polynomial time notion: vacuous protocols are clearly ruled out by the top condition, and both simulations are only required to be \keyword{PPT} if $\mc{Z}$ is. 
+\noindent We remark this definition goes against the UC convention of requiring
+simulation in one direction only. One direction is preferable intuitively
+because it should be fine if the protocol is even more secure than its
+specification. Requiring both could be too restrictive, although we have not
+encountered such problem in our examples.  In any case, the benefit is this
+simplifies the polynomial time notion: vacuous protocols are clearly ruled out
+by the top condition, and both simulations are only required to be \keyword{PPT}
+if $\mc{Z}$ is.
 
 %%   \begin{mathpar}
 %%   \Infer{\st{emulate}}
@@ -393,7 +399,7 @@ foundation; developing them in ILC is important future work. \todo{Comparison}
 We now walk through an instantiation of UC commitments (\`{a} la Canetti and
 Fischlin~\cite{canetti2001commitments}).  Instantiation proofs in SaUCy follow a
 standard rhythm. We start with a security definition as an ideal functionality
-(such as $\Func_{\textsc{Com}}$), give the protocol, construct a simulator, and
+(such as $\Func_{\textsc{com}}$), give the protocol, construct a simulator, and
 finally complete the relational analysis on paper.
 
 UC commitments can be instantiated with standard cryptographic assumptions, for
