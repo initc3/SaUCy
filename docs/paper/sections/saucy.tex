@@ -410,8 +410,17 @@ The intuitive explanation why this is hiding is that without the trapdoor, it is
 The UC proof consists of two simulators, one for the ideal world and one for the real world.
 The ideal world simulator is ported directly from the UC literature~\cite{canetti2001commitments}. The non-standard real world simulator, given in the Appendix, is trivial, but necessary because our protocol emulation definition requires simulation in both directions.
 
-The ideal world simulator generates its own ``fake'' CRS for which it stores the trapdoors. The string $\sigma$ is not truly random, but instead is the result of combining two evaluations of the prgs. In Figure~\ref{fig:sim-short} we show the case that the committer P is corrupt (the other case is in the Appendix). The simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit}' ~ y)$; in the real world, this is relayed by the dummy adversary to Q, who outputs \textsf{Committed} back to the environment. Hence to achieve the same effect in the ideal word, the simulator must send $(\mathsf{Commit}~b)$ to $\Func_{\textsc{Com}}$. To extract $b$ from $y$, the simulator makes use of the prg trapdoor check which one has $y$ in its range.
-It is necessary to argue by cryptographic reduction that this simulation is sound.
+The ideal world simulator generates its own ``fake'' CRS for which it stores the
+trapdoors. The string $\sigma$ is not truly random, but instead is the result of
+combining two evaluations of the prgs. In Figure~\ref{fig:sim-short} we show the
+case that the committer P is corrupt (the other case is in the Appendix). The
+simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit}' ~ y)$;
+in the real world, this is relayed by the dummy adversary to Q, who outputs
+\textsf{Committed} back to the environment. Hence to achieve the same effect in
+the ideal word, the simulator must send $(\mathsf{Commit}~b)$ to
+$\Func_{\textsc{Com}}$. To extract $b$ from $y$, the simulator makes use of the
+prg trapdoor check which one has $y$ in its range.  It is necessary to argue by
+cryptographic reduction that this simulation is sound, which we describe next.
 
 \begin{figure}
 \lstinputlisting[style=myilc]{listings/sim-short.ilc}
@@ -428,9 +437,9 @@ proof follows the one in Canetti and Fischlin~\cite{canetti2001commitments}.
 \begin{sketch}
   Consider the following ensembles:
   \begin{align*}
-    D_{\mc{R}} &= D(\mathsf{execUC~\mc{Z}~(committer, receiver)~fCrs~dummyA})\\
-    D_{\mc{R}}' &= D(\mathsf{execUC~\mc{Z}~(committer, receiver)~bCrs~dummyA})\\
-    D_{\mc{I}} &= D(\mathsf{execUC~\mc{Z}~(dummyP, dummyQ)~fCom~simI})
+    D_{\mc{R}} &= D(\mathsf{execUC~k~r~\mc{Z}~(com, rec)~fCrs~dummyA})\\
+    D_{\mc{R}}' &= D(\mathsf{execUC~k~r~\mc{Z}~(com, rec)~bCrs~dummyA})\\
+    D_{\mc{I}} &= D(\mathsf{execUC~k~r~\mc{Z}~(dummyP, dummyQ)~fCom~simI})
   \end{align*}
   \noindent The ensemble $D_{\mc{R}}$ is over the output of $\mc{Z}$ in a real
   world execution. The ensemble $D_{\mc{R}}'$ is similar, except $\mc{Z}$ runs
@@ -440,14 +449,20 @@ proof follows the one in Canetti and Fischlin~\cite{canetti2001commitments}.
   D_{\mc{I}}$.
 %  
   The proof proceeds by first showing that distinguishing between $D_{\mc{R}}$
-  and $D_{\mc{R}}'$ reduces to breaking the pseudorandomness of \textsf{tdp}
-  (hence, $D_{\mc{R}} \sim D_{\mc{R}}'$), and then by showing that distinguishing
-  between $D_{\mc{R}}'$ and $D_{\mc{I}}$ also reduces to breaking the
-  pseudorandomness of \textsf{tdp} (hence, $D_{\mc{R}}' \sim D_{\mc{I}}$). By the
-  transitivity of indistinguishability, ${D_{\mc{R}} \sim D_{\mc{I}}}$.
+  and $D_{\mc{R}}'$ reduces to breaking the pseudorandomness of the trapdoor
+  permutation (\textsf{tdp}) (hence, $D_{\mc{R}} \sim D_{\mc{R}}'$), and then by
+  showing that distinguishing between $D_{\mc{R}}'$ and $D_{\mc{I}}$ also
+  reduces to breaking the pseudorandomness of \textsf{tdp} (hence, $D_{\mc{R}}'
+  \sim D_{\mc{I}}$). By the transitivity of indistinguishability, ${D_{\mc{R}} \sim
+    D_{\mc{I}}}$.
 \end{sketch}
 
-\todo{Conclude, bCrs}
+Here, ILC's confluence property plays a critical role: It is necessary for
+defining the probability ensembles $D_{\mc{R}}$, $D_{\mc{R}}'$, and
+$D_{\mc{I}}$, without which we would not be able to reduce the problem of
+distinguishing the real world and ideal world ensembles ($D_{\mc{R}}$ and
+$D_{\mc{I}}$, respectively) to solving some computationally hard problem
+(breaking the pseudorandomness of \textsf{tdp}). \todo{Check}
 
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}
