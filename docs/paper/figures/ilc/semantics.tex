@@ -21,17 +21,16 @@
 \end{subfigure}%
 \begin{subfigure}{0.5\textwidth}
   \begin{grammar}
- Evaluation contexts
+ Evaluation
   & $E$
  & $\bnfas$ &
 $\bullet \bnfalt \ePair{E}{e}{\ell} \bnfalt \ePair{v}{E}{\ell} \bnfalt \eInjj{\ell}{i}{E}$ 
-\\ &&& $\bnfaltbrk \eSplitt{\ell}{E}{x_1}{x_2}{e} \bnfalt
+\\ contexts &&& $\bnfaltbrk \eSplitt{\ell}{E}{x_1}{x_2}{e} \bnfalt
 \eCase{\ell}{E}{x_1}{e_1}{x_2}{e_2}$
 \\ &&& $\bnfaltbrk \eApp{E}{e}{\ell} \bnfalt \eApp{v}{E}{\ell}  \bnfalt \eLet{x}{E}{e}
 \bnfalt \eBang{E} \bnfalt \eUnbang{E}$
 \\ &&& $\bnfaltbrk \eWr{E}{e} \bnfalt \eWr{v}{E} \bnfalt \eLetRd{E}{x}{e}$
-\\ &&& $\bnfaltbrk \eChoicee{E}{x_1}{e_3}{e_2}{x_2}{e_4}$
-\\ &&& $\bnfaltbrk \eChoicee{c}{x_1}{e_3}{E}{x_2}{e_4}$
+\\ &&& $\bnfaltbrk \eChoicee{E}{x_1}{e_3}{e_2}{x_2}{e_4} \bnfalt \eChoicee{c}{x_1}{e_3}{E}{x_2}{e_4}$
 %\\
 % Read contexts
 %  & $R$
@@ -41,8 +40,7 @@ $\bullet \bnfalt \ePair{E}{e}{\ell} \bnfalt \ePair{v}{E}{\ell} \bnfalt \eInjj{\e
 %     & $\bnfas$ & $\bullet \bnfalt e \boxplus R \bnfalt R \boxplus e$
 \end{grammar}
 \end{subfigure}
-\caption{Channel names, process names, configurations, evaluation contexts, and
-  read contexts.}
+\caption{Channel names, process names, configurations, and evaluation contexts.}
 \label{fig:configs}
 \end{figure*}
 
