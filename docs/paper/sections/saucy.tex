@@ -40,41 +40,41 @@ To meet these needs we define a judgment about ILC terms that take a security pa
   \textsf{k}, the term \textsf{e k r} normalizes to a value \textsf{v} in a
   polynomial (in \textsf{k}) number of steps.
   \end{comment}
-  The judgment that \textsf{e} is polynomial time normalizable, written \textsf{PPT e}, is defined as follows:
+  The judgment that $e$ is polynomial time normalizable, written $\mathsf{PPT}~e$, is defined as follows:
   \begin{mathpar}
     \Infer{ppt}
     {\wrtok ~; \emptyctxt |- e : \tyNat {->}_{\wm}\ [\tyBit] -> \mathsf{a}\\
-    \forall~\mathsf{k} \in \tyNat.~\forall~r \in {[\tyBit]}^{(poly(\mathsf{k}))}.~\mathsf{e~k~r}~{->}^{poly(\mathsf{k})}~\mathsf{v}}
-    {\keyword{PPT}~ \mathsf{e} }
+    \forall~k \in \tyNat.~\forall~r \in {[\tyBit]}^{(\emph{poly}(k))}.~e~k~r~{->}^{\emph{poly}(k)}~v}
+    {\keyword{PPT}~e }
   \end{mathpar}
-  This says that if for all security parameters \textsf{k} and all bitstrings
-  \textsf{r} with length polynomial in \textsf{k} the term \textsf{e~k~r} (when
-  fully applied to its arguments~\todo{}) normalizes to a value \textsf{v} in
-  $poly(\mathsf{k})$ steps.\footnote{Note that the normalization must be
+  This says that if for all security parameters $k$ and all bitstrings
+  $r$ (of length polynomial in $k$) the term $e~k~r$ (when
+  fully applied to any arguments) normalizes to a value $v$ in
+  $\emph{poly}(k)$ steps.\footnote{Note that the normalization must be
     polynomial time for all $\mathsf{r}$, though we could have defined it to
     hold with high probability.}
 \end{definition}
 
 \begin{definition}[Value Distribution] 
-  Because processes are confluent, we know that if $\mathsf{e~k~r}~{->}^{*}~\mathsf{v}$
-  then the value $\mathsf{v}$ is unique.  We can therefore define the
+  Because processes are confluent, we know that if $e~k~r~{->}^{*}~v$,
+  then the value $v$ is unique.  We can therefore define the
   probability distribution ensemble
-  $D(\mathsf{e}) = \{ D_{\mathsf{e,k}}\}_\mathsf{k}$
+  $D(e) = \{ D_{e,k}\}_{k}$
   based on a uniform distribution $U_k$ over
-  $\mathsf{k}$-bit strings $\mathsf{r}$, so the distribution $D_{\mathsf{e,k}}$ is given as
+  $k$-bit strings $r$, so the distribution $D_{e,k}$ is given as
 \[
-D_{\mathsf{e},\mathsf{k}}(\mathsf{v}) = \sum_{\mathsf{r} \in R} U_{\mathsf{k}}(\mathsf{r}), \quad \textnormal{for~} R = \{ \mathsf{r} ~|~ \mathsf{e~k~r}~{->}^{*}~\mathsf{v} \}.
+D_{e,k}(v) = \sum_{r \in R} U_{k}(r), \quad \textnormal{for~} R = \{ r ~|~ e~k~r~{->}^{*}~v \}.
 \]
 \end{definition}
 
 \begin{definition}[Indistinguishability]
 What remains is to define a notion of indistinguishability for value distributions. However, we need to clarify when polynomial time normalization is an assumption or a proof obligation.
-  To simplify things later, we define a partial order $\mathsf{e}_1 \le \mathsf{e}_2$, which captures that $\mathsf{e}_2$ must be $\mathsf{PPT}$ if $\mathsf{e}_1$ is $\mathsf{PPT}$, and if so, that their value distributions are statistically similar.
+  To simplify things later, we define a partial order $e_1 \le e_2$, which captures that $e_2$ must be $\mathsf{PPT}$ if $e_1$ is $\mathsf{PPT}$, and if so, that their value distributions are statistically similar.
   \begin{mathpar}
     \Infer{indist}
-    {\keyword{PPT}~ \mathsf{e}_1 \implies (\keyword{PPT}~ \mathsf{e}_2 ~~\keyword{and}~~
-    {D(\mathsf{e}_1) \sim D(\mathsf{e}_2)})}
-    {   \qquad \mathsf{e}_1 \le \mathsf{e}_2 }
+    {\keyword{PPT}~e_1 \implies (\keyword{PPT}~e_2 ~~\textnormal{and}~~
+    {D(e_1) \sim D(e_2)})}
+    {   \qquad e_1 \le e_2 }
   \end{mathpar}
 \end{definition}
 
@@ -89,10 +89,10 @@ What remains is to define a notion of indistinguishability for value distributio
 \caption{\textsf{execUC}.}
 \label{fig:execUC-diagram}
 \end{wrapfigure}
-\todo{``Too short to be useful'' needs more intuition.} The implementation of
-SaUCy is centered around a definition of UC execution model in ILC.  For the
-most part, this just involves connecting channels as illustrated in
-Figure~\ref{fig:execUC-diagram}. For demonstration, we only show the case of
+\todo{``Too short to be useful'' needs more intuition, execUC abbreviation.} The
+implementation of SaUCy is centered around a definition of UC execution model in
+ILC.  For the most part, this just involves connecting channels as illustrated
+in Figure~\ref{fig:execUC-diagram}. For demonstration, we only show the case of
 two-party protocols (\`{a} la Simplified UC~\cite{canetti2015simpler}), which
 will suffice for our example of instantiating universally composable
 commitments.  Also, we will only aim to show the case of \emph{static}
@@ -211,9 +211,13 @@ although its use requires additional distinctions between ``invited'' and
 choices~\cite{backes2007reactive}. While we think these could be equally applied to
 ILC, our goal here is to provide a simpler notion.
 
-We define protocol emulation by requiring a simulation in both directions, so every behavior in the ideal world must correspond to a behavior in the real world and vice versa.
+We define protocol emulation by requiring a simulation in both directions, so
+every behavior in the ideal world must correspond to a behavior in the real
+world and vice versa.
 \begin{definition}[Protocol Emulation]
-  The judgment that one protocol-functionality pair $(\pi, \mc{F}_1)$  securely emulates another $(\phi, \mc{F}_2)$ (as proven the simulators $\mc{S}_\mc{R},\mc{S}_\mc{I}$) is defined as
+  The judgment that one protocol-functionality pair $(\pi, \mc{F}_1)$ securely
+  emulates another $(\phi, \mc{F}_2)$ (as proven by the simulators
+  $\mc{S}_\mc{R},\mc{S}_\mc{I}$) is defined as
 \begin{mathpar}
   \Infer{{emulate}}
         {\forall~\mc{Z}.~ 
@@ -295,7 +299,7 @@ This notation is convenient because it suggests a categorical approach to compos
 functionality channel of $\rho$ is connected to the environment channel of $\pi$, as
 illustrated and defined in Figure~\ref{fig:composition-operator}.
 \begin{figure}
-\includegraphics[width=0.75\linewidth]{graphics/protocol-composition}
+\includegraphics[width=0.6\linewidth]{graphics/protocol-composition}
 \lstinputlisting[style=myilc]{listings/compose.ilc}
 \caption{Protocol composition operator.}
 \label{fig:composition-operator}
@@ -310,7 +314,7 @@ illustrated and defined in Figure~\ref{fig:composition-operator}.
 Our proof obligation is to introduce an arbitrary environment $\mc{Z}$ and conclude
 \[  \keyword{execUC}~\mc{Z} ~(\rho \circ \pi)~\mc{F}_1 ~\mathbbm{1}_\mc{A}
 \le \keyword{execUC}~\mc{Z} ~\mathbbm{1}_\mc{\pi} ~\mc{F}_3 ~(\mc{S}_{\mc{I},\rho} \circ \mc{S}_{\mc{I},\pi})
-\]
+.\]
 \noindent
 %
 The main idea is to notice that that we can bring $\rho$ from the composed protocol into the environment as $(\mc{Z}\circ \rho)$, reflecting the fact that the environment is meant to represent arbitrary outer protocols. The following derivation completes the proof:
@@ -405,8 +409,8 @@ with their static and dynamic semantics in the Appendix.
 %Figure~\ref{fig:extended-ilc}.
 
 \paragraph{Commitment Protocol.}
-The commitment protocol by Canetti and Fischlin~\cite{canetti2001commitments} is
-implemented in ILC as follows:
+We implement the commitment protocol by Canetti and
+Fischlin~\cite{canetti2001commitments} in ILC:
 \lstinputlisting[style=myilc]{listings/ucc.ilc}
 To briefly summarize what is going on: The setup CRS functionality (given in the
 Appendix) samples a random string $\sigma$ and two trapdoor pseudorandom generators (prgs $\mathsf{pk}_0, \mathsf{pk}_1$).
@@ -425,7 +429,7 @@ simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit}' ~ y)$;
 in the real world, this is relayed by the dummy adversary to Q, who outputs
 \textsf{Committed} back to the environment. Hence to achieve the same effect in
 the ideal word, the simulator must send $(\mathsf{Commit}~b)$ to
-$\Func_{\textsc{Com}}$. To extract $b$ from $y$, the simulator makes use of the
+$\Func_{\textsc{com}}$. To extract $b$ from $y$, the simulator makes use of the
 prg trapdoor check which one has $y$ in its range.  It is necessary to argue by
 cryptographic reduction that this simulation is sound, which we describe next.
 
@@ -444,9 +448,9 @@ proof follows the one in Canetti and Fischlin~\cite{canetti2001commitments}.
 \begin{sketch}
   Consider the following ensembles:
   \begin{align*}
-    D_{\mc{R}} &= D(\mathsf{execUC~k~r~\mc{Z}~(com, rec)~fCrs~dummyA})\\
-    D_{\mc{R}}' &= D(\mathsf{execUC~k~r~\mc{Z}~(com, rec)~bCrs~dummyA})\\
-    D_{\mc{I}} &= D(\mathsf{execUC~k~r~\mc{Z}~(dummyP, dummyQ)~fCom~simI})
+    D_{\mc{R}} &= D(\mathsf{execUC~\mc{Z}~(committer, receiver)~fCrs~dummyA})\\
+    D_{\mc{R}}' &= D(\mathsf{execUC~\mc{Z}~(committer, receiver)~bCrs~dummyA})\\
+    D_{\mc{I}} &= D(\mathsf{execUC~\mc{Z}~(dummyP, dummyQ)~fCom~simI})
   \end{align*}
   \noindent The ensemble $D_{\mc{R}}$ is over the output of $\mc{Z}$ in a real
   world execution. The ensemble $D_{\mc{R}}'$ is similar, except $\mc{Z}$ runs

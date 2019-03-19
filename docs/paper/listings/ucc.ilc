@@ -1,5 +1,5 @@
-com :: $\forall$ ... . $\tyNat -> [\tyBit] -> \cdots \multimap \tyUnit$
-let com k bits toZ toF toQ frZ frF frQ =
+committer :: $\forall$ ... . $\tyNat -> [\tyBit] -> \cdots \multimap \tyUnit$
+let committer k bits crupt toZ toF toQ frZ frF frQ =
   let $($!(Commit b), frZ$)$= rd frZ in
     wr GetCRS $->$ toF ;
     let $($!(PublicStrings $\sigma$ $\mathsf{pk}_0 \mathsf{pk}_1$), frF$)$ = rd frF in
@@ -10,8 +10,8 @@ let com k bits toZ toF toQ frZ frF frQ =
       let $($!Open, frZ$)$= rd frZ in
         wr (Open' b r) $->$ toQ
 
-rec :: $\forall$ ... . $\tyNat -> [\tyBit] -> \cdots \multimap \tyUnit$
-let rec k bits toZ toF toP frZ frF frP =
+receiver :: $\forall$ ... . $\tyNat -> [\tyBit] -> \cdots \multimap \tyUnit$
+let receiver k bits crupt toZ toF toP frZ frF frP =
   let $($!(Commit' x), frP$)$ = rd frP in
     wr GetCRS $->$ toF ;
     let $($!(PublicStrings $\sigma$ $\mathsf{pk}_0 \mathsf{pk}_1$), frF$)$ = rd frF in    
