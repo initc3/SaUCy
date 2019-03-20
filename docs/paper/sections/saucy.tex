@@ -113,13 +113,12 @@ corrupt, respectively.
 \noindent Some careful programming is needed to handle the cases when the
 adversary sends messages on behalf of corrupted parties: For each party there
 are two cases: corrupt (the adversary controls them), or honest (they follow the
-protocol). This logic is captured by an ILC \textsf{wrapper} function (shown in
+protocol). This logic is captured by an ILC \textsf{corruptOrNot} function (shown in
 the Appendix).
 
 Note that for space and readability, we elide channel allocation/distribution
-and wrapper definitions (with ellipses). We also abbreviate the type signature
-(e.g., $A_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
-the Appendix.
+with ellipses. We also abbreviate the type signature (e.g., $A_{\mathsf{z}}$ is
+the type of \textsf{z}). More details can be found in the Appendix.
 
 \begin{comment}
 \begin{itemize}[leftmargin=*]
@@ -485,19 +484,22 @@ $D_{\mc{I}}$, respectively) to solving some computationally hard problem
 \label{subsec:reentrancy}
 
 Camenisch et al.~\cite{camenisch2016universal} recently identified subtleties in
-defining UC ideal functionalities that relate to reentrancy and the scheduling
-of concurrent code, such that several functionalities in the literature are
+defining UC ideal functionalities (related to reentrancy and the scheduling of
+concurrent code) such that several functionalities in the literature are
 ambiguous as ITMs. Although concerning, these issues have no cryptographic
-flavor, but instead are better addressed from the PL viewpoint.  To illustrate,
-consider the following (ill-typed) ILC process \textsf{reentrantF}, which allows
-an adversary to control the delivery schedule of messages from $P$ to $Q$ (an
-asynchronous channel):
+flavor, and so they are better addressed from a PL standpoint.  To illustrate,
+consider the following (untypeable) ILC process \textsf{reentrantF}, which
+allows an adversary $\mc{A}$ to control the delivery schedule of messages from
+$P$ to $Q$ (i.e., an asynchronous channel):
 \lstinputlisting[style=myilc]{listings/loop.ilc}
 \lstinputlisting[style=myilc]{listings/reentrant.ilc}
-After receiving input from party $P$, it
-notifies the adversary, then forks a background thread to wait for \textsf{Ok} before
-delivering the message.
-This introduces a race condition: Suppose input message $m_1$ is sent by $P$, but then the adversary $\mathcal A$, before sending \textsf{Ok}, instead returns control to $\mathcal Z$, which passes $P$ a second input $m_2$. Now there are two queued messages. Which one gets delivered when the adversary sends \textsf{Ok}?
+
+After receiving input from party $P$, it notifies the adversary, then forks a
+background thread to wait for \textsf{Ok} before delivering the message.  This
+introduces a race condition: Suppose input message $m_1$ is sent by $P$, but
+then $\mc{A}$, before sending \textsf{Ok}, instead returns control to $\mathcal
+Z$, which passes $P$ a second input $m_2$. Now there are two queued
+messages. Which one gets delivered when the adversary sends \textsf{Ok}?
 
 To resolve this issue, notice that \textsf{reentrantF} is untypeable in ILC.
 The race condition occurs because the read channel \textsf{frA} is duplicated
