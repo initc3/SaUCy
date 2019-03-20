@@ -52,14 +52,6 @@
 @string{focs            = "Proceedings of the Symposium on
                   Foundations of Computer Science (FOCS)"}
 
-                  
-@inproceedings{canetti2001universally,
-  title={Universally composable security: A new paradigm for cryptographic protocols},
-  author={Canetti, R.},
-  booktitle=focs,
-  year={2001}
-}
-
 @inproceedings{goldreich1987play,
   title={How to play any mental game},
   author={Goldreich, Oded and Micali, Silvio and Wigderson, Avi},
@@ -175,17 +167,6 @@
   organization={ACM}
 }
 
-@article{bohl2016symbolic,
-  title={Symbolic universal composability},
-  author={B{\"o}hl, Florian and Unruh, Dominique},
-  journal={Journal of Computer Security},
-  volume={24},
-  number={1},
-  pages={1--38},
-  year={2016},
-  publisher={IOS Press}
-}
-
 @article{goldwasser1989knowledge,
   title={The knowledge complexity of interactive proof systems},
   author={Goldwasser, Shafi and Micali, Silvio and Rackoff, Charles},
@@ -195,46 +176,6 @@
   pages={186--208},
   year={1989},
   publisher={SIAM}
-}
-
-@inproceedings{canetti2007universally,
-  title={Universally composable security with global setup},
-  author={Canetti, Ran and Dodis, Yevgeniy and Pass, Rafael and Walfish, Shabsi},
-  booktitle={Theory of Cryptography Conference},
-  pages={61--85},
-  year={2007},
-  organization={Springer}
-}
-
-@inproceedings{canetti2003universal,
-  title={Universal composition with joint state},
-  author={Canetti, Ran and Rabin, Tal},
-  booktitle={Annual International Cryptology Conference},
-  pages={265--281},
-  year={2003},
-  organization={Springer}
-}
-
-@article{backes2007reactive,
-  title={The reactive simulatability (RSIM) framework for asynchronous systems},
-  author={Backes, Michael and Pfitzmann, Birgit and Waidner, Michael},
-  journal={Information and Computation},
-  volume={205},
-  number={12},
-  pages={1685--1720},
-  year={2007},
-  publisher={Elsevier}
-}
-
-@article{hofheinz2015gnuc,
-  title={GNUC: A new universal composability framework},
-  author={Hofheinz, Dennis and Shoup, Victor},
-  journal={Journal of Cryptology},
-  volume={28},
-  number={3},
-  pages={423--508},
-  year={2015},
-  publisher={Springer}
 }
 
 @article{halevi2005plausible,
@@ -266,17 +207,6 @@
   author={Chong, S. and Guttman, J. and Datta, A. and Myers, A. and Pierce, B. and Schaumont, P. and Sherwood, T. and Zeldovich, N.},
   journal={arXiv preprint arXiv:1608.00678},
   year={2016}
-}
-
-@inproceedings{iitm,
-  title =        {Simulation-based security with inexhaustible
-                  interactive turing machines},
-  author =       {Kusters, Ralf},
-  booktitle =    {Computer Security Foundations Workshop, 2006. 19th
-                  IEEE},
-  pages =        {12--pp},
-  year =         {2006},
-  organization = {IEEE}
 }
 
 @inproceedings{kusters2009computational,
@@ -348,17 +278,6 @@
   author={Coretti, Sandro and Garay, Juan and Hirt, Martin and Zikas, Vassilis},
   booktitle={International Conference on the Theory and Application of Cryptology and Information Security},
   pages={998--1021},
-  year={2016},
-  organization={Springer}
-}
-
-@inproceedings{camenisch2016universal,
-  title={Universal composition with responsive environments},
-  author={Camenisch, Jan and Enderlein, Robert R and Krenn, Stephan and
-                  K{\"u}sters, Ralf and Rausch, Daniel},
-  booktitle={International Conference on the Theory and Application of
-                  Cryptology and Information Security},
-  pages={807--840},
   year={2016},
   organization={Springer}
 }
@@ -440,15 +359,6 @@
   pages={156--189},
   year={1988},
   publisher={Academic Press}
-}
-
-@inproceedings{canetti2015simpler,
-  title={A simpler variant of universally composable security for standard multiparty computation},
-  author={Canetti, Ran and Cohen, Asaf and Lindell, Yehuda},
-  booktitle={Annual Cryptology Conference},
-  pages={3--22},
-  year={2015},
-  organization={Springer}
 }
 
 @inproceedings{katz2007universally,
@@ -611,6 +521,102 @@
   organization={Springer-Verlag}
 }
 
+%%% UC models %%%
+
+@article{backes2007reactive,
+  title={The reactive simulatability (RSIM) framework for asynchronous systems},
+  author={Backes, Michael and Pfitzmann, Birgit and Waidner, Michael},
+  journal={Information and Computation},
+  volume={205},
+  number={12},
+  pages={1685--1720},
+  year={2007},
+  publisher={Elsevier}
+}
+
+@inproceedings{canetti2003universal,
+  title={Universal composition with joint state},
+  author={Canetti, Ran and Rabin, Tal},
+  booktitle={Annual International Cryptology Conference},
+  pages={265--281},
+  year={2003},
+  organization={Springer}
+}
+
+@article{hofheinz2015gnuc,
+  title={GNUC: A new universal composability framework},
+  author={Hofheinz, Dennis and Shoup, Victor},
+  journal={Journal of Cryptology},
+  volume={28},
+  number={3},
+  pages={423--508},
+  year={2015},
+  publisher={Springer}
+}
+
+@inproceedings{canetti2007universally,
+  title={Universally composable security with global setup},
+  author={Canetti, Ran and Dodis, Yevgeniy and Pass, Rafael and Walfish,
+                  Shabsi},
+  booktitle={Theory of Cryptography Conference},
+  pages={61--85},
+  year={2007},
+  organization={Springer}
+}
+
+@article{bohl2016symbolic,
+  title={Symbolic universal composability},
+  author={B{\"o}hl, Florian and Unruh, Dominique},
+  journal={Journal of Computer Security},
+  volume={24},
+  number={1},
+  pages={1--38},
+  year={2016},
+  publisher={IOS Press}
+}
+
+@inproceedings{canetti2001universally,
+  title={Universally composable security: A new paradigm for cryptographic
+                  protocols},
+  author={Canetti, R.},
+  booktitle=focs,
+  year={2001}
+}
+
+@inproceedings{kusters2006simulation,
+  title =        {Simulation-based security with inexhaustible
+                  interactive turing machines},
+  author =       {Kusters, Ralf},
+  booktitle =    {Computer Security Foundations Workshop, 2006. 19th
+                  IEEE},
+  pages =        {12--pp},
+  year =         {2006},
+  organization = {IEEE}
+}
+
+@article{camenischiuc,
+  title={iUC: Flexible Universal Composability Made Simple (Full Version)},
+  author={Camenisch, Jan and Krenn, Stephan and K{\"u}sters, Ralf and Rausch,
+                  Daniel}
+}
+
+@article{camenischmulti,
+  title={Multi-Protocol UC and its Use for Building Modular and Efficient
+                  Protocols},
+  author={Camenisch, Jan and Drijvers, Manu and Tackmann, Bj\"{o}rn}
+}
+
+@inproceedings{pfitzmann2001model,
+  title={A model for asynchronous reactive systems and its application to secure
+                  message transmission},
+  author={Pfitzmann, Birgit and Waidner, Michael},
+  booktitle={Security and Privacy, 2001. S\&P 2001. Proceedings. 2001 IEEE
+                  Symposium on},
+  pages={184--200},
+  year={2001},
+  organization={IEEE}
+}
+
 @inproceedings{maurer2011abstract,
   title={Abstract cryptography},
   author={Maurer, Ueli and Renner, Renato},
@@ -618,3 +624,48 @@
   year={2011},
   organization={Citeseer}
 }
+
+@incollection{maurer2011constructive,
+  title={Constructive cryptography--a new paradigm for security definitions and
+                  proofs},
+  author={Maurer, Ueli},
+  booktitle={Theory of Security and Applications},
+  pages={33--56},
+  year={2011},
+  publisher={Springer}
+}
+
+@article{canetti2008analyzing,
+  title={Analyzing security protocols using time-bounded task-PIOAs},
+  author={Canetti, Ran and Cheung, Ling and Kaynar, Dilsun and Liskov, Moses and
+                  Lynch, Nancy and Pereira, Olivier and Segala, Roberto},
+  journal={Discrete Event Dynamic Systems},
+  volume={18},
+  number={1},
+  pages={111--159},
+  year={2008},
+  publisher={Springer}
+}
+
+@inproceedings{canetti2015simpler,
+  title={A simpler variant of universally composable security for standard
+                  multiparty computation},
+  author={Canetti, Ran and Cohen, Asaf and Lindell, Yehuda},
+  booktitle={Annual Cryptology Conference},
+  pages={3--22},
+  year={2015},
+  organization={Springer}
+}
+
+@inproceedings{camenisch2016universal,
+  title={Universal composition with responsive environments},
+  author={Camenisch, Jan and Enderlein, Robert R and Krenn, Stephan and
+                  K{\"u}sters, Ralf and Rausch, Daniel},
+  booktitle={International Conference on the Theory and Application of
+                  Cryptology and Information Security},
+  pages={807--840},
+  year={2016},
+  organization={Springer}
+}
+
+%%% End UC models %%%

@@ -459,10 +459,10 @@ proof follows the one in Canetti and Fischlin~\cite{canetti2001commitments}.
   \end{align*}
   \noindent The ensemble $D_{\mc{R}}$ is over the output of $\mc{Z}$ in a real
   world execution. The ensemble $D_{\mc{R}}'$ is similar, except $\mc{Z}$ runs
-  with a bad functionality that computes fake public strings in the same way
-  that the simulator does. The ensemble $D_{\mc{I}}$ is over the output of
-  $\mc{Z}$ in an ideal world execution. The goal is to show that $D_{\mc{R}} \sim
-  D_{\mc{I}}$.
+  with a bad functionality \textsf{bCrs} (see Appendix) that computes fake
+  public strings in the same way that the simulator does. The ensemble
+  $D_{\mc{I}}$ is over the output of $\mc{Z}$ in an ideal world execution. The
+  goal is to show that $D_{\mc{R}} \sim D_{\mc{I}}$.
 %  
   The proof proceeds by first showing that distinguishing between $D_{\mc{R}}$
   and $D_{\mc{R}}'$ reduces to breaking the pseudorandomness of the trapdoor
@@ -478,7 +478,7 @@ defining the probability ensembles $D_{\mc{R}}$, $D_{\mc{R}}'$, and
 $D_{\mc{I}}$, without which we would not be able to reduce the problem of
 distinguishing the real world and ideal world ensembles ($D_{\mc{R}}$ and
 $D_{\mc{I}}$, respectively) to solving some computationally hard problem
-(breaking the pseudorandomness of \textsf{tdp}). \todo{Check, include bCrs}
+(breaking the pseudorandomness of \textsf{tdp}).
 
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}

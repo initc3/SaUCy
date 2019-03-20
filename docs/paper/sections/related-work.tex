@@ -173,35 +173,46 @@ tooling.
 
 \subsection{Variations of the UC Framework}
 \label{subsec:uc-variants}
-A number of variants of the UC framework have been proposed to address some of
-its hitches or to make it easier to use.
+
+A number of models for universally composability have been proposed in the
+literature~\cite{canetti2001universally,pfitzmann2001model,
+  canetti2003universal,backes2007reactive, canetti2008analyzing,
+  maurer2011abstract, maurer2011constructive,
+  canetti2015simpler,bohl2016symbolic,hofheinz2015gnuc,camenisch2016universal,
+  camenischiuc,camenischmulti}. We highlight a few that have similar goals to
+ours.
+
 %In particular, they show that certain
 %aspects of the UC framework, such as ideal functionality specifications and UC
 %composition, still carry over to the symbolic model.
-The reactive simulatability framework (RSIM)~\cite{backes2007reactive} is
-a framework for representing and analyzing cryptographic protocols in a
-composable way. In contrast with UC, which uses ITMs as its computational model,
-RSIM uses probabilistic IO automata, which is amenable automated reasoning tools.
-In contrast to RSIM, ILC is intended to be the basis for a convenient and
-flexible programming language to which we can easily port existing UC
-pseudocode. 
-The IITMs model~\cite{iitm,kusters2009computational} has similar
-goals to ours, namely to provide a simple basis for UC.
-However, our approach is simpler, for example our type system subsumes
-their notion of \emph{compatibility} and \emph{connectability}, we avoid
-the distinctions of \emph{net}, \emph{external}, \emph{io}, etc. tapes,
-and give a concrete programming model. \todo{Abstract Cryptography~\cite{maurer2011abstract}.}
+%The reactive simulatability framework (RSIM)~\cite{backes2007reactive} is
+%a framework for representing and analyzing cryptographic protocols in a
+%composable way.
+
+In contrast with UC, which uses ITMs as its computational model, the reactive
+simulatability framework (RSIM)~\cite{backes2007reactive} uses probabilistic IO
+automata, which are amenable to automated reasoning.  In contrast with RSIM, ILC
+is intended to be the basis for a convenient and flexible programming language
+to which we can easily port existing UC pseudocode.
+
+The IITMs model~\cite{kusters2006simulation,camenischiuc} aims to provide a
+simple basis for UC.  However, our approach is simpler, for example our type
+system subsumes their notion of \emph{compatibility} and \emph{connectability},
+we avoid the distinctions of \emph{net}, \emph{external}, \emph{io}, etc. tapes,
+and give a concrete programming model.
 %As one example, RSIM defines a particular
 %communication model in terms of ports and schedulers, whereas in our
 %case the scheduler 
 %ILC leads to a programming language, more flexible and convenient to work with.
 
 Simplified universal composability (SUC)~\cite{canetti2015simpler} gives a
-simpler and restricted variant of the UC framework that is suitable for
-two-party multiparty computation tasks. The main difference from vanilla UC is
-that the set of parties is fixed, which greatly simplifies polynomial time
-reasoning and protocol composition while maintaining the same strong properties.
-We follow this in our \textsf{execUC} definition.
+simpler and restricted variant of the UC framework. The main difference from
+vanilla UC~\cite{canetti2001universally} is that the set of parties is fixed,
+which greatly simplifies polynomial time reasoning and protocol composition
+while maintaining the same strong properties.  We follow this in our
+\textsf{execUC} implementation.
+
+\todo{Abstract cryptography~\cite{maurer2011abstract}.}
 
 \begin{comment}
 \begin{enumerate}[leftmargin=*]
