@@ -29,11 +29,11 @@ of single-process typing, given in \Secref{subsec:types}:\smallskip
 }
 {\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\emptyProcs}}{\cdot}}
 \and
-\Infer{cons}
-{ \ChTy; \emptyctxt; \emptyctxt |- e : U\\
-\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
-{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
-\and
+%\Infer{cons}
+%{ \ChTy; \emptyctxt; \emptyctxt |- e : U\\
+%\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
+%{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
+%\and
 \Infer{cons}
 {\Delta; \Gamma |- e : U\\
 \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
@@ -200,33 +200,106 @@ $C'$ such that $\JCred{C}{C'}$.
     \item[] \textbf{Case}
       \begin{mathpar}
       \Infer{cons}
-      { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{p:e}}{p:U}
-        \\
-       \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
-      { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{(\PrTy,p:U)}}
+      {\Delta; \Gamma |- e : U\\
+      \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
+      { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
       \end{mathpar}
       
       \begin{llproof}
-        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{p:e}}~\textrm{or}~\exists
-          \Config{\Names'}{\Store}{\Procs',p:e'}~\textrm{s.t.}~\Config{\Names}{\Store}{p:e}->\Config{\Names'}{\Store}{\Procs',p:e'}}{By
-          i.h.}        
-        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs}}~\textrm{or}~\exists
-          \Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{By
-          i.h.}
-        \Pf{}{}{\textbf{Subcase}~\exists~\Config{\Names'}{\Store}{\Procs',p:e'}~\textrm{s.t.}~\Config{\Names}{\Store}{p:e}->\Config{\Names'}{\Store}{\Procs',p:e'}}{\todo{Check}}
+        \Pf{}{}{\Lterm{e}~\textrm{or}~\exists~e'~\textrm{s.t.}~e -> e'}{By i.h.}
         
-%        \Pf{}{}{\quad e -> e'}{Above}
-%        
-%        \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:E[e]} ->
-        %          \Config{\Names'}{\Store}{\Procs,\Procs',p:E[e']}}{By rule
-        %          local}
+        \Pf{}{}{\JCterm{\Config{\Names}{\Store}{\Procs}}~\textrm{or}~\exists
+          \Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}
+          -> \Config{\Names'}{\Store}{\Procs'}}{By i.h.}
 
-        \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} -> \Config{\Names'}{\Store}{\Procs,\Procs',p:e'}}{}
+        \Pf{}{}{\textbf{Subcase}~\exists~e'~\textrm{s.t.}~e -> e'}{}
 
-\Pf{}{}{\textbf{Subcase}~\exists\Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}->\Config{\Names'}{\Store}{\Procs'}}{}
+        \Pf{}{}{\quad\textbf{Subsubcase}~\textrm{local}}{}
+        
+        \Pf{}{}{\qquad \Config{\Names}{\Store}{\Procs,p:E[e]} ->
+          \Config{\Names}{\Store}{\Procs,p:E[e']}}{By rule local}
+
+        \Pf{}{}{\quad\textbf{Subsubcase}~\textrm{fork}}{}
+
+        \Pf{}{}{\qquad e = E[\eFork{e_1}{e_2}],~e'= E[e_2],~\textrm{and}~q \not \in
+          \Names}{Suppose}
+        
+        \Pf{}{}{\qquad \Config{\Names}{\Store}{\Procs,p:E[\eFork{e_1}{e_2}]} ->
+          \Config{\Names,q}{\Store}{\Procs,q:e_1,p:E[e_2]}}{By rule fork}
+
+        \Pf{}{}{\quad\textbf{Subsubcase}~\textrm{nu}}{}
+
+        \Pf{}{}{\qquad e = E[\eNu{(x_1, x_2)}{e_1}],~e'= E[
+            [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e_1 ],~c_1,c_2 \not \in
+          \Names,~\textrm{and}~c_2 \leadsto c_1}{Suppose}
+        
+        \Pf{}{}{\qquad \Config{\Names}{\Store}{\Procs,p:[\eNu{(x_1, x_2)}{e_1}]} ->
+          \Config{\Names, c_1, c_2}{\Store}{\Procs, \ProcNm{p} \proc{E[
+                [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e_1 ]}}}{By rule nu}
+
+        \Pf{}{}{\quad\textbf{Subsubcase}~\textrm{rw}}{}
+
+        \Pf{}{}{\qquad e = E[ \eLetRd{\eChan{c_1}}{x}{e_1} ],~e'=E[
+            [\ePair{!v}{\eChan{c_1}}{1}/x]e_1],~\textrm{and}~c_2 \leadsto
+          c_1,~\textrm{or}}{}
+        \Pf{}{}{\qquad\quad e = E[ \eWr{v}{\eChan{c_2}}],~e'=E[ \eUnit ],~\textrm{and}~c_2 \leadsto
+          c_1}{}
+
+        \Pf{}{}{\qquad \textbf{Subsubsubcase}~e = E[ \eLetRd{\eChan{c_1}}{x}{e_1}
+          ],~e'=E[ [\ePair{!v}{\eChan{c_1}}{1}/x]e_1],~\textrm{and}~c_2 \leadsto c_1}{}
+
+        \Pf{}{}{\qquad\quad \exists~(\ProcNm{q} E[ \eWr{v}{\eChan{c_2}}]) \in \pi}{By $c_2 \leadsto c_1$}
+
+        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
+              \eLetRd{\eChan{c_1}}{x}{e_1} ]
+        -> \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
+            [\ePair{!v}{\eChan{c_1}}{1}/x]e_1]}}}{By rule rw}
+
+        \Pf{}{}{\qquad \textbf{Subsubsubcase}~e = E[ \eWr{v}{\eChan{c_2}}],~e'=E[
+            \eUnit ],~\textrm{and}~c_2 \leadsto c_1}{}
+
+        \Pf{}{}{\qquad\quad \exists~(\ProcNm{q} E[ \eLetRd{\eChan{c_1}}{x}{e_1} ]) \in \pi}{By $c_2 \leadsto c_1$}
+
+        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ \eWr{v}{\eChan{c_2}}]
+        -> \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
+            \eUnit ]}}}{By rule rw}
+
+        \Pf{}{}{\quad\textbf{Subsubcase}~\textrm{cw}}{}
+
+        \Pf{}{}{\qquad e = E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}],~e'=E[ [\ePair{!v}{c_i,
+          c_{3-i}}{1}/x_i]e_{i}],~c \leadsto c_i,~i \in \{1, 2\},~\textrm{or}}{}
+        \Pf{}{}{\qquad\quad e = E[ \eWr{v}{\eChan{c}}],~e'=E[ \eUnit ],~c \leadsto c_i,~i \in \{1, 2\}}{}
+
+        \Pf{}{}{\qquad \textbf{Subsubsubcase}~e =
+          E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}],~e'=E[ [\ePair{!v}{c_i,
+                c_{3-i}}{1}/x_i]e_{i}],}{}
+        \Pf{}{}{\qquad\qquad c \leadsto c_i,~i \in \{1, 2\}}{}
+
+        \Pf{}{}{\qquad\quad \exists~(\ProcNm{q} E[ \eWr{v}{\eChan{c}}]) \in \pi}{By $c \leadsto c_i$}
+
+        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p}
+            E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}] ->
+            \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ [\ePair{!v}{c_i,
+                    c_{3-i}}{1}/x_i]e_{i}]}}}{By rule cw}
+
+        \Pf{}{}{\qquad \textbf{Subsubsubcase}~e = E[ \eWr{v}{\eChan{c}}],~e'=E[
+            \eUnit ],~c \leadsto c_i,~i \in \{1, 2\}}{}
+
+        \Pf{}{}{\qquad\quad \exists~(\ProcNm{q} E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}]) \in
+          \pi}{By $c \leadsto c_i$}
+
+        \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ \eWr{v}{\eChan{c}}]
+        -> \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[
+            \eUnit ]}}}{By rule cw}        
+
+        \Pf{}{}{\textbf{Subcase}~\exists
+          \Config{\Names'}{\Store}{\Procs'}~\textrm{s.t.}~\Config{\Names}{\Store}{\Procs}
+          -> \Config{\Names'}{\Store}{\Procs'}}{}
+        
         \Pf{}{}{\quad\Config{\Names}{\Store}{\Procs,p:e} ->
           \Config{\Names'}{\Store}{\Procs',p:e}}{By rules local and congr}
-        \Pf{}{}{\textbf{Subcase}~\JCterm{\Config{\Names}{\Store}{p:e}}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
+
+\Pf{}{}{\textbf{Subcase}~\JCterm{\Config{\Names}{\Store}{p:e}}~\textrm{and}~\JCterm{\Config{\Names}{\Store}{\Procs}}}{}
         \Pf{}{}{\quad\Names_1 = \textrm{RdChans}(\Procs,p:e)~\textrm{and}~\Names_2 = \textrm{WrChans}(\Procs,p:e)}{Suppose}
         \Pf{}{}{\quad\{ (c_1,c_2) \mid c_1 \in \Names_1,
           c_2 \in \Names_2, c_2 \leadsto c_1\} =

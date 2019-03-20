@@ -75,19 +75,19 @@ the final outcome.~\todo{Explain extended syntax.}
 \begin{theorem}[Progress]
 If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$, then either $\JCterm{C}$ or there exists
 $C'$ such that $\JCred{C}{C'}$.
-\begin{proof}
-    By structural induction on the derivation of
-    $\JCty{\StTy}{\ChTy}{C}{\PrTy}$.
-\end{proof}
+%\begin{proof}
+%    By structural induction on the derivation of
+%    $\JCty{\StTy}{\ChTy}{C}{\PrTy}$.
+%\end{proof}
 \end{theorem}
 
 \begin{theorem}[Preservation]
 If $\JCty{\StTy}{\ChTy}{C}{\PrTy}$ and $\JCred{C}{C'}$, then there exists
 $\ChTy' \supseteq \ChTy$ and $\PrTy' \supseteq \PrTy$ such that
 $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
-\begin{proof}
-  By structural induction on the derivation of $\JCred{C}{C'}$.
-\end{proof}
+%\begin{proof}
+%  By structural induction on the derivation of $\JCred{C}{C'}$.
+%\end{proof}
 \end{theorem}
 
 \subsection{Confluence}
@@ -118,11 +118,11 @@ $C_1 = f(C_2)$,
 or
 \item there exists $C_3$ such that $\JCred{C_1}{C_3}$ and $\JCred{f(C_2)}{C_3}$.
 \end{enumerate}
-\begin{proof}
-   By induction on the pair of steps 
-   $\left< \JCred{C}{C_1}\right.$, 
-   $\left.\JCred{C}{C_2} \right>$.
-\end{proof}
+%\begin{proof}
+%   By induction on the pair of steps 
+%   $\left< \JCred{C}{C_1}\right.$, 
+%   $\left.\JCred{C}{C_2} \right>$.
+%\end{proof}
 \end{theorem}
 
 Intuitively, the sister configuration $C_2$ is either different
@@ -145,9 +145,9 @@ and $\JCterm{C_2}$
 then 
 there exists renaming function~$f$ 
 such that $C_1 = f(C_2)$.
-\begin{proof}
-    By induction on the reduction sequence pair
-  $\left< \JCredm{C}{C_1}\right.$, 
-  $\left.\JCredm{f(C)}{C_2} \right>$.
-\end{proof}
+%\begin{proof}
+%    By induction on the reduction sequence pair
+%  $\left< \JCredm{C}{C_1}\right.$, 
+%  $\left.\JCredm{f(C)}{C_2} \right>$.
+%\end{proof}
 \end{theorem}
