@@ -139,6 +139,10 @@ Consequently our $\F{com}$ functionality would need to be weakened by leaking so
 % and wrapper definitions (with ellipses). We also abbreviate the type signature
 % (e.g., $A_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
 % the Appendix.
+Note that for space and readability, we elide channel allocation/distribution
+with ellipses. We also abbreviate the type signature (e.g., $A_{\mathsf{z}}$ is
+the type of \textsf{z}). More details can be found in the Appendix.
+
 
 \begin{comment}
 \begin{itemize}[leftmargin=*]
@@ -503,30 +507,39 @@ $D_{\mc{I}}$, respectively) to solving some computationally hard problem
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}
 
-The cryptography community has recently identified subtleties in defining UC ideal functionalities that relate to reentrancy and the scheduling of concurrent code, such that
-several functionalities in the literature are ambiguous as ITMs~\cite{camenisch2016universal}.
-Although concerning, these issues have no cryptographic flavor, but instead are better addressed from the PL viewpoint.
-To illustrate, consider the following fragment of (untyped) ILC syntax, which allows an adversary to control the delivery schedule of messages from $P$ to $Q$ (an asynchronous channel):
+Camenisch et al.~\cite{camenisch2016universal} recently identified subtleties in
+defining UC ideal functionalities (related to reentrancy and the scheduling of
+concurrent code) such that several functionalities in the literature are
+ambiguous as ITMs. Although concerning, these issues have no cryptographic
+flavor, and so they are better addressed from a PL standpoint.  To illustrate,
+consider the following (untypeable) ILC process \textsf{reentrantF}, which
+allows an adversary $\mc{A}$ to control the delivery schedule of messages from
+$P$ to $Q$ (i.e., an asynchronous channel):
+\lstinputlisting[style=myilc]{listings/loop.ilc}
 \lstinputlisting[style=myilc]{listings/reentrant.ilc}
-After receiving input from party $P$, it
-notifies the adversary, then forks a background thread to wait for \textsf{Ok} before
-delivering the message.
-This introduces a race condition: suppose input message $m_1$ is sent by $P$, but then the adversary $\mathcal A$, before sending \textsf{Ok}, instead returns control to $\mathcal Z$, which passes $P$ a second input $m_2$. Now there are two queued messages. Which one gets delivered when the adversary sends \textsf{Ok}?
 
-To resolve this paradox, notice that this fragment is untypeable in ILC.
-The race condition occurs because the read channel \textsf{frA} is duplicated.
-Since \textsf{frA} is linear in the function body, the function would not be typeable as intuitionistic as required by the \textsf{loop} construct.
-Camenisch et al.~\cite{camenisch2016universal} identified several strategies for resolving this problem in UC, which in turn are expressible ILC. One approach is to make the process explicitly sequential, such that the arrival of a second message before the first is delivered causes execution to get stuck:
+After receiving input from party $P$, it notifies the adversary, then forks a
+background thread to wait for \textsf{Ok} before delivering the message.  This
+introduces a race condition: Suppose input message $m_1$ is sent by $P$, but
+then $\mc{A}$, before sending \textsf{Ok}, instead returns control to $\mathcal
+Z$, which passes $P$ a second input $m_2$. Now there are two queued
+messages. Which one gets delivered when the adversary sends \textsf{Ok}?
+
+To resolve this issue, notice that \textsf{reentrantF} is untypeable in ILC.
+The race condition occurs because the read channel \textsf{frA} is duplicated
+(appears free in an intuitionistic function).  Camenisch et
+al.~\cite{camenisch2016universal} identified several strategies for resolving
+this problem in UC, which in turn are expressible ILC. One approach is to make
+the process explicitly sequential, such that the arrival of a second message
+before the first is delivered causes execution to get stuck:
 \lstinputlisting[style=myilc]{listings/reentrant-seq.ilc}
-Alternatively, we may discard such messages arriving out of order, returning them to sender; we express this in ILC using the external choice operator,
+Alternatively, we may discard such messages arriving out of order, returning
+them to sender; we express this in ILC using the external choice operator:
 \lstinputlisting[style=myilc]{listings/reentrant-ignore.ilc}
 
-Still, the observation of Camenisch~\etal~\cite{camenisch2016universal} is that
-neither of the above two solutions are completely satisfactory. The reentrancy
-problem arises mainly due to the exchange of metamessages between processes, and
-so the most compelling solution is to restrict how the environment/adversary
-respond to these metamessages. While we leave modeling this solution as future
-work, ILC provides the ideal starting point---restrictions on metamessages could
+The most compelling strategy is to restrict how the environment/adversary
+respond to certain ``metamessages.'' Modeling this solution is left as future
+work, but ILC provides an ideal starting point---restrictions on metamessages can
 be expressed by behavior refinements, i.e., on receiving a message on channel A,
 the process P must not send a message on its other channels until sending a
-message on B. \todo{Check, need more explanation of problem earlier}
+message on B.
