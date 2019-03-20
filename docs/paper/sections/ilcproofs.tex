@@ -215,9 +215,11 @@ $C'$ such that $\JCred{C}{C'}$.
         \Pf{}{}{\textbf{Subcase}~\exists~e'~\textrm{s.t.}~e -> e'}{}
 
         \Pf{}{}{\quad\textbf{Subsubcase}~\textrm{local}}{}
+
+        \Pf{}{}{\qquad e = E[e_1]~\textrm{and}~e'= E[e_2]}{Suppose}        
         
-        \Pf{}{}{\qquad \Config{\Names}{\Store}{\Procs,p:E[e]} ->
-          \Config{\Names}{\Store}{\Procs,p:E[e']}}{By rule local}
+        \Pf{}{}{\qquad \Config{\Names}{\Store}{\Procs,p:E[e_1]} ->
+          \Config{\Names}{\Store}{\Procs,p:E[e_2]}}{By rule local}
 
         \Pf{}{}{\quad\textbf{Subsubcase}~\textrm{fork}}{}
 
@@ -316,8 +318,6 @@ $C'$ such that $\JCred{C}{C'}$.
           \varnothing}{}
         \Pf{}{}{\qquad \exists~c_2 \leadsto c_1~\textrm{s.t.}~c_1 \in \Sigma_1,
           c_2 \in \Sigma_2}{Above}
-
-        \Pf{}{}{\qquad\Lterm{e}}{By inversion on Cterm}
         
         \Pf{}{}{\qquad\ProcNm{p} v~\textrm{or}~\ProcNm{p} E[ \eLetRd{\eChan{c_1}}{x}{e}
           ]~\textrm{or}~\ProcNm{p}
