@@ -25,7 +25,7 @@ let execUC z (p,q) f a k !r crupt =
 	$\xFork$ fwd frA toF
       else
 	p toZ frZ toF frF toP frP k bits in       
-    let (rf,ra,rp,rq,rz) = splitBits5 r in
+    let (rf,ra,rp,rq,rz) = splitBits r in
     $\ \ \ \,$ f crupt !wF2P rP2F !wF2Q rQ2F !wF2A rA2F k !rf
     $\xFork$ a crupt !wA2Z rZ2A !wA2F rF2A !wA2P rP2A !wA2Q rQ2A k !ra
     $\xFork$ wrapperP p crupt !wP2Z rZ2P !wP2F rF2P !wP2A rA2P !wP2Q rQ2P k !rp
