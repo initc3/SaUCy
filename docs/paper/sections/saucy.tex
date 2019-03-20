@@ -89,37 +89,56 @@ What remains is to define a notion of indistinguishability for value distributio
 \caption{\textsf{execUC}.}
 \label{fig:execUC-diagram}
 \end{wrapfigure}
-\todo{``Too short to be useful'' needs more intuition, execUC abbreviation.} The
-implementation of SaUCy is centered around a definition of UC execution model in
-ILC.  For the most part, this just involves connecting channels as illustrated
-in Figure~\ref{fig:execUC-diagram}. For demonstration, we only show the case of
-two-party protocols (\`{a} la Simplified UC~\cite{canetti2015simpler}), which
-will suffice for our example of instantiating universally composable
-commitments.  Also, we will only aim to show the case of \emph{static}
-corruptions, in which parties are corrupted at the onset of the execution. This
-is in contrast to \emph{adaptive} corruptions, in which parties can be corrupted
-as the execution proceeds.
-\lstinputlisting[style=myilc]{listings/simp-suc.ilc}
+% \todo{``Too short to be useful'' needs more intuition, execUC abbreviation.}
+% Two goals of this subsection:
+% - give forward examples of main UC concepts to code in our example
+% - identify and explain the simplifications in SaUCy
+The
+implementation of SaUCy is centered around a definition of the UC execution model in
+ILC.
+The full code listing of \textsf{execUC} is given in the Appendix.
+For the most part, \textsf{execUC} just involves connecting channels as illustrated
+in Figure~\ref{fig:execUC-diagram}.
+The execution is centered on the environment, in the sense that the environment first gets the write token, and the experiment concludes when the environment returns a value.
+Otherwise, we explain some of the main modeling choices and the consequences they have for the ILC implementation.
 
-\noindent The function \textsf{execUC} is parameterized by an environment \textsf{z},
-protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a}, an ideal
-functionality \textsf{f}, a security parameter \textsf{k}, a random bitstring
-\textsf{r}, and a static corruption model \textsf{crupt :: Crupt}. The
-\textsf{Crupt} datatype is defined below, with its variants denoting the cases
-when party \textsf{p} is corrupt, party \textsf{q} is corrupt, or no party is
-corrupt, respectively.
-\lstinputlisting[style=myilc]{listings/crupt.ilc}
-\endgroup
-\noindent Some careful programming is needed to handle the cases when the
-adversary sends messages on behalf of corrupted parties: For each party there
-are two cases: corrupt (the adversary controls them), or honest (they follow the
-protocol). This logic is captured by an ILC \textsf{wrapper} function (shown in
-the Appendix).
+To start with, we make several simplifications to standard UC, for example focusing on the special case of two-party protocols (\`{a} la Simplified UC~\cite{canetti2015simpler}).
+We also only aim to show the case of \emph{static}
+corruptions, in which the corrupt parties are determined at the onset.
+This is achieved by parameterizing the entire experiment by a value \textsf{crupt :: Crupt}.
+For a more general model with adaptive corruptions, \texttt{execUC} would need accept requests from the environment to add to the \textsf{crupt} list as execution proceeds.
 
-Note that for space and readability, we elide channel allocation/distribution
-and wrapper definitions (with ellipses). We also abbreviate the type signature
-(e.g., $A_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
-the Appendix.
+Our corruption model is Byzantine, meaning the adversary gets to exert complete control over the corrupted parties.
+% There is an alternative way to implement this. Since the ideal functionality is also aware of \textsf{crupt}, it can present an ``adversary interface,'' and accept commands on behalf of honest parties anyway.
+For each party, depending on the value of \textsf{crupt}, either we run a copy of the honest protocol, or connect the channels to the adversary. This is abstracted in the function \textsf{corruptOrNot}.
+%are two cases: corrupt (the adversary controls them), or honest (they follow the
+%protocol). This logic is captured by an ILC \textsf{wrapper} function (shown in
+%the Appendix).
+
+%\lstinputlisting[style=myilc]{listings/simp-suc.ilc}
+% data Crupt = CruptP | CruptQ | CruptNone
+% which
+% will suffice for our example of instantiating universally composable
+% commitments.
+
+We also model a strong form of communication channels between the parties: $P$ and $Q$ are connected by a pair of raw ILC channels. Communication over these channels happens immediately, without activating the adversary or leaking even the existence of the message.
+In a more realistic model, the parties would only be able to communicate over a network channel modeled as a functionality, $\F{smt}$ or $\F{syn}$ \todo{refer to UC paper}.
+Consequently our $\F{com}$ functionality would need to be weakened by leaking some (model-specific) information about the message to the adversary.
+
+%\noindent The function \textsf{execUC} is parameterized by an environment \textsf{z},
+%protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a}, an ideal
+%functionality \textsf{f}, a security parameter \textsf{k}, a random bitstring
+%\textsf{r}, and a static corruption model \textsf{crupt :: Crupt}.
+%\textsf{Crupt} datatype is defined below, with its variants denoting the cases
+%when party \textsf{p} is corrupt, party \textsf{q} is corrupt, or no party is
+%corrupt, respectively.
+%\lstinputlisting[style=myilc]{listings/crupt.ilc}
+%\endgroup
+
+% Note that for space and readability, we elide channel allocation/distribution
+% and wrapper definitions (with ellipses). We also abbreviate the type signature
+% (e.g., $A_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
+% the Appendix.
 
 \begin{comment}
 \begin{itemize}[leftmargin=*]
