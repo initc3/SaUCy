@@ -272,8 +272,9 @@ world and vice versa.
 \noindent We remark this definition goes against the UC convention of requiring
 simulation in one direction only. One direction is preferable intuitively
 because it should be fine if the protocol is even more secure than its
-specification. Requiring both could be too restrictive, although we have not
-encountered such problem in our examples.  In any case, the benefit is this
+specification.
+This does not pose any problem for our commitment example; however, a protocol that leaks even less information than the ideal functionality requires could be difficult to prove under this definition.
+In any case, the benefit is this
 simplifies the polynomial time notion: vacuous protocols are clearly ruled out
 by the top condition, and both simulations are only required to be \keyword{PPT}
 if $\mc{Z}$ is.
@@ -437,23 +438,46 @@ foundation; developing them in ILC is important future work. \todo{Comparison}
 
 \subsection{Instantiating UC Commitments}
 \label{subsec:example}
-We now walk through an instantiation of UC commitments (\`{a} la Canetti and
-Fischlin~\cite{canetti2001commitments}).  Instantiation proofs in SaUCy follow a
+We next walk through an instantiation of UC commitments (\`{a} la Canetti and
+Fischlin~\cite{canetti2001commitments}).
+Instantiation proofs in SaUCy follow a
 standard rhythm. We start with a security definition as an ideal functionality
 (such as $\Func_{\textsc{com}}$), give the protocol, construct a simulator, and
 finally complete the relational analysis on paper.
 
-UC commitments can be instantiated with standard cryptographic assumptions, for
-example the RSA problem~\cite{lindell2014introduction}.  They also rely on a
-``trusted setup,'' or common reference string (CRS), which are essentially
+Commitments are one of the simplest UC primitives, though as a case study this serves two main purposes.
+First, the proof demonstrates several representative UC techniques~\cite{lindell2017simulate}, in particular the simulator makes use of a ``trusted setup'' and extracts inputs from a corrupt sender.
+%The simulator's proof obligation is to use this trapdoor to simulate and extract.
+Second, the protocol makes use of computational primitives and thus requires a reduction step in the proof, which can go through because of ILC's confluent design.
+
+% Commitments are a simple functionality.
+% We choose this because it illustrates a common pattern.
+% The simulator makes use of trapdoor information contained within a CRS "trusted setup". The simulator uses this to extract (which enforces the soundness property) or to simulate a fake proof (which corresponds to the zero knowledge property).
+% In this way commitments exercise the main path of a constructive proof.
+
+% The second reason is that the commitment protocol relies on a computational primitive, pseudorandom function, and hence the relational analysis requires a computational reduction, would be difficult to express directly.
+
+% TODO: Need a transition into the next paragraph
+\paragraph{Extending ILC with cryptographic primitives.}
+The UC commitment protocol makes use of a cryptographic primitive, namely a trapdoor pseudorandom generator. This is provided by extending ILC with new syntactic forms, along with the their static and dynamic semantics, as given in the Appendix.
+While in a symbolic setting we would instantiate these with algebraic data, in ILC we give the stepping rule in terms of an arbitrary pseudorandom function family, i.e. the actual computational definition.
+This can be instantiated concretely for execution (e.g., with an RSA-based function) or treated abstractly in the metatheory when we get to the reduction step of the proof.
+% The proof includes a computational reduction step, which in turn relies on the confluence property of ILC.
+% \footnote{Concretely, a suitable pseudorandom function. }
+% This is just a computational form, they do not involve reading or writing from channels.
+
+The commitment protocol also relies on a
+``trusted setup,'' or common reference string (CRS), which is essentially
 public parameters generated ahead of time. The common reference string is
 modeled as an ideal functionality $\Func_{\textsc{crs}}$ (implemented
 in ILC as \textsf{fCrs} in the Appendix).
 
-\paragraph{Extending ILC with cryptographic primitives.}
-UC Commitments are realized from cryptographic primitives, such as trapdoor
-permutations, which require extensions to ILC. The new syntactic forms are given
-with their static and dynamic semantics in the Appendix.
+%UC commitments can be instantiated with standard cryptographic assumptions, for
+%example the RSA problem~\cite{lindell2014introduction}.
+
+% The semantics are not idealized, as in symbolic models, but instead are replaced with a pseudorandom function family.
+% mention trapdoor
+
 %Figure~\ref{fig:extended-ilc}.
 
 \paragraph{Commitment Protocol.}
@@ -467,7 +491,7 @@ To commit to $b$, the committer produces a string $y$ that is the result of appl
 The intuitive explanation why this is hiding is that without the trapdoor, it is difficult to tell whether a random $4k$-bit string is in the range of either PRG. To open the commitment, the committer simply reveals the preimage and the receiver checks which of the two cases applies. The intuitive explanation why this is binding is that it is difficult to find a pair $y,y\oplus\sigma$ that are respectively in the range of both PRGs.
 
 \paragraph{Defining the simulator.}
-The UC proof consists of two simulators, one for the ideal world and one for the real world.
+The SaUCy proof consists of two simulators, one for the ideal world and one for the real world.
 The ideal world simulator is ported directly from the UC literature~\cite{canetti2001commitments}. The non-standard real world simulator, given in the Appendix, is trivial, but necessary because our protocol emulation definition requires simulation in both directions.
 
 The ideal world simulator generates its own ``fake'' CRS for which it stores the
