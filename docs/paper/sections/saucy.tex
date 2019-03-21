@@ -460,7 +460,7 @@ Second, the protocol makes use of computational primitives and thus requires a r
 \paragraph{Extending ILC with cryptographic primitives.}
 The UC commitment protocol makes use of a cryptographic primitive, namely a trapdoor pseudorandom generator. This is provided by extending ILC with new syntactic forms, along with the their static and dynamic semantics, as given in the Appendix.
 While in a symbolic setting we would instantiate these with algebraic data, in ILC we give the stepping rule in terms of an arbitrary pseudorandom function family, i.e. the actual computational definition.
-This can be instantiated concretely for execution (e.g., with an RSA-based function) and treated abstractly in the metatheory when we get to the reduction step in the proof.
+This can be instantiated concretely for execution (e.g., with an RSA-based function) or treated abstractly in the metatheory when we get to the reduction step of the proof.
 % The proof includes a computational reduction step, which in turn relies on the confluence property of ILC.
 % \footnote{Concretely, a suitable pseudorandom function. }
 % This is just a computational form, they do not involve reading or writing from channels.
