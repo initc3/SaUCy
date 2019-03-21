@@ -195,15 +195,17 @@ automata, which are amenable to automated reasoning.  In contrast with RSIM, ILC
 is intended to be the basis for a convenient and flexible programming language
 to which we can easily port existing UC pseudocode.
 
-The IITMs model~\cite{kusters2006simulation,camenischiuc} aims to provide a
-simple basis for UC.  However, our approach is simpler, for example our type
+The IITMs model~\cite{kusters2006simulation,camenischiuc} also aims to provide a
+simple basis for UC.  However, we believe approach is simpler. For example, our type
 system subsumes their notion of \emph{compatibility} and \emph{connectability},
 we avoid the distinctions of \emph{net}, \emph{external}, \emph{io}, etc. tapes,
-and give a concrete programming model.
+and we give a concrete programming model.
 %As one example, RSIM defines a particular
 %communication model in terms of ports and schedulers, whereas in our
 %case the scheduler 
 %ILC leads to a programming language, more flexible and convenient to work with.
+
+\todo{Abstract cryptography~\cite{maurer2011abstract}.}
 
 Simplified universal composability (SUC)~\cite{canetti2015simpler} gives a
 simpler and restricted variant of the UC framework. The main difference from
@@ -211,8 +213,6 @@ vanilla UC~\cite{canetti2001universally} is that the set of parties is fixed,
 which greatly simplifies polynomial time reasoning and protocol composition
 while maintaining the same strong properties.  We follow this in our
 \textsf{execUC} implementation.
-
-\todo{Abstract cryptography~\cite{maurer2011abstract}.}
 
 \begin{comment}
 \begin{enumerate}[leftmargin=*]

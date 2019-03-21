@@ -117,7 +117,7 @@ model, processes pass control from one to another each time a message is sent so
 that \emph{exactly one process is active at any given time}, and, moreover,
 \emph{the order of activations is fully determined}. This gives ITMs a clear
 computational interpretation, which is necessary for the above proofs (in
-particular, cryptographic reductions) to go through. \todo{Check}
+particular, cryptographic reductions) to go through.
 
 \begin{comment}
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of
@@ -225,10 +225,9 @@ which roughly prevents an attacker from using one commitment to derive another r
 %% \end{itemize}
 %
 All of these properties are captured at once using an ideal functionality. In
-Figure~\ref{func:com} (left), we show $\Func_{\textsc{com}}$, an ideal
-functionality for one-time bit commitment, as it would appear in the
-cryptography literature~\cite{canetti2001commitments}.\footnote{\todo{Only
-    realizable in perfect model of communication.}} The functionality simply
+Figure~\ref{func:com} (left), we show a simplified ideal functionality for
+one-time bit commitment, $\Func_{\textsc{com}}$, as it would appear in the
+cryptography literature~\cite{canetti2001commitments}. The functionality simply
 waits for the committer $P$ to commit to some bit $b$, notifies the receiver $Q$
 that it has taken place, and reveals $b$ to $Q$ upon request by $P$. Notice that
 $Q$ never actually sees a commitment to $b$ (only the (\textsf{Receipt})

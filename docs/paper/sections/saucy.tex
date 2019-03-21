@@ -22,12 +22,12 @@ ways:
 \subsection{Probabilistic Polynomial Time in ILC}
 \label{subsec:ppt}
 The goal of cryptography reduction is to relate every bad event in a protocol to
-a \emph{probabilistic polynomial time computation} that solves a hard problem.
-The ILC typing rules do not guarantee termination, let alone polynomial time
-normalization, so we must tackle this in metatheory.  Also, since ILC is
-effectively deterministic (confluent), we will need to express random choices
-some other way.  To meet these needs, we define a judgment about ILC terms that
-take a security parameter and a stream of random bits.
+a \emph{probabilistic polynomial time computation} that solves a computationally
+hard problem.  The ILC typing rules do not guarantee termination, let alone
+polynomial time normalization, so we must tackle this in metatheory.  Also,
+since ILC is effectively deterministic (confluent), we will need to express
+random choices some other way.  To meet these needs, we define a judgment about
+ILC terms that take a security parameter and a stream of random bits.
 
 \begin{definition}[Polynomial time normalization]
   \begin{comment}
@@ -47,16 +47,19 @@ take a security parameter and a stream of random bits.
   \begin{mathpar}
     \Infer{ppt}
     {\wrtok ~; \emptyctxt |- e : \tyNat {->}_{\wm}\ [\tyBit] -> \mathsf{a}\\
-    \forall~k \in \tyNat.~\forall~r \in {[\tyBit]}^{(\emph{poly}(k))}.~e~k~r~{->}^{\emph{poly}(k)}~v}
+    \forall~k \in \tyNat.~\forall~r \in {[\tyBit]}^{\textnormal{poly}(k)}.~e~k~r~{->}^{\textnormal{poly}(k)}~v}
     {\keyword{PPT}~e }
   \end{mathpar}
   This says that if for all security parameters $k$ and all bitstrings
   $r$ (of length polynomial in $k$) the term $e~k~r$ (when
   fully applied to any arguments) normalizes to a value $v$ in
-  $\emph{poly}(k)$ steps.\footnote{Note that the normalization must be
-    polynomial time for all $\mathsf{r}$, though we could have defined it to
-    hold with high probability.}
+  $\textnormal{poly}(k)$ steps.
+%  \footnote{Note that the normalization must be
+%    polynomial time for all $\mathsf{r}$, though we could have defined it to
+%    hold with high probability.}
 \end{definition}
+
+\todo{Other polynomial time notions.}
 
 \begin{definition}[Value Distribution] 
   Because processes are confluent, we know that if $e~k~r~{->}^{*}~v$,
@@ -96,26 +99,30 @@ What remains is to define a notion of indistinguishability for value distributio
 % Two goals of this subsection:
 % - give forward examples of main UC concepts to code in our example
 % - identify and explain the simplifications in SaUCy
-The
-implementation of SaUCy is centered around a definition of the UC execution model in
-ILC.
-The full code listing of \textsf{execUC} is given in the Appendix.
-For the most part, \textsf{execUC} just involves connecting channels as illustrated
-in Figure~\ref{fig:execUC-diagram}.
-The execution is centered on the environment, in the sense that the environment first gets the write token, and the experiment concludes when the environment returns a value.
-Apart from this, we explain some of the main modeling choices and the consequences they have for the ILC implementation.
+The implementation of SaUCy is centered around a definition of the UC execution
+model in ILC.  The full code listing of \textsf{execUC} is given in the
+Appendix.  For the most part, \textsf{execUC} just involves connecting channels
+as illustrated in Figure~\ref{fig:execUC-diagram}.  The execution is centered on
+the environment $\mc{Z}$, in the sense that $\mc{Z}$ first gets the write token,
+and the experiment concludes when $\mc{Z}$ returns a value.  Apart from this, we
+explain some of our main modeling choices and the consequences they have for the
+ILC implementation.
 
-To start with, we make several simplifications to standard UC, for example focusing on the special case of two-party protocols (\`{a} la Simplified UC~\cite{canetti2015simpler}).
-We also only aim to show the case of \emph{static}
-corruptions, in which the corrupt parties are determined at the onset.
-This is achieved by parameterizing the entire experiment by a value \textsf{crupt :: Crupt}.
-For a more general model with adaptive corruptions, \textsf{execUC} would need
-to accept requests from the environment to add to the \textsf{crupt} list as the
-execution proceeds.
+To start with, we make several simplifications to standard UC, for example
+focusing on the special case of two-party protocols (\`{a} la Simplified
+UC~\cite{canetti2015simpler}).  We also only aim to show the case of
+\emph{static} corruptions, in which the corrupt parties are determined at the
+onset.  This is achieved by parameterizing the entire experiment by a value
+\textsf{crupt :: Crupt}.  For a more general model with adaptive corruptions,
+\textsf{execUC} would need to accept requests from the environment to add to the
+\textsf{crupt} list as the execution proceeds.
 
-Our corruption model is Byzantine, meaning the adversary gets to exert complete control over the corrupted parties.
+Our corruption model is Byzantine, meaning the adversary gets to exert complete
+control over the corrupted parties.
 % There is an alternative way to implement this. Since the ideal functionality is also aware of \textsf{crupt}, it can present an ``adversary interface,'' and accept commands on behalf of honest parties anyway.
-For each party, depending on the value of \textsf{crupt}, either we run a copy of the honest protocol, or connect the channels to the adversary. This is abstracted in the function \textsf{corruptOrNot}.
+For each party, depending on the value of \textsf{crupt}, either we run a copy
+of the honest protocol, or connect the channels to the adversary. This is
+implemented in the function \textsf{corruptOrNot}.
 %are two cases: corrupt (the adversary controls them), or honest (they follow the
 %protocol). This logic is captured by an ILC \textsf{wrapper} function (shown in
 %the Appendix).
@@ -126,9 +133,14 @@ For each party, depending on the value of \textsf{crupt}, either we run a copy o
 % will suffice for our example of instantiating universally composable
 % commitments.
 
-We also model a strong form of communication channels between the parties: $P$ and $Q$ are connected by a pair of raw ILC channels. Communication over these channels happens immediately, without activating the adversary or leaking even the existence of the message.
-In a more realistic model, the parties would only be able to communicate over a network channel modeled as a functionality, $\F{\textsc{smt}}$ or $\F{\textsc{syn}}$~\cite{canetti2001universally}.
-Consequently our $\F{com}$ functionality would need to be weakened by leaking some (model-specific) information about the message to the adversary.
+We also model a strong form of communication channels between the parties: $P$
+and $Q$ are connected by a pair of raw ILC channels. Communication over these
+channels happens immediately, without activating the adversary or leaking even
+the existence of the message.  In a more realistic model, the parties would only
+be able to communicate over a network channel modeled as a functionality,
+$\F{\textsc{smt}}$ or $\F{\textsc{syn}}$~\cite{canetti2001universally}.
+Consequently our $\F{\textsc{com}}$ functionality would need to be weakened by
+leaking some (model-specific) information about the message to the adversary.
 
 %\noindent The function \textsf{execUC} is parameterized by an environment \textsf{z},
 %protocol parties \textsf{p} and \textsf{q}, an adversary \textsf{a}, an ideal
@@ -432,8 +444,9 @@ finally complete the relational analysis on paper.
 UC commitments can be instantiated with standard cryptographic assumptions, for
 example the RSA problem~\cite{lindell2014introduction}.  They also rely on a
 ``trusted setup,'' or common reference string (CRS), which are essentially
-public parameters generated ahead of time (modeled as an ideal functionality
-$\Func_{\textsc{crs}}$).
+public parameters generated ahead of time. The common reference string is
+modeled as an ideal functionality $\Func_{\textsc{crs}}$ (implemented
+in ILC as \textsf{fCrs} in the Appendix).
 
 \paragraph{Extending ILC with cryptographic primitives.}
 UC Commitments are realized from cryptographic primitives, such as trapdoor
@@ -443,10 +456,11 @@ with their static and dynamic semantics in the Appendix.
 
 \paragraph{Commitment Protocol.}
 We implement the commitment protocol by Canetti and
-Fischlin~\cite{canetti2001commitments} in ILC:
+Fischlin~\cite{canetti2001commitments} in ILC as follows:
 \lstinputlisting[style=myilc]{listings/ucc.ilc}
-To briefly summarize what is going on: The setup CRS functionality (given in the
-Appendix) samples a random string $\sigma$ and two trapdoor pseudorandom generators (prgs $\mathsf{pk}_0, \mathsf{pk}_1$).
+To briefly summarize what is going on: The setup CRS functionality \textsf{fCom}
+samples a random string $\sigma$ and two trapdoor pseudorandom generators (prgs
+$\mathsf{pk}_0, \mathsf{pk}_1$). \todo{?}
 To commit to $b$, the committer produces a string $y$ that is the result of applying one or the other of the prgs, and if $b=1$ additionally applying xor with $\sigma$.
 The intuitive explanation why this is hiding is that without the trapdoor, it is difficult to tell whether a random $4k$-bit string is in the range of either prg. To open the commitment, the committer simply reveals the preimage and the receiver checks which of the two cases applies. The intuitive explanation why this is binding is that it is difficult to find a pair $y,y\oplus\sigma$ that are respectively in the range of both prgs.
 
@@ -457,7 +471,7 @@ The ideal world simulator is ported directly from the UC literature~\cite{canett
 The ideal world simulator generates its own ``fake'' CRS for which it stores the
 trapdoors. The string $\sigma$ is not truly random, but instead is the result of
 combining two evaluations of the prgs. In Figure~\ref{fig:sim-short} we show the
-case that the committer P is corrupt (the other case is in the Appendix). The
+case that the committer $P$ is corrupt (the other case is in the Appendix). The
 simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit}' ~ y)$;
 in the real world, this is relayed by the dummy adversary to Q, who outputs
 \textsf{Committed} back to the environment. Hence to achieve the same effect in
@@ -506,7 +520,7 @@ defining the probability ensembles $D_{\mc{R}}$, $D_{\mc{R}}'$, and
 $D_{\mc{I}}$, without which we would not be able to reduce the problem of
 distinguishing the real world and ideal world ensembles ($D_{\mc{R}}$ and
 $D_{\mc{I}}$, respectively) to solving some computationally hard problem
-(breaking the pseudorandomness of \textsf{tdp}).
+(breaking the pseudorandomness of the trapdoor permutation\todo{?}).
 
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}
