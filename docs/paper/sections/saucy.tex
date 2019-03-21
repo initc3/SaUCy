@@ -490,7 +490,7 @@ To commit to $b$, the committer produces a string $y$ that is the result of appl
 The intuitive explanation why this is hiding is that without the trapdoor, it is difficult to tell whether a random $4k$-bit string is in the range of either PRG. To open the commitment, the committer simply reveals the preimage and the receiver checks which of the two cases applies. The intuitive explanation why this is binding is that it is difficult to find a pair $y,y\oplus\sigma$ that are respectively in the range of both PRGs.
 
 \paragraph{Defining the simulator.}
-The UC proof consists of two simulators, one for the ideal world and one for the real world.
+The SaUCy proof consists of two simulators, one for the ideal world and one for the real world.
 The ideal world simulator is ported directly from the UC literature~\cite{canetti2001commitments}. The non-standard real world simulator, given in the Appendix, is trivial, but necessary because our protocol emulation definition requires simulation in both directions.
 
 The ideal world simulator generates its own ``fake'' CRS for which it stores the
