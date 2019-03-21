@@ -23,12 +23,12 @@ Types in ILC (written $U$, $V$) are bifurcated into intuitionistic types
 (written $A$, $B$) and affine types (written $X$, $Y$). A subset of the
 intuitionistic types are sendable types (written $S$, $T$), i.e., the types of
 values that can be sent over channels. This restriction ensures that channels
-model network channels, which send only data. \todo{Better motivate sendable
-types?} The sendable types include unit ($\tyUnit$), products
-($\tyProdd{}{S}{T}$), sums ($\tySum{S}{}{T}$). The intuitionistic types include
-the sendable types, write channel types ($\tyWr{S}$), products
-($\tyProdd{}{A}{B}$), sums ($\tySum{A}{}{B}$), arrows ($\tyArr{A}{\infty}{U}$ or
-simply $A -> U$), and special write arrows ($\tyArr{A}{\wm}{U}$).
+model network channels, which send only data. The sendable types include unit
+($\tyUnit$), products ($\tyProdd{}{S}{T}$), sums ($\tySum{S}{}{T}$). The
+intuitionistic types include the sendable types, write channel types
+($\tyWr{S}$), products ($\tyProdd{}{A}{B}$), sums ($\tySum{A}{}{B}$), arrows
+($\tyArr{A}{\infty}{U}$ or simply $A -> U$), and special write arrows
+($\tyArr{A}{\wm}{U}$).
 
 The affine types include bang types ($\tyBang{A}$), read channel types
 ($\tyRd{S}$), products ($\tyTensor{X}{Y}$), sums ($\tyOplus{X}{Y}$), and arrows
