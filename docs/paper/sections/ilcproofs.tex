@@ -29,15 +29,15 @@ of single-process typing, given in \Secref{subsec:types}:\smallskip
 }
 {\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\emptyProcs}}{\cdot}}
 \and
-%\Infer{cons}
-%{ \ChTy; \emptyctxt; \emptyctxt |- e : U\\
-%\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
-%{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
-%\and
 \Infer{cons}
-{\Delta; \Gamma |- e : U\\
+{ \ChTy; \emptyctxt; \emptyctxt |- e : U\\
 \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
 { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
+%\and
+%\Infer{cons}
+%{\Delta; \Gamma |- e : U\\
+%\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
+%{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
 \end{mathpar}
 
 \subsection{Progress}
@@ -200,7 +200,7 @@ $C'$ such that $\JCred{C}{C'}$.
     \item[] \textbf{Case}
       \begin{mathpar}
       \Infer{cons}
-      {\Delta; \Gamma |- e : U\\
+      { \ChTy; \emptyctxt; \emptyctxt |- e : U\\
       \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
       { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
       \end{mathpar}
