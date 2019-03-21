@@ -272,8 +272,9 @@ world and vice versa.
 \noindent We remark this definition goes against the UC convention of requiring
 simulation in one direction only. One direction is preferable intuitively
 because it should be fine if the protocol is even more secure than its
-specification. Requiring both could be too restrictive, although we have not
-encountered such problem in our examples.  In any case, the benefit is this
+specification.
+This does not pose any problem for our commitment example; however, a protocol that leaks even less information than the ideal functionality requires could be difficult to prove under this definition.
+In any case, the benefit is this
 simplifies the polynomial time notion: vacuous protocols are clearly ruled out
 by the top condition, and both simulations are only required to be \keyword{PPT}
 if $\mc{Z}$ is.
