@@ -246,9 +246,11 @@ context---roughly that the total size of its outgoing messages is bounded by a
 polynomial, and that its running time is bounded if its total received input
 size is bounded~\cite{hofheinz2015gnuc}. This notion is composable as desired,
 although its use requires additional distinctions between ``invited'' and
-``uninvited'' messages, which seems cluttered. RSIM makes analogous
-choices~\cite{backes2007reactive}. While we think these could be equally applied to
-ILC, our goal here is to provide a simpler notion.
+``uninvited'' messages. RSIM makes analogous
+choices~\cite{backes2007reactive}. While we think these could be equally applied
+to ILC, for example, through refinement types \`{a} la the RCF
+calculus~\cite{bugliesi2015affine}, our goal here is to provide a simpler
+notion.
 
 We define protocol emulation by requiring a simulation in both directions, so
 every behavior in the ideal world must correspond to a behavior in the real
