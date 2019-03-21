@@ -579,9 +579,9 @@ Alternatively, we may discard such messages arriving out of order, returning
 them to sender; we express this in ILC using the external choice operator:
 \lstinputlisting[style=myilc]{listings/reentrant-ignore.ilc}
 
-The most compelling strategy is to restrict how the environment/adversary
-respond to certain ``metamessages.'' Modeling this solution is left as future
-work, but ILC provides an ideal starting point---restrictions on metamessages can
-be expressed by behavior refinements, i.e., on receiving a message on channel A,
-the process P must not send a message on its other channels until sending a
-message on B.
+Ultimately, Camenisch\etal propose a different strategy, which is to restrict
+how the environment/adversary respond to certain ``metamessages.''
+\todo{Elaborate.} Modeling this solution is left as future work, but ILC
+provides an ideal starting point---restrictions on metamessages could be expressed
+by behavior refinements, i.e., on receiving a message on channel A, the process
+P must not send a message on its other channels until sending a message on B.
