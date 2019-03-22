@@ -18,8 +18,9 @@ identifier (process name or channel name) to its associated type:
 
 %\subsection{Configuration Typings}
 
-Using the syntax above, we define configuration typing as a straightforward extension
-of single-process typing, given in \Secref{subsec:types}:\smallskip
+Using the syntax above, we define configuration typing as a straightforward
+extension of single-process typing, given in
+Section~\ref{subsec:types}:\smallskip
 
 \judgbox{\JCty{\StTy}{\ChTy}{C}{\PrTy}}{Configuration $C$ is well-typed.}
 \begin{mathpar}
@@ -111,11 +112,10 @@ In other words, $\JCterm{C}$ holds when either:
 \begin{enumerate}
  \item $C$ is fully normal: Every process in~$C$ is normalized (consists of a
    value).
- \item $C$ is (at least partially) deadlocked: 
-   Some (possibly empty) portion of $C$ is normal, and there exists one or more
-   reading processes in $C$, or there exists one or more writing processes in
-   $C$, however, no read-write channel pair~$(c_1,c_2)$ exists such that $c_2 \leadsto
-   c_1$.
+ \item $C$ is (at least partially) deadlocked: Some (possibly empty) portion of
+   $C$ is normal, and there exists one or more reading processes in $C$, or
+   there exists one or more writing processes in $C$, however, no reader-writer
+   process pair exists for a common channel.
 \end{enumerate}
 
 %\begin{lemma}[Non-progress]

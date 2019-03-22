@@ -39,11 +39,10 @@ Informally, $\JCterm{C}$ holds when:
 \begin{enumerate}[leftmargin=*]
  \item $C$ is fully normal: Every process in~$C$ is normalized (consists of a
    value).
- \item $C$ is (at least partially) deadlocked: 
-   Some (possibly empty) portion of $C$ is normal, and there exists one or more
-   reading processes in $C$, or there exists one or more writing processes in
-   $C$, however, no read-write channel pair~$(c_1,c_2)$ exists such that $c_2 \leadsto
-   c_1$.
+ \item $C$ is (at least partially) deadlocked: Some (possibly empty) portion of
+   $C$ is normal, and there exists one or more reading processes in $C$, or
+   there exists one or more writing processes in $C$, however, no reader-writer
+   process pair exists for a common channel.
 \end{enumerate}
 
 %
@@ -103,7 +102,7 @@ the final outcome. ILC's type system enforces confluence
 %property: the communication effects of every reduction are
 %\emph{unique}, 
 up to nondeterministic naming choices in 
-rules \Rule{nu} and \Rule{fork} (\Figref{fig:semantics}).
+rules \Rule{nu} and \Rule{fork} (Figure~\ref{fig:semantics}).
 %
 To account for different choices of dynamically-named channels and processes, respectively, 
 we state and prove confluence
