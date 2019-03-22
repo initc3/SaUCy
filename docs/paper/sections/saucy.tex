@@ -30,29 +30,15 @@ random choices some other way.  To meet these needs, we define a judgment about
 ILC terms that take a security parameter and a stream of random bits.
 
 \begin{definition}[Polynomial time normalization]
-  \begin{comment}
-  Consider a term \textsf{e} with the type
-  \[\emptyctxt ;\emptyctxt |- \mathsf{e} : \tyBang{\tyNat} \multimap \tyBang{[\tyBit]}~{\multimap}_m~\tyBang{\tyBit},\]
-  where the first argument is a security parameter and the second argument is a
-  random bitstring.\footnote{The definition of polynomial time normalization
-    applies similarly to a term \textsf{e} of type $\tyBit$ where the security
-    parameter and random bitstring are free variables in \textsf{e}.} We say
-  that \textsf{e} is polynomial time normalizable, written \textsf{poly(e)}, if
-  for all security parameters \textsf{k} and all random bitstrings \textsf{r},
-  where the length of \textsf{r} is polynomial in the security parameter
-  \textsf{k}, the term \textsf{e k r} normalizes to a value \textsf{v} in a
-  polynomial (in \textsf{k}) number of steps.
-  \end{comment}
   The judgment that $e$ is polynomial time normalizable, written $\mathsf{PPT}~e$, is defined as follows:
   \begin{mathpar}
     \Infer{ppt}
-    {\wrtok ~; \emptyctxt |- e : \tyNat {->}_{\wm}\ [\tyBit] -> \mathsf{a}\\
+    {\emptyctxt; \emptyctxt |- e : \tyNat {->}\ [\tyBit] -> \tyBit\\
     \forall~k \in \tyNat.~\forall~r \in {[\tyBit]}^{\textnormal{poly}(k)}.~e~k~r~{->}^{\textnormal{poly}(k)}~v}
     {\keyword{PPT}~e }
   \end{mathpar}
-  This says that if for all security parameters $k$ and all bitstrings
-  $r$ (of length polynomial in $k$) the term $e~k~r$ (when
-  fully applied to any arguments) normalizes to a value $v$ in
+  This says that if for all security parameters $k$ and all bitstrings $r$ (of
+  length polynomial in $k$) the term $e~k~r$ normalizes to a value $v$ in
   $\textnormal{poly}(k)$ steps.
 %  \footnote{Note that the normalization must be
 %    polynomial time for all $\mathsf{r}$, though we could have defined it to

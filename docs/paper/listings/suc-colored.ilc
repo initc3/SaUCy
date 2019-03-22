@@ -8,8 +8,8 @@ let corruptOrNot p k bits iscrupt ${\color{red}\sf toZ}$ ${\color{Green}\sf toF}
       else
         p k bits toZ toF toQ frZ frF frQ
 
-execUC :: $\forall$ ... . $\tyNat\ {->}_{\wm}\ [\tyBit] -> \keyword{Crupt} -> A_{\mathsf{z}} -> A_{\mathsf{p}} \times A_{\mathsf{q}} -> A_{\mathsf{f}} -> A_{\mathsf{a}} -> \tyBit$ 
-let execUC k r crupt z (p,q) f a =
+execUC :: $A_{\mathsf{z}} {->}_{\wm}~A_{\mathsf{p}} \times A_{\mathsf{q}}~-> A_{\mathsf{f}} -> A_{\mathsf{a}}  -> \keyword{Crupt} -> \tyNat\ ->\ [\tyBit] -> \tyBit$ 
+let execUC z (p,q) f a crupt k r =
   $\nu$ (${\color{red}\sf rZ2P}$, ${\color{red}\sf wZ2P}$), (${\color{red}\sf rP2Z}$, ${\color{red}\sf wP2Z}$)
   , (${\color{red}\sf rZ2Q}$, ${\color{red}\sf wZ2Q}$), (${\color{red}\sf rQ2Z}$, ${\color{red}\sf wQ2Z}$)
   , (${\color{Green}\sf rP2F}$, ${\color{Green}\sf wP2F}$), (${\color{Green}\sf rF2P}$, ${\color{Green}\sf wF2P}$)
