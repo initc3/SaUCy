@@ -111,14 +111,13 @@ world with $\mc{F}$, the idealized version of $\pi$.
 %for $\mc{F}$ any protocol that emulates it without fear of something going
 %wrong.
 
-The UC framework is defined atop the underlying computational model of
+Finally, the UC framework is defined atop the underlying computational model of
 interactive Turing machines (ITMs). In the ITM model, processes pass control
 from one to another each time a message is sent so that \emph{exactly one
   process is active at any given time}, and, moreover, \emph{the order of
   activations is fully determined}. This gives ITMs a clear computational
 interpretation, which is necessary for the above proofs (in particular,
-cryptographic reductions) to go through.\footnote{\todo{In other models, this is
-the same.}}
+cryptographic reductions) to go through.
 
 \begin{comment}
 Figure~\ref{fig:uc-experiment} illustrates the UC experiment in the context of

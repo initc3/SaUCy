@@ -34,58 +34,58 @@
 \and
 %
 \Infer{iapp}
-{\Delta_1; \Gamma |- e_2 : A\\
+{\Delta_1; \Gamma |- e_2 : A\\\\
 \Delta_2; \Gamma |- e_1 : \tyArr{A}{\infty}{U}}
 {\Delta_1, \Delta_2; \Gamma |- \eApp{e_1}{e_2}{\infty} : U}
 %
 \and
 %
 \Infer{wapp}
-{\Delta_1; \Gamma |- e_2 : A\\
+{\Delta_1; \Gamma |- e_2 : A\\\\
 \Delta_2; \Gamma |- e_1 : \tyArr{A}{\wm}{U}}
 {\Delta_1,\Delta_2,\wrtok; \Gamma |- \eApp{e_1}{e_2}{\wm} : U}
 %
 \and
 %
 \Infer{aapp}
-{\Delta_1; \Gamma |- e_2 : X\\
+{\Delta_1; \Gamma |- e_2 : X\\\\
 \Delta_2; \Gamma |- e_1 : \tyArr{X}{1}{U}}
 {\Delta_1, \Delta_2; \Gamma |- \eApp{e_1}{e_2}{1} : U}
 %
 \and
 %
-\Infer{ifix}
-{\emptyctxt; \Gamma,x : \tyArr{A}{\infty}{U} |- e : \tyArr{A}{\infty}{U}}
-{\Delta; \Gamma |- \eFixx{\infty}{x}{e} : \tyArr{A}{\infty}{U}}
-%
-\and
-%
-\Infer{wfix}
-{\emptyctxt; \Gamma,x : \tyArr{A}{\wm}{U} |- e : \tyArr{A}{\wm}{U}}
-{\Delta; \Gamma |- \eFixx{\wm}{x}{e} : \tyArr{A}{\wm}{U}}
-%
-\and
-%
-\Infer{afix}
-{x:\tyArr{X}{1}{U}; \Gamma |- e : \tyArr{X}{1}{U}}
-{\Delta; \Gamma |- \eFixx{1}{x}{e} : \tyArr{X}{1}{U}}
-%
-\and
-%
-\Infer{ilet}
-{\Delta_1; \Gamma |- e_1 : A\\\\
-\Delta_2; \Gamma, x:A |- e_2 : U}
-{\Delta_1, \Delta_2; \Gamma |- \eLett{\infty}{x}{e_1}{e_2} : U}
-%
-\and
-%
-\Infer{alet}
-{\Delta_1; \Gamma |- e_1 : X\\\\
-\Delta_2,x:X; \Gamma |- e_2 : U}
-{\Delta_1, \Delta_2; \Gamma |- \eLett{1}{x}{e_1}{e_2} : U}
-%
-\and
-%
+%\Infer{ifix}
+%{\emptyctxt; \Gamma,x : \tyArr{A}{\infty}{U} |- e : \tyArr{A}{\infty}{U}}
+%{\Delta; \Gamma |- \eFixx{\infty}{x}{e} : \tyArr{A}{\infty}{U}}
+%%
+%\and
+%%
+%\Infer{wfix}
+%{\emptyctxt; \Gamma,x : \tyArr{A}{\wm}{U} |- e : \tyArr{A}{\wm}{U}}
+%{\Delta; \Gamma |- \eFixx{\wm}{x}{e} : \tyArr{A}{\wm}{U}}
+%%
+%\and
+%%
+%\Infer{afix}
+%{x:\tyArr{X}{1}{U}; \Gamma |- e : \tyArr{X}{1}{U}}
+%{\Delta; \Gamma |- \eFixx{1}{x}{e} : \tyArr{X}{1}{U}}
+%%
+%\and
+%%
+%\Infer{ilet}
+%{\Delta_1; \Gamma |- e_1 : A\\\\
+%\Delta_2; \Gamma, x:A |- e_2 : U}
+%{\Delta_1, \Delta_2; \Gamma |- \eLett{\infty}{x}{e_1}{e_2} : U}
+%%
+%\and
+%%
+%\Infer{alet}
+%{\Delta_1; \Gamma |- e_1 : X\\\\
+%\Delta_2,x:X; \Gamma |- e_2 : U}
+%{\Delta_1, \Delta_2; \Gamma |- \eLett{1}{x}{e_1}{e_2} : U}
+%%
+%\and
+%%
 \Infer{bang}
 {\Delta ; \Gamma |- e : A}
 {\Delta ; \Gamma |- \eBang{e} : \tyBang{A}}

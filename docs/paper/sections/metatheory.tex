@@ -24,7 +24,6 @@ These theorems include \emph{full confluence}:
 Any two full reductions of a configuration yield a pair of equivalent configurations
 (isomorphic, up to a renaming of nondeterministic name choices).
 %
-The full proofs of type soundness and confluence can be found in the Appendix.
 
 \subsection{Type Soundness}
 
@@ -32,7 +31,9 @@ We prove type soundness of ILC via mostly-standard notions of progress
 and preservation.
 %
 To state these theorems, we follow the usual recipe, except that we give a
-special definition of program termination that permits deadlocks.
+special definition of program termination that permits deadlocks. (Recall that
+ILC is concerned with enforcing \emph{confluence} as its central metatheoretic
+property, \emph{not} deadlock freedom.)
 %
 Informally, $\JCterm{C}$ holds when:
 \begin{enumerate}[leftmargin=*]
@@ -45,12 +46,15 @@ Informally, $\JCterm{C}$ holds when:
    c_1$.
 \end{enumerate}
 
-Recall that ILC is concerned with enforcing \emph{confluence} as its central
-metatheoretic property, \emph{not} deadlock freedom.
 %
-Confluence implies, among other things, that the order of reduction steps is
-inconsequential, and that no process scheduling choices will affect
-the final outcome.~\todo{Explain extended syntax.}
+
+We also extend the type system given in Section~\ref{subsec:types} with typing
+rules for configurations, including typing contexts for channels $\ChTy$ and
+process pool typings $\PrTy$. These details, along with the proofs of progress
+and preservation, can be found in the Appendix.
+%
+%We omit these details here for space reasons, 
+%and we refer the interested reader to the Appendix.
 %
 %(TODO: As discussed in ~\Secref{sec:related}, deadlock freedom is an
 %orthogonal concern that a future variation of ILC could enforce).
@@ -92,7 +96,9 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 
 \subsection{Confluence}
 
-ILC's type system enforces confluence 
+Confluence implies, among other things, that the order of reduction steps is
+inconsequential, and that no process scheduling choices will affect
+the final outcome. ILC's type system enforces confluence 
 %by enforcing a stronger
 %property: the communication effects of every reduction are
 %\emph{unique}, 
@@ -151,3 +157,5 @@ such that $C_1 = f(C_2)$.
 %  $\left.\JCredm{f(C)}{C_2} \right>$.
 %\end{proof}
 \end{theorem}
+
+The proofs of these statements can be found in the Appendix.

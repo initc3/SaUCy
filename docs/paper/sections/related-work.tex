@@ -195,20 +195,22 @@ automata, which are amenable to automated reasoning.  In contrast with RSIM, ILC
 is intended to be the basis for a convenient and flexible programming language
 to which we can easily port existing UC pseudocode.
 
-The IITMs model~\cite{kusters2006simulation,camenischiuc} also aims to provide a
-simple basis for UC.  However, we believe approach is simpler. For example, our type
-system subsumes their notion of \emph{compatibility} and \emph{connectability},
-we avoid the distinctions of \emph{net}, \emph{external}, \emph{io}, etc. tapes,
-and we give a concrete programming model.
+The IITMs model~\cite{kusters2006simulation,camenischiuc} aims to provide a
+simpler notion of polynomial time. Our work is orthogonal, but comes with the
+benefit of flexibility. For example, our type system subsumes their notion of
+\emph{compatibility} and \emph{connectability}, we avoid the distinctions of
+\emph{net}, \emph{external}, \emph{io}, etc. tapes, and we give a concrete
+programming model. \todo{Rewrite.}
 %As one example, RSIM defines a particular
 %communication model in terms of ports and schedulers, whereas in our
 %case the scheduler 
 %ILC leads to a programming language, more flexible and convenient to work with.
 
 The abstract cryptography framework~\cite{maurer2011abstract} advocates a
-top-down approach: Rather than starting with low-level concepts (e.g.,
-computational models and complexity notions), the idea is to define concepts
-such as reduction and composition at the highest level abstraction. \todo{}
+top-down approach: developing theory at an abstract level (ignoring low level
+details such as computational models and complexity notions) to simplify
+definitions. While we stick to a bottom-up approach, we aim to simplify UC via
+PL formalisms.
 
 Simplified universal composability (SUC)~\cite{canetti2015simpler} gives a
 simpler and restricted variant of the UC framework. The main difference from
