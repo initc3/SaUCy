@@ -101,7 +101,10 @@ duplicated. It turns out that most affine functions we write \emph{are} affinely
 closed, and so such a function $f : X \multimap U$ can be made into an intuitionistic
 function $g : A -> X \multimap U$ by adding a leading intuitionistic argument.
 
-\todo{bang, gnab}
+The bang rule turns an intuitionistically typed expression $e:A$ into an
+affinely typed expression $e:\tyBang{A}$. Dually, the gnab rule turns an
+affinely typed expression $e:\tyBang{A}$ into an intuitionistically typed
+expression $e:A$.
 
 The typing rules for fork, write, and read were covered in
 Section~\ref{subsec:type-tour}, so this leaves channel restriction (nu) and
