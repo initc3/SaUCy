@@ -8,7 +8,7 @@ identifier (process name or channel name) to its associated type:
     Process pool typings
     %(maps process names to their types)
     & $\PrTy$
-    &$\bnfas$& $\emptyctxt \bnfalt \PrTy,\ProcNm{p} A \bnfalt \PrTy,\ProcNm{p} X$
+    &$\bnfas$& $\emptyctxt \bnfalt \PrTy,\ProcNm{p} U$
     \\
     Channel pool typings
     %(maps channel names to their types)
@@ -718,7 +718,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
         \tyTensor{\tyBang{S}}{\tyRd{S}}}{By rule apair}
 
       \Pf{\ChTy_2;\wrtok;\emptyctxt}{|-}{[\ePair{!v}{\eChan{c_1}}{1}/x]e : U'}{By
-          Lemma~\ref{lem:sub-rd}}
+          Lemma~\ref{lem:sub-aff}}
 
       \Pf{\ChTy_1,\ChTy_2}{|-}{E_1[ [\ePair{!v}{\eChan{c_1}}{1}/x]e] : U}{By
         Lemma~\ref{lem:replacement}}
@@ -797,7 +797,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
         \tyTensor{\tyBang{S}}{\tyTensor{\tyRd{S}}{\tyRd{T}}}}{By rule apair}
 
       \Pf{\ChTy_2;\wrtok;\emptyctxt}{|-}{\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1
-      : U'}{By Lemma~\ref{lem:sub-rd}}
+      : U'}{By Lemma~\ref{lem:sub-aff}}
 
       \Pf{\ChTy_1,\ChTy_2}{|-}{E_1[
           [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_1]e_1] : U}{By
@@ -847,7 +847,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
         \tyTensor{\tyBang{T}}{\tyTensor{\tyRd{T}}{\tyRd{S}}}}{By rule apair}
 
       \Pf{\ChTy_2,\wrtok;\emptyctxt}{|-}{\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2
-      : U'}{By Lemma~\ref{lem:sub-rd}}
+      : U'}{By Lemma~\ref{lem:sub-aff}}
 
       \Pf{\ChTy_1,\ChTy_2}{|-}{E_1[ [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2] : U}{By
         Lemma~\ref{lem:replacement}}
