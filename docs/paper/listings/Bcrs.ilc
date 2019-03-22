@@ -1,5 +1,5 @@
-fCrs :: $\forall$ a ... . $\tyNat -> [\tyBit] -> \keyword{Crupt} -> \cdots$ a
-let fCrs k bits crupt toP toQ toA frP frQ frA =
+bCrs :: $\forall$ a ... . $\tyNat -> [\tyBit] -> \keyword{Crupt} -> \cdots$ a
+let bCrs k bits crupt toP toQ toA frP frQ frA =
   let ($\mathsf{r}_0$, bits) = sample k bits in
   let ($\mathsf{r}_1$, bits) = sample k bits in    
   let $\mathsf{pk}_0$ = kgen k $\mathsf{r}_0$ in

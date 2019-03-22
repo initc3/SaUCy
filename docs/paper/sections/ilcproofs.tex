@@ -495,26 +495,24 @@ show that typing of terms is preserved by substitution.
 \begin{lemma}[Substitution (Read Channel)]\label{lem:sub-rd}
   If
   \begin{enumerate}
-  \item $\ChTy_1; \Delta_1, x : \tyRd{S}; \Gamma_1 |- e : U$,
-  \item $\ChTy_2; \Delta_2; \Gamma_2 |- c : \tyRd{S}$,
-  \item $\ChTy_1,\ChTy_2 ; \Delta_1,\Delta_2 ; \Gamma_1,\Gamma_2$ is defined,
+  \item $\ChTy; \Delta, x : \tyRd{S}; \Gamma |- e : U$,
+  \item $\ChTy,c:\tyRd{S}; \Delta ; \Gamma$ is defined,
   \end{enumerate}
-  then $\ChTy_1,\ChTy_2; \Delta_1,\Delta_2; \Gamma_1,\Gamma_2 |- [c/x]e : U$.
+  then $\ChTy,c:\tyRd{S}; \Delta; \Gamma |- [c/x]e : U$.
   \begin{proof}
-    By structural induction on the derivation of $\ChTy_1; \Delta_1, x : \tyRd{S}; \Gamma_1 |- e : U$.
+    By structural induction on the derivation of $\ChTy; \Delta, x : \tyRd{S}; \Gamma |- e : U$.
   \end{proof}
 \end{lemma}
 
 \begin{lemma}[Substitution (Write Channel)]\label{lem:sub-wr}
   If
   \begin{enumerate}
-  \item $\ChTy_1; \Delta_1; \Gamma_1, x : \tyWr{S} |- e : U$,
-  \item $\ChTy_2; \Delta_2; \Gamma_2 |- c : \tyWr{S}$,
-  \item $\ChTy_1,\ChTy_2 ; \Delta_1,\Delta_2 ; \Gamma_1,\Gamma_2$ is defined,
+  \item $\ChTy; \Delta; \Gamma, x : \tyWr{S} |- e : U$,
+  \item $\ChTy,c:\tyWr{S},\ChTy ; \Delta ; \Gamma2$ is defined,
   \end{enumerate}
-  then $\ChTy_1,\ChTy_2; \Delta_1,\Delta_2; \Gamma_1,\Gamma_2 |- [c/x]e : U$.
+  then $\ChTy,c:\tyWr{S}; \Delta; \Gamma |- [c/x]e : U$.
   \begin{proof}
-    By structural induction on the derivation of $\ChTy_1; \Delta_1; \Gamma_1, x : \tyWr{S} |- e : U$.
+    By structural induction on the derivation of $\ChTy; \Delta; \Gamma, x : \tyWr{S} |- e : U$.
   \end{proof}
 \end{lemma}
 
