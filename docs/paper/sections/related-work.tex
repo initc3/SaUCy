@@ -171,7 +171,7 @@ tooling.
 %CertiCrypt, which permits more automation and shorter proof
 %scripts. \todo{Details on their imperative language?}
 
-\subsection{Variations of the UC Framework}
+\subsection{Variations of Universal Composability}
 \label{subsec:uc-variants}
 
 A number of models for universally composability have been proposed in the
@@ -195,12 +195,19 @@ automata, which are amenable to automated reasoning.  In contrast with RSIM, ILC
 is intended to be the basis for a convenient and flexible programming language
 to which we can easily port existing UC pseudocode.
 
-The IITMs model~\cite{kusters2006simulation,camenischiuc} aims to provide a
-simpler notion of polynomial time. Our work is orthogonal, but comes with the
-benefit of flexibility. For example, our type system subsumes their notion of
-\emph{compatibility} and \emph{connectability}, we avoid the distinctions of
-\emph{net}, \emph{external}, \emph{io}, etc. tapes, and we give a concrete
-programming model. \todo{Rewrite.}
+Models based on inexhaustible interactive Turing machines
+(IITMs)~\cite{kusters2006simulation,camenischiuc} aim to address drawbacks of UC
+models for which polynomial time ITMs can be ``exhausted'' (by having other
+machines send useless messages, forcing them to halt). In turn, models with
+exhaustible ITMs are less expressive. Because IITMs maintain the
+``single-threaded' execution semantics of ITMs, ILC can be used to build a
+concrete programming model for IITM-based frameworks as well.
+
+%Our work is orthogonal, but comes with the benefit of
+%flexibility. For example, our type system subsumes their notion of
+%\emph{compatibility} and \emph{connectability}, we avoid the distinctions of
+%\emph{net}, \emph{external}, \emph{io}, etc. tapes, and we give a concrete
+%programming model. \todo{Rewrite.}
 %As one example, RSIM defines a particular
 %communication model in terms of ports and schedulers, whereas in our
 %case the scheduler 
