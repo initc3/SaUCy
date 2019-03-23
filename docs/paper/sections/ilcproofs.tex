@@ -34,11 +34,6 @@ Section~\ref{subsec:types}:\smallskip
 { \ChTy |- e : U\\
 \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
 { \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
-%\and
-%\Infer{cons}
-%{\Delta; \Gamma |- e : U\\
-%\JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs}}{\PrTy}}
-%{ \JCty{\StTy}{\ChTy}{\Config{\Names}{\Store}{\Procs,p:e}}{\PrTy,(p:U)}}
 \end{mathpar}
 
 \subsection{Progress}
@@ -216,7 +211,7 @@ $C'$ such that $\JCred{C}{C'}$.
 
         \Pf{}{}{\quad\textbf{Subsubcase}~\textrm{local}}{}
 
-        \Pf{}{}{\qquad e = E[e_1]~\textrm{and}~e'= E[e_2]}{Suppose}        
+        \Pf{}{}{\qquad e = E[e_1]~\textrm{and}~e'= E[e_2]}{Suppose}
         
         \Pf{}{}{\qquad \Config{\Names}{\Store}{\Procs,p:E[e_1]} ->
           \Config{\Names}{\Store}{\Procs,p:E[e_2]}}{By rule local}
@@ -508,7 +503,7 @@ show that typing of terms is preserved by substitution.
   If
   \begin{enumerate}
   \item $\ChTy; \Delta; \Gamma, x : \tyWr{S} |- e : U$,
-  \item $\ChTy,c:\tyWr{S},\ChTy ; \Delta ; \Gamma2$ is defined,
+  \item $\ChTy,c:\tyWr{S},\ChTy ; \Delta ; \Gamma$ is defined,
   \end{enumerate}
   then $\ChTy,c:\tyWr{S}; \Delta; \Gamma |- [c/x]e : U$.
   \begin{proof}

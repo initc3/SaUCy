@@ -7,12 +7,12 @@
     \bnfalt \eHc{e}$
   \end{grammar}
   
-  \judgbox{\Delta ; \Gamma |- e : A |> m}{~~Under $\Delta$ and $\Gamma$, expression~$e$ has
-  intuitionistic type $A$ and mode $m$.}
+  \judgbox{\Delta ; \Gamma |- e : U}{~~Under affine context $\Delta$ and intuitionistic context
+    $\Gamma$, expression~$e$ has intuitionistic type $U$.}
   \begin{mathpar}
   \Infer{kgen}
   {\Delta ; \Gamma |- e : [\tyBit]}
-  {\Delta; \Gamma |- \eKGen{e}: ([\tyBit], [\tyBit])}
+  {\Delta; \Gamma |- \eKGen{e}: \tyProdd{}{[\tyBit]}{[\tyBit]}}
   %
   \and
   %
@@ -35,26 +35,25 @@
   {\Delta; \Gamma |- \eHc{e}: \tyBit}
   \end{mathpar}
   
-  \judgbox{\Store_1 ; e_1 ---> \Store_2 ; e_2}{~~Under store $\Store_1$,
-    expression~$e_1$ reduces to~$\Store_2 ; e_2$.}
+  \judgbox{e_1 ---> e_2}{~~Expression~$e_1$ reduces to~$e_2$.}
   \begin{mathpar}
   \Infer{kgen}
-  {\keyword{\textbf{Gen}}(v_r) = (v_{pk}, v_{td}) \\ v_{pk}, v_{td} \in \{0,1\}^k}
-  { \Store ; \eKGen{v_r} ---> \Store ; (v_{pk}, v_{td})}
+  {\keyword{\textbf{Gen}}(v_r) = {(v_{pk}, v_{td})}_{\infty} \\ v_{pk}, v_{td} \in \{0,1\}^k}
+  {\eKGen{v_r} ---> {(v_{pk}, v_{td})}_{\infty}}
   \and
   \Infer{tdp}
   {\mathbf{f}({v_{pk}},v_{in}) = v_{out} \\ \mathbf{f} \colon \{0,1\}^k -> \{0,1\}^k -> \{0,1\}^k}
-  { \Store ; \eTdp{v_{pk}}{v_{in}} ---> \Store ; v_{out} }
+  {\eTdp{v_{pk}}{v_{in}} ---> v_{out} }
   \and
   \Infer{inv}
-  {\mathbf{Inv}((v_{pk}, v_{td}), v_{in}) = v_{out} \\ \mathbf{Inv} \colon \{0,1\}^k \times
+  {\mathbf{Inv}({(v_{pk}, v_{td})}_{\infty}, v_{in}) = v_{out} \\ \mathbf{Inv} \colon \{0,1\}^k \times
     \{0,1\}^k -> \{0,1\}^k -> \{0,1\}^k}
-  { \Store ; \eInv{(v_{pk}, v_{td})}{v_{in}} ---> \Store ; v_{out} }
+  {\eInv{{(v_{pk}, v_{td})}_{\infty}}{v_{in}} ---> v_{out} }
   \and
   \Infer{hc}
   {\keyword{\textbf{B}}(v_{pk}) = v \\ \keyword{\textbf{B}} \colon \{0,1\}^k
     -> \{0, 1\}}
-  { \Store ; \eHc{v_{pk}} ---> \Store ; v}
+  {\eHc{v_{pk}} ---> v}
   \end{mathpar}
   \caption{Extending ILC with trapdoor permutations. The semantics are
     parameterized by a security parameter $k$.}

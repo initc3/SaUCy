@@ -62,7 +62,8 @@ concurrency:
     process to continue as either $e_3$ or $e_4$ based on some initial read
     event on the read channel evaluations of $e_1$ and $e_2$. The value read
     over the channel and the two read channels are rebound in a 3-tuple as $x_1$
-    in $e_3$ or $x_2$ in $e_4$.
+    in $e_3$ or $x_2$ in $e_4$. Here, we show only binary choice, but it can be
+    generalized to the $n$-ary case.
   \item \emph{Fork:} $\eFork{e_1}{e_2}$ forks a child process $e_1$ and
     continues as $e_2$.
 \end{itemize}
