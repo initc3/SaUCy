@@ -478,7 +478,7 @@ The intuitive explanation why this is hiding is that without the trapdoor, it is
 
 \paragraph{Defining the simulator.}
 The SaUCy proof consists of two simulators, one for the ideal world and one for the real world.
-The ideal world simulator is ported directly from the UC literature~\cite{canetti2001commitments}. The non-standard real world simulator, given in the Appendix, is trivial, but necessary because our protocol emulation definition requires simulation in both directions.
+The ideal world simulator is ported directly from the UC literature~\cite{canetti2001commitments}. The nonstandard real world simulator, given in the Appendix, is trivial, but necessary because our protocol emulation definition requires simulation in both directions.
 
 The ideal world simulator generates its own ``fake'' CRS for which it stores the
 trapdoors. The string $\sigma$ is not truly random, but instead is the result of
@@ -566,7 +566,7 @@ Alternatively, we may discard such messages arriving out of order, returning
 them to sender; we express this in ILC using the external choice operator:
 \lstinputlisting[style=myilc]{listings/reentrant-ignore.ilc}
 
-Ultimately, Camenisch\etal propose a different strategy, which is to restrict
+Ultimately, Camenisch \etal propose a different strategy, which is to restrict
 how the environment/adversary respond to certain ``metamessages.''
 \todo{Elaborate.} Modeling this solution is left as future work, but ILC
 provides an ideal starting point---restrictions on metamessages could be expressed
