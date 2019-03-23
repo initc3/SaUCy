@@ -97,8 +97,8 @@ C_2' \equiv C_2
 \Infer{cw}
 { c \leadsto c_i \\ i \in \{1, 2\} }
 { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{v}{\eChan{c}}]} --->
-  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{c_i,
-          c_{3-i}}{1}/x_i]e_{i}], \ProcNm{q} E_2[ \eUnit ]} }
+  \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{c_1,
+          c_2}{1}/x_i]e_{i}], \ProcNm{q} E_2[ \eUnit ]} }
 \end{mathpar}
 
 \judgbox{e_1 ---> e_2}{~~Expression~$e_1$ reduces to~$e_2$.}

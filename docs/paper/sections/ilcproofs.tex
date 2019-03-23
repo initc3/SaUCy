@@ -268,21 +268,21 @@ $C'$ such that $\JCred{C}{C'}$.
 
         \Pf{}{}{\quad\textbf{Subsubcase}~\textrm{cw}}{}
 
-        \Pf{}{}{\qquad e = E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}],~e'=E[ [\ePair{!v}{c_i,
-          c_{3-i}}{1}/x_i]e_{i}],~c \leadsto c_i,~i \in \{1, 2\},~\textrm{or}}{}
+        \Pf{}{}{\qquad e = E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}],~e'=E[ [\ePair{!v}{c_1,
+          c_2}{1}/x_i]e_{i}],~c \leadsto c_i,~i \in \{1, 2\},~\textrm{or}}{}
         \Pf{}{}{\qquad\quad e = E[ \eWr{v}{\eChan{c}}],~e'=E[ \eUnit ],~c \leadsto c_i,~i \in \{1, 2\}}{}
 
         \Pf{}{}{\qquad \textbf{Subsubsubcase}~e =
-          E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}],~e'=E[ [\ePair{!v}{c_i,
-                c_{3-i}}{1}/x_i]e_{i}],}{}
+          E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}],~e'=E[ [\ePair{!v}{c_1,
+                c_2}{1}/x_i]e_{i}],}{}
         \Pf{}{}{\qquad\qquad c \leadsto c_i,~i \in \{1, 2\}}{}
 
         \Pf{}{}{\qquad\quad \exists~(\ProcNm{q} E[ \eWr{v}{\eChan{c}}]) \in \pi}{By $c \leadsto c_i$}
 
         \Pf{}{}{\qquad\quad\Config{\Names}{\Store}{\Procs, \ProcNm{p}
             E[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}] ->
-            \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ [\ePair{!v}{c_i,
-                    c_{3-i}}{1}/x_i]e_{i}]}}}{By rule cw}
+            \Config{\Names}{\Store}{\Procs, \ProcNm{p} E[ [\ePair{!v}{c_1,
+                    c_2}{1}/x_i]e_{i}]}}}{By rule cw}
 
         \Pf{}{}{\qquad \textbf{Subsubsubcase}~e = E[ \eWr{v}{\eChan{c}}],~e'=E[
             \eUnit ],~c \leadsto c_i,~i \in \{1, 2\}}{}
@@ -756,8 +756,8 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
     \Infer{cw}
     { c \leadsto c_i \\ i \in \{1, 2\} }
     { \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[\eChoicee{c_1}{x_1}{e_1}{c_2}{x_2}{e_2}], \ProcNm{q} E_2[ \eWr{v}{\eChan{c}}]} --->
-      \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{c_i,
-              c_{3-i}}{1}/x_i]e_{i}], \ProcNm{q} E_2[ \eUnit ]} }      
+      \Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[ [\ePair{!v}{c_1,
+              c_2}{1}/x_i]e_{i}], \ProcNm{q} E_2[ \eUnit ]} }      
     \end{mathpar}
     \begin{llproof}
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store_1}{\Procs, \ProcNm{p}
@@ -781,7 +781,7 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{}{}{c \leadsto c_1~\text{s.t.}~\ChTy(c) =
         \tyWr{S},~\ChTy(c_1) = \tyRd{S},~\ChTy(c_2) = \tyRd{T}~\textrm{or}}{}
       \Pf{}{}{\quad c \leadsto c_2~\text{s.t.}~\ChTy(c) =
-        \tyWr{T},~\ChTy(c_2) = \tyRd{T},~\ChTy(c_1) = \tyRd{S}}{Given}
+        \tyWr{T},~\ChTy(c_1) = \tyRd{S},~\ChTy(c_2) = \tyRd{T}}{Given}
 
       \Pf{}{}{\textbf{Subcase}~c \leadsto c_1}{}      
 
@@ -836,29 +836,29 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{}{}{\textbf{Subcase}~c \leadsto c_2}{}      
 
       \Pf{\ChTy_2;\Delta;\emptyctxt}{|-}{e : U'~\textrm{where}~\Delta = \wrtok, x_2 :
-        \tyTensor{\tyBang{T}}{\tyTensor{\tyRd{T}}{\tyRd{S}}}}{By inversion on
+        \tyTensor{\tyBang{T}}{\tyTensor{\tyRd{S}}{\tyRd{T}}}}{By inversion on
         choice}
 
       \Pf{}{|-}{v : T}{By inversion on wr}
 
       \Pf{}{|-}{\eBang{v} : \tyBang{T}}{By rule bang}
 
-      \Pf{}{|-}{\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1} :
-        \tyTensor{\tyBang{T}}{\tyTensor{\tyRd{T}}{\tyRd{S}}}}{By rule apair}
+      \Pf{}{|-}{\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1} :
+        \tyTensor{\tyBang{T}}{\tyTensor{\tyRd{S}}{\tyRd{T}}}}{By rule apair}
 
-      \Pf{\ChTy_2,\wrtok;\emptyctxt}{|-}{\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2
+      \Pf{\ChTy_2,\wrtok;\emptyctxt}{|-}{\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_2]e_2
       : U'}{By Lemma~\ref{lem:sub-aff}}
 
-      \Pf{\ChTy_1,\ChTy_2}{|-}{E_1[ [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2] : U}{By
+      \Pf{\ChTy_1,\ChTy_2}{|-}{E_1[ [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_2]e_2] : U}{By
         Lemma~\ref{lem:replacement}}
 
-      \Pf{\ChTy}{|-}{E_1[ [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2] : U}{By
+      \Pf{\ChTy}{|-}{E_1[ [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_2]e_2] : U}{By
         above equalities}      
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs} : \PrTy_{\pi}}{Above}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
-            [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2]} : (\PrTy_{\pi}, p :
+            [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_2]e_2]} : (\PrTy_{\pi}, p :
         U)}{By rule cons}
 
       \Pf{\ChTy_4}{|-}{\eUnit : \tyUnit }{By rule unit}
@@ -869,17 +869,17 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
       \Pf{\ChTy}{|-}{E_2[ \eUnit ] : V}{By above equalities}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
-            [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2], \ProcNm{q} E_2[
+            [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_2]e_2], \ProcNm{q} E_2[
             \eUnit ]} : (\PrTy_{\pi}, p : U, q : V)}{By rule cons}
 
       \Pf{\ChTy}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
-            [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2], \ProcNm{q} E_2[
+            [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_2]e_2], \ProcNm{q} E_2[
             \eUnit ]} : \PrTy}{By above equalities}      
 
       \Pf{}{}{\ChTy' = \ChTy~\textrm{and}~\PrTy' = \PrTy}{Suppose}      
       
       \Pf{\ChTy'}{|-}{\Config{\Names}{\Store}{\Procs, \ProcNm{p} E_1[
-            [\ePair{!v}{\eChan{c_2},\eChan{c_1}}{1}/x_2]e_2], \ProcNm{q} E_2[
+            [\ePair{!v}{\eChan{c_1},\eChan{c_2}}{1}/x_2]e_2], \ProcNm{q} E_2[
             \eUnit ]} : \PrTy'}{By above equalities}
     \end{llproof}    
   \end{itemize}
