@@ -228,8 +228,10 @@ The rules of local stepping follow a standard call-by-value semantics,
 where we streamline the definition with an evaluation context~$E$.
 
 Configuration stepping consists of six rules, including a congruence
-rule \Rule{congr} that permits some of the other rules to be simpler,
-by making the order of the pool unimportant.
+rule \Rule{congr} that permits some of the other rules to be simpler, by making
+the order of the pool unimportant. The relation
+$\Procs_1 \equiv_\textsf{perm} \Procs_2$ holds when $\Procs_2$ is a permutation of
+$\Procs_1$.
 %
 The other fix rules consist of local stepping (via \Rule{local}),
 creating new processes (via \Rule{fork}),

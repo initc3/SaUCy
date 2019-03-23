@@ -137,7 +137,9 @@ is due to random coin tosses taken by processes, which have a well-defined
 distribution. Additionally, any apparent concurrency hazards, such as
 adversarial scheduling of messages in an asynchronous network, are due to an
 explicit adversary process rather than uncertainty built into the model
-itself. \todo{Recap the benefit of computational interpretation.}
+itself. This effectively eliminates non-probabilistic nondeterminism, and so ILC
+programs are amenable to the reasoning patterns necessary in computational
+security proofs.
 
 %We have implemented an ILC interpreter in Haskell. For economy of use, our
 %implementation performs polymorphic type inference, bounded polymorphic mode
