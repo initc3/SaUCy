@@ -567,8 +567,11 @@ them to sender; we express this in ILC using the external choice operator:
 \lstinputlisting[style=myilc]{listings/reentrant-ignore.ilc}
 
 Ultimately, Camenisch \etal propose a different strategy, which is to restrict
-how the environment/adversary respond to certain ``metamessages.''
-\todo{Elaborate.} Modeling this solution is left as future work, but ILC
-provides an ideal starting point---restrictions on metamessages could be expressed
-by behavior refinements, i.e., on receiving a message on channel A, the process
-P must not send a message on its other channels until sending a message on B.
+how the environment/adversary respond to certain ``urgent'' messages that are
+used to exchange meta-information (modeling related messages). That is, upon
+receiving an urgent message from process $P$, the environment (or adversary)
+must return control back to $P$ immediately. Modeling this solution is left as
+future work, but ILC provides an ideal starting point---restrictions on the
+environment/adversary could be expressed by behavior refinements: upon receiving
+an urgent message from $P$, the environment (or adversary) must not send a
+message on its other channels before sending a message to $P$.
