@@ -19,7 +19,7 @@ types (written $X$, $Y$).
 A subset of the intuitionistic types are sendable types (written $S$, $T$),
 i.e., the types of values that can be sent over channels. This restriction
 ensures that channels model network channels, which send only data. The sendable
-types include unit ($\tyUnit$), products ($\tyProdd{}{S}{T}$), sums
+types include unit ($\tyUnit$), products ($\tyProdd{}{S}{T}$), and sums
 ($\tySum{S}{}{T}$).
 
 The intuitionistic types include the sendable types, write channel types
@@ -30,11 +30,11 @@ which the write token can be moved into the affine context of the abstraction
 body during $\beta$-reduction.
 
 The affine types include bang types ($\tyBang{A}$), read channel types
-($\tyRd{S}$), products ($\tyTensor{X}{Y}$), sums ($\tyOplus{X}{Y}$), and arrow
-types ($\tyArr{X}{1}{U}$ or simply $X \multimap U$). Notice that the write token
-$\wrtok$ lives in the affine context, though it cannot be bound to any
-variable. Instead, it flows around implicitly by virtue of where read and write
-effects are performed.
+($\tyRd{S}$), products ($\tyTensor{X}{Y}$), sums ($\tyOplus{X}{Y}$), and arrows
+($\tyArr{X}{1}{U}$ or simply $X \multimap U$). Notice that the write token $\wrtok$
+lives in the affine context, though it cannot be bound to any variable. Instead,
+it flows around implicitly by virtue of where read and write effects are
+performed.
 
 For concision, certain syntactic forms are parameterized by a multiplicity $\pi$
 to distinguish between the intuitionistic ($\infty$) and affine ($1$) counterparts;
@@ -47,10 +47,8 @@ application, and fixed points), it denotes a relation to write arrows.
 Values in ILC (written $v$) include unit, pairs, sums, lambda expressions,
 channels (written $c$), and banged values.  ILC supports a fairly standard
 feature set of expressions. Bang-typed values have introduction form $\eBang{e}$
-and elimination form $\eUnbang{e}$.
-
-The more interesting expressions are those related to communication and
-concurrency:
+and elimination form $\eUnbang{e}$. The more interesting expressions are those
+related to communication and concurrency:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     a corresponding write channel $x_2$ in $e$.

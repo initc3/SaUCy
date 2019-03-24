@@ -271,8 +271,8 @@ write, and read expressions. We read the typing judgement $\Delta ; \Gamma |- e 
 type $U$.'' The metavariables $U$ and $V$ range over all types (both
 intuitionistic and affine).
 
-The fork expression $\eFork{e_1}{e_2}$ says to fork a child process $e_1$ and
-continue as $e_2$.
+The fork expression $\eFork{e_1}{e_2}$ forks a child process $e_1$ and continues
+as $e_2$.
 \begin{mathpar}
 \Infer{fork}
 {\Delta_1; \Gamma |- e_1 : U\\
@@ -283,7 +283,7 @@ Its typing rule says that if we can partition the affine context as $\Delta_1, \
 such that $e_1$ has type $U$ under contexts $\Delta_1; \Gamma$ and $e_2$ has type $V$
 under contexts $\Delta_2; \Gamma$, then the expression has type $V$.  Notice that affine
 resources (e.g., read channels, the write token) must be split between the child
-process and the parent process to prevent their duplication.
+process and the parent process, thereby preventing their duplication.
 
 The write expression $\eWr{e_1}{e_2}$ sends the evaluation of $e_1$ on the
 channel evaluation of $e_2$. One thing to mention is that only sendable-typed
