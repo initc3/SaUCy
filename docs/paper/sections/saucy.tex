@@ -358,17 +358,18 @@ Our proof obligation is to introduce an arbitrary environment $\mc{Z}$ and concl
 .\]
 \noindent
 %
-The main idea is to notice that that we can bring $\rho$ from the composed protocol into the environment as $(\mc{Z}\circ \rho)$, reflecting the fact that the environment is meant to represent arbitrary outer protocols. The following derivation completes the proof:
+The main idea is to notice that that we can bring $\rho$ from the composed protocol into the environment as $(\mc{Z}\circ \rho)$, reflecting the fact that the environment is meant to represent arbitrary outer protocols. This transformation results in an equivalent term, given that ILC configurations are invariant to channel renaming and reordering of processes (as in Section~\ref{sec:metatheory}).
+The following derivation completes the proof:
 \begin{align*}
     &~ \keyword{execUC}~\mc{Z}~(\rho \circ \pi)~\mc{F}_1~ \mathbbm{1}_\mc{A} & \\
-  = &~ \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1~ \mathbbm{1}_\mc{A} &
-  \textnormal{(By inspection)} \\
+  \equiv &~ \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1~ \mathbbm{1}_\mc{A} &
+  \textnormal{(By equivalence)} \\
 \le&~ \keyword{execUC}~(\mc{Z}\circ \rho)~\mathsf{id}_\pi ~\mc{F}_2~ \mc{S}_{\mc{I},\pi} & (\textnormal{From}~ \mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2) \\
- = &~ \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ \mc{Z})~\rho ~\mc{F}_2~ \mathbbm{1}_\mc{A} &  \textnormal{(By inspection)} \\
+ \equiv &~ \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ \mc{Z})~\rho ~\mc{F}_2~ \mathbbm{1}_\mc{A} &  \textnormal{(By equivalence)} \\
 \le&~ \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ\mc{Z})~\mathsf{id}_\pi~\mc{F}_3~\mc{S}_{\mc{I},\rho} &
 (\textnormal{From}~ \mc{F}_2 \yrightarrow{$\rho$} \mc{F}_3) \\
-= &~ \keyword{execUC}~\mc{Z}~ \mathsf{id}_\pi~ \mc{F}_3~ (\mc{S}_{\mc{I},\pi} \circ \mc{S}_{\mc{I},\rho}) &
-\textnormal{(By inspection)}
+\equiv &~ \keyword{execUC}~\mc{Z}~ \mathsf{id}_\pi~ \mc{F}_3~ (\mc{S}_{\mc{I},\pi} \circ \mc{S}_{\mc{I},\rho}) &
+\textnormal{(By equivalence)}
 \end{align*}
 The remaining case for $\mc{S}_{\mc{R},\rho} \circ \mc{S}_{\mc{R},\pi}$ is symmetric.\qed
 \begin{comment}
