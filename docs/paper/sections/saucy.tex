@@ -45,9 +45,10 @@ ILC terms that take a security parameter and a stream of random bits.
 %    hold with high probability.}
 \end{definition}
 
-\noindent Here, we have deliberately chosen a simple definition for polynomial
-time. Hofheinz \etal~\cite{hofheinz2013polynomial} discuss alternative
-definitions and their trade-offs.
+\noindent Here, we have chosen a simple definition for polynomial time, which is
+defined only for closed terms.  Hofheinz \etal~\cite{hofheinz2013polynomial}
+present alternate definitions for polynomial time ITMs, which can have free
+channels, and discuss their trade-offs.
 
 \begin{definition}[Value Distribution] 
   Because processes are confluent, we know that if $e~k~r~{->}^{*}~v$,
