@@ -45,10 +45,25 @@ ILC terms that take a security parameter and a stream of random bits.
 %    hold with high probability.}
 \end{definition}
 
-\noindent Here, we have chosen a simple definition for polynomial time, which is
-defined only for closed terms.  Hofheinz \etal~\cite{hofheinz2013polynomial}
-present alternate definitions for polynomial time ITMs, which can have free
-channels, and discuss their trade-offs.
+Here we have chosen a simple definition of polynomial time,
+defined only for closed terms (i.e., an entire system of ITMs),
+and that requires polynomial time normalization for every choice of random bits, not just in expectation or with high probability.
+
+We note that most UC variants use a more nuanced definition in which the individual ITM entities, such as the environment or protocol, can be judged polynomial time independently of their surrounding context~\cite{hofheinz2015gnuc,backes2007reactive,canetti2001universally}.
+Looking ahead to Section~\ref{subsec:uc}, this choice will constrain our definition of secure protocol emulation.
+Hofheinz \etal~\cite{hofheinz2013polynomial} give a detailed discussion of subtle issues arising with various polynomial time definitions and their consequences for defining UC security.
+Regardless, the present notion suffices for our examples. We consider this issue complementary to the design of ILC itself, and adapting other notions of polynomial time to ILC as important future work.%
+\footnote{For example, the polynomial time notion used in IITMs~\cite{backes2007reactive} relies on a distinction between ``invited'' and ``uninvited'' messages, which we could be captured through refinement types \`{a} la the RCF calculus~\cite{bugliesi2015affine}.}
+
+% In GNUC, the
+%approach is to define a well behaved environment, independently of its execution
+%context---roughly that the total size of its outgoing messages is bounded by a
+%polynomial, and that its running time is bounded if its total received input
+%size is bounded~\cite{hofheinz2015gnuc}. This notion is composable as desired,
+%although its use requires additional distinctions between ``invited'' and
+%``uninvited'' messages. RSIM makes analogous
+%choices~\cite{backes2007reactive}. 
+%
 
 \begin{definition}[Value Distribution] 
   Because processes are confluent, we know that if $e~k~r~{->}^{*}~v$,
@@ -228,18 +243,7 @@ obligation on the simulator $\mc{S}$ but not on $\pi$.  What we want to say is
 that the \emph{real world} protocol $(\pi, \mc{F}_1)$ must be well behaved
 whenever the \emph{ideal world} $(\phi, \mc{F}_2)$ is.  However, even a reasonable
 protocol can result in non-PPT executions if paired with a divergent
-environment.  In fact, giving a precise but composable notion of polynomial-time
-for interactive processes has been an ongoing challenge in UC. In GNUC, the
-approach is to define a well behaved environment, independently of its execution
-context---roughly that the total size of its outgoing messages is bounded by a
-polynomial, and that its running time is bounded if its total received input
-size is bounded~\cite{hofheinz2015gnuc}. This notion is composable as desired,
-although its use requires additional distinctions between ``invited'' and
-``uninvited'' messages. RSIM makes analogous
-choices~\cite{backes2007reactive}. While we think these could be equally applied
-to ILC, for example, through refinement types \`{a} la the RCF
-calculus~\cite{bugliesi2015affine}, our goal here is to provide a simpler
-notion.
+environment.
 
 We define protocol emulation by requiring a simulation in both directions, so
 every behavior in the ideal world must correspond to a behavior in the real
