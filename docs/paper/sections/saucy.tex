@@ -244,8 +244,8 @@ that the \emph{real world} protocol $(\pi, \mc{F}_1)$ must be well behaved
 whenever the \emph{ideal world} $(\phi, \mc{F}_2)$ is.  However, even a reasonable
 protocol can result in non-PPT executions if paired with a divergent
 environment.
-
-We define protocol emulation by requiring a simulation in both directions, so
+To solve this problem,
+we define protocol emulation by requiring a simulation in both directions, so
 every behavior in the ideal world must correspond to a behavior in the real
 world and vice versa.
 \begin{definition}[Protocol Emulation]
@@ -270,7 +270,7 @@ This does not pose any problem for our commitment example; however, a protocol t
 In any case, the benefit is this
 simplifies the polynomial time notion: vacuous protocols are clearly ruled out
 by the top condition, and both simulations are only required to be \keyword{PPT}
-if $\mc{Z}$ is.
+when the environment $\mc{Z}$ is well-behaved.
 
 %%   \begin{mathpar}
 %%   \Infer{\st{emulate}}
