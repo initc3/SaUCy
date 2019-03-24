@@ -105,7 +105,9 @@ What remains is to define a notion of indistinguishability for value distributio
 % - identify and explain the simplifications in SaUCy
 The implementation of SaUCy is centered around a definition of the UC execution
 model in ILC.  The full code listing of \textsf{execUC} is given in the
-Appendix.  For the most part, \textsf{execUC} just involves connecting channels
+Appendix.  For the most part, \textsf{execUC} takes as arguments the environment
+$\mc{Z}$, a pair of protocol processes $(\pi_P,\pi_Q)$, a functionality $\mc{F}$,
+and an adversary $\mc{A}$; it runs each of the processes and connects channels
 as illustrated in Figure~\ref{fig:execUC-diagram}.  The execution is centered on
 the environment $\mc{Z}$, in the sense that $\mc{Z}$ first gets the write token,
 and the experiment concludes when $\mc{Z}$ returns a value.  Apart from this, we
