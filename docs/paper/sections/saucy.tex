@@ -5,7 +5,7 @@ Using ILC, we build a concrete, executable implementation of a simplified UC
 framework, dubbed SaUCy. Then, we demonstrate the versatility of SaUCy in three
 ways:
 \begin{enumerate}[leftmargin=*]
-\item We define a protocol composition operator and its associated composition theorem.
+\item We define a protocol composition operator and prove its associated composition theorem.
 \item We walk through an instantiation of UC commitments.
 \item We use ILC's type system to reason about ``reentrancy,'' a subtle definitional issue in UC that has only recently been studied.
 \end{enumerate}
@@ -22,12 +22,12 @@ ways:
 \subsection{Probabilistic Polynomial Time in ILC}
 \label{subsec:ppt}
 The goal of cryptography reduction is to relate every bad event in a protocol to
-a \emph{probabilistic polynomial time computation} that solves a computationally
-hard problem.  The ILC typing rules do not guarantee termination, let alone
-polynomial time normalization, so we must tackle this in metatheory.  Also,
-since ILC is effectively deterministic (confluent), we will need to express
-random choices some other way.  To meet these needs, we define a judgment about
-ILC terms that take a security parameter and a stream of random bits.
+a \emph{probabilistic polynomial time computation} that solves a hard problem.
+The ILC typing rules do not guarantee termination, let alone polynomial time
+normalization, so we must tackle this in metatheory.  Also, since ILC is
+effectively deterministic (confluent), we will need to express random choices
+some other way.  To meet these needs, we define a judgment about ILC terms that
+take a security parameter and a stream of random bits.
 
 \begin{definition}[Polynomial time normalization]
   The judgment that $e$ is polynomial time normalizable, written $\mathsf{PPT}~e$, is defined as follows:
@@ -45,9 +45,10 @@ ILC terms that take a security parameter and a stream of random bits.
 %    hold with high probability.}
 \end{definition}
 
-Here we have chosen a simple definition of polynomial time,
-defined only for closed terms (i.e., an entire system of ITMs),
-and that requires polynomial time normalization for every choice of random bits, not just in expectation or with high probability.
+Here, we have chosen a simple definition of polynomial time defined only for
+closed terms (i.e., an entire system of ITMs), and that requires polynomial time
+normalization for every choice of random bits, not just in expectation or with
+high probability.
 
 We note that most UC variants use a more nuanced definition in which the individual ITM entities, such as the environment or protocol, can be judged polynomial time independently of their surrounding context~\cite{hofheinz2015gnuc,backes2007reactive,canetti2001universally}.
 Looking ahead to Section~\ref{subsec:uc}, this choice will constrain our definition of secure protocol emulation.
@@ -114,20 +115,21 @@ and the experiment concludes when $\mc{Z}$ returns a value.  Apart from this, we
 explain some of our main modeling choices and the consequences they have for the
 ILC implementation.
 
-To start with, we make several simplifications to standard UC, for example
+To start with, we make several simplifications to standard UC, for example,
 focusing on the special case of two-party protocols (\`{a} la Simplified
 UC~\cite{canetti2015simpler}).  We also only aim to show the case of
 \emph{static} corruptions, in which the corrupt parties are determined at the
 onset.  This is achieved by parameterizing the entire experiment by a value
-\textsf{crupt :: Crupt}.  For a more general model with adaptive corruptions,
-\textsf{execUC} would need to accept requests from the environment to add to the
-\textsf{crupt} list as the execution proceeds.
+\textsf{crupt} denoting which parties are corrupt (if any).  For a more general
+model with adaptive corruptions, \textsf{execUC} would need to accept requests
+from the environment to add to the \textsf{crupt} list as the execution
+proceeds.
 
 Our corruption model is Byzantine, meaning the adversary gets to exert complete
 control over the corrupted parties.
 % There is an alternative way to implement this. Since the ideal functionality is also aware of \textsf{crupt}, it can present an ``adversary interface,'' and accept commands on behalf of honest parties anyway.
 For each party, depending on the value of \textsf{crupt}, either we run a copy
-of the honest protocol, or connect the channels to the adversary. This is
+of the honest party, or connect the channels to the adversary. This is
 implemented in the function \textsf{corruptOrNot}.
 %are two cases: corrupt (the adversary controls them), or honest (they follow the
 %protocol). This logic is captured by an ILC \textsf{wrapper} function (shown in

@@ -1,3 +1,5 @@
+data Crupt = CruptP | CruptQ | CruptNone
+
 corruptOrNot :: $\forall$ ... . $A_{\mathsf{p}} -> \tyNat -> [\tyBit] -> \tyBool -> \cdots$
 let corruptOrNot p k bits iscrupt ${\color{red}\sf toZ}$ ${\color{Green}\sf toF}$ toA ${\color{blue}\sf toQ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf frF}$ frA ${\color{blue}\sf frQ}$=
       if iscrupt then
