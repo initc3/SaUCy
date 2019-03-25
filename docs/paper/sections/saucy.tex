@@ -270,7 +270,7 @@ world and vice versa.
 simulation in one direction only. One direction is preferable intuitively
 because it should be fine if the protocol is even more secure than its
 specification.
-This does not pose any problem for our commitment example; however, a protocol that leaks even less information than the ideal functionality requires could be difficult to prove under this definition.
+This does not pose any problem for our commitment example; however, a protocol that leaks even less information than its ideal functionality requires would be impossible to prove secure under this definition.
 In any case, the benefit is this
 simplifies the polynomial time notion: vacuous protocols are clearly ruled out
 by the top condition, and both simulations are only required to be \keyword{PPT}
@@ -362,7 +362,7 @@ Our proof obligation is to introduce an arbitrary environment $\mc{Z}$ and concl
 .\]
 \noindent
 %
-The main idea is to notice that that we can bring $\rho$ from the composed protocol into the environment as $(\mc{Z}\circ \rho)$, reflecting the fact that the environment is meant to represent arbitrary outer protocols. This transformation results in an equivalent term, given that ILC configurations are invariant to channel renaming and reordering of processes (as in Section~\ref{sec:metatheory}).
+The main idea is to notice that that we can bring $\rho$ from the composed protocol into the environment as $(\mc{Z}\circ \rho)$, reflecting the fact that the environment is meant to represent arbitrary outer protocols. This transformation results in an equivalent term, given that ILC configurations are invariant to channel renaming and reordering of processes in a configuration (as in Section~\ref{sec:metatheory}).
 The following derivation completes the proof:
 \begin{align*}
     &~ \keyword{execUC}~\mc{Z}~(\rho \circ \pi)~\mc{F}_1~ \mathbbm{1}_\mc{A} & \\
