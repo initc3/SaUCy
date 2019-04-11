@@ -533,20 +533,19 @@ proof follows the one in Canetti and Fischlin~\cite{canetti2001commitments}.
   $D_{\mc{I}}$ is over the output of $\mc{Z}$ in an ideal world execution. The
   goal is to show that $D_{\mc{R}} \sim D_{\mc{I}}$.
 %  
-  The proof proceeds by first showing that distinguishing between $D_{\mc{R}}$
-  and $D_{\mc{R}}'$ reduces to breaking the pseudorandomness of the PRG (hence, $D_{\mc{R}} \sim D_{\mc{R}}'$), and then by
-  showing that distinguishing between $D_{\mc{R}}'$ and $D_{\mc{I}}$ also
-  reduces to breaking the pseudorandomness of the PRG (hence, $D_{\mc{R}}'
-  \sim D_{\mc{I}}$). By the transitivity of indistinguishability, ${D_{\mc{R}} \sim
-    D_{\mc{I}}}$.
+  The proof proceeds by first showing that breaking the pseudorandomness of the
+  PRG reduces to distinguishing between $D_{\mc{R}}$ and $D_{\mc{R}}'$ (hence,
+  $D_{\mc{R}} \sim D_{\mc{R}}'$), and then by showing that breaking the
+  pseudorandomness of the PRG also reduces to distinguishing between
+  $D_{\mc{R}}'$ and $D_{\mc{I}}$ (hence, $D_{\mc{R}}' \sim D_{\mc{I}}$). By the
+  transitivity of indistinguishability, ${D_{\mc{R}} \sim D_{\mc{I}}}$.
 \end{sketch}
 
 Here, ILC's confluence property plays a critical role: It is necessary for
 defining the probability ensembles $D_{\mc{R}}$, $D_{\mc{R}}'$, and
-$D_{\mc{I}}$, without which we would not be able to reduce the problem of
-distinguishing the real world and ideal world ensembles ($D_{\mc{R}}$ and
-$D_{\mc{I}}$, respectively) to solving some computationally hard problem
-(breaking the pseudorandomness of the PRG).
+$D_{\mc{I}}$, without which we would not be able to obtain a reduction from some
+computationally hard problem to distinguishing the real world and ideal world
+ensembles.
 
 \subsection{Reentrancy in SaUCy}
 \label{subsec:reentrancy}
