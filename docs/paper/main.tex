@@ -1,6 +1,6 @@
 \def\OPTIONConf{0}
 \def\OPTIONArxiv{0}
-\documentclass[sigplan,10pt,review]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
+\documentclass[sigplan,screen,10pt]{acmart}\settopmatter{printfolios=true,printccs=true,printacmref=true}
 
 %%% If you see 'ACMUNKNOWN' in the 'setcopyright' statement below,
 %%% please first submit your publishing-rights agreement with ACM (follow link on submission page).
@@ -26,6 +26,18 @@
 %\acmDOI{} % \acmDOI{10.1145/nnnnnnn.nnnnnnn}
 %\startPage{1}
 
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10002978.10002986.10002989</concept_id>
+<concept_desc>Security and privacy~Formal security models</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Security and privacy~Formal security models}
+
 \setcopyright{none}
 
 \bibliographystyle{ACM-Reference-Format}
@@ -34,23 +46,23 @@
 
 \begin{document}
 
-\title[ILC]{ILC: A Calculus for Composable, Computational Cryptography}
+\title[ILC: A Calculus for Composable, Computational Cryptography]{ILC: A Calculus for Composable, Computational Cryptography}
 
 \author{Kevin Liao}
 \affiliation{
-  \institution{University of Illinois Urbana-Champaign}
+  \institution{University of Illinois Urbana-Champaign, USA}
 }
 \email{kliao6@illinois.edu}
 
 \author{Matthew A. Hammer}
 \affiliation{
-  \institution{DFINITY}
+  \institution{DFINITY, USA}
 }
 \email{matthew@dfinity.org}
 
 \author{Andrew Miller}
 \affiliation{
-  \institution{University of Illinois Urbana-Champaign}
+  \institution{University of Illinois Urbana-Champaign, USA}
 }
 \email{soc1024@illinois.edu}
 
@@ -77,6 +89,8 @@
 %\input{sections/future-work}
 
 \input{sections/conclusion}
+
+\input{sections/acknowledgements}
 
 \bibliography{bibs/references}
 
