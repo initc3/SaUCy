@@ -227,11 +227,14 @@ and the local stepping judgment $e_1 \longrightarrow e_2$ for a single process~$
 The rules of local stepping follow a standard call-by-value semantics, 
 where we streamline the definition with an evaluation context~$E$.
 
-Configuration stepping consists of six rules, including a congruence
+Configuration stepping consists of seven rules. These include a congruence
 rule \Rule{congr} that permits some of the other rules to be simpler, by making
 the order of the pool unimportant. The relation
 $\Procs_1 \equiv_\textsf{perm} \Procs_2$ holds when $\Procs_2$ is a permutation of
-$\Procs_1$.
+$\Procs_1$. They also include a rule \Rule{bind} that establishes
+when two channels are endpoints of a common (inner) channel. The relation
+$c_1 \leadsto c_2$ holds when $c_1$ is the write endpoint of a corresponding
+read endpoint $c_2$.
 %
 The other five rules consist of local stepping (via \Rule{local}),
 creating new processes (via \Rule{fork}),
@@ -242,11 +245,11 @@ and choice-write interactions (via \Rule{cw}).
 To avoid allocating the same name twice, 
 the name set~$\Names$ records names of allocated channels and processes.
 %
-We assume an ambient, unspecified theory of channel names, including an
-unspecified relation for relating the read and write ends of channel names,
-written $c1 \leadsto c2$. As one possible definition, $c_1 \leadsto c_2$ iff $c_1$ has the
-form $\textrm{WriteEndOf}(c)$ and $c_2$ has the form $\textrm{ReadEndOf}(c)$ for
-some distinguished, injective functions WriteEndOf and ReadEndOf.
+%We assume an ambient, unspecified theory of channel names, including an
+%unspecified relation for relating the read and write ends of channel names,
+%written $c1 \leadsto c2$. As one possible definition, $c_1 \leadsto c_2$ iff $c_1$ has the
+%form $\textrm{WriteEndOf}(c)$ and $c_2$ has the form $\textrm{ReadEndOf}(c)$ for
+%some distinguished, injective functions WriteEndOf and ReadEndOf.
 %The relation $c_1 \leadsto c_2$ holds when 
 %channel names $c_1$ and $c_2$ refer to the 
 %write and read ends of a common channel.
