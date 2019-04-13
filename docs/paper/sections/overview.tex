@@ -358,7 +358,7 @@ The type signature tells us that \textsf{toQ : Wr Msg} is intuitionistic ($->$
 is the type connective for intuitionistic arrows) and \textsf{frP : Rd Msg} is
 affine ($\multimap$ is the type connective for affine arrows). As we mentioned, write
 channels \emph{are not} affine, since this restriction does not help in
-preventing write nondeterminism; read channels \emph{are} affine, which helps
+preventing write nondeterminism; read channels \emph{are} affine, which does
 prevent read nondeterminism. To see that \textsf{frP} is being used affinely,
 notice that it is rebound when deconstructing the value-channel pair from each
 read operation, so it can be used again.
