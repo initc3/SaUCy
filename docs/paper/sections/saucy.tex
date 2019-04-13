@@ -108,6 +108,15 @@ allocation/distribution with ellipses. We also abbreviate the type signature
 the Appendix.
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
 
+\begingroup
+\setlength\intextsep{0pt}
+\setlength{\columnsep}{10pt}
+\begin{wrapfigure}{R}{0.15\textwidth}
+\centering
+\includegraphics[width=0.15\textwidth]{graphics/execUC}
+\caption{\textsf{execUC}.}
+\label{fig:execUC-diagram}
+\end{wrapfigure}
 The function \textsf{execUC} takes as arguments an environment $\mathsf{z}$, a
 pair of protocol processes $(\mathsf{p},\mathsf{q})$, a functionality
 $\mathsf{f}$, an adversary $\mathsf{a}$, a corruption model $\mathsf{crupt}$, a
@@ -122,15 +131,6 @@ $\mathsf{z}$ first gets the write token (notably, it has type $\tyNat
 {->}_{\wm}\ \cdots -> \tyBit$), and the experiment concludes when $\mathsf{z}$
 returns a single bit value.
 
-\begingroup
-\setlength\intextsep{0pt}
-\setlength{\columnsep}{10pt}
-\begin{wrapfigure}{R}{0.15\textwidth}
-\centering
-\includegraphics[width=0.15\textwidth]{graphics/execUC}
-\caption{\textsf{execUC}.}
-\label{fig:execUC-diagram}
-\end{wrapfigure}
 Next, we explain some of our main modeling choices and the consequences they
 have for the ILC implementation. To start with, we make several simplifications
 to standard UC, for example, focusing on the special case of two-party protocols
@@ -143,6 +143,7 @@ any). The data type \textsf{Crupt} is defined as follows:
 For a more general model with adaptive corruptions, \textsf{execUC} would need
 to accept requests from the environment to add to the \textsf{crupt} list as the
 execution proceeds.
+\endgroup
 
 Our corruption model is Byzantine, meaning the adversary gets to exert complete
 control over the corrupted parties.  For each party, depending on the value of
