@@ -1,5 +1,6 @@
 corruptOrNot :: $\forall$ ... . $A_{\mathsf{p}} -> \tyNat -> [\tyBit] -> \tyBool -> \cdots$
-let corruptOrNot p k bits iscrupt frZ frF frA frQ =
+let corruptOrNot p k bits iscrupt toZ toF toA toQ
+                              frZ frF frA frQ =
       if iscrupt then
            let _ = rd frZ in error "Z can't wr to corrupt"
 	$\xFork$ fwd toA frF

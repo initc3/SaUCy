@@ -149,11 +149,11 @@ control over the corrupted parties.  For each party, depending on the value of
 \textsf{crupt}, either we run a copy of the honest party, or connect the
 channels to the adversary. This is implemented in the function
 \textsf{corruptOrNot}.
-%\lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/loop.ilc}
+\lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/loop.ilc}
 \lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/fwd.ilc}
 \lstinputlisting[style=myilc]{listings/corruptOrNotShort.ilc}
-%The \textsf{loop} function reads from a channel \textsf{c}, applies a function
-%\textsf{f} to the value read over the channel, then recurses.
+The \textsf{loop} function reads from a channel \textsf{c}, applies a function
+\textsf{f} to the value read over the channel, then recurses.
 The \textsf{fwd} function forwards messages from the channel \textsf{frS} to
 \textsf{toR}. If a party is corrupted, messages from the functionality and the
 other protocol party are forwarded to the adversary; messages from the adversary
@@ -570,7 +570,7 @@ flavor, and so they are better addressed from a PL standpoint.  To illustrate,
 consider the following (untypeable) ILC process \textsf{reentrantF}, which
 allows an adversary $\mc{A}$ to control the delivery schedule of messages from
 $P$ to $Q$ (i.e., an asynchronous channel):
-\lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/loop.ilc}
+%\lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/loop.ilc}
 \lstinputlisting[style=myilc]{listings/reentrant.ilc}
 
 After receiving input from party $P$, it notifies the adversary, then forks a
