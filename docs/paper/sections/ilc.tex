@@ -54,13 +54,13 @@ related to communication and concurrency:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     a corresponding write channel $x_2$ in $e$.
-  \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the result of evaluating $e_1$ on
-    the write channel result of evaluating $e_2$.
+  \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the value that $e_1$ evaluates to on
+    the write channel that $e_2$ evaluates to.
   \item \emph{Read:} $\eLetRd{e_1}{x}{e_2}$ reads a value from the read channel
-    result of evaluating $e_1$ and binds the value-channel pair as $x$ in $e_2$.
+    that $e_1$ evaluates to and binds the value-channel pair as $x$ in $e_2$.
   \item \emph{Choice:} $\eChoicee{e_1}{x_1}{e_3}{e_2}{x_2}{e_4}$ allows a
     process to continue as either $e_3$ or $e_4$ based on some initial read
-    event on the read channel results of evaluating $e_1$ and $e_2$. The value read
+    event on one of the read channels that $e_1$ and $e_2$ evaluate to. The value read
     over the channel and the two read channels are rebound in a 3-tuple as $x_1$
     in $e_3$ or $x_2$ in $e_4$. Here, we show only binary choice, but it can be
     generalized to the $n$-ary case.
@@ -252,6 +252,7 @@ some distinguished, injective functions WriteEndOf and ReadEndOf.
 %write and read ends of a common channel.
 %
 (The rules abstract over how channel names, and this relation, are structured.)
+
 
 %%% If you want more detail, you can uncomment this text below;
 %%% However, it doesn't add much intuition beyond just reading each rule:
