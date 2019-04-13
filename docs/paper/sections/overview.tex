@@ -285,8 +285,8 @@ under contexts $\Delta_2; \Gamma$, then the expression has type $V$.  Notice tha
 resources (e.g., read channels, the write token) must be split between the child
 process and the parent process, thereby preventing their duplication.
 
-The write expression $\eWr{e_1}{e_2}$ sends the evaluation of $e_1$ on the
-channel evaluation of $e_2$. One thing to mention is that only sendable-typed
+The write expression $\eWr{e_1}{e_2}$ sends the result of evaluating $e_1$ on the
+write channel result of evaluating $e_2$. One thing to mention is that only sendable-typed
 values (ranged over by $S$) can be sent over channels (more on this later).
 \begin{mathpar}
 \Infer{wr}
@@ -300,9 +300,9 @@ affine context as $\Delta_1, \Delta_2$ such that $e_1$ has type $S$ under contex
 has type $\tyUnit$ (unit).  Notice that typing a write expression spends the
 write token.
 
-The read expression $\eLetRd{e_1}{x}{e_2}$ reads a value from the channel
-evaluation of $e_1$ and binds the value-channel pair as $x$ in the affine
-context of $e_2$ (rebinding the read channel allows it to be reused).
+The read expression $\eLetRd{e_1}{x}{e_2}$ reads a value on the read channel
+result of evaluating $e_1$ and binds the value-channel pair as $x$ in the affine
+context of $e_2$. Rebinding the read channel allows it to be reused.
 \begin{mathpar}
 \Infer{rd}
 {\wrtok \not \in \Delta_2\\
@@ -327,11 +327,12 @@ but only under the condition that it is not already in the affine context $\Delt
 Figure~\ref{func:com} (right). In particular, we should convince ourselves that
 \textsf{fCom} respects invariants of the type system. The type signature tells
 us that \textsf{toQ : Wr Msg} is intuitionistic ($->$ is the type connective for
-intuitionistic arrows) and \textsf{frP : Rd Msg} is affine ($\multimap$ is the type
-connective for affine arrows) as expected. To see that \textsf{frP} is being
-used affinely, notice that it is rebound when deconstructing the value-channel
-pair from each read operation. To see that the write token is being passed
-around appropriately, notice that the read and write effects are interleaved.
+intuitionistic arrows) and \textsf{frP : Rd Msg} is affine ($\multimap$ is the
+type connective for affine arrows) as expected. To see that \textsf{frP} is
+being used affinely, notice that it is rebound when deconstructing the
+value-channel pair from each read operation. To see that the write token is
+being passed around appropriately, notice that the read and write effects are
+interleaved.
 
 %\todo{Revisit example.}
 

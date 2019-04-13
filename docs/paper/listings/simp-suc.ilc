@@ -1,6 +1,6 @@
-execUC :: $\forall$ ... . $\tyNat\ {->}_{\wm}\ [\tyBit] -> \keyword{Crupt} -> A_{\mathsf{z}} -> A_{\mathsf{p}} \times A_{\mathsf{q}}$
-              $-> A_{\mathsf{f}} -> A_{\mathsf{a}} -> \tyBit $
-let execUC k r crupt z (p,q) f a =
+execUC :: $\forall$ ... . $A_{\mathsf{z}} -> A_{\mathsf{p}} \times A_{\mathsf{q}}-> A_{\mathsf{f}} -> A_{\mathsf{a}} ->$
+              $\mathsf{Crupt} -> \mathsf{Nat} -> [\tyBit] -> \tyBit $
+let execUC z (p,q) f a crupt k r =
   $\nu$ ... . let ... in
        let (rf,ra,rp,rq,rz) = splitBits r in
 	 $\ \ \ \,$ f k rf crupt ...

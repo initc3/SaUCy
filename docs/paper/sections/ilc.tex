@@ -1,6 +1,6 @@
 \input{figures/ilc/syntax}
 %\input{figures/ilc/modes}
-\input{figures/ilc/types}
+\input{figures/ilc/types-full}
 \input{figures/ilc/semantics}
 
 \section{Interactive Lambda Calculus}
@@ -37,12 +37,14 @@ it flows around implicitly by virtue of where read and write effects are
 performed.
 
 For concision, certain syntactic forms are parameterized by a multiplicity $\pi$
-to distinguish between the intuitionistic ($\infty$) and affine ($1$) counterparts;
-other syntactic forms are parameterized by a syntax label $\ell$, which includes
-the multiplicity labels and the write label $\wm$. The label $\wm$ on various
-introduction and elimination forms serves two different meanings: on products
-and sums, it denotes the sendable variants; on functions (abstraction,
-application, and fixed points), it denotes a relation to write arrows.
+to distinguish between the intuitionistic ($\infty$) and affine ($1$)
+counterparts; other syntactic forms are parameterized by a syntax label $\ell$,
+which includes the multiplicity labels and the write label $\wm$ (related to
+write effects). On introduction and elimination forms for functions
+(abstraction, application, and fixed points), the label $\wm$ denotes variants
+that move around the write token as explained above. On introduction and
+elimination forms for products and sums, the label $\wm$ denotes the variants
+that can be sent over channels (sendable types).
 
 Values in ILC (written $v$) include unit, pairs, sums, lambda expressions,
 channels (written $c$), and banged values.  ILC supports a fairly standard
@@ -52,13 +54,13 @@ related to communication and concurrency:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
     a corresponding write channel $x_2$ in $e$.
-  \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the evaluation of $e_1$ on
-    the write channel evaluation of $e_2$.
+  \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the result of evaluating $e_1$ on
+    the write channel result of evaluating $e_2$.
   \item \emph{Read:} $\eLetRd{e_1}{x}{e_2}$ reads a value from the read channel
-    evaluation of $e_1$ and binds the value-channel pair as $x$ in $e_2$.
+    result of evaluating $e_1$ and binds the value-channel pair as $x$ in $e_2$.
   \item \emph{Choice:} $\eChoicee{e_1}{x_1}{e_3}{e_2}{x_2}{e_4}$ allows a
     process to continue as either $e_3$ or $e_4$ based on some initial read
-    event on the read channel evaluations of $e_1$ and $e_2$. The value read
+    event on the read channel results of evaluating $e_1$ and $e_2$. The value read
     over the channel and the two read channels are rebound in a 3-tuple as $x_1$
     in $e_3$ or $x_2$ in $e_4$. Here, we show only binary choice, but it can be
     generalized to the $n$-ary case.
@@ -69,9 +71,8 @@ related to communication and concurrency:
 \subsection{Static Semantics}
 \label{subsec:types}
 
-A selection of typing rules are given in Figure~\ref{fig:type-expressions}. The
-full set of typing rules, along with an algorithmic version of the rules,
-appears in the Appendix.
+The typing rules of ILC are given in Figure~\ref{fig:full-type-expressions}. An
+algorithmic version of the rules appears in the Appendix.
 
 To recap, we read the typing judgement $\Delta; \Gamma |- e : U$ as ``under affine context
 $\Delta$ and intuitionistic context $\Gamma$, expression~$e$ has type $U$.'' Importantly,
@@ -232,7 +233,7 @@ the order of the pool unimportant. The relation
 $\Procs_1 \equiv_\textsf{perm} \Procs_2$ holds when $\Procs_2$ is a permutation of
 $\Procs_1$.
 %
-The other fix rules consist of local stepping (via \Rule{local}),
+The other five rules consist of local stepping (via \Rule{local}),
 creating new processes (via \Rule{fork}),
 creating new channels (via \Rule{nu}),
 read-write interactions (via \Rule{rw}),

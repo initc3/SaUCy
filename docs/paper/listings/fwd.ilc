@@ -1,0 +1,2 @@
+fwd :: $\forall$ a b . Wr a $->$ Rd a $\multimap$ b
+let fwd toR frS = loop ($\lambda$ x . wr x $->$ toR) frS

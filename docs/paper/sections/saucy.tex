@@ -53,11 +53,12 @@ high probability.
 We note that most UC variants use a more nuanced definition in which the individual ITM entities, such as the environment or protocol, can be judged polynomial time independently of their surrounding context~\cite{hofheinz2015gnuc,backes2007reactive,canetti2001universally}.
 Looking ahead to Section~\ref{subsec:uc}, this choice will constrain our definition of secure protocol emulation.
 Hofheinz \etal~\cite{hofheinz2013polynomial} give a detailed discussion of subtle issues arising with various polynomial time definitions and their consequences for defining UC security.
-Regardless, the present notion suffices for our examples. We consider this issue complementary to the design of ILC itself, and adapting other notions of polynomial time to ILC as important future work.%
-\footnote{For example, the polynomial time notion used in
+Regardless, the present notion suffices for our examples. We consider this issue
+complementary to the design of ILC itself, and adapting other notions of
+polynomial time to ILC as important future work. As an  example, the polynomial time notion used in
   IITMs~\cite{backes2007reactive} relies on a distinction between ``invited''
   and ``uninvited'' messages, which could be captured through refinement types
-  \`{a} la the RCF calculus~\cite{bugliesi2015affine}.}
+  \`{a} la the RCF calculus~\cite{bugliesi2015affine}.
 
 % In GNUC, the
 %approach is to define a well behaved environment, independently of its execution
@@ -94,6 +95,33 @@ What remains is to define a notion of indistinguishability for value distributio
 
 \subsection{SaUCy Execution Model}
 \label{subsec:concrete-uc}
+
+% \todo{``Too short to be useful'' needs more intuition, execUC abbreviation.}
+% Two goals of this subsection:
+% - give forward examples of main UC concepts to code in our example
+% - identify and explain the simplifications in SaUCy
+
+The implementation of SaUCy is centered around a definition of the UC execution
+model in ILC. For space and readability, we elide channel
+allocation/distribution with ellipses. We also abbreviate the type signature
+(e.g., $A_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
+the Appendix.
+\lstinputlisting[style=myilc]{listings/simp-suc.ilc}
+
+The function \textsf{execUC} takes as arguments an environment $\mathsf{z}$, a
+pair of protocol processes $(\mathsf{p},\mathsf{q})$, a functionality
+$\mathsf{f}$, an adversary $\mathsf{a}$, a corruption model $\mathsf{crupt}$, a
+security parameter $\mathsf{k}$, and a random bitstring $\mathsf{r}$. At a high
+level (ignoring details related to corruptions for now), it runs each of the
+processes (allocating random bits to each of them) and connects channels as
+illustrated in Figure~\ref{fig:execUC-diagram}.
+(The protocol processes
+$\mathsf{p}$ and $\mathsf{q}$ correspond to $\pi_P$ and $\pi_Q$, respectively.)
+The execution is centered on the environment $\mathsf{z}$ in the sense that
+$\mathsf{z}$ first gets the write token (notably, it has type $\tyNat
+{->}_{\wm}\ \cdots -> \tyBit$), and the experiment concludes when $\mathsf{z}$
+returns a single bit value.
+
 \begingroup
 \setlength\intextsep{0pt}
 \setlength{\columnsep}{10pt}
@@ -103,46 +131,33 @@ What remains is to define a notion of indistinguishability for value distributio
 \caption{\textsf{execUC}.}
 \label{fig:execUC-diagram}
 \end{wrapfigure}
-% \todo{``Too short to be useful'' needs more intuition, execUC abbreviation.}
-% Two goals of this subsection:
-% - give forward examples of main UC concepts to code in our example
-% - identify and explain the simplifications in SaUCy
-The implementation of SaUCy is centered around a definition of the UC execution
-model in ILC.  The full code listing of \textsf{execUC} is given in the
-Appendix.  For the most part, \textsf{execUC} takes as arguments the environment
-$\mc{Z}$, a pair of protocol processes $(\pi_P,\pi_Q)$, a functionality $\mc{F}$,
-and an adversary $\mc{A}$; it runs each of the processes and connects channels
-as illustrated in Figure~\ref{fig:execUC-diagram}.  The execution is centered on
-the environment $\mc{Z}$, in the sense that $\mc{Z}$ first gets the write token,
-and the experiment concludes when $\mc{Z}$ returns a value.  Apart from this, we
-explain some of our main modeling choices and the consequences they have for the
-ILC implementation.
-
-To start with, we make several simplifications to standard UC, for example,
-focusing on the special case of two-party protocols (\`{a} la Simplified
-UC~\cite{canetti2015simpler}).  We also only aim to show the case of
-\emph{static} corruptions, in which the corrupt parties are determined at the
-onset.  This is achieved by parameterizing the entire experiment by a value
-\textsf{crupt} denoting which parties are corrupt (if any).  For a more general
-model with adaptive corruptions, \textsf{execUC} would need to accept requests
-from the environment to add to the \textsf{crupt} list as the execution
-proceeds.
+Next, we explain some of our main modeling choices and the consequences they
+have for the ILC implementation. To start with, we make several simplifications
+to standard UC, for example, focusing on the special case of two-party protocols
+(\`{a} la Simplified UC~\cite{canetti2015simpler}).  We also only aim to show
+the case of \emph{static} corruptions, in which the corrupt parties are
+determined at the onset.  This is achieved by parameterizing the entire
+experiment by a value \textsf{crupt : Crupt} denoting which parties are corrupt (if
+any). The data type \textsf{Crupt} is defined as follows:
+\lstinputlisting[style=myilc]{listings/crupt.ilc}
+For a more general model with adaptive corruptions, \textsf{execUC} would need
+to accept requests from the environment to add to the \textsf{crupt} list as the
+execution proceeds.
 
 Our corruption model is Byzantine, meaning the adversary gets to exert complete
-control over the corrupted parties.
-% There is an alternative way to implement this. Since the ideal functionality is also aware of \textsf{crupt}, it can present an ``adversary interface,'' and accept commands on behalf of honest parties anyway.
-For each party, depending on the value of \textsf{crupt}, either we run a copy
-of the honest party, or connect the channels to the adversary. This is
-implemented in the function \textsf{corruptOrNot}.
-%are two cases: corrupt (the adversary controls them), or honest (they follow the
-%protocol). This logic is captured by an ILC \textsf{wrapper} function (shown in
-%the Appendix).
-
-%\lstinputlisting[style=myilc]{listings/simp-suc.ilc}
-% data Crupt = CruptP | CruptQ | CruptNone
-% which
-% will suffice for our example of instantiating universally composable
-% commitments.
+control over the corrupted parties.  For each party, depending on the value of
+\textsf{crupt}, either we run a copy of the honest party, or connect the
+channels to the adversary. This is implemented in the function
+\textsf{corruptOrNot}.
+%\lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/loop.ilc}
+\lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/fwd.ilc}
+\lstinputlisting[style=myilc]{listings/corruptOrNotShort.ilc}
+%The \textsf{loop} function reads from a channel \textsf{c}, applies a function
+%\textsf{f} to the value read over the channel, then recurses.
+The \textsf{fwd} function forwards messages from the channel \textsf{frS} to
+\textsf{toR}. If a party is corrupted, messages from the functionality and the
+other protocol party are forwarded to the adversary; messages from the adversary
+are forwarded to the functionality.
 
 We also model a strong form of communication channels between the parties: $P$
 and $Q$ are connected by a pair of raw ILC channels. Communication over these
@@ -167,9 +182,6 @@ leaking some (model-specific) information about the message to the adversary.
 % and wrapper definitions (with ellipses). We also abbreviate the type signature
 % (e.g., $A_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
 % the Appendix.
-%Note that for space and readability, we elide channel allocation/distribution
-%with ellipses. We also abbreviate the type signature (e.g., $A_{\mathsf{z}}$ is
-%the type of \textsf{z}). More details can be found in the Appendix.
 
 \begin{comment}
 \begin{itemize}[leftmargin=*]
@@ -558,7 +570,7 @@ flavor, and so they are better addressed from a PL standpoint.  To illustrate,
 consider the following (untypeable) ILC process \textsf{reentrantF}, which
 allows an adversary $\mc{A}$ to control the delivery schedule of messages from
 $P$ to $Q$ (i.e., an asynchronous channel):
-\lstinputlisting[style=myilc]{listings/loop.ilc}
+\lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/loop.ilc}
 \lstinputlisting[style=myilc]{listings/reentrant.ilc}
 
 After receiving input from party $P$, it notifies the adversary, then forks a
