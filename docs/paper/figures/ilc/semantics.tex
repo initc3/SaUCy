@@ -2,9 +2,9 @@
 \centering
 \begin{subfigure}{0.48\textwidth}
 \begin{grammar}
-  Channel names & $c$   &$\bnfas$& $\textrm{Read}(d) ~|~ \textrm{Write}(d)$
+  Channel endpoints & $c$   &$\bnfas$& $\textrm{Read}(d) ~|~ \textrm{Write}(d)$
   \\
-  Inner channel names & $d$ &$\bnfas$& $\cdots$
+  Channel names & $d$ &$\bnfas$& $\cdots$
   \\  
   Process names & $p,q$ &$\bnfas$& $\cdots$
   \\
@@ -44,7 +44,7 @@ $\bullet \bnfalt \ePair{E}{e}{\ell} \bnfalt \ePair{v}{E}{\ell} \bnfalt \eInjj{\e
 %     & $\bnfas$ & $\bullet \bnfalt e \boxplus R \bnfalt R \boxplus e$
 \end{grammar}
 \end{subfigure}
-\caption{Channel names, inner channel names, process names, configurations, and evaluation contexts.}
+\caption{Channel names, process names, configurations, and evaluation contexts.}
 \label{fig:configs}
 \end{figure*}
 
@@ -87,10 +87,6 @@ C_1' ---> C_2'
 C_2' \equiv C_2
 }
 { C_1 ---> C_2 }
-\and
-\Infer{bind}
-{ }
-{\textrm{Write}(d) \leadsto \textrm{Read}(d)}
 \and
 \Infer{nu}{ c_1, c_2 \notin \Names \\ c_2 \leadsto c_1}
 { \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eNu{(x_1, x_2)}{e} ]}} --->
