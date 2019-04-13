@@ -1,4 +1,4 @@
-execUC :: $\forall$ ... . $A_{\mathsf{z}} -> A_{\mathsf{p}} \times A_{\mathsf{q}}-> A_{\mathsf{f}} -> A_{\mathsf{a}} ->$
+execUC :: $\forall$ ... . $A_{\mathsf{z}} {->}_{\wm}\ A_{\mathsf{p}} \times A_{\mathsf{q}}-> A_{\mathsf{f}} -> A_{\mathsf{a}} ->$
               $\mathsf{Crupt} -> \mathsf{Nat} -> [\tyBit] -> \tyBit $
 let execUC z (p,q) f a crupt k r =
   $\nu$ ... . let ... in

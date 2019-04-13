@@ -138,7 +138,7 @@ to standard UC, for example, focusing on the special case of two-party protocols
 the case of \emph{static} corruptions, in which the corrupt parties are
 determined at the onset.  This is achieved by parameterizing the entire
 experiment by a value \textsf{crupt : Crupt} denoting which parties are corrupt (if
-any). The data type \textsf{Crupt} is defined as follows:
+any). The data type \textsf{Crupt} is defined as follows.
 \lstinputlisting[style=myilc]{listings/crupt.ilc}
 For a more general model with adaptive corruptions, \textsf{execUC} would need
 to accept requests from the environment to add to the \textsf{crupt} list as the
@@ -150,15 +150,16 @@ control over the corrupted parties.  For each party, depending on the value of
 \textsf{crupt}, either we run a copy of the honest party, or connect the
 channels to the adversary. This is implemented in the function
 \textsf{corruptOrNot}.
-\lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/loop.ilc}
-\lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/fwd.ilc}
+\lstinputlisting[style=myilc,belowskip=-0.3\baselineskip]{listings/loop.ilc}
+\lstinputlisting[style=myilc,belowskip=-0.3\baselineskip]{listings/fwd.ilc}
 \lstinputlisting[style=myilc]{listings/corruptOrNotShort.ilc}
 The \textsf{loop} function reads from a channel \textsf{c}, applies a function
-\textsf{f} to the value read over the channel, then recurses.
-The \textsf{fwd} function forwards messages from the channel \textsf{frS} to
-\textsf{toR}. If a party is corrupted, messages from the functionality and the
-other protocol party are forwarded to the adversary; messages from the adversary
-are forwarded to the functionality.
+\textsf{f} to the value read over the channel, then recurses.  The \textsf{fwd}
+function forwards messages from the channel \textsf{frS} to \textsf{toR}. In
+\textsf{corruptOrNot}, if a party is corrupted, messages from the functionality
+and the other protocol party are forwarded to the adversary; messages from the
+adversary are forwarded to the functionality. Otherwise, the party is run as
+normal.
 
 We also model a strong form of communication channels between the parties: $P$
 and $Q$ are connected by a pair of raw ILC channels. Communication over these
