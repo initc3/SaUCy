@@ -105,7 +105,7 @@ The implementation of SaUCy is centered around a definition of the UC execution
 model in ILC. For space and readability, we elide endpoint
 allocation/distribution with ellipses. We also abbreviate the type signature
 (e.g., $A_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
-the Appendix.
+the online appendix.
 \lstinputlisting[style=myilc]{listings/simp-suc.ilc}
 
 \begingroup
@@ -372,7 +372,9 @@ illustrated and defined in Figure~\ref{fig:composition-operator}.
 
 \end{figure}
 
-\noindent \proof To prove the theorem we construct the simulators $S_{\mc{R},\rho} \circ S_{\mc{R},\pi}$ (respectively $S_{\mc{I},\rho} \circ S_{\mc{I,\pi}}$) in the natural way as well (given in the Appendix).
+\noindent \proof To prove the theorem we construct the simulators
+$S_{\mc{R},\rho} \circ S_{\mc{R},\pi}$ (respectively $S_{\mc{I},\rho} \circ
+S_{\mc{I,\pi}}$) in the natural way as well (see the online appendix).
 Our proof obligation is to introduce an arbitrary environment $\mc{Z}$ and conclude
 \[  \keyword{execUC}~\mc{Z} ~(\rho \circ \pi)~\mc{F}_1 ~\mathbbm{1}_\mc{A}
 \le \keyword{execUC}~\mc{Z} ~\mathbbm{1}_\mc{\pi} ~\mc{F}_3 ~(\mc{S}_{\mc{I},\rho} \circ \mc{S}_{\mc{I},\pi})
@@ -474,7 +476,10 @@ Second, the protocol makes use of computational primitives and thus requires a r
 
 % TODO: Need a transition into the next paragraph
 \paragraph{Extending ILC with cryptographic primitives.}
-The UC commitment protocol makes use of a cryptographic primitive, namely a trapdoor pseudorandom generator. This is provided by extending ILC with new syntactic forms, along with the their static and dynamic semantics, as given in the Appendix.
+The UC commitment protocol makes use of a cryptographic primitive, namely a
+trapdoor pseudorandom generator. This is provided by extending ILC with new
+syntactic forms, along with the their static and dynamic semantics, as given in
+the online appendix.
 While in a symbolic setting we would instantiate these with algebraic data, in ILC we give the stepping rule in terms of an arbitrary pseudorandom function family, i.e., the actual computational definition.
 This can be instantiated concretely for execution (e.g., with an RSA-based function) or treated abstractly in the metatheory when we get to the reduction step of the proof.
 % The proof includes a computational reduction step, which in turn relies on the confluence property of ILC.
@@ -485,7 +490,7 @@ The commitment protocol also relies on a
 ``trusted setup,'' or common reference string (CRS), which is essentially
 public parameters generated ahead of time. The common reference string is
 modeled as an ideal functionality $\Func_{\textsc{crs}}$ (implemented
-in ILC as \textsf{fCrs} in the Appendix).
+in ILC as \textsf{fCrs} in the online appendix).
 
 %UC commitments can be instantiated with standard cryptographic assumptions, for
 %example the RSA problem~\cite{lindell2014introduction}.
@@ -507,12 +512,14 @@ The intuitive explanation why this is hiding is that without the trapdoor, it is
 
 \paragraph{Defining the simulator.}
 The SaUCy proof consists of two simulators, one for the ideal world and one for the real world.
-The ideal world simulator is ported directly from the UC literature~\cite{canetti2001commitments}. The nonstandard real world simulator, given in the Appendix, is trivial, but necessary because our protocol emulation definition requires simulation in both directions.
+The ideal world simulator is ported directly from the UC
+literature~\cite{canetti2001commitments}. The nonstandard real world simulator,
+given in the online appendix, is trivial, but necessary because our protocol emulation definition requires simulation in both directions.
 
 The ideal world simulator generates its own ``fake'' CRS for which it stores the
 trapdoors. The string $\sigma$ is not truly random, but instead is the result of
 combining two evaluations of the PRGs. In Figure~\ref{fig:sim-short} we show the
-case that the committer $P$ is corrupt (the other case is in the Appendix). The
+case that the committer $P$ is corrupt (the other case is in the online appendix). The
 simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit}' ~ y)$;
 in the real world, this is relayed by the dummy adversary to Q, who outputs
 \textsf{Committed} back to the environment. Hence to achieve the same effect in
@@ -523,7 +530,8 @@ cryptographic reduction that this simulation is sound, which we do next.
 
 \begin{figure}
 \lstinputlisting[style=myilc]{listings/sim-short.ilc}
-\caption{Ideal world simulator (excerpt) for UC commitment (full version in Appendix).}
+\caption{Ideal world simulator (excerpt) for UC commitment (full version in
+  online appendix).}
 \label{fig:sim-short}
 \end{figure}
 
@@ -542,7 +550,7 @@ proof follows the one in Canetti and Fischlin~\cite{canetti2001commitments}.
   \end{align*}
   \noindent The ensemble $D_{\mc{R}}$ is over the output of $\mc{Z}$ in a real
   world execution. The ensemble $D_{\mc{R}}'$ is similar, except $\mc{Z}$ runs
-  with a bad functionality \textsf{bCrs} (see Appendix) that computes fake
+  with a bad functionality \textsf{bCrs} (see online appendix) that computes fake
   public strings in the same way that the simulator does. The ensemble
   $D_{\mc{I}}$ is over the output of $\mc{Z}$ in an ideal world execution. The
   goal is to show that $D_{\mc{R}} \sim D_{\mc{I}}$.
