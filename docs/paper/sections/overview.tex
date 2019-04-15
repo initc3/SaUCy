@@ -248,11 +248,11 @@ of next.
 \subsection{ILC Type System}
 \label{subsec:type-tour}
 
-ILC terms are either intuitionistically typed, meaning they can be freely
-copied, or affinely typed, meaning they can be used at most once. Affine typing
-serves a special purpose, namely, to ensure that ILC processes have a determined
-sequence of activations, as is required in ITMs. This is achieved through the
-following invariants:
+ILC terms have either an unrestricted type, meaning they can be freely copied,
+or an affine type, meaning they can be used at most once. Affine typing serves a
+special purpose, namely, to ensure that ILC processes have a determined sequence
+of activations, as is required in ITMs. This is achieved through the following
+invariants:
 
 \begin{itemize}[leftmargin=*]
 \item \emph{Only one process is active at any given time.} Processes implicitly
@@ -274,7 +274,7 @@ Intuitively, the first invariant rules out the possibility of write
 nondeterminism. Consider the case in which two processes are trying to execute
 writes in parallel, which would lead to a race condition. This does not
 typecheck, since the affine write token belongs to at most one process. One
-might justifiably wonder why write channels are intuitionistic and read channels
+might justifiably wonder why write channels are unrestricted and read channels
 are affine. Note that if two processes are trying to write in parallel, the two
 write channels need not be the same write channel, so making write channels
 affine would not help our case in eliminating write nondeterminism.
@@ -285,15 +285,16 @@ listening on the same read channel. If a process $C$ writes on the corresponding
 write channel, which of $A$ or $B$ (or both) gets activation? If only one of
 them is activated, then we have a source of nondeterminism. If both are
 activated, now $A$ and $B$ both own write tokens, violating its affinity. In any
-case, this does not typecheck, since read channels are affine
-resources. Together, these invariants ensure that processes have a determined
+case, this does not typecheck since read channels are affine resources, making
+it impossible for two processes $A$ and $B$ to listen on the same read
+channel. Together, these invariants ensure that processes have a determined
 sequence of activations as desired.
 
 \paragraph{A Selection of Typing Rules.} To see these invariants in action, we walk through the typing rules for fork,
 write, and read expressions. We read the typing judgement $\Delta ; \Gamma |- e : U$ as
-``under affine context $\Delta$ and intuitionistic context $\Gamma$, expression $e$ has
+``under affine context $\Delta$ and unrestricted context $\Gamma$, expression $e$ has
 type $U$.'' The metavariables $U$ and $V$ range over all types (both
-intuitionistic and affine).
+unrestricted and affine).
 
 The fork expression $\eFork{e_1}{e_2}$ forks a child process $e_1$ and continues
 as $e_2$.
@@ -342,7 +343,7 @@ $U$ under contexts $\Delta_2, \wrtok, x:\tyTensor{\tyBang{S}}{{\tyRd{S}}} ; \Gam
 the expression has type $U$.
 
 There are a few things to unpack here. First, we explain the affine product type
-$\tyTensor{\tyBang{S}}{{\tyRd{S}}}$. Since sendable values are intuitionistic
+$\tyTensor{\tyBang{S}}{{\tyRd{S}}}$. Since sendable values are unrestricted
 and read channels are affine, the value read on the channel is wrapped in a $!$
 operator (pronounced ``bang'') so that it can be placed in an affine pair. Next,
 observe that $\wrtok$ is available in the body $e_2$ of the read expression
@@ -354,8 +355,8 @@ tokens, violating its affinity).
 Figure~\ref{func:com} (right). In particular, we should convince ourselves that
 \textsf{fCom} respects invariants of the type system.
 
-The type signature tells us that \textsf{toQ : Wr Msg} is intuitionistic ($->$
-is the type connective for intuitionistic arrows) and \textsf{frP : Rd Msg} is
+The type signature tells us that \textsf{toQ : Wr Msg} is unrestricted ($->$
+is the type connective for unrestricted arrows) and \textsf{frP : Rd Msg} is
 affine ($\multimap$ is the type connective for affine arrows). As we mentioned, write
 channels \emph{are not} affine, since this restriction does not help in
 preventing write nondeterminism; read channels \emph{are} affine, which does

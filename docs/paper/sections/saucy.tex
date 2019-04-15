@@ -584,7 +584,7 @@ messages. Which one gets delivered when the adversary sends \textsf{Ok}?
 
 To resolve this issue, notice that \textsf{reentrantF} is untypeable in ILC.
 The race condition occurs because the read channel \textsf{frA} is duplicated
-(appears free in an intuitionistic function).  Camenisch et
+(appears free in an unrestricted function).  Camenisch et
 al.~\cite{camenisch2016universal} identified several strategies for resolving
 this problem in UC, which in turn are expressible ILC. One approach is to make
 the process explicitly sequential, such that the arrival of a second message

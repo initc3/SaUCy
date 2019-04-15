@@ -13,19 +13,19 @@ static semantics, and dynamic semantics.
 \label{subsec:syntax}
 
 The syntax of ILC is given in Figure~\ref{fig:ilc-syntax}. Types (written $U$,
-$V$) are bifurcated into intuitionistic types (written $A$, $B$) and affine
+$V$) are bifurcated into unrestricted types (written $A$, $B$) and affine
 types (written $X$, $Y$).
 
-A subset of the intuitionistic types are sendable types (written $S$, $T$),
+A subset of the unrestricted types are sendable types (written $S$, $T$),
 i.e., the types of values that can be sent over channels. This restriction
 ensures that channels model network channels, which send only data. The sendable
 types include unit ($\tyUnit$), products ($\tyProdd{}{S}{T}$), and sums
 ($\tySum{S}{}{T}$).
 
-The intuitionistic types include the sendable types, write channel types
+The unrestricted types include the sendable types, write channel types
 ($\tyWr{S}$), products ($\tyProdd{}{A}{B}$), sums ($\tySum{A}{}{B}$), arrows
 ($\tyArr{A}{\infty}{U}$ or simply $A -> U$), and write arrows
-($\tyArr{A}{\wm}{U}$). Write arrows specify intuitionistic abstractions for
+($\tyArr{A}{\wm}{U}$). Write arrows specify unrestricted abstractions for
 which the write token can be moved into the affine context of the abstraction
 body during $\beta$-reduction.
 
@@ -37,7 +37,7 @@ it flows around implicitly by virtue of where read and write effects are
 performed.
 
 For concision, certain syntactic forms are parameterized by a multiplicity $\pi$
-to distinguish between the intuitionistic ($\infty$) and affine ($1$)
+to distinguish between the unrestricted ($\infty$) and affine ($1$)
 counterparts; other syntactic forms are parameterized by a syntax label $\ell$,
 which includes the multiplicity labels and the write label $\wm$ (related to
 write effects). On introduction and elimination forms for functions
@@ -75,18 +75,18 @@ The typing rules of ILC are given in Figure~\ref{fig:full-type-expressions}. An
 algorithmic version of the rules appears in the Appendix.
 
 To recap, we read the typing judgement $\Delta; \Gamma |- e : U$ as ``under affine context
-$\Delta$ and intuitionistic context $\Gamma$, expression~$e$ has type $U$.'' Importantly,
+$\Delta$ and unrestricted context $\Gamma$, expression~$e$ has type $U$.'' Importantly,
 the typing rules maintain that only one process is active at any given time
 (unique ownership of the write token), and the order of activations is
 deterministic (unique ownership of read channels).
 
 The typing rules for the functional fragment of ILC are fairly standard, except
-that they now have intuitionistic and affine variants (and for some, sendable
+that they now have unrestricted and affine variants (and for some, sendable
 variants).
 
-The rule for intuitionistic abstraction (iabs) extends the intuitionistic
+The rule for unrestricted abstraction (iabs) extends the unrestricted
 context $\Gamma$ with $x : A$ before checking the body $e$ of the abstraction. Notice
-that because intuitionistic abstractions can be duplicated, the body must be
+that because unrestricted abstractions can be duplicated, the body must be
 affinely closed (cannot contain free affine variables).
 
 The rule for write abstraction (wabs) is similar to iabs. The only difference is
@@ -98,13 +98,12 @@ abstraction.
 The rule for affine abstraction (aabs) is analagous to iabs, but notice that the
 body \emph{need not} be affinely closed, since affine abstractions cannot be
 duplicated. It turns out that most affine functions we write \emph{are} affinely
-closed, and so such a function $f : X \multimap U$ can be made into an intuitionistic
-function $g : A -> X \multimap U$ by adding a leading intuitionistic argument.
+closed, and so such a function $f : X \multimap U$ can be made into an unrestricted
+function $g : A -> X \multimap U$ by adding a leading unrestricted argument.
 
-The bang rule turns an intuitionistically typed expression $e:A$ into an
-affinely typed expression $e:\tyBang{A}$. Dually, the gnab rule turns an
-affinely typed expression $e:\tyBang{A}$ into an intuitionistically typed
-expression $e:A$.
+The bang rule turns an unrestrictedly typed expression $e:A$ into an affinely
+typed expression $e:\tyBang{A}$. Dually, the gnab rule turns an affinely typed
+expression $e:\tyBang{A}$ into an unrestrictedly typed expression $e:A$.
 
 The typing rules for fork, write, and read were covered in
 Section~\ref{subsec:type-tour}, so this leaves channel restriction (nu) and
@@ -112,7 +111,7 @@ external choice (choice) as the remaining typing rules related to communication
 and concurrency.
 
 The nu rule extends the affine context $\Delta$ with a read channel $x_1 : \tyRd{S}$
-and the intuitionistic context $\Gamma$ with a corresponding write channel $x_2
+and the unrestricted context $\Gamma$ with a corresponding write channel $x_2
 : \tyWr{S}$ before typing the body $e$.
 
 The choice rule partitions the affine context as $\Delta_1,\Delta_2,\Delta_3$. The first two
