@@ -102,7 +102,7 @@ What remains is to define a notion of indistinguishability for value distributio
 % - identify and explain the simplifications in SaUCy
 
 The implementation of SaUCy is centered around a definition of the UC execution
-model in ILC. For space and readability, we elide channel
+model in ILC. For space and readability, we elide endpoint
 allocation/distribution with ellipses. We also abbreviate the type signature
 (e.g., $A_{\mathsf{z}}$ is the type of \textsf{z}). More details can be found in
 the Appendix.
@@ -153,9 +153,9 @@ channels to the adversary. This is implemented in the function
 \lstinputlisting[style=myilc,belowskip=-0.3\baselineskip]{listings/loop.ilc}
 \lstinputlisting[style=myilc,belowskip=-0.3\baselineskip]{listings/fwd.ilc}
 \lstinputlisting[style=myilc]{listings/corruptOrNotShort.ilc}
-The \textsf{loop} function reads from a channel \textsf{c}, applies a function
+The \textsf{loop} function reads from an endpoint \textsf{c}, applies a function
 \textsf{f} to the value read over the channel, then recurses.  The \textsf{fwd}
-function forwards messages from the channel \textsf{frS} to \textsf{toR}. In
+function forwards messages from the endpoint \textsf{frS} to \textsf{toR}. In
 \textsf{corruptOrNot}, if a party is corrupted, messages from the functionality
 and the other protocol party are forwarded to the adversary; messages from the
 adversary are forwarded to the functionality. Otherwise, the party is run as
@@ -583,7 +583,7 @@ Z$, which passes $P$ a second input $m_2$. Now there are two queued
 messages. Which one gets delivered when the adversary sends \textsf{Ok}?
 
 To resolve this issue, notice that \textsf{reentrantF} is untypeable in ILC.
-The race condition occurs because the read channel \textsf{frA} is duplicated
+The race condition occurs because the read endpoint \textsf{frA} is duplicated
 (appears free in an unrestricted function).  Camenisch et
 al.~\cite{camenisch2016universal} identified several strategies for resolving
 this problem in UC, which in turn are expressible ILC. One approach is to make

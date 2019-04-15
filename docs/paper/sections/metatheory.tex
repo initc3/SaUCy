@@ -12,7 +12,7 @@ the order of \emph{other} (non-interactive) reduction steps.
 %
 As explained in Section~\ref{sec:ilc}, ILC's type system does so by restricting the
 write effects (via an affine write token) and read effects (via affine read
-channels) of processes.
+endpoints) of processes.
 %
 The proofs of type soundness, whose statements we discuss next, 
 establish the validity of these invariants.
@@ -48,7 +48,7 @@ Informally, $\JCterm{C}$ holds when either:
 %
 
 We also extend the type system given in Section~\ref{subsec:types} with typing
-rules for configurations, including typing contexts for channels $\ChTy$ and
+rules for configurations, including typing contexts for endpoints $\ChTy$ and
 process pool typings $\PrTy$. These details, along with the proofs of progress
 and preservation, can be found in the Appendix.
 %

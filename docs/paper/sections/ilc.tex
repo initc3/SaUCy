@@ -22,14 +22,14 @@ ensures that channels model network channels, which send only data. The sendable
 types include unit ($\tyUnit$), products ($\tyProdd{}{S}{T}$), and sums
 ($\tySum{S}{}{T}$).
 
-The unrestricted types include the sendable types, write channel types
+The unrestricted types include the sendable types, write endpoint types
 ($\tyWr{S}$), products ($\tyProdd{}{A}{B}$), sums ($\tySum{A}{}{B}$), arrows
 ($\tyArr{A}{\infty}{U}$ or simply $A -> U$), and write arrows
 ($\tyArr{A}{\wm}{U}$). Write arrows specify unrestricted abstractions for
 which the write token can be moved into the affine context of the abstraction
 body during $\beta$-reduction.
 
-The affine types include bang types ($\tyBang{A}$), read channel types
+The affine types include bang types ($\tyBang{A}$), read endpoint types
 ($\tyRd{S}$), products ($\tyTensor{X}{Y}$), sums ($\tyOplus{X}{Y}$), and arrows
 ($\tyArr{X}{1}{U}$ or simply $X \multimap U$). Notice that the write token $\wrtok$
 lives in the affine context, though it cannot be bound to any variable. Instead,
@@ -47,21 +47,21 @@ elimination forms for products and sums, the label $\wm$ denotes the variants
 that can be sent over channels (sendable types).
 
 Values in ILC (written $v$) include unit, pairs, sums, lambda expressions,
-channel endpoints (written $c$), and banged values.  ILC supports a fairly standard
-feature set of expressions. Bang-typed values have introduction form $\eBang{e}$
-and elimination form $\eUnbang{e}$. The more interesting expressions are those
-related to communication and concurrency:
+channel endpoints (written $c$), channels \todo{}, and banged values.  ILC
+supports a fairly standard feature set of expressions. Bang-typed values have
+introduction form $\eBang{e}$ and elimination form $\eUnbang{e}$. The more
+interesting expressions are those related to communication and concurrency:
 \begin{itemize}[leftmargin=*]
-  \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read channel $x_1$ and
-    a corresponding write channel $x_2$ in $e$.
+  \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read endpoint $x_1$ and
+    a corresponding write endpoint $x_2$ in $e$.
   \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the value that $e_1$ evaluates to on
-    the write channel that $e_2$ evaluates to.
-  \item \emph{Read:} $\eLetRd{e_1}{x}{e_2}$ reads a value from the read channel
-    that $e_1$ evaluates to and binds the value-channel pair as $x$ in $e_2$.
+    the write endpoint that $e_2$ evaluates to.
+  \item \emph{Read:} $\eLetRd{e_1}{x}{e_2}$ reads a value from the read endpoint
+    that $e_1$ evaluates to and binds the value-endpoint pair as $x$ in $e_2$.
   \item \emph{Choice:} $\eChoicee{e_1}{x_1}{e_3}{e_2}{x_2}{e_4}$ allows a
     process to continue as either $e_3$ or $e_4$ based on some initial read
-    event on one of the read channels that $e_1$ and $e_2$ evaluate to. The value read
-    over the channel and the two read channels are rebound in a 3-tuple as $x_1$
+    event on one of the read endpoints that $e_1$ and $e_2$ evaluate to. The value read
+    over the channel and the two read endpoints are rebound in a 3-tuple as $x_1$
     in $e_3$ or $x_2$ in $e_4$. Here, we show only binary choice, but it can be
     generalized to the $n$-ary case.
   \item \emph{Fork:} $\eFork{e_1}{e_2}$ forks a child process $e_1$ and
@@ -78,7 +78,7 @@ To recap, we read the typing judgement $\Delta; \Gamma |- e : U$ as ``under affi
 $\Delta$ and unrestricted context $\Gamma$, expression~$e$ has type $U$.'' Importantly,
 the typing rules maintain that only one process is active at any given time
 (unique ownership of the write token), and the order of activations is
-deterministic (unique ownership of read channels).
+deterministic (unique ownership of read endpoints).
 
 The typing rules for the functional fragment of ILC are fairly standard, except
 that they now have unrestricted and affine variants (and for some, sendable
@@ -110,17 +110,17 @@ Section~\ref{subsec:type-tour}, so this leaves channel restriction (nu) and
 external choice (choice) as the remaining typing rules related to communication
 and concurrency.
 
-The nu rule extends the affine context $\Delta$ with a read channel $x_1 : \tyRd{S}$
-and the unrestricted context $\Gamma$ with a corresponding write channel $x_2
+The nu rule extends the affine context $\Delta$ with a read endpoint $x_1 : \tyRd{S}$
+and the unrestricted context $\Gamma$ with a corresponding write endpoint $x_2
 : \tyWr{S}$ before typing the body $e$.
 
 The choice rule partitions the affine context as $\Delta_1,\Delta_2,\Delta_3$. The first two
 affine contexts are used to type $e_1 : \tyRd{S}$ and $e_2 : \tyRd{T}$,
 respectively. The third affine context $\Delta_3$ is extended with the affine write
 token and a variable $x_1$ (or $x_2$) binding an affine 3-tuple containing the
-read value and the two read channels before checking the continuation $e_3$ (or
+read value and the two read endpoints before checking the continuation $e_3$ (or
 $e_4$). While somewhat cumbersome, the generality of this rule allows both read
-channels to be used in either continuation.
+endpoints to be used in either continuation.
 
 %The write token is special and unique, and need not ever be bound to a variable
 %in the affine context.  Rather, it flows around “implicitly” in the program, by
@@ -244,7 +244,7 @@ read-write interactions (via \Rule{rw}),
 and choice-write interactions (via \Rule{cw}).
 %
 To avoid allocating the same name twice, 
-the name set~$\Names$ records names of allocated channels and processes.
+the name set~$\Names$ records names of allocated endpoints and processes.
 We define the relation
 $c_1 \leadsto c_2$ to hold when $c_1$ is the write endpoint of a corresponding
 read endpoint $c_2$, as stated in the following bind rule.

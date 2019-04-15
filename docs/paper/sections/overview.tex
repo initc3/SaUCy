@@ -237,9 +237,8 @@ message), so the three properties hold trivially.
 In Figure~\ref{func:com} (right), we define a simplified version of
 $\Func_{\textsc{com}}$ in ILC to highlight some key features of the
 language. The function \textsf{fCom} takes two channel endpoints as
-arguments. (When the context is clear, we refer to ``channel endpoints'' as
-simply ``channels.'') The first is a write channel \textsf{toQ : Wr Msg} (for
-sending messages of type \textsf{Msg} to $Q$), and the second is a read channel
+arguments. The first is a write endpoint \textsf{toQ : Wr Msg} (for
+sending messages of type \textsf{Msg} to $Q$), and the second is a read endpoint
 \textsf{frP : Rd Msg} (for receiving messages of type \textsf{Msg} from $P$). At
 a high level, it should be clear how the communication pattern in \textsf{fCom}
 follows that in $\Func_{\textsc{com}}$, but there are a few details that require
@@ -276,20 +275,20 @@ Intuitively, the first invariant rules out the possibility of write
 nondeterminism. Consider the case in which two processes are trying to execute
 writes in parallel, which would lead to a race condition. This does not
 typecheck, since the affine write token belongs to at most one process. One
-might justifiably wonder why write channels are unrestricted and read channels
+might justifiably wonder why write endpoints are unrestricted and read endpoints
 are affine. Note that if two processes are trying to write in parallel, the two
-write channels need not be the same write channel, so making write channels
-affine would not help our case in eliminating write nondeterminism.
+write endpoints need not be the same, so making write endpoints affine would not
+help our case in eliminating write nondeterminism.
 
 Dually, the second invariant rules out the possibility of read
 nondeterminism. Consider the case in which two processes $A$ and $B$ are
-listening on the same read channel. If a process $C$ writes on the corresponding
-write channel, which of $A$ or $B$ (or both) gets activation? If only one of
+listening on the same read endpoint. If a process $C$ writes on the corresponding
+write endpoint, which of $A$ or $B$ (or both) gets activation? If only one of
 them is activated, then we have a source of nondeterminism. If both are
 activated, now $A$ and $B$ both own write tokens, violating its affinity. In any
-case, this does not typecheck since read channels are affine resources, making
+case, this does not typecheck since read endpoints are affine resources, making
 it impossible for two processes $A$ and $B$ to listen on the same read
-channel. Together, these invariants ensure that processes have a determined
+endpoint. Together, these invariants ensure that processes have a determined
 sequence of activations as desired.
 
 \paragraph{A Selection of Typing Rules.} To see these invariants in action, we walk through the typing rules for fork,
@@ -309,11 +308,11 @@ as $e_2$.
 Its typing rule says that if we can partition the affine context as $\Delta_1, \Delta_2$
 such that $e_1$ has type $U$ under contexts $\Delta_1; \Gamma$ and $e_2$ has type $V$
 under contexts $\Delta_2; \Gamma$, then the expression has type $V$.  Notice that affine
-resources (e.g., read channels, the write token) must be split between the child
+resources (e.g., read endpoints and the write token) must be split between the child
 process and the parent process, thereby preventing their duplication.
 
 The write expression $\eWr{e_1}{e_2}$ sends the value that $e_1$ evaluates to on
-the write channel that $e_2$ evaluates to. One thing to mention is that only
+the write endpoint that $e_2$ evaluates to. One thing to mention is that only
 sendable-typed values (ranged over by $S$) can be sent over channels (more on
 this later).
 \begin{mathpar}
@@ -324,15 +323,15 @@ this later).
 \end{mathpar}
 Its typing rule says that if we own the write token, and we can partition the
 affine context as $\Delta_1, \Delta_2$ such that $e_1$ has type $S$ under
-contexts $\Delta_1; \Gamma$ and $e_2$ evaluates to a write channel (of type
+contexts $\Delta_1; \Gamma$ and $e_2$ evaluates to a write endpoint (of type
 $\tyWr{S}$) under contexts $\Delta_2; \Gamma$, then the expression has type
 $\tyUnit$ (unit).  Notice that typing a write expression spends the write token,
 and so it cannot execute another write until it gets ``reactivated'' by reading
 from some other process.
 
-The read expression $\eLetRd{e_1}{x}{e_2}$ reads a value on the read channel
-that $e_1$ evaluates to and binds the value-channel pair as $x$ in the affine
-context of $e_2$. Rebinding the read channel allows it to be reused.
+The read expression $\eLetRd{e_1}{x}{e_2}$ reads a value on the read endpoint
+that $e_1$ evaluates to and binds the value-endpoint pair as $x$ in the affine
+context of $e_2$. Rebinding the read endpoint allows it to be reused.
 \begin{mathpar}
 \Infer{rd}
 {\wrtok \not \in \Delta_2\\
@@ -341,14 +340,14 @@ context of $e_2$. Rebinding the read channel allows it to be reused.
 {\Delta_1,\Delta_2 ; \Gamma |- \eLetRd{e_1}{x}{e_2} : U}  
 \end{mathpar}
 Its typing rule says that if we can partition the affine context as $\Delta_1,
-\Delta_2$ such that $e_1$ evaluates to a read channel (of type $\tyRd{S}$) under
+\Delta_2$ such that $e_1$ evaluates to a read endpoint (of type $\tyRd{S}$) under
 contexts $\Delta_1; \Gamma$, and $e_2$ has type $U$ under contexts $\Delta_2,
 \wrtok, x:\tyTensor{\tyBang{S}}{{\tyRd{S}}} ; \Gamma$, then the expression has
 type $U$.
 
 There are a few things to unpack here. First, we explain the affine product type
-$\tyTensor{\tyBang{S}}{{\tyRd{S}}}$. Since sendable values are unrestricted
-and read channels are affine, the value read on the channel is wrapped in a $!$
+$\tyTensor{\tyBang{S}}{{\tyRd{S}}}$. Since sendable values are unrestricted and
+read endpoints are affine, the value read on the channel is wrapped in a $!$
 operator (pronounced ``bang'') so that it can be placed in an affine pair. Next,
 observe that $\wrtok$ is available in the body $e_2$ of the read expression
 (i.e., it is conserved), but only under the condition that it is not already in
@@ -362,10 +361,10 @@ Figure~\ref{func:com} (right). In particular, we should convince ourselves that
 The type signature tells us that \textsf{toQ : Wr Msg} is unrestricted ($->$
 is the type connective for unrestricted arrows) and \textsf{frP : Rd Msg} is
 affine ($\multimap$ is the type connective for affine arrows). As we mentioned, write
-channels \emph{are not} affine, since this restriction does not help in
-preventing write nondeterminism; read channels \emph{are} affine, which does
+endpoints \emph{are not} affine, since this restriction does not help in
+preventing write nondeterminism; read endpoints \emph{are} affine, which does
 prevent read nondeterminism. To see that \textsf{frP} is being used affinely,
-notice that it is rebound when deconstructing the value-channel pair from each
+notice that it is rebound when deconstructing the value-endpoint pair from each
 read operation, so it can be used again.
 
 To see that the write token is being passed around appropriately, notice that

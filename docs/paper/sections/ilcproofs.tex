@@ -1,8 +1,8 @@
 \section{Type Soundness}
 \label{sec:ilcproofs}
 
-We first define syntax for process and channel typings, which each map a kind of
-identifier (process name or channel name) to its associated type:
+We first define syntax for process and endpoint typings, which each map a kind of
+identifier (process name or endpoint name) to its associated type:
 
 \begin{grammar}
     Process pool typings
@@ -10,7 +10,7 @@ identifier (process name or channel name) to its associated type:
     & $\PrTy$
     &$\bnfas$& $\emptyctxt \bnfalt \PrTy,\ProcNm{p} U$
     \\
-    Channel pool typings
+    Endpoint pool typings
     %(maps channel names to their types)
     & $\ChTy$
     &$\bnfas$& $\emptyctxt \bnfalt \ChTy,c:\tyRd{S} \bnfalt \ChTy,c:\tyWr{S}$
@@ -487,7 +487,7 @@ show that typing of terms is preserved by substitution.
   \end{proof}
 \end{lemma}
 
-\begin{lemma}[Substitution (Read Channel)]\label{lem:sub-rd}
+\begin{lemma}[Substitution (Read Endpoint)]\label{lem:sub-rd}
   If
   \begin{enumerate}
   \item $\ChTy; \Delta, x : \tyRd{S}; \Gamma |- e : U$,
@@ -499,7 +499,7 @@ show that typing of terms is preserved by substitution.
   \end{proof}
 \end{lemma}
 
-\begin{lemma}[Substitution (Write Channel)]\label{lem:sub-wr}
+\begin{lemma}[Substitution (Write Endpoint)]\label{lem:sub-wr}
   If
   \begin{enumerate}
   \item $\ChTy; \Delta; \Gamma, x : \tyWr{S} |- e : U$,
@@ -884,8 +884,8 @@ $\JCty{\StTy'}{\ChTy'}{C'}{\PrTy'}$.
 \section{Confluence}
 
 The following lemmas state structural invariants over write effects and read
-channels of a well-typed configuration: at most one process owns the write token
-$\wrtok$, and every read channel end is a non-duplicable (affine) resource.
+endpoints of a well-typed configuration: at most one process owns the write token
+$\wrtok$, and every read endpoint is a non-duplicable (affine) resource.
 
 %\begin{lemma}[Unique writer process]
 %\label{lem:UniqueWriter}
@@ -909,7 +909,7 @@ By structural induction over the typing derivation for $C$.
 \begin{lemma}[Unique reader process]
 \label{lem:UniqueReader}
 If $C$ is a well-typed configuration with process pool~$\pi$, 
-and $c$ is a read channel in this configuration,
+and $c$ is a read endpoint in this configuration,
 then there exists at most one process in $\pi$ where $c$ appears.
 \begin{proof}
 By structural induction over the typing derivation for $C$.
