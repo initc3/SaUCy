@@ -47,7 +47,7 @@ elimination forms for products and sums, the label $\wm$ denotes the variants
 that can be sent over channels (sendable types).
 
 Values in ILC (written $v$) include unit, pairs, sums, lambda expressions,
-channels (written $c$), and banged values.  ILC supports a fairly standard
+channel endpoints (written $c$), and banged values.  ILC supports a fairly standard
 feature set of expressions. Bang-typed values have introduction form $\eBang{e}$
 and elimination form $\eUnbang{e}$. The more interesting expressions are those
 related to communication and concurrency:
@@ -213,8 +213,12 @@ to affine variables.
 Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic syntax and
 semantics of ILC, respectively.
 %
-We define a \emph{configuration}~$C$ as a tuple of dynamic channel and process names~$\Sigma$, 
-and a pool of running and terminated processes~$\pi$.
+We formally distinguish between the names of channel endpoints, Read$(d)$,
+Write$(d)$, and the channel $d$ itself that binds them. (Though, we informally
+refer to channel endpoints as names and only make the distinction when
+relevant.)  We define a \emph{configuration}~$C$ as a tuple of dynamic channel
+and process names~$\Sigma$, and a pool of running and terminated
+processes~$\pi$.
 %\Secref{sec:ilcproofs}.
 
 We read the configuration reduction judgment $C_1 ---> C_2$ as ``configuration
@@ -241,10 +245,9 @@ and choice-write interactions (via \Rule{cw}).
 %
 To avoid allocating the same name twice, 
 the name set~$\Names$ records names of allocated channels and processes.
-We formally distinguish between the names of channel endpoints, Read$(d)$, Write$(d)$,
-and the channel $d$ itself that binds them. We define the relation
+We define the relation
 $c_1 \leadsto c_2$ to hold when $c_1$ is the write endpoint of a corresponding
-read endpoint $c_2$. 
+read endpoint $c_2$, as stated in the following bind rule.
 \begin{mathpar}
 \Infer{bind}
 { }

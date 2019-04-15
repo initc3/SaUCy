@@ -236,14 +236,15 @@ message), so the three properties hold trivially.
 
 In Figure~\ref{func:com} (right), we define a simplified version of
 $\Func_{\textsc{com}}$ in ILC to highlight some key features of the
-language. The function \textsf{fCom} takes two channels as arguments: a write
-channel \textsf{toQ : Wr Msg} (for sending messages of type \textsf{Msg} to $Q$)
-and a read channel \textsf{frP : Rd Msg} (for receiving messages of type
-\textsf{Msg} from $P$). At a high level, it should be clear how the
-communication pattern in \textsf{fCom} follows that in $\Func_{\textsc{com}}$,
-but there are a few details that require further explanation. These details are
-better explained in the context of ILC's type system, which we give a quick tour
-of next.
+language. The function \textsf{fCom} takes two channel endpoints as
+arguments. (When the context is clear, we refer to ``channel endpoints'' as
+simply ``channels.'') The first is a write channel \textsf{toQ : Wr Msg} (for
+sending messages of type \textsf{Msg} to $Q$), and the second is a read channel
+\textsf{frP : Rd Msg} (for receiving messages of type \textsf{Msg} from $P$). At
+a high level, it should be clear how the communication pattern in \textsf{fCom}
+follows that in $\Func_{\textsc{com}}$, but there are a few details that require
+further explanation. These details are better explained in the context of ILC's
+type system, which we give a quick tour of next.
 
 \subsection{ILC Type System}
 \label{subsec:type-tour}
@@ -265,9 +266,10 @@ invariants:
   process $B$ to write to some other process.
   
 \item \emph{The order of activations is deterministic.} Each channel (or
-  ``tape'' in ITM parlance) has a read end and a write end. The read end is an
-  affine resource, and so it is owned by at most one process. This ensures that
-  each write operation corresponds to a single, unique read operation.
+  ``tape'' in ITM parlance) has a read endpoint and a write endpoint. The read
+  endpoint is an affine resource, and so it is owned by at most one
+  process. This ensures that each write operation corresponds to a single,
+  unique read operation.
 \end{itemize}
 
 Intuitively, the first invariant rules out the possibility of write
@@ -321,11 +323,12 @@ this later).
 {\Delta_1,\Delta_2,\wrtok; \Gamma|- \eWr{e_1}{e_2} : \tyUnit}
 \end{mathpar}
 Its typing rule says that if we own the write token, and we can partition the
-affine context as $\Delta_1, \Delta_2$ such that $e_1$ has type $S$ under contexts $\Delta_1;
-\Gamma$ and $e_2$ has a type $\tyWr{S}$ under contexts $\Delta_2; \Gamma$, then the expression
-has type $\tyUnit$ (unit).  Notice that typing a write expression spends the
-write token, and so it cannot execute another write until it gets
-``reactivated'' by reading from some other process.
+affine context as $\Delta_1, \Delta_2$ such that $e_1$ has type $S$ under
+contexts $\Delta_1; \Gamma$ and $e_2$ evaluates to a write channel (of type
+$\tyWr{S}$) under contexts $\Delta_2; \Gamma$, then the expression has type
+$\tyUnit$ (unit).  Notice that typing a write expression spends the write token,
+and so it cannot execute another write until it gets ``reactivated'' by reading
+from some other process.
 
 The read expression $\eLetRd{e_1}{x}{e_2}$ reads a value on the read channel
 that $e_1$ evaluates to and binds the value-channel pair as $x$ in the affine
@@ -337,10 +340,11 @@ context of $e_2$. Rebinding the read channel allows it to be reused.
 \Delta_2,\wrtok, x : \tyTensor{\tyBang{S}}{\tyRd{S}} ; \Gamma |- e_2 : U}
 {\Delta_1,\Delta_2 ; \Gamma |- \eLetRd{e_1}{x}{e_2} : U}  
 \end{mathpar}
-Its typing rule says that if we can partition the affine context as $\Delta_1, \Delta_2$
-such that $e_1$ has type $\tyRd{S}$ under contexts $\Delta_1; \Gamma$, and $e_2$ has type
-$U$ under contexts $\Delta_2, \wrtok, x:\tyTensor{\tyBang{S}}{{\tyRd{S}}} ; \Gamma$, then
-the expression has type $U$.
+Its typing rule says that if we can partition the affine context as $\Delta_1,
+\Delta_2$ such that $e_1$ evaluates to a read channel (of type $\tyRd{S}$) under
+contexts $\Delta_1; \Gamma$, and $e_2$ has type $U$ under contexts $\Delta_2,
+\wrtok, x:\tyTensor{\tyBang{S}}{{\tyRd{S}}} ; \Gamma$, then the expression has
+type $U$.
 
 There are a few things to unpack here. First, we explain the affine product type
 $\tyTensor{\tyBang{S}}{{\tyRd{S}}}$. Since sendable values are unrestricted
