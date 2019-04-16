@@ -246,12 +246,7 @@ To avoid allocating the same name twice,
 the name set~$\Names$ records names of allocated endpoints and processes.
 We define the relation
 $c_1 \leadsto c_2$ to hold when $c_1$ is the write endpoint of a corresponding
-read endpoint $c_2$, as stated in the following bind rule.
-\begin{mathpar}
-\Infer{bind}
-{ }
-{\textrm{Write}(d) \leadsto \textrm{Read}(d)}
-\end{mathpar}
+read endpoint $c_2$.
 
 %
 %We assume an ambient, unspecified theory of channel names, including an

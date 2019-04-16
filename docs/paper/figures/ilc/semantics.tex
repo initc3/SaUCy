@@ -49,13 +49,23 @@ $\bullet \bnfalt \ePair{E}{e}{\ell} \bnfalt \ePair{v}{E}{\ell} \bnfalt \eInjj{\e
 \end{figure*}
 
 \begin{figure*}
-\centering
-\judgbox{C_1 \equiv C_2}{~~Configurations~$C_1$ and $C_2$ are equivalent.}
-\begin{mathpar}
-\Infer{permProcs}
-{  \Procs_1 \equiv_\textsf{perm} \Procs_2 }
-{ \Config{\Names}{\Store}{\Procs_1} \equiv \Config{\Names}{\Store}{\Procs_2} }
-\end{mathpar}
+  \centering
+  \begin{subfigure}{0.48\textwidth}
+    \judgbox{C_1 \equiv C_2}{~~Configurations~$C_1$ and $C_2$ are equivalent.}
+    \begin{mathpar}
+      \Infer{permProcs}
+            {  \Procs_1 \equiv_\textsf{perm} \Procs_2 }
+            { \Config{\Names}{\Store}{\Procs_1} \equiv \Config{\Names}{\Store}{\Procs_2} }
+    \end{mathpar}
+  \end{subfigure}%
+  \begin{subfigure}{0.48\textwidth}
+    \judgbox{c_1 \leadsto c_2}{~~Write endpoint~$c_1$ connects to read endpoint $c_2$.}
+    \begin{mathpar}
+      \Infer{bind}
+            { }
+            {\mathsf{Write}(d) \leadsto \mathsf{Read}(d)}
+    \end{mathpar}    
+  \end{subfigure}  
 %\caption{Structural congruence.}
 %\label{fig:structural-congruence}
 %\end{figure*}
@@ -88,7 +98,7 @@ C_2' \equiv C_2
 }
 { C_1 ---> C_2 }
 \and
-\Infer{nu}{ d \notin \Names \\ \mathsf{Write}(d) \leadsto \mathsf{Read}(d)}
+\Infer{nu}{ d \notin \Names}
 { \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eNu{(x_1, x_2)}{e} ]}} --->
   \Config{\Names, d}{\Store}{\Procs, \ProcNm{p} \proc{E[
         [\mathsf{Read}(d)/x_1][\mathsf{Write}(d)/x_2]e ]}}}
