@@ -1,3 +1,3 @@
 let reentrantF ... frP frA =
   loop ($\lambda$ msg . (let $($!Ok, frA$)$ = rd frA in wr msg $->$ toQ)
-            $\xFork$ wr msg $->$ toA) frP
+               $\xFork$ wr msg $->$ toA) frP
