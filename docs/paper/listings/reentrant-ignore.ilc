@@ -5,6 +5,6 @@ letrec discardingF ... frP frA =
       choice
       | (_,frP,frA)@(rd frP) $=>$ wr Discard $->$ toP ;
       			    iloop $\eUnit$ frP frA
-      | (_,frA,frP)@(rd frA) $=>$ wr msg $->$ toQ ;
+      | (_,frP,frA)@(rd frA) $=>$ wr msg $->$ toQ ;
       			    discardingF ... frP frA
       in iloop $\eUnit$ frP frA
