@@ -38,7 +38,7 @@ property, \emph{not} deadlock freedom.)
 Informally, $\JCterm{C}$ holds when either:
 \begin{enumerate}[leftmargin=*]
  \item $C$ is fully normal: Every process in~$C$ is normalized (consists of a
-   value).
+   value), or
  \item $C$ is (at least partially) deadlocked: Some (possibly empty) portion of
    $C$ is normal, and there exists one or more reading processes in $C$, or
    there exists one or more writing processes in $C$, however, no reader-writer
@@ -113,11 +113,11 @@ these choices in a related configuration:
 For all well-typed configurations $C$,
 %
  if $\JCred{C}{C_1}$ 
-and $\JCred{C}{C_2}$ 
+and $\JCred{C}{C_2}$,
 then 
 there exists a renaming function~$f$ 
 such that either:
-\begin{enumerate}
+\begin{enumerate}[leftmargin=*]
 \item %$\JCterm{C_1}$ and 
 $C_1 = f(C_2)$,
 or
@@ -146,7 +146,7 @@ For all well-typed configurations $C$,
  if $\JCredm{C}{C_1}$ 
 and $\JCredm{C}{C_2}$ 
 and $\JCterm{C_1}$
-and $\JCterm{C_2}$
+and $\JCterm{C_2}$,
 then 
 there exists renaming function~$f$ 
 such that $C_1 = f(C_2)$.

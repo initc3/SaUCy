@@ -150,16 +150,16 @@ control over the corrupted parties.  For each party, depending on the value of
 \textsf{crupt}, either we run a copy of the honest party, or connect the
 channels to the adversary. This is implemented in the function
 \textsf{corruptOrNot}.
-\lstinputlisting[style=myilc,belowskip=-0.3\baselineskip]{listings/loop.ilc}
+%\lstinputlisting[style=myilc,belowskip=-0.3\baselineskip]{listings/loop.ilc}
 \lstinputlisting[style=myilc,belowskip=-0.3\baselineskip]{listings/fwd.ilc}
 \lstinputlisting[style=myilc]{listings/corruptOrNotShort.ilc}
-The \textsf{loop} function reads from an endpoint \textsf{c}, applies a function
-\textsf{f} to the value read over the channel, then recurses.  The \textsf{fwd}
-function forwards messages from the endpoint \textsf{frS} to \textsf{toR}. In
-\textsf{corruptOrNot}, if a party is corrupted, messages from the functionality
-and the other protocol party are forwarded to the adversary; messages from the
-adversary are forwarded to the functionality. Otherwise, the party is run as
-normal.
+%The \textsf{loop} function reads from an endpoint \textsf{c}, applies a function
+%\textsf{f} to the value read over the channel, then recurses.
+The \textsf{fwd} function simply forwards messages received on the read endpoint
+\textsf{frS} to the write endpoint \textsf{toR}. In \textsf{corruptOrNot}, if a
+party is corrupted, messages from the functionality and the other protocol party
+are forwarded to the adversary; messages from the adversary are forwarded to the
+functionality. Otherwise, the party is run as normal.
 
 We also model a strong form of communication channels between the parties: $P$
 and $Q$ are connected by a pair of raw ILC channels. Communication over these
@@ -239,7 +239,7 @@ expressed in the ideal world:
          \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mc{S}}
     {\mc{S} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
 \end{mathpar}
-To remark on a few notation choices: we make the functionality explicit, so emulation
+To remark on a few notational choices: We make the functionality explicit, so emulation
 is a relationship between protocol-functionality pairs.  Here,
 $\mathbbm{1}_\mc{A}$ is the dummy adversary, which just relays messages between
 the environment and the parties/functionality. We elide the standard dummy lemma that shows
@@ -258,11 +258,11 @@ can do, the environment can achieve using $\mathbbm{1}_\mc{A}$.
 %% We have to translate \emph{attacker behaviors} of an arbitrary real world adversary $\mc{A}$ to a simulated adversary $\mc{(S~A)}$ in the ideal world.
 
 Unfortunately this simple definition turns out to be vacuous: a degenerate
-protocol $\pi$ can emulate anything simply failing to be $\keyword{PPT}$, e.g. by
+protocol $\pi$ can emulate anything simply failing to be $\keyword{PPT}$, e.g., by
 diverging. To put it another way, the problem is the definition imposes a proof
 obligation on the simulator $\mc{S}$ but not on $\pi$.  What we want to say is
-that the \emph{real world} protocol $(\pi, \mc{F}_1)$ must be well behaved
-whenever the \emph{ideal world} $(\phi, \mc{F}_2)$ is.  However, even a reasonable
+that the real world protocol $(\pi, \mc{F}_1)$ must be well behaved
+whenever the ideal world $(\phi, \mc{F}_2)$ is.  However, even a reasonable
 protocol can result in non-PPT executions if paired with a divergent
 environment.
 To solve this problem,
@@ -462,10 +462,14 @@ standard rhythm. We start with a security definition as an ideal functionality
 (such as $\Func_{\textsc{com}}$), give the protocol, construct a simulator, and
 finally complete the relational analysis on paper.
 
-Commitments are one of the simplest UC primitives, though as a case study this serves two main purposes.
-First, the proof demonstrates several representative UC techniques~\cite{lindell2017simulate}, in particular the simulator makes use of a ``trusted setup'' and extracts inputs from a corrupt sender.
+While commitments are one of the simplest UC primitives, as a case study, this
+serves two main purposes.  First, the proof demonstrates several representative
+UC techniques~\cite{lindell2017simulate}, in particular the simulator makes use
+of a ``trusted setup'' and extracts inputs from a corrupt sender.
 %The simulator's proof obligation is to use this trapdoor to simulate and extract.
-Second, the protocol makes use of computational primitives and thus requires a reduction step in the proof, which can go through because of ILC's confluent design.
+Second, the protocol makes use of computational primitives and thus requires a
+reduction step in the proof, which can go through because of ILC's confluent
+design.
 
 % Commitments are a simple functionality.
 % We choose this because it illustrates a common pattern.
@@ -478,8 +482,8 @@ Second, the protocol makes use of computational primitives and thus requires a r
 \paragraph{Extending ILC with cryptographic primitives.}
 The UC commitment protocol makes use of a cryptographic primitive, namely a
 trapdoor pseudorandom generator. This is provided by extending ILC with new
-syntactic forms, along with the their static and dynamic semantics, as given in
-the online appendix.
+syntactic forms, along with their static and dynamic semantics (given in
+the online appendix).
 While in a symbolic setting we would instantiate these with algebraic data, in ILC we give the stepping rule in terms of an arbitrary pseudorandom function family, i.e., the actual computational definition.
 This can be instantiated concretely for execution (e.g., with an RSA-based function) or treated abstractly in the metatheory when we get to the reduction step of the proof.
 % The proof includes a computational reduction step, which in turn relies on the confluence property of ILC.
@@ -518,14 +522,14 @@ given in the online appendix, is trivial, but necessary because our protocol emu
 
 The ideal world simulator generates its own ``fake'' CRS for which it stores the
 trapdoors. The string $\sigma$ is not truly random, but instead is the result of
-combining two evaluations of the PRGs. In Figure~\ref{fig:sim-short} we show the
+combining two evaluations of the PRGs. In Figure~\ref{fig:sim-short}, we show the
 case that the committer $P$ is corrupt (the other case is in the online appendix). The
-simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit}' ~ y)$;
+simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit'~y})$;
 in the real world, this is relayed by the dummy adversary to Q, who outputs
 \textsf{Committed} back to the environment. Hence to achieve the same effect in
-the ideal word, the simulator must send $(\mathsf{Commit}~b)$ to
-$\Func_{\textsc{com}}$. To extract $b$ from $y$, the simulator makes use of the
-PRG trapdoor check which one has $y$ in its range.  It is necessary to argue by
+the ideal word, the simulator must send $(\mathsf{Commit~b})$ to
+$\Func_{\textsc{com}}$. To extract $\mathsf{b}$ from $\mathsf{y}$, the simulator makes use of the
+PRG trapdoor check which one has $\mathsf{y}$ in its range.  It is necessary to argue by
 cryptographic reduction that this simulation is sound, which we do next.
 
 \begin{figure}
@@ -560,7 +564,7 @@ proof follows the one in Canetti and Fischlin~\cite{canetti2001commitments}.
   $D_{\mc{R}} \sim D_{\mc{R}}'$), and then by showing that breaking the
   pseudorandomness of the PRG also reduces to distinguishing between
   $D_{\mc{R}}'$ and $D_{\mc{I}}$ (hence, $D_{\mc{R}}' \sim D_{\mc{I}}$). By the
-  transitivity of indistinguishability, ${D_{\mc{R}} \sim D_{\mc{I}}}$.
+  transitivity of indistinguishability, we have that ${D_{\mc{R}} \sim D_{\mc{I}}}$.
 \end{sketch}
 
 Here, ILC's confluence property plays a critical role: It is necessary for
@@ -580,7 +584,7 @@ flavor, and so they are better addressed from a PL standpoint.  To illustrate,
 consider the following (untypeable) ILC process \textsf{reentrantF}, which
 allows an adversary $\mc{A}$ to control the delivery schedule of messages from
 $P$ to $Q$ (i.e., an asynchronous channel):
-%\lstinputlisting[style=myilc,belowskip=-0.5\baselineskip]{listings/loop.ilc}
+\lstinputlisting[style=myilc,belowskip=-0.3\baselineskip]{listings/loop.ilc}
 \lstinputlisting[style=myilc]{listings/reentrant.ilc}
 
 After receiving input from party $P$, it notifies the adversary, then forks a

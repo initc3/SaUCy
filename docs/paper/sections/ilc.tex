@@ -43,8 +43,7 @@ which includes the multiplicity labels and the write label $\wm$ (related to
 write effects). On introduction and elimination forms for functions
 (abstraction, application, and fixed points), the label $\wm$ denotes variants
 that move around the write token as explained above. On introduction and
-elimination forms for products and sums, the label $\wm$ denotes the variants
-that can be sent over channels (sendable types).
+elimination forms for products and sums, the label $\wm$ denotes the sendable variants.
 
 Values in ILC (written $v$) include unit, pairs, sums, lambda expressions,
 channel endpoints (written $c$), channels \todo{}, and banged values.  ILC
@@ -64,7 +63,7 @@ interesting expressions are those related to communication and concurrency:
     over the channel and the two read endpoints are rebound in a 3-tuple as $x_1$
     in $e_3$ or $x_2$ in $e_4$. Here, we show only binary choice, but it can be
     generalized to the $n$-ary case.
-  \item \emph{Fork:} $\eFork{e_1}{e_2}$ forks a child process $e_1$ and
+  \item \emph{Fork:} $\eFork{e_1}{e_2}$ spawns a child process $e_1$ and
     continues as $e_2$.
 \end{itemize}
 
@@ -84,18 +83,18 @@ The typing rules for the functional fragment of ILC are fairly standard, except
 that they now have unrestricted and affine variants (and for some, sendable
 variants).
 
-The rule for unrestricted abstraction (iabs) extends the unrestricted
+The rule for unrestricted abstraction (uabs) extends the unrestricted
 context $\Gamma$ with $x : A$ before checking the body $e$ of the abstraction. Notice
 that because unrestricted abstractions can be duplicated, the body must be
 affinely closed (cannot contain free affine variables).
 
-The rule for write abstraction (wabs) is similar to iabs. The only difference is
+The rule for write abstraction (wabs) is similar to uabs. The only difference is
 that wabs extends the affine context with the write token before checking the
 body $e$ of the abstraction. Dually, the write application rule (wapp)
 stipulates that a process must own the write token in order to apply a write
 abstraction.
 
-The rule for affine abstraction (aabs) is analagous to iabs, but notice that the
+The rule for affine abstraction (aabs) is analagous to uabs, but notice that the
 body \emph{need not} be affinely closed, since affine abstractions cannot be
 duplicated. It turns out that most affine functions we write \emph{are} affinely
 closed, and so such a function $f : X \multimap U$ can be made into an unrestricted
@@ -225,7 +224,7 @@ We read the configuration reduction judgment $C_1 ---> C_2$ as ``configuration
 $C_1$ steps to configuration $C_2$,'' 
 %
 and the local stepping judgment $e_1 \longrightarrow e_2$ for a single process~$e$ as
-``expression $e_1$ steps to expression $e_2$.
+``expression $e_1$ steps to expression $e_2$.''
 %
 The rules of local stepping follow a standard call-by-value semantics, 
 where we streamline the definition with an evaluation context~$E$.
