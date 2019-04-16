@@ -212,11 +212,10 @@ to affine variables.
 Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic syntax and
 semantics of ILC, respectively.
 %
-We formally distinguish between the names of channel endpoints---$\textrm{Read}(d)$ and
-$\textrm{Write}(d)$---and the channel $d$ itself that binds them. (Though, we informally
-refer to channel endpoints as names and only make the distinction when
-relevant.)  We define a \emph{configuration}~$C$ as a tuple of dynamic channel
-and process names~$\Sigma$, and a pool of running and terminated
+We formally distinguish between the names of channel
+endpoints---$\mathsf{Read}(d)$ and $\mathsf{Write}(d)$---and the channel $d$
+itself that binds them. We define a \emph{configuration}~$C$ as a tuple of
+dynamic channel and process names~$\Sigma$, and a pool of running and terminated
 processes~$\pi$.
 %\Secref{sec:ilcproofs}.
 
@@ -243,7 +242,7 @@ read-write interactions (via \Rule{rw}),
 and choice-write interactions (via \Rule{cw}).
 %
 To avoid allocating the same name twice, 
-the name set~$\Names$ records names of allocated endpoints and processes.
+the name set~$\Names$ records names of allocated channels and processes.
 We define the relation
 $c_1 \leadsto c_2$ to hold when $c_1$ is the write endpoint of a corresponding
 read endpoint $c_2$.
