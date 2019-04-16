@@ -46,10 +46,12 @@ that move around the write token as explained above. On introduction and
 elimination forms for products and sums, the label $\wm$ denotes the sendable variants.
 
 Values in ILC (written $v$) include unit, pairs, sums, lambda expressions,
-channel endpoints (written $c$), and banged values.  ILC
-supports a fairly standard feature set of expressions. Bang-typed values have
-introduction form $\eBang{e}$ and elimination form $\eUnbang{e}$. The more
-interesting expressions are those related to communication and concurrency:
+channel endpoints (written $c$), and banged values. We distinguish between the
+names of channel endpoints---$\mathsf{Read}(d)$ and $\mathsf{Write}(d)$---and
+the channel $d$ itself that binds them. ILC supports a fairly standard feature
+set of expressions. Bang-typed values have introduction form $\eBang{e}$ and
+elimination form $\eUnbang{e}$. The more interesting expressions are those
+related to communication and concurrency:
 \begin{itemize}[leftmargin=*]
   \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read endpoint $x_1$ and
     a corresponding write endpoint $x_2$ in $e$.
@@ -71,14 +73,29 @@ interesting expressions are those related to communication and concurrency:
 \label{subsec:types}
 
 The typing rules of ILC are given in Figure~\ref{fig:full-type-expressions}. An
-algorithmic version of the rules appears in the online appendix~\cite{liao2019ilc}.
+algorithmic version of the rules appears in the online
+appendix~\cite{liao2019ilc}.
 
-To recap, we read the typing judgement $\Delta; \Gamma |- e : U$ as ``under affine context
-$\Delta$ and unrestricted context $\Gamma$, expression~$e$ has type $U$.'' Importantly,
-the typing rules maintain that only one process is active at any given time
-(unique ownership of the write token), and the order of activations is
-deterministic (unique ownership of read endpoints).
-
+To recap, the typing rules maintain that only one process is active at any given
+time (unique ownership of the write token), and the order of activations is
+deterministic (unique ownership of read endpoints). We read the typing judgement
+$\Delta; \Gamma |- e : U$ as ``under affine context $\Delta$ and unrestricted
+context $\Gamma$, expression~$e$ has type $U$.'' In full detail, the typing
+judgement also includes a typing context $\ChTy$, which maps channel names $d$
+to sendable types $S$. However, it is only used in two special rules for typing
+channel endpoints that do not arise for source level programs, but will be
+needed to typecheck a running program that has performed channel allocation:
+\begin{mathpar}
+\Infer{rdend}
+{\ChTy(d) = S}
+{\ChTy; \Delta; \Gamma |- \mathsf{Read}(d) : \tyRd{S}}
+%
+\and
+%
+\Infer{wrend}
+{\ChTy(d) = S}
+{\ChTy; \Delta; \Gamma |- \mathsf{Write}(d) : \tyWr{S}}
+\end{mathpar}
 The typing rules for the functional fragment of ILC are fairly standard, except
 that they now have unrestricted and affine variants (and for some, sendable
 variants).
@@ -212,9 +229,7 @@ to affine variables.
 Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic syntax and
 semantics of ILC, respectively.
 %
-We formally distinguish between the names of channel
-endpoints---$\mathsf{Read}(d)$ and $\mathsf{Write}(d)$---and the channel $d$
-itself that binds them. We define a \emph{configuration}~$C$ as a tuple of
+We define a \emph{configuration}~$C$ as a tuple of
 dynamic channel and process names~$\Sigma$, and a pool of running and terminated
 processes~$\pi$.
 %\Secref{sec:ilcproofs}.

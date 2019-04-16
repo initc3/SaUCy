@@ -2,10 +2,6 @@
 \centering
 \begin{subfigure}{0.48\textwidth}
 \begin{grammar}
-  Channel endpoints & $c$   &$\bnfas$& $\mathsf{Read}(d) ~|~ \mathsf{Write}(d)$
-  \\
-  Channel names & $d$ &$\bnfas$& $\cdots$
-  \\  
   Process names & $p,q$ &$\bnfas$& $\cdots$
   \\
   Name sets
@@ -34,7 +30,6 @@ $\bullet \bnfalt \ePair{E}{e}{\ell} \bnfalt \ePair{v}{E}{\ell} \bnfalt \eInjj{\e
 \\ &&& $\bnfaltbrk \eWr{E}{e} \bnfalt \eWr{v}{E} \bnfalt \eLetRd{E}{x}{e}$
 \\ &&& $\bnfaltbrk \eChoicee{E}{x_1}{e_3}{e_2}{x_2}{e_4} \bnfalt
 \eChoicee{c}{x_1}{e_3}{E}{x_2}{e_4}$
-\\ &&&
 %\\
 % Read contexts
 %  & $R$
