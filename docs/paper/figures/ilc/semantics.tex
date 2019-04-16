@@ -2,7 +2,7 @@
 \centering
 \begin{subfigure}{0.48\textwidth}
 \begin{grammar}
-  Channel endpoints & $c$   &$\bnfas$& $\textrm{Read}(d) ~|~ \textrm{Write}(d)$
+  Channel endpoints & $c$   &$\bnfas$& $\mathsf{Read}(d) ~|~ \mathsf{Write}(d)$
   \\
   Channel names & $d$ &$\bnfas$& $\cdots$
   \\  
@@ -10,7 +10,7 @@
   \\
   Name sets
   & $\Names$ 
-    & $\bnfas$ & $\emptyNames ~|~ \Names, c ~|~ \Names, p$
+    & $\bnfas$ & $\emptyNames ~|~ \Names, d ~|~ \Names, p$
   \\
   Process pools
   & $\Procs$ 
@@ -88,9 +88,13 @@ C_2' \equiv C_2
 }
 { C_1 ---> C_2 }
 \and
-\Infer{nu}{ c_1, c_2 \notin \Names \\ c_2 \leadsto c_1}
+\Infer{nu}{ d \notin \Names \\ \mathsf{Write}(d) \leadsto \mathsf{Read}(d)}
 { \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eNu{(x_1, x_2)}{e} ]}} --->
-  \Config{\Names, c_1, c_2}{\Store}{\Procs, \ProcNm{p} \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}}}
+  \Config{\Names, d}{\Store}{\Procs, \ProcNm{p} \proc{E[
+        [\mathsf{Read}(d)/x_1][\mathsf{Write}(d)/x_2]e ]}}}
+%\Infer{nu}{ c_1, c_2 \notin \Names \\ c_2 \leadsto c_1}
+%{ \Config{\Names}{\Store}{\Procs, \ProcNm{p} \proc{E[ \eNu{(x_1, x_2)}{e} ]}} --->
+%  \Config{\Names, c_1, c_2}{\Store}{\Procs, \ProcNm{p} \proc{E[ [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]}}}
 \and
 \Infer{rw}
 { c_2 \leadsto c_1 }
