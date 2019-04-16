@@ -1,6 +1,6 @@
 letrec sequentialF ... frP frA =
-  let $($!m, frP$)$ = rd frP in
-    wr m $->$ toA ;
+  let $($!msg, frP$)$ = rd frP in
+    wr msg $->$ toA ;
     let $($!Ok, frA$)$ = rd frA in
-      wr m $->$ toQ ;
+      wr msg $->$ toQ ;
       sequentialF ... frP frA

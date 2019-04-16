@@ -1,10 +1,10 @@
 letrec discardingF ... frP frA =
-  let $($!m, frP$)$ = rd frP in
-    wr m $->$ toA ;
+  let $($!msg, frP$)$ = rd frP in
+    wr msg $->$ toA ;
     letrec iloop $\eUnit$ frP frA =
       choice
       | (_,frP,frA)@(rd frP) $=>$ wr Discard $->$ toP ;
       			    iloop $\eUnit$ frP frA
-      | (_,frA,frP)@(rd frA) $=>$ wr m $->$ toQ ;
+      | (_,frA,frP)@(rd frA) $=>$ wr msg $->$ toQ ;
       			    discardingF ... frP frA
       in iloop $\eUnit$ frP frA
