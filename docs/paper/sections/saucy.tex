@@ -524,7 +524,7 @@ The ideal world simulator generates its own ``fake'' CRS for which it stores the
 trapdoors. The string $\sigma$ is not truly random, but instead is the result of
 combining two evaluations of the PRGs. In Figure~\ref{fig:sim-short}, we show the
 case that the committer $P$ is corrupt (the other case is in the online appendix). The
-simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit'~y})$;
+simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit\text{\textquotesingle}~y})$;
 in the real world, this is relayed by the dummy adversary to Q, who outputs
 \textsf{Committed} back to the environment. Hence to achieve the same effect in
 the ideal word, the simulator must send $(\mathsf{Commit~b})$ to
