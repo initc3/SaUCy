@@ -96,6 +96,10 @@ needed to typecheck a running program that has performed channel allocation:
 {\ChTy(d) = S}
 {\ChTy; \Delta; \Gamma |- \mathsf{Write}(d) : \tyWr{S}}
 \end{mathpar}
+This pair of rules establish the canonical forms for the types of channel
+endpoints, $\tyRd{S}$ and $\tyWr{S}$. We use the metavariable $c$ to range over
+these two canonical forms.
+
 The typing rules for the functional fragment of ILC are fairly standard, except
 that they now have unrestricted and affine variants (and for some, sendable
 variants).
