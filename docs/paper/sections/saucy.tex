@@ -524,7 +524,7 @@ combining two evaluations of the PRGs. In Figure~\ref{fig:sim-short}, we show th
 case that the committer $P$ is corrupt (the other case is in the online appendix). The
 simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit\text{\textquotesingle}~y})$;
 in the real world, this is relayed by the dummy adversary to Q, who outputs
-\textsf{Committed} back to the environment. Hence to achieve the same effect in
+\textsf{Receipt} back to the environment. Hence to achieve the same effect in
 the ideal word, the simulator must send $(\mathsf{Commit~b})$ to
 $\Func_{\textsc{com}}$. To extract $\mathsf{b}$ from $\mathsf{y}$, the simulator makes use of the
 PRG trapdoor check which one has $\mathsf{y}$ in its range.  It is necessary to argue by
