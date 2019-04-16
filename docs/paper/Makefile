@@ -1,5 +1,5 @@
 INPUTNAME=main
-PAPERNAME=saucy-paper
+PAPERNAME=ilc-paper
 TEXFILES = $(wildcard *.tex) $(wildcard bibs/*.bib) $(wildcard sections/*.tex)
 FIGURES = $(wildcard figures/*.tex) $(wildcard figures/ilc/*.tex) $(wildcard figures/session/*.tex) 
 GRAPHICS = $(wildcard graphics/*.eps) $(wildcard graphics/*.pdf) $(wildcard graphics/*.png)
