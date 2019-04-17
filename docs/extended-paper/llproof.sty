@@ -1,0 +1,187 @@
+%
+% Line-by-line proofs.
+%
+% Provides an environment `llproof', which is really a 4-column `tabular'
+%  with 5 logical categories.  Generally, a line has the following form:
+%
+%    LHM  \Pf{LeftOfTurnstile}{Turnstile}{RightOfTurnstile}{Justification}
+%
+% LHM is used for left-hand marginalia (e.g. \Hand, or labelling a particular line);
+% the \Pf macro fills in the rest of the line.
+%
+% ``Turnstile'' is often indeed \entails (or ``\vdash'', if you aren't me), but is really
+%  for whatever ``axis'' you want the lines to line up on.  For sequences of foo |-- bar
+%  judgments, that's the |--.  For sequences of, say, equalities and set inclusions,
+%  you want to line up the = and \subseteq.
+%
+% ``LeftOfTurnstile'' and ``RightOfTurnstile'', then, appear to the left and right of the turnstile.
+%
+% ``Justification'' is really the whole point; it's a required argument.  Nothing stops you
+% from writing {} for the justification, but you will (or should) feel uncomfortable when you do!
+% (I often write {XXX} here when using ``the power of wishful thinking'', or when I know
+% there's a lemma I can use, but don't want to break my flow by looking for it.)
+%
+% I said that the tabular environment underlying llproof has 4 columns, yet we seem
+% to have 5 columns: LHM, LeftOfTurnstile, Turnstile, RightOfTurnstile, and Justification.
+% In fact, LeftOfTurnstile and Turnstile---while semantically distinct in my mind---share
+% a single column of the tabular environment.  I did this so that ``turnstiles'' of different
+% widths in the same proof would look better: if one ``turnstile'' is much wider than the others,
+% its extra width would cause a lot of extra space around the other ``turnstiles''.
+%
+% My intent was always that judgments in llproof should look as much like regular judgments,
+% that is, judgments outside llproof (for example, in inference rules);
+% the extra space would wreck that.
+%
+% Note that the definition of \Pf ends with \\, so anything put after the end of \Pf
+%  will appear on the next line (becoming part of the next line's ``LHM'').
+%
+% Having said all that, in general, you shouldn't use \Pf directly.  For each kind of statement
+%  you want to include in a proof, you should declare a macro for it.
+% For example, we often talk about elements being contained \in sets, so:
+%
+%   \newcommand{\inPf}[3]  {\Pf{#1}{\in}{#2}{#3}}
+%
+% If you're the kind of person who likes to declare a macro for every judgment form,
+%  you just need to declare a second macro for use in llproof, with one extra argument
+%  for the Justification.  For example, if you already have
+%
+%   \newcommand{\typeof}[3]{{#1} \entails {#2} : {#3}}
+%
+% you could just add
+%
+%   \newcommand{\typeofPf}[4]{\Pf{}{}{\typeof{#1}{#2}{#3}}{#4}}
+%
+% This works OK, but your contexts and turnstiles won't line up.
+% So you probably want, instead,
+%
+%   \newcommand{\typeofPf}[4]{\Pf{#1}{\entails}{{#2} : {#3}}{#4}}
+%
+%
+%
+% Formatting macros:
+%
+%   \proofsep --- Add some space (but less than an entire blank line).
+%      Good for setting off logical ``blocks'' within a proof.
+%
+%   \decolumnizePf --- Ends the current llproof and starts another.
+%     Sometimes a very wide part of a column on one line makes the proof too wide,
+%      so it doesn't fit on a page.  \decolumnizePf makes the proof look less nice,
+%      but it's better to look less nice than to run off the edge of the page.
+%
+% Macros independent of whatever particular judgments you have:
+%
+%   \LetPf{#1}{#2} --- Renders as ``Let #1 = #2.''  The arguments are in math mode.
+%      Example:  \LetPf{x}{y + 1}
+%
+%   \supposePf{#1} --- Renders as ``Suppose #1.''  The argument is in math mode.
+%   \contraPf{#1}  --- Renders \Rightarrow\Leftarrow, then \Pf{#1}{}{}{By contradiction}
+%                      on a second line.  (Often acts as a closing delimiter for \supposePf.)
+%
+%   \trailingjust{#1} --- Renders a line that's blank except for #1 as the Justification.
+%      Good for justifications that are too wide to fit on one line.
+%
+% Equations:
+%
+%   \eqPf{L}{R}{Just} --- Renders as ``L = R   Just'', with = as the ``turnstile''.
+%   \eqPfParen{L}{R}{Just}  --- Renders as ``(L) = (R)  Just''.
+%   \eqPfParenL{L}{R}{Just}  --- Renders as ``(L) = R  Just''.
+%   \eqPfParenR{L}{R}{Just}  --- Renders as ``L = (R)  Just''.
+%
+%      (There's a good argument to be made that \eqPfParen should be the default,
+%      and \eqPf should be \eqPfRaw or something.  The braces in the TeX source
+%      seem to subconsciously suggest that the rendered output will have clear delimiters,
+%      but it doesn't; for a bad time, write \eqPf{X = Y}{X = id(Y)} {id is the identity function}.)
+%
+%   \continueeqPf{R}{Just}  --- Renders as `` = R  Just'', e.g.
+%
+%        \eqPf{X}{Y}   {By above equation}
+%        \continueeqPf{Y'}   {By \Lemmaref{lem:i-like-to-prime-Y}}
+%
+%   \rightstarteqPf{R}{Just}  --- Renders as ``    R  Just''.  Good for animals that are
+%      so long that a line only fits one of them.
+%      If you \rightstarteqPf, the next line must be \continueeqPf.
+%
+% Local macros, which don't generate an entire line:
+%
+%   \ditto  --- Renders as ditto marks.  I use this in the ``Justification'' when, say,
+%          applying a single lemma gives several judgments as output.
+%          (I *never* use it when I am repeatedly applying a lemma or repeatedly applying
+%          the induction hypothesis, but that's really a matter of taste.)
+%
+%   \Hand  XXX
+
+
+
+%
+% TODO:
+%   Documentation.
+%
+
+\ProvidesPackage{llproof}[2015/06/09 - First release]
+
+\RequirePackage{joshuadunfield}
+\RequirePackage{longtable}
+
+% Line-by-line proofs
+\setlength\LTleft{0.5cm}
+\newcommand{\BeginProof}{\smallskip \renewcommand{\arraystretch}{1.1} \begin{longtable}{r@{}r @{} l  l}}
+\newcommand{\EndProof}{\end{longtable} \renewcommand{\arraystretch}{\mydefaultarraystretch} \smallskip}
+\newenvironment{llproof}{\BeginProof}{\EndProof}
+
+\newcommand{\Pf}[4] {&$#1$ $#2$\, & $#3$ & #4 \\}
+\newcommand{\inPf}[3]  {\Pf{#1}{\in}{#2}{#3}}
+\newcommand{\notinPf}[3]  {\Pf{#1}{\notin}{#2}{#3}}
+\newcommand{\stepPf}[3] {\Pf{#1}{\,\step\,}{#2}{#3}}
+% \newcommand{\EPf}[3] {\Pf{#1}{\Entails}{#2}{#3}}
+\newcommand{\LetPf}[2] {\Pf{\text{Let}\,~{#1}}{=\,}{#2\text{.}}}
+\newcommand{\ForallPf}[3] {\Pf{\text{For all}\,~{#1}}{\in\,}{#2}{#3}}
+\newcommand{\ePf}[3] {\Pf{#1}{\entails\,}{#2}{#3}}
+\newcommand{\EPf}[3] {\Pf{#1}{||-\,}{#2}{#3}}
+\newcommand{\eqPf}[3] {\Pf{#1}{=\,}{#2}{#3}}
+\newcommand{\neqPf}[3] {\Pf{#1}{\neq\,}{#2}{#3}}
+\newcommand{\NOTePf}[3] {\Pf{#1}{\notentails\;}{#2}{#3}}
+\newcommand{\PfTwo}[7]{\Pf{\arrayenvr{{#1}\\{#4}}}{\arrayenvl{{#2}\\{#5}}}{\arrayenvl{{#3}\\{#6}}}%
+                                              {\drophalf{\!\ensuremath{\left\} \begin{array}{r l} \,\\ \, \end{array}\!\!\!\!\!%
+                                                      \text{#7} \right.}}}}
+
+\newcommand{\proofsep}{\,\\[-0.5em]}
+\newcommand{\decolumnizePf}{\end{llproof} ~\\[-1.0ex] \begin{llproof}}
+
+\newcommand{\mkpf}[4] {\Pf{#2}{#1\,}{#3}{#4}}
+\newcommand{\supposePf}[1] {\Pf{\text{Suppose}\,~{#1}\text{.}}{}{}{}}
+
+
+\newcommand{\eqPfParen}[3] {\eqPf{(#1)}{(#2)}{#3}}
+\newcommand{\eqPfParenL}[3] {\eqPf{(#1)}{#2}{#3}}
+\newcommand{\eqPfParenR}[3] {\eqPf{#1}{(#2)}{#3}}
+
+\newcommand{\sectPf}[3] {\mkpf{\sect}{#1}{#2}{#3}}
+\newcommand{\unionPf}[3] {\mkpf{\union}{#1}{#2}{#3}}
+
+\newcommand{\equivPf}[3] {\mkpf{\equiv}{#1}{#2}{#3}}
+\newcommand{\equivPfParen}[3] {\equivPf{(#1)}{(#2)}{#3}}
+\newcommand{\equivPfParenL}[3] {\equivPf{(#1)}{#2}{#3}}
+\newcommand{\equivPfParenR}[3] {\equivPf{#1}{(#2)}{#3}}
+\newcommand{\continueequivPf}[2] {\equivPf{~}{#1}{#2}}
+\newcommand{\continueequivPfParen}[2] {\equivPf{~}{#1}{#2}}
+
+
+\newcommand{\continueeqPf}[2] {\eqPf{~}{#1}{#2}}
+\newcommand{\continueeqPfParen}[2] {\eqPf{~}{(#1)}{#2}}
+\newcommand{\rightstarteqPf}[1] {\mkpf{~}{~}{#1}{~}}
+\newcommand{\subseteqPf}[3] {\mkpf{\subseteq}{#1}{#2}{#3}}
+\newcommand{\supseteqPf}[3] {\mkpf{\supseteq}{#1}{#2}{#3}}
+
+\newcommand{\ditto}{\ensuremath{''}}
+\newcommand{\trailingjust}[1]{\Pf{}{}{}{~~{#1}}}
+
+\newcommand{\contraPf}[1] {%
+          \Pf{\Rightarrow\Leftarrow}{}{} {}%
+          \Pf{#1}{}{} {By contradiction}%
+       }
+
+
+\newcommand{\byinv}[1]{By inversion (\rulename{#1})}
+\newcommand{\byrule}[1]{By rule \rulename{#1}}
+
+

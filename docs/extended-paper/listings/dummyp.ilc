@@ -1,0 +1,2 @@
+dummyP :: $\forall$ a b ... . $\tyNat -> [\tyBit] -> \tyWr{\mathsf{a}} -> \cdots$ b
+let dummyP k r toZ toF toQ frZ frF frQ = fwd toF frZ $\xFork$ fwd toZ frF

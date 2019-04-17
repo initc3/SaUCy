@@ -1,0 +1,12 @@
+fCrs :: $\forall$ a ... . $\tyNat -> [\tyBit] -> \keyword{Crupt} -> \cdots$ a
+let fCrs k bits crupt toP toQ toA frP frQ frA =
+  let ($\sigma$, bits) = sample (4*k) bits in
+  let ($\mathsf{r}_0$, bits) = sample k bits in
+  let ($\mathsf{r}_1$, bits) = sample k bits in    
+  let $\mathsf{pk}_0$ = kgen k $\mathsf{r}_0$ in
+  let $\mathsf{pk}_1$ = kgen k $\mathsf{r}_1$ in					   
+  let pub = PublicStrings $\sigma$ $\mathsf{pk}_0$ $\mathsf{pk}_1$ in
+  let replyCrs to fr = loop ($\lambda$ _ . wr pub $-> \mathsf{to}$) fr in
+      $\,\,$replyCrs toP frP
+    $\xFork$ replyCrs toQ frQ
+    $\xFork$ replyCrs toA frA

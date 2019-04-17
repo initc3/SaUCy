@@ -1,0 +1,296 @@
+%\usepackage{algorithm}
+\usepackage[linesnumbered,algoruled,boxed,noline]{algorithm2e}
+\usepackage[noend]{algpseudocode}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{dsfont}
+\usepackage{boxedminipage}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{comment}
+\usepackage{enumitem}
+\usepackage{flushend}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{joshuadunfield}
+\usepackage{lipsum}
+\usepackage{llproof}
+\usepackage{longtable}
+\usepackage{mathpartir}
+\usepackage{mathtools}
+\usepackage{semantic}
+\usepackage{slashed}
+\usepackage{soul}
+\usepackage{subcaption}
+\usepackage[most]{tcolorbox}
+\usepackage{textcomp}
+\usepackage{upquote}
+\usepackage{wrapfig}
+\usepackage{xspace}
+
+\makeatletter
+\newcommand{\oset}[3][0ex]{%
+  \mathrel{\mathop{#3}\limits^{
+    \vbox to#1{\kern-0.75\ex@
+    \hbox{$\scriptstyle#2$}\vss}}}}
+\makeatother
+
+\definecolor{Green}{rgb}{0.13, 0.55, 0.13}
+\definecolor{Purple}{rgb}{0.6, 0.2, 0.8}
+
+\newcommand*{\xdash}[1][3em]{\rule[0.5ex]{#1}{0.4pt}}
+\newcommand{\sep}{\xdash[0.8em]\kern-.22em\raisebox{-.052ex}{$\mathsf{*}$}\ }
+\newcommand{\wrhat}{\hat{\rule{0ex}{1.575ex}\wrtok}}
+\newcommand{\wrtok}{\textcircled{\small{\wm}}}
+
+\newcommand{\mc}[1]{\mathcal{{#1}}}
+\newcommand{\todo}[1]{\emph{\hl{TODO:} {#1}}}
+\newcommand{\saucy}{SaUCy\xspace}
+\newcommand{\fstar}{$\text{F}^{*}$}
+\newcommand\myeq{\stackrel{\mathclap{\scriptsize\mbox{def}}}{=}}
+\newcommand{\mypar}{\par}
+\newcommand{\concat}{%
+  \mathbin{{+}\mspace{-8mu}{+}}%
+}
+\newcommand\doubleplus{+\kern-1.3ex+\kern0.8ex}
+\newcommand\mdoubleplus{\ensuremath{\mathbin{+\mkern-10mu+}}}
+\newcommand{\yrightarrow}[1]{\xrightarrow{\raisebox{-2.5pt}[0pt][0pt]{#1}}}
+\newcommand{\lollipop}[1]{\oset{{\rule{0ex}{0ex}\mkern-3mu{#1}}}{\lolli}}
+\newcommand{\lollipopp}[1]{\oset{{\rule{0ex}{0ex}\mkern-3mu{#1}}}{\lolli}}
+\newcommand*{\lolli}{%
+  {\text{--}\mkern-2.4mu\text{---}\mkern-2.5mu\circ}% subformula acts as \mathord
+}
+\newcommand{\myheader}[1]{\noindent{\textit{\textbf{#1}}}}
+\newcommand{\myheaderi}[1]{\textit{\textbf{#1}}}
+
+% Functionality and ILC boxes
+\newcommand{\Func}{\mc{F}}
+
+\newenvironment{sketch}{%
+  \renewcommand{\proofname}{Proof Sketch}\proof}{\endproof}
+
+\newtcolorbox{func}[1][]{title={\textbf{Functionality}~{#1}},enhanced,
+  coltitle=black,
+  top=0.2in,
+  attach boxed title to top left=
+  {xshift=0.5cm,yshift=-\tcboxedtitleheight/2},
+  boxed title style={size=small, colback=white},colback=white}
+
+\lstdefinestyle{myilc}
+{
+    language=Caml,
+    keywordstyle={\bfseries},
+    morekeywords={let, letrec, in, wr, rd, match, with, set},
+    basicstyle={\sffamily},
+    captionpos=b,
+    columns=fullflexible,
+    upquote = true,
+    mathescape=true,
+    showstringspaces=false,
+}
+
+\newcommand{\mywr}[2]{\mathsf{w{#1}2{#2}}}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+
+% ILC Expressions
+\newcommand{\eVar}[1]{#1}
+\newcommand{\eChan}[1]{#1}
+\newcommand{\eUnit}{\Lparen\hspace{1px}\Rparen}
+\newcommand{\ePair}[3]{\Lparen{#1},{#2}\Rparen_{#3}}
+\newcommand{\eInj}[2]{\keyword{inj}_{\pi}^{#1}\Lparen#2\Rparen}
+\newcommand{\eInjj}[3]{\keyword{inj}_{#1}^{#2}\Lparen#3\Rparen}
+\newcommand{\eRef}[1]{\keyword{ref}\Lparen{#1}\Rparen}
+\newcommand{\eCase}[6]{\keyword{case}_{#1}\Lparen{#2},{#3}.{#4},{#5}.{#6}\Rparen}
+\newcommand{\eSplit}[4]{\keyword{split}_{\pi}\Lparen{#1},{#2}.{#3}.{#4}\Rparen}
+\newcommand{\eSplitt}[5]{\keyword{split}_{#1}\Lparen{#2},{#3}.{#4}.{#5}\Rparen}
+\newcommand{\eGet}[1]{\keyword{get}\Lparen{#1}\Rparen}
+\newcommand{\eSet}[2]{\keyword{set}\Lparen{#1},{#2}\Rparen}
+\newcommand{\eFix}[2]{\keyword{fix}\Lparen{#1}.{#2}\Rparen}
+\newcommand{\eFixx}[3]{\keyword{fix}_{#1}\Lparen{#2}.{#3}\Rparen}
+\newcommand{\eLet}[3]{\keyword{let}_{\pi}\lparen{#2},{#1}.{#3}\Rparen}
+\newcommand{\eLett}[4]{\keyword{let}_{#1}\lparen{#3},{#2}.{#4}\Rparen}
+%\newcommand{\eLetRd}[4]{\eLett{\eLPair{#1}{#2}}{\eRd{#3}}{{#4}}}
+\newcommand{\eLetBang}[3]{\keyword{let!}\ {#1} = {#2}\ \keyword{in}\ {#3}}
+\newcommand{\eLam}[2]{\lambda{#1}.\,{#2}}
+\newcommand{\eLamm}[3]{\lambda_{#1}\,{#2}.\,{#3}}
+\newcommand{\eApp}[3]{\Lparen#1\,#2\Rparen_{#3}}
+\newcommand{\eNu}[2]{\nu#1.\,#2}
+\newcommand{\eWr}[2]{\keyword{wr}\Lparen{#1},{#2}\Rparen}
+\newcommand{\eRd}[1]{\keyword{rd}\Lparen{#1}\Rparen}
+\newcommand{\eLetRd}[3]{\keyword{rd}\Lparen{#1},{#2}.{#3}\Rparen}
+\newcommand{\eFork}[2]{\ensuremath{#1 \xFork #2}}
+\newcommand{\eChoice}[2]{\ensuremath{#1 \xChoice #2}}
+\newcommand{\eChoicee}[6]{\keyword{ch}\Lparen{#1},{#2}.{#3},{#4},{#5}.{#6}\Rparen}
+%\newcommand{\eChoicee}[6]{{#2}@{#1} => {#3} \xChoice {#4}@{#3} =>{#6}}
+\newcommand{\eSeq}[2]{{#1}\,;\,{#2}}
+
+\newcommand{\eBang}[1]{{!}\,{#1}}
+\newcommand{\eUnbang}[1]{\textnormal{!`}\,{#1}}
+\newcommand{\eLAM}[2]{\Lambda{#1}.\,{#2}}
+\newcommand{\eLsplit}[4]{\keyword{split}\langle{#1},{#2}.{#3}.{#4}\rangle}
+\newcommand{\eLfix}[2]{\keyword{fix}\langle{#1}.{#2}\rangle}
+\newcommand{\eLapp}[2]{\langle{#1}\,{#2}\rangle}
+\newcommand{\eLPair}[2]{\langle{#1},{#2}\rangle}
+
+% Extended ILC
+\newcommand{\eKGen}[1]{\keyword{kgen}\Lparen{#1}\Rparen}
+\newcommand{\eTdp}[2]{\keyword{tdp}\Lparen{#1},{#2}\Rparen}
+\newcommand{\eInv}[2]{\keyword{inv}\Lparen{#1},{#2}\Rparen}
+\newcommand{\eHc}[1]{\keyword{hc}\Lparen{#1}\Rparen}
+
+% ILC Types
+\newcommand{\tyNat}{\tyname{Nat}}
+\newcommand{\tyBool}{\tyname{Bool}}
+%\newcommand{\tyUnit}{\keyword{Unit}}
+\newcommand{\tyUnit}{\mathds{1}}
+\newcommand{\tyProd}[2]{{#1}\, {**}_{\pi}\, {#2}}
+\newcommand{\tyProdd}[3]{{#2}\, {**}_{#1}\, {#3}}
+\newcommand{\tySum}[3]{{#1}\, {+}_{#2}\, {#3}}
+\newcommand{\tyRd}[1]{\keyword{Rd}\,#1}
+\newcommand{\tyWr}[1]{\keyword{Wr}\,#1}
+\newcommand{\tyRef}[1]{\keyword{Ref}\,#1}
+\newcommand{\tyArr}[3]{{#1}\rightarrow_{#2}{#3}}
+\newcommand{\emptyctxt}{\cdot}
+\newcommand{\tyBang}[1]{{!}\,{#1}}
+\newcommand{\tyTensor}[2]{{#1}\otimes{#2}}
+\newcommand{\tyOplus}[2]{{#1}\oplus{#2}}
+%\newcommand{\tyLolli}[3]{{#1}\lollipop{#2}{#3}}
+\newcommand{\tyLolli}[3]{{#1}\multimap_{#2}{#3}}
+
+\newcommand{\tyBit}{\keyword{Bit}}
+
+% ILC Modes
+\newcommand{\Rm}{\textsf{R}}
+\newcommand{\Wm}{\textsf{W}}
+\newcommand{\Vm}{\textsf{V}}
+\newcommand{\wm}{\textsf{w}}
+
+% ILC Semantics
+%\newcommand{\Chans}{\Sigma}
+%\newcommand{\emptyChans}{\varepsilon}
+\newcommand{\Names}{\Sigma}
+\newcommand{\emptyNames}{\varepsilon}
+\newcommand{\Store}{\sigma}
+\newcommand{\Procs}{\pi}
+\newcommand{\ProcNm}[1]{#1:}
+\newcommand{\proc}[1]{#1}
+\newcommand{\emptyProcs}{\varepsilon}
+\newcommand{\Config}[3]{\left<#1;#3\right>}
+
+% ILC Misc
+\newcommand{\xFork}{\mathrel{|\rhd}}
+\newcommand{\xChoice}{\mathrel{\boxplus}}
+\newcommand{\e}{\epsilon}
+\newcommand{\Lparen}{\mathsf{(}}
+\newcommand{\Rparen}{\mathsf{)}}
+
+%% Math ligatures (thanks to the semantic package) that make it
+%% easier to typeset math using readable LaTeX text.
+%\mathlig{|-->}{\longmapsto}
+\mathlig{::=}{\bnfas}
+\mathlig{:=}{\coloneqq}
+\mathlig{|}{\;|\;}
+% \mathlig{[[}{\mbsf{[}}
+% \mathlig{]]}{\mbsf{]}}
+\mathlig{[[}{\textsf{\upshape[}}
+\mathlig{]]}{\textsf{\upshape]}}
+\mathlig{**}{\times}
+\mathlig{|>}{\rhd}
+\mathlig{->}{\arr}
+\mathlig{-->}{\rightarrow}
+\mathlig{--->}{\longrightarrow}
+\mathlig{=>}{\Rightarrow}
+\mathlig{*!}{\boldsf{!}}
+\mathlig{||}{\mathrel{|\!|}}
+\mathlig{;;}{\mathrel{;}}
+\mathlig{*&&}{\mathrel{\xFork}}
+\mathlig{*||}{\mathrel{\oplus}}
+\mathlig{!!}{\Downarrow}
+\mathlig{-|}{\dashv}
+
+
+% SaUCy specific
+\newcommand{\msf}[1]{\ensuremath{{\mathsf {#1}}}}
+\newcommand{\mtt}[1]{\ensuremath{\mathtt {#1}}}
+\newcommand{\mcal}[1]{\ensuremath{\mathcal {#1}}}
+\newcommand{\val}{\msf{val}}
+\newcommand{\sn}{\msf{sn}}
+\newcommand{\tn}{\textnormal}
+\newcommand{\codeb}[1]{\textsf{#1}}
+\newcommand{\hash}{\ensuremath{\mathcal{H}}}
+\newcommand{\adv}{\ensuremath{{\mathcal A}}\xspace}
+\newcommand{\Adv}{\adv}
+\newcommand{\A}{\adv}
+\newcommand{\samples}{\overset{\$}{\leftarrow}}
+\newcommand{\SA}{\msf{SA}}
+\newcommand{\SaUCy}{\xspace{\msf{SaUCy}}\xspace}
+\newcommand{\leak}{\color{blue}\mtt{leak}}
+\newcommand{\eventually}[1]{\color{blue}\mtt{leak}}
+\newcommand{\poly}{\textnormal{poly}}
+\newcommand{\negl}{\textnormal{negl}}
+\newcommand{\execUC}[4]{\mathsf{execUC}({#1},{#2},{#3},{#4})}
+\newcommand{\chan}[1]{{\underline{\smash{\msf{#1}}}}}
+\newcommand{\functionality}[1]{\ensuremath{\mathcal{F}_{\textnormal{\msf{{#1}}}}}}
+\newcommand{\F}{\functionality}
+%\newcommand{\G}[1]{\mathcal{G}_{\textnormal{\tiny {\uppercase{#1}}}}}
+\newcommand{\GG}[1]{{\overline \mathcal{G}}_{\textnormal{\tiny {\uppercase{#1}}}}}
+\renewcommand{\C}[1]{\mathcal{C}_{\textnormal{\tiny {\uppercase{#1}}}}}
+\renewcommand{\P}{\ensuremath{\mathcal P}}
+\newcommand{\Ps}{\ensuremath{\{\mathcal{P}_i\}_{i \in [N]}}}
+\renewcommand{\S}{\ensuremath{\mathcal S}}
+\newcommand{\env}{\Z}
+\newcommand{\Z}{{\mcal{E}}}
+\newcommand{\R}{{\mathcal R}}
+
+
+%% ILC judgement forms
+%% ---------------------------------------------------------------------
+%% Used to write the line-by-line reasoning of inductive proofs.
+
+%% Channel typing meta var: each one maps channel names to types
+\newcommand{\ChTy}{\ensuremath{\Psi}}
+
+%% Process typing meta var: each one maps process names to types
+\newcommand{\PrTy}{\ensuremath{\Phi}}
+
+%% Process typing meta var: each one maps process names to types
+\newcommand{\StTy}{\ensuremath{\Omega}}
+
+%% Affine typing judgement
+\newcommand{\JtyAff}[6]{#1 ; #2 ; #3 |- #4 : #5 |> #6}
+
+%% Intuitionisitic typing judgement
+\newcommand{\JtyInt}[6]{#1 ; #2 ; #3 |- #4 : #5 |> #6}
+
+%% Configuration typing judgement: Each process has a mode, with at most one write-mode process, and each process has a return type, 
+%% captured in the final mapping (#3).
+\newcommand{\JCty}[4]{#2 |- #3 : #4}
+
+%% Configurations~$C_1$ and $C_2$ are equivalent.
+\newcommand{\JCequiv}[2]{#1 \equiv #2}
+
+%% Configuration~$C_1$ reduces to $C_2$. single step.
+\newcommand{\JCred}[2]{#1 ---> #2}
+
+%% Configuration~$C_1$ reduces to $C_2$. multiple steps.
+\newcommand{\JCredm}[2]{#1 --->^\ast #2}
+
+%% Configuration has terminated, and all processes consist of their final values.
+\newcommand{\JCterm}[1]{#1~\textbf{term}}
+
+% Under store $\Store_1$, expression~$e_1$ reduces to~$\Store_2 ; e_2$.
+\newcommand{\Jered}[4]{#1 ; #2 ---> #3 ; #4}
+
+\newcommand{\Rule}[1]{\textrm{#1}}
+
+\newcommand{\Lterm}[1]{#1~\textbf{lterm}}
+
+\newcommand{\Val}[1]{#1~\textbf{val}}
+
+\newcommand{\Norm}[1]{#1~\textbf{norm}}
+
+\newcommand{\Norw}[1]{#1~\textbf{\st{rw}}}

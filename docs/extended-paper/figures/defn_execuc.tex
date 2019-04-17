@@ -1,0 +1,60 @@
+\begin{figure}[h!]
+\begin{boxedminipage}{\columnwidth}
+\begin{centering}
+\textbf{$\execUC{\Z}{\pi}{\A}{\F{}}$} \\
+\end{centering}
+\small
+\begin{itemize}[leftmargin=2mm]
+\item[] $\nu ~\chan{z2p}~ \chan{z2f}~ \chan{z2a}~ \chan{p2f}~ \chan{p2a}~ \chan{a2f}.$
+\item[] \emph{// The environment chooses \msf{SID}, \msf{conf}, and corrupted parties}
+\item[] let $(\msf{Corrupted},\msf{SID},\msf{conf}) = \Z\{\chan{z2p},\chan{z2a},\chan{z2f}\}$
+\item[] \emph{// The protocol determines \msf{conf'}}
+\item[] let $\msf{conf'} = \pi.\mtt{cmap}(\msf{SID},\msf{conf})$
+\item[] $|$ $\A{}\{\msf{SID},\msf{conf},\msf{Corrupted},\chan{a2z},\chan{a2p},\chan{a2f}\}$
+\item[] $|$ $\F{}\{\msf{SID},\msf{conf'},\msf{Corrupted},\chan{f2z},\chan{f2p},\chan{f2a}\}$
+\item[] \emph{// Create instances of parties on demand}
+\item[] let $\msf{partyMap} = \msf{ref}~\msf{empty}$
+\item[] let $\msf{newParty} \msf{PID} = $ do
+  \begin{itemize}[leftmargin=3mm]
+  \item[] $\nu ~\chan{f2pp}~ \chan{z2pp}.$
+  \item[] $@\msf{partyMap}[\msf{PID}].\msf{f2p} := \chan{f2pp}$
+  \item[] $@\msf{partyMap}[\msf{PID}].\msf{z2p} := \chan{z2pp}$
+  \item[] $|$ forever do $\{ m \leftarrow \chan{pp2f}; (\msf{PID},m) \rightarrow \chan{f2p}\}$
+  \item[] $|$ forever do $\{ m \leftarrow \chan{pp2z}; (\msf{PID},m) \rightarrow \chan{z2p} \}$
+  \item[] $|$ $\pi\{\msf{SID},\msf{conf},\chan{p2f}/\chan{pp2z},\chan{p2z}/\chan{pp2z}\}$
+  \end{itemize}
+\item[] let $\msf{getParty}~\msf{PID} =$
+  \begin{itemize}
+  \item[] if $\msf{PID} \notin \msf{partyMap}$ then $\msf{newParty}~\msf{PID}$
+  \item[] return $@\msf{partyMap}[\msf{PID}]$
+  \end{itemize}
+\item[] $|$ forever do
+  \begin{itemize}[leftmargin=3mm]
+  \item[] $(\msf{PID}, m) \leftarrow \chan{z2p}$
+  \item[] if $\msf{PID} \in \msf{Corrupted}$ then $\mtt{Z2P}(PID,m) \rightarrow \chan{p2a}$
+  \item[] else $m \rightarrow (\msf{getParty}~\msf{PID}).\chan{z2p}$
+  \end{itemize}
+\item[] $|$ forever do
+  \begin{itemize}[leftmargin=3mm]
+  \item[] $(\msf{PID}, m) \leftarrow \chan{f2p}$
+  \item[] if $\msf{PID} \in \msf{Corrupted}$ then $\mtt{F2P}(PID,m) \rightarrow \chan{p2a}$
+  \item[] else $m \rightarrow (\msf{getParty}~\msf{PID}).\chan{f2p}$
+  \end{itemize}
+\item[] $|$ forever do
+  \begin{itemize}[leftmargin=3mm]
+  \item[] $|~ \mtt{A2P2F}(\msf{PID}, m) \leftarrow \chan{a2p} $
+    \begin{itemize}[leftmargin=2mm]
+    \item[] if $\msf{PID} \in \msf{Corrupted}$ then $(\msf{PID},m) \rightarrow \chan{p2f}$
+    \end{itemize}
+  \item[] $|~ \mtt{A2P2Z}(\msf{PID}, m) \leftarrow \chan{a2p} $
+    \begin{itemize}[leftmargin=2mm]
+    \item[] if $\msf{PID} \in \msf{Corrupted}$ then $(\msf{PID},m) \rightarrow \chan{p2z}$
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+\end{boxedminipage}
+\caption{
+\label{fig:execuc}
+Definition of the SaUCy execution model. The environment, are run as concurrent processes. A new instance of the protocol $\pi$ is created, on demand, for each party $\msf{PID}$. Messages sent to honest parties are routed according to their \msf{PID}; messages sent to corrupted parties are instead diverted to the adversary.
+}
+\end{figure}

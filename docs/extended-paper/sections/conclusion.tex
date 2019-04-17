@@ -1,0 +1,31 @@
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+
+The universal composability (UC) framework is widely used in cryptography
+for proofs.
+SaUCy takes a step towards mechanizing UC as a programming
+framework for constructing and analyzing large systems.
+%
+%In this work, we have taken the first steps towards putting UC on a proper
+%footing by building a concrete, executable implementation of the framework
+%called SaUCy. We set apart our work from previous work in a major way: We
+%implement SaUCy in a newly designed process calculus called the Interactive
+%Lambda Calculus (ILC). Importantly, ILC faithfully abstracts interactive Turing
+%machines, the computational model underlying UC, which grants the compelling
+%benefit of computational security analysis. \todo{Finish later.}
+%
+We envision using SaUCy to tackle, for example, applications involving blockchains and smart contracts~\cite{dziembowski2018general,miller2017sprites,dziembowski2017perun}, which comprise an array of cryptography and distributed computing components and suffer from increasingly unwieldy formalisms.
+%  Define convenient operators for composition in functionalities,
+%  may simplify the process of proofs, simplify what are needed in
+%  wrappers.
+
+We can view ILC typechecking of simulators in SaUCy as a partial
+mechanization of UC proofs, though the indistinguishability analysis
+is still on paper.
+Even partial mechanization is useful for catching
+bugs; we imagine using SaUCy to systematically implement
+functionalities and protocols from the literature and fuzz test
+them.
+Future work would be to embed ILC within a mechanized proof system,
+such as $\textnormal{F}^{*}$ or EasyCrypt.
+

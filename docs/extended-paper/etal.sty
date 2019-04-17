@@ -1,0 +1,94 @@
+\ProvidesPackage{etal}[2015/04/17 - Extract from local]
+
+\RequirePackage{xspace}
+
+% These are separate from joshua.sty, because I'd like everyone, everywhere,
+% to use them, and I realize not everyone wants the baggage of hundreds of
+% other macros.
+%
+% These macros protect you from the following scourges:
+%
+%  1. Misspelled/mispunctuated ``et al.'', ``cf.'', ``e.g.'', ``i.e.'', ``\'a la'', and ``vis-\'a-vis''.
+%
+%  2. Too much space after the ``.'' in ``cf.'', etc., because TeX likes to guess
+%  that a ``.'' might end a sentence, but ``i.e.'' doesn't end a sentence.
+%
+%
+% \etal:
+%
+%   I've lost track of the number of papers that have
+%
+%      et. al.
+%      et. al
+%      et al
+%
+%   ``Et'' is Latin for ``and''; it's why the ampersand has the shape it does
+%   (particularly the form that looks more like an E with a little T attached below).
+%   ``Et al.'' means ``and others''.
+%
+%   If you don't want to remember all of that, you can still use the \etal macro.
+%
+%   I can't think of any good reason to put a comma before \etal, and lots of
+%   people (including at least one person who does it frequently) think it's wrong.
+%
+%   If you're in the ``\eg and \ie should always have a comma after'' camp,
+%   you presumably agree that \etal should *not* have a comma before,
+%   by the same analogy to what you would do if you replaced Latin with English.
+%      
+%
+% \eg and \ie:
+%
+%   These work whether or not you put a comma after them.  AIUI, there is no
+%   consensus on whether you should or shouldn't put a comma after them.
+%   I believe the reasonable positions are
+%
+%      (1) Always put a comma, because if you wrote English instead of Latin,
+%          you'd have to use a comma (``(for example a rainbow)'' isn't grammatical;
+%          ``(for example, a rainbow)'' is grammatical).
+%
+%      (2) Put a comma only if it precedes something long: ``(\eg a rainbow)'', but
+%          ``(\eg, the absurd kerfuffle over whether or not REDACTED should, like
+%          essentially all conferences nowadays, have a code of conduct)''.
+%
+%      (3) Never put a comma; it's a Latin abbreviation, so it need not behave
+%          the same as its English replacement.
+%          If what follows is long, use English (\eg ``for example'') instead.
+%
+%      (4) People care about this?  Seriously?
+%
+%
+% \cf:
+%
+%   ``Cf.'' means ``compare''; it comes from one Latin word, so it's not ``c.f.''.
+%   Note that if you just want the reader to refer to something,
+%   ``see'' is about the same length as ``cf.'' but doesn't require
+%   knowing a somewhat obscure abbreviation.
+%   (Which suggests that, even when you mean ``compare'' and not ``see'',
+%   you should probably write ``compare''...)
+%
+%   I can't think of any reason that you'd want to put a comma after \cf,
+%   so I deliberately defeated that possibility by defining it as ``cf.\ ''
+%   (which will produce a jarring space before the following comma).
+%   If you really want to, you can redefine it to ``cf.\@\xspace''.
+%
+% \ala, \visavis:
+%
+%   I *really* can't think of any way these could ever make sense with
+%   a comma, or any punctuation, following them, so they also end with ``\ ''.
+
+
+\newcommand{\etal}{et al.\@\xspace}
+\newcommand{\eg}{e.g.\@\xspace}
+\newcommand{\ie}{i.e.\@\xspace}
+
+\newcommand{\cf}{cf.\ }
+
+\newcommand{\ala}{\`a la\ }
+\newcommand{\visavis}{vis-\`a-vis\ }
+
+
+% Postscript:
+%
+% I rarely use these macros; I usually write ``for example'' instead of \eg,
+% and ``that is'' instead of \ie.  I think that, in general, when you're trying
+% to write technical English, you should write English, not Latin.
