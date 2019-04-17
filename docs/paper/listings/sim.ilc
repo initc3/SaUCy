@@ -1,4 +1,4 @@
-simI :: $\tyNat -> [\tyBit] -> \mathsf{Crupt} -> \cdots \multimap \mathbbm{1}$
+simI :: $\tyNat -> [\tyBit] -> \mathsf{Crupt} -> \cdots \multimap \mathds{1}$
 let simI k bits crupt toZ toF toP toQ frZ frF frP frQ =
   let ($\mathsf{pk}_0$,$\mathsf{td}_0$) = kgen k in
   let ($\mathsf{pk}_1$,$\mathsf{td}_1$) = kgen k in  

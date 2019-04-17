@@ -1,4 +1,4 @@
-simR :: $\tyNat -> [\tyBit] -> \mathsf{Crupt} -> \cdots \multimap \mathbbm{1}$
+simR :: $\tyNat -> [\tyBit] -> \mathsf{Crupt} -> \cdots \multimap \mathds{1}$
 let simR k bits crupt toZ toF toP toQ frZ frF frP frQ =
   match crupt with
   | CruptP $=>$

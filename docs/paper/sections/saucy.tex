@@ -233,16 +233,16 @@ expressed in the ideal world:
 \begin{mathpar}
   \Infer{\st{emulate}}
         {\forall~\mc{Z}.~ 
-         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ {\mathbbm{1}}_\mc{A} \le
+         \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ {\mathds{1}}_\mc{A} \le
          \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mc{S}}
     {\mc{S} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
 \end{mathpar}
 To remark on a few notational choices: We make the functionality explicit, so emulation
 is a relationship between protocol-functionality pairs.  Here,
-$\mathbbm{1}_\mc{A}$ is the dummy adversary, which just relays messages between
+$\mathds{1}_\mc{A}$ is the dummy adversary, which just relays messages between
 the environment and the parties/functionality. We elide the standard dummy lemma that shows
 this is without loss of generality; the intuition is that whatever an adversary
-can do, the environment can achieve using $\mathbbm{1}_\mc{A}$.
+can do, the environment can achieve using $\mathds{1}_\mc{A}$.
 
 %\[
 %(\pi, \mc{F}_1) \overset{\mc{S}} \le (\phi, \mc{F}_2)
@@ -274,9 +274,9 @@ world and vice versa.
 \begin{mathpar}
   \Infer{{emulate}}
         {\forall~\mc{Z}.~ 
-         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mathbbm{1}_\mc{A} \le
+         \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mathds{1}_\mc{A} \le
          \mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mc{S_\mc{R}} \\\\
-         \ \ \ \ \ \ \ \ ~\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mathbbm{1}_\mc{A} \le
+         \ \ \ \ \ \ \ \ ~\mathsf{execUC}\ \mc{Z}\ \pi\ \mc{F}_1\ \mathds{1}_\mc{A} \le
          \mathsf{execUC}\ \mc{Z}\ \phi\ \mc{F}_2\ \mc{S}_\mc{I}}
     {\mc{S_\mc{R},S_\mc{I}} \entails (\pi, \mc{F}_1) \approx (\phi, \mc{F}_2)}
 \end{mathpar}
@@ -334,8 +334,8 @@ As a first demonstration of SaUCy, we work through the development of a composit
 operator, and give a theorem explaining its use.
 \begin{definition}[UC realizes]
 To set out, we introduce the notation of ``realizes,'' which views a protocol as a way of instantiating a specification functionality $\mc{F}_{2}$ from a setup assumption functionality $\mc{F}_1$,
-%  if $\keyword(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathbbm{1}})$, then
-%  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathbbm{1}}, \mc{F}_1, \mc{S})$, and the
+%  if $\keyword(\mc{Z}, \pi, \mc{F}_0, \mc{A}_{\mathds{1}})$, then
+%  $|- \keyword{polyUC}(\mc{Z}, \pi_{\mathds{1}}, \mc{F}_1, \mc{S})$, and the
   %  following statistical indistinguishability relation holds
 \begin{mathpar}
   \Infer{realizes}
@@ -374,19 +374,19 @@ illustrated and defined in Figure~\ref{fig:composition-operator}.
 $S_{\mc{R},\rho} \circ S_{\mc{R},\pi}$ (respectively $S_{\mc{I},\rho} \circ
 S_{\mc{I,\pi}}$) in the natural way as well (see the online appendix).
 Our proof obligation is to introduce an arbitrary environment $\mc{Z}$ and conclude
-\[  \keyword{execUC}~\mc{Z} ~(\rho \circ \pi)~\mc{F}_1 ~\mathbbm{1}_\mc{A}
-\le \keyword{execUC}~\mc{Z} ~\mathbbm{1}_\mc{\pi} ~\mc{F}_3 ~(\mc{S}_{\mc{I},\rho} \circ \mc{S}_{\mc{I},\pi})
+\[  \keyword{execUC}~\mc{Z} ~(\rho \circ \pi)~\mc{F}_1 ~\mathds{1}_\mc{A}
+\le \keyword{execUC}~\mc{Z} ~\mathds{1}_\mc{\pi} ~\mc{F}_3 ~(\mc{S}_{\mc{I},\rho} \circ \mc{S}_{\mc{I},\pi})
 .\]
 \noindent
 %
 The main idea is to notice that that we can bring $\rho$ from the composed protocol into the environment as $(\mc{Z}\circ \rho)$, reflecting the fact that the environment is meant to represent arbitrary outer protocols. This transformation results in an equivalent term, given that ILC configurations are invariant to channel renaming and reordering of processes in a configuration (as in Section~\ref{sec:metatheory}).
 The following derivation completes the proof:
 \begin{align*}
-    &~ \keyword{execUC}~\mc{Z}~(\rho \circ \pi)~\mc{F}_1~ \mathbbm{1}_\mc{A} & \\
-  \equiv &~ \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1~ \mathbbm{1}_\mc{A} &
+    &~ \keyword{execUC}~\mc{Z}~(\rho \circ \pi)~\mc{F}_1~ \mathds{1}_\mc{A} & \\
+  \equiv &~ \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1~ \mathds{1}_\mc{A} &
   \textnormal{(By equivalence)} \\
 \le&~ \keyword{execUC}~(\mc{Z}\circ \rho)~\mathsf{id}_\pi ~\mc{F}_2~ \mc{S}_{\mc{I},\pi} & (\textnormal{From}~ \mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2) \\
- \equiv &~ \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ \mc{Z})~\rho ~\mc{F}_2~ \mathbbm{1}_\mc{A} &  \textnormal{(By equivalence)} \\
+ \equiv &~ \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ \mc{Z})~\rho ~\mc{F}_2~ \mathds{1}_\mc{A} &  \textnormal{(By equivalence)} \\
 \le&~ \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ\mc{Z})~\mathsf{id}_\pi~\mc{F}_3~\mc{S}_{\mc{I},\rho} &
 (\textnormal{From}~ \mc{F}_2 \yrightarrow{$\rho$} \mc{F}_3) \\
 \equiv &~ \keyword{execUC}~\mc{Z}~ \mathsf{id}_\pi~ \mc{F}_3~ (\mc{S}_{\mc{I},\pi} \circ \mc{S}_{\mc{I},\rho}) &
@@ -396,8 +396,8 @@ The remaining case for $\mc{S}_{\mc{R},\rho} \circ \mc{S}_{\mc{R},\pi}$ is symme
 \begin{comment}
 The following equivalence is clear:
 \begin{equation}
-   \keyword{execUC}~\mc{Z}~(\rho \circ \pi)~\mc{F}_1~ \mathbbm{1}_\mc{A} =
-   \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1~ \mathbbm{1}_\mc{A}
+   \keyword{execUC}~\mc{Z}~(\rho \circ \pi)~\mc{F}_1~ \mathds{1}_\mc{A} =
+   \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1~ \mathds{1}_\mc{A}
 \end{equation}
 
 %% (1) Notice that by code path tracing equality:
@@ -406,7 +406,7 @@ The following equivalence is clear:
 
 Next, from $\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2$ we know %
 \begin{equation}
-  \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1 ~ \mathbbm{1}_\mc{A} \le
+  \keyword{execUC}~(\mc{Z}\circ \rho)~\pi~\mc{F}_1 ~ \mathds{1}_\mc{A} \le
   \keyword{execUC}~(\mc{Z}\circ \rho)~\mathsf{id}_\pi ~\mc{F}_2~ \mc{S}_{\mc{I},\pi}
 \end{equation}
 %% (2) Load (A) to have
@@ -415,7 +415,7 @@ Next, from $\mc{F}_1 \yrightarrow{$\pi$} \mc{F}_2$ we know %
 Again by equality, we can see:
 \begin{equation}
   \keyword{execUC}~(\mc{Z}\circ \rho)~\mathsf{id}_\pi~\mc{F}_2 ~ \mc{S}_{\mc{I},\pi} =
-  \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ \mc{Z})~\rho ~\mc{F}_2~ \mathbbm{1}_\mc{A}
+  \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ \mc{Z})~\rho ~\mc{F}_2~ \mathds{1}_\mc{A}
 \end{equation}
 %% (3) Notice that by code path tracing equality:
 %% execUC (Z φ) 1 F2 SI1 =
@@ -423,7 +423,7 @@ Again by equality, we can see:
 
 Next, from $\mc{F}_2 \yrightarrow{$\rho$} \mc{F}_3$ we know %
 \begin{equation}
-   \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ\mc{Z})~\rho~ \mc{F}_2~\mathbbm{1}_\mc{A}
+   \keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ\mc{Z})~\rho~ \mc{F}_2~\mathds{1}_\mc{A}
 \le\keyword{execUC}~(\mc{S}_{\mc{I},\pi}\circ\mc{Z})~\mathsf{id}_\pi~\mc{F}_3~\mc{S}_{\mc{I},\rho}
 \end{equation}
 %% (4) Load (B) to have
