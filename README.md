@@ -8,8 +8,8 @@ protocols.
 This repository includes a Haskell implementation of the Interactive Lambda
 Calculus (ILC), a newly designed process calculus that faithfully captures the
 computational model underlying UC: interactive Turing machines (ITMs). ILC
-adapts ITMs to a subset of the pi-calculus through an affine typing
-discpline. That is, well-typed ILC programs are expressible in ITMs. In turn,
+adapts ITMs to a subset of the π-calculus through an affine typing
+discipline. That is, *well-typed ILC programs are expressible in ITMs.* In turn,
 ILC's strong confluence property enables reasoning about cryptographic security
 reductions. We also use ILC to build a concrete, executable (preliminary)
 implementation of the UC framework.
