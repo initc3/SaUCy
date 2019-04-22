@@ -1,0 +1,14 @@
+data SttCrupt = SttCrupt (String, String) Crupt
+data Crupt = CruptP | CruptQ | CruptNone
+
+let partyWrapper p crupt frZ toZ frF toF frA toA =
+  let! crupt' = crupt in
+  let! toZ' = toZ in  
+  let! toA' = toA in
+  let! toF' = toF in
+    if crupt' then
+        loop frZ !(lam _ . error "fail")
+      |> loop frF !(lam x . wr x -> toA')
+      |> loop frA !(lam x . wr x -> toF')
+    else
+      p toZ frZ toF frF

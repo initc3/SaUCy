@@ -1,2 +1,0 @@
-dummyP :: $\forall$ a b ... . $\tyBang{\tyWr{\mathsf{a}}} \multimap \cdots \multimap \tyBang{\tyNat} \multimap \tyBang{[\tyBit]} \multimap$ b
-let dummyP toZ frZ toF frF k r = fwd frZ toF $\xFork$ fwd frF toZ

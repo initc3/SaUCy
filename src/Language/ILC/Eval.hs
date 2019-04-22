@@ -1,6 +1,7 @@
 {-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE RecursiveDo #-}
 {-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind #-}
 
 --------------------------------------------------------------------------------
@@ -22,10 +23,8 @@ module Language.ILC.Eval (
 
 import Control.Concurrent
 import Control.Exception
-import Data.IORef
 import qualified Data.Map.Strict as Map
 import Data.Typeable
-import Debug.Trace
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
 import Language.ILC.Decl
@@ -65,24 +64,29 @@ evalPut env m expr = case expr of
   EList es -> do
     res <- evalList env es
     putMVar m $ VList res
-
-  ESett es -> do
-    res <- evalList env es
-    putMVar m $ VSet res
   
   ELam p e -> putMVar m $ VClosure (f p) env e
     where
       f (PVar x) = Just x
       f _        = Nothing
+
+  ELam1 p e -> putMVar m $ VClosure (f p) env e
+    where
+      f (PVar x) = Just x
+      f _        = Nothing
+
+  ELamw p e -> putMVar m $ VClosure (f p) env e
+    where
+      f (PVar x) = Just x
+      f _        = Nothing      
       
   EApp e1 e2 -> do
     (v1, v2) <- evalSubs env e1 e2
     res <- betaReduce env v1 v2
     putMVar m res
 
-  EFix e -> do
-    -- TODO: Use de Bruijn indicies.
-    res <- eval env $ ELam (PVar "_x") (EApp (EApp e (EFix e)) (EVar "_x"))
+  EFix x e -> do
+    rec res <- eval (Map.union env $ Map.fromList [(x,res)]) e
     putMVar m res
       
   ELet p e1 e2 -> do
@@ -91,12 +95,6 @@ evalPut env m expr = case expr of
     -- pattern matches (e.g., let 1 = 2 in ...).
     let !binds = letBinds p v1
     res <- eval (Map.union binds env) e2
-    putMVar m res
-
-  ELetBang p e1 e2 -> do
-    v1 <- eval env e1
-    let !binds = letBinds p v1
-    res <- eval (Map.union env binds) e2
     putMVar m res
 
   EBang e -> do
@@ -158,31 +156,6 @@ evalPut env m expr = case expr of
     forkIO (evalPut env m' e1)
     forkIO (evalPut env m' e2)
     res <- takeMVar m'
-    putMVar m res
-
-  ERef e -> do
-    v <- eval env e
-    ref <- newIORef v
-    putMVar m $ VRef ref
-
-  EGet e -> do
-    v <- eval env e
-    let r = case v of
-              VRef r' -> r'
-              _       -> error "Eval.evalPut: EGet"
-    res <- readIORef r
-    putMVar m res
-
-  ESet x e -> do
-    let r = case env Map.! x of
-              VRef r' -> r'
-              _       -> error "Eval.evalPut: ESet"
-    v <- eval env e
-    writeIORef r v
-    putMVar m VUnit
-      
-  ESeq e1 e2 -> do
-    (_, res) <- evalSubs env e1 e2
     putMVar m res
 
   EBin op e1 e2 -> do

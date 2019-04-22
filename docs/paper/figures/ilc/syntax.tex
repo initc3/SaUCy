@@ -1,0 +1,70 @@
+\begin{figure*}[t]
+  \centering
+  \begin{minipage}{.58\textwidth}
+    \centering
+    \begin{grammar}
+        All types
+      & $U, V$
+        &$\bnfas$& $A \bnfalt X$
+      \\
+      Sendable types
+      & $S, T$
+      &$\bnfas$& $\tyUnit \bnfalt S ** T \bnfalt \tySum{S}{}{T}$
+      \\
+      Unrestricted types
+      & $A,B$
+      &$\bnfas$& $S \bnfalt \tyWr{S} \bnfalt A ** B \bnfalt \tySum{A}{}{B}
+      \bnfalt \tyArr{A}{\infty \mid \wm}{U}$
+      \\
+      Affine types
+      & $X,Y$
+      &$\bnfas$& $\tyBang{A} \bnfalt \tyRd{S} \bnfalt \tyTensor{X}{Y} \bnfalt
+      \tyOplus{X}{Y} \bnfalt \tyArr{X}{1}{U}$
+    \end{grammar}      
+  \end{minipage}%
+  \begin{minipage}{.42\textwidth}
+    \centering
+    \begin{grammar}
+      Syntax labels
+      & $\ell$
+      &$\bnfas$& $\pi \bnfalt \wm$      
+      \\      
+      Multiplicity labels
+      & $\pi$
+      &$\bnfas$& $1 \bnfalt \infty$      
+      \\
+      Unrestricted typings
+      & $\Gamma$
+      &$\bnfas$& $\emptyctxt \bnfalt \Gamma,x:A$
+      \\
+      Affine typings
+      & $\Delta$
+      &$\bnfas$& $\emptyctxt \bnfalt \Delta,x:X \bnfalt \Delta, \wrtok$
+    \end{grammar}    
+  \end{minipage}
+  \begin{grammar}
+    Values
+    & $v$
+    &$\bnfas$&
+    $\eUnit \bnfalt \ePair{v_1}{v_2}{\ell} \bnfalt \eInjj{\ell}{1}{v} \bnfalt
+    \eInjj{\ell}{2}{v} \bnfalt \eLamm{\ell}{x}{e} \bnfalt c \bnfalt \eBang{v}$
+    \\
+    Channel endpoints & $c$   &$\bnfas$& $\mathsf{Read}(d) ~|~ \mathsf{Write}(d)$
+    \\
+    Channel names & $d$ &$\bnfas$& $\cdots$
+    \\      
+    Expressions
+    & $e$
+    &$\bnfas$&
+    $\eVar{x} \bnfalt \eUnit \bnfalt \ePair{e_1}{e_2}{\ell} \bnfalt \eInjj{\ell}{i}{e}
+    \bnfalt \eSplitt{\ell}{e_1}{x_1}{x_2}{e_2} \bnfalt
+    \eCase{\ell}{e}{x_1}{e_1}{x_2}{e_2}$
+    \\ &&& $\bnfaltbrk \eLamm{\ell}{x}{e} \bnfalt \eApp{e_1}{e_2}{\ell} \bnfalt \eFixx{\ell}{x}{e}
+    \bnfalt \eLet{x}{e_1}{e_2} \bnfalt \eBang{e} \bnfalt \eUnbang{e}$
+    \\ &&& $\bnfaltbrk \eNu{(x_1,x_2)}{e} \bnfalt \eWr{e_1}{e_2} \bnfalt
+    \eLetRd{e_1}{x}{e_2} \bnfalt \eChoicee{e_1}{x_1}{e_3}{e_2}{x_2}{e_4} \bnfalt
+    \eFork{e_1}{e_2}$
+  \end{grammar}      
+  \caption{ILC Syntax.}
+  \label{fig:ilc-syntax}
+\end{figure*}

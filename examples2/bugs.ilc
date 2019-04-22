@@ -1,0 +1,5 @@
+{- Yields Int, but infers !Int -}
+let testEnv toExec' =
+  let! toExec = toExec' in
+    wr CruptP -> toExec
+    |> 1

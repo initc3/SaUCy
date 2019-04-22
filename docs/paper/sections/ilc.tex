@@ -1,0 +1,295 @@
+\input{figures/ilc/syntax}
+%\input{figures/ilc/modes}
+\input{figures/ilc/types-full}
+\input{figures/ilc/semantics}
+
+\section{Interactive Lambda Calculus}
+\label{sec:ilc}
+
+We now present the Interactive Lambda Calculus in full, formalizing its syntax,
+static semantics, and dynamic semantics.
+
+\subsection{Syntax}
+\label{subsec:syntax}
+
+The syntax of ILC is given in Figure~\ref{fig:ilc-syntax}. Types (written $U$,
+$V$) are bifurcated into unrestricted types (written $A$, $B$) and affine
+types (written $X$, $Y$).
+
+A subset of the unrestricted types are sendable types (written $S$, $T$),
+i.e., the types of values that can be sent over channels. This restriction
+ensures that channels model network channels, which send only data. The sendable
+types include unit ($\tyUnit$), products ($\tyProdd{}{S}{T}$), and sums
+($\tySum{S}{}{T}$).
+
+The unrestricted types include the sendable types, write endpoint types
+($\tyWr{S}$), products ($\tyProdd{}{A}{B}$), sums ($\tySum{A}{}{B}$), arrows
+($\tyArr{A}{\infty}{U}$ or simply $A -> U$), and write arrows
+($\tyArr{A}{\wm}{U}$). Write arrows specify unrestricted abstractions for
+which the write token can be moved into the affine context of the abstraction
+body during $\beta$-reduction.
+
+The affine types include bang types ($\tyBang{A}$), read endpoint types
+($\tyRd{S}$), products ($\tyTensor{X}{Y}$), sums ($\tyOplus{X}{Y}$), and arrows
+($\tyArr{X}{1}{U}$ or simply $X \multimap U$). Notice that the write token $\wrtok$
+lives in the affine context, though it cannot be bound to any variable. Instead,
+it flows around implicitly by virtue of where read and write effects are
+performed.
+
+For concision, certain syntactic forms are parameterized by a multiplicity $\pi$
+to distinguish between the unrestricted ($\infty$) and affine ($1$)
+counterparts; other syntactic forms are parameterized by a syntax label $\ell$,
+which includes the multiplicity labels and the write label $\wm$ (related to
+write effects). On introduction and elimination forms for functions
+(abstraction, application, and fixed points), the label $\wm$ denotes variants
+that move around the write token as explained above. On introduction and
+elimination forms for products and sums, the label $\wm$ denotes the sendable variants.
+
+Values in ILC (written $v$) include unit, pairs, sums, lambda expressions,
+channel endpoints (written $c$), and banged values. We distinguish between the
+names of channel endpoints---$\mathsf{Read}(d)$ and $\mathsf{Write}(d)$---and
+the channel $d$ itself that binds them. ILC supports a fairly standard feature
+set of expressions. Bang-typed values have introduction form $\eBang{e}$ and
+elimination form $\eUnbang{e}$. The more interesting expressions are those
+related to communication and concurrency:
+\begin{itemize}[leftmargin=*]
+  \item \emph{Restriction:} $\eNu{(x_1, x_2)}{e}$ binds a read endpoint $x_1$ and
+    a corresponding write endpoint $x_2$ in $e$.
+  \item \emph{Write:} $\eWr{e_1}{e_2}$ sends the value that $e_1$ evaluates to on
+    the write endpoint that $e_2$ evaluates to.
+  \item \emph{Read:} $\eLetRd{e_1}{x}{e_2}$ reads a value from the read endpoint
+    that $e_1$ evaluates to and binds the value-endpoint pair as $x$ in $e_2$.
+  \item \emph{Choice:} $\eChoicee{e_1}{x_1}{e_3}{e_2}{x_2}{e_4}$ allows a
+    process to continue as either $e_3$ or $e_4$ based on some initial read
+    event on one of the read endpoints that $e_1$ and $e_2$ evaluate to. The value read
+    over the channel and the two read endpoints are rebound in a 3-tuple as $x_1$
+    in $e_3$ or $x_2$ in $e_4$. Here, we show only binary choice, but it can be
+    generalized to the $n$-ary case.
+  \item \emph{Fork:} $\eFork{e_1}{e_2}$ spawns a child process $e_1$ and
+    continues as $e_2$.
+\end{itemize}
+
+\subsection{Static Semantics}
+\label{subsec:types}
+
+The typing rules of ILC are given in Figure~\ref{fig:full-type-expressions}. An
+algorithmic version of the rules appears in the appendix.
+
+To recap, the typing rules maintain that only one process is active at any given
+time (unique ownership of the write token), and the order of activations is
+deterministic (unique ownership of read endpoints). We read the typing judgement
+$\Delta; \Gamma |- e : U$ as ``under affine context $\Delta$ and unrestricted
+context $\Gamma$, expression~$e$ has type $U$.'' In full detail, the typing
+judgement also includes a typing context $\ChTy$, which maps channel names $d$
+to sendable types $S$. However, it is only used in two special rules for typing
+channel endpoints that do not arise for source level programs, but will be
+needed to typecheck a running program that has performed channel allocation:
+\begin{mathpar}
+\Infer{rdend}
+{\ChTy(d) = S}
+{\ChTy; \Delta; \Gamma |- \mathsf{Read}(d) : \tyRd{S}}
+%
+\and
+%
+\Infer{wrend}
+{\ChTy(d) = S}
+{\ChTy; \Delta; \Gamma |- \mathsf{Write}(d) : \tyWr{S}}
+\end{mathpar}
+This pair of rules establish the canonical forms for the types of channel
+endpoints, $\tyRd{S}$ and $\tyWr{S}$. We use the metavariable $c$ to range over
+these two canonical forms.
+
+The typing rules for the functional fragment of ILC are fairly standard, except
+that they now have unrestricted and affine variants (and for some, sendable
+variants).
+
+The rule for unrestricted abstraction (uabs) extends the unrestricted
+context $\Gamma$ with $x : A$ before checking the body $e$ of the abstraction. Notice
+that because unrestricted abstractions can be duplicated, the body must be
+affinely closed (cannot contain free affine variables).
+
+The rule for write abstraction (wabs) is similar to uabs. The only difference is
+that wabs extends the affine context with the write token before checking the
+body $e$ of the abstraction. Dually, the write application rule (wapp)
+stipulates that a process must own the write token in order to apply a write
+abstraction.
+
+The rule for affine abstraction (aabs) is analagous to uabs, but notice that the
+body \emph{need not} be affinely closed, since affine abstractions cannot be
+duplicated. It turns out that most affine functions we write \emph{are} affinely
+closed, and so such a function $f : X \multimap U$ can be made into an unrestricted
+function $g : A -> X \multimap U$ by adding a leading unrestricted argument.
+
+The bang rule turns an unrestrictedly typed expression $e:A$ into an affinely
+typed expression $e:\tyBang{A}$. Dually, the gnab rule turns an affinely typed
+expression $e:\tyBang{A}$ into an unrestrictedly typed expression $e:A$.
+
+The typing rules for fork, write, and read were covered in
+Section~\ref{subsec:type-tour}, so this leaves channel restriction (nu) and
+external choice (choice) as the remaining typing rules related to communication
+and concurrency.
+
+The nu rule extends the affine context $\Delta$ with a read endpoint $x_1 : \tyRd{S}$
+and the unrestricted context $\Gamma$ with a corresponding write endpoint $x_2
+: \tyWr{S}$ before typing the body $e$.
+
+The choice rule partitions the affine context as $\Delta_1,\Delta_2,\Delta_3$. The first two
+affine contexts are used to type $e_1 : \tyRd{S}$ and $e_2 : \tyRd{T}$,
+respectively. The third affine context $\Delta_3$ is extended with the affine write
+token and a variable $x_1$ (or $x_2$) binding an affine 3-tuple containing the
+read value and the two read endpoints before checking the continuation $e_3$ (or
+$e_4$). While somewhat cumbersome, the generality of this rule allows both read
+endpoints to be used in either continuation.
+
+%The write token is special and unique, and need not ever be bound to a variable
+%in the affine context.  Rather, it flows around “implicitly” in the program, by
+%virtue of where it performs read and write effects (i.e., channel receives and
+%sends).  In order to type a write expression, the write token must be present in
+%the affine context. Dually, typing a read expression extends the outgoing affine
+%context with the write token.
+
+%\paragraph{Rules for preventing read nondeterminism.}
+%To protect read channels from duplication, the nu rule binds read channels in
+%the affine context. When reading from a channel, the letrd rule rebinds the
+%channel in the affine context so that it may be used again. The rules for typing
+%lambda abstractions (abs), fixed points (fix), and bang! types (bang) stipulate
+%that they must be closed with respect to affine variables. Otherwise, they could
+%violate the affinity of read channels.\smallskip
+%
+%\paragraph{Rules for preventing write nondeterminism.}
+%The mode composition rules given in Figure~\ref{fig:mode-composition} prevent
+%write mode processes from being composed in parallel. This is reflected in the
+%fork rule, which derives the mode of $\eFork{e_1}{e_2}$ as the parallel
+%composition of the mode of $e_1$ and the mode of $e_2$.
+%To ensure this property is preserved during normalization, we must also forbid
+%sequential composition of write mode processes.
+
+\begin{comment}
+\paragraph{Intuitionistic rules.}
+The rules for intuitionistic variable lookup (var), unit (unit), and references
+(ref, get, set) are standard, as are the introduction rules for products (pair)
+and sums (inj). Notice that because these are all value mode expressions,
+communication is not allowed in their subexpressions. On the other hand, the
+elimination rules for products (split) and sums (case) do allow communication in
+certain subexpressions, so it is possible to derive any mode.
+
+The rule (abs) for intuitionistic lambda abstraction ($\eLam{x}{e}$) adds $x:A$
+to the intuitionistic context $\Gamma$ before checking the body $e$, so if the body
+$e$ has type $B$ and mode $m$, then the lambda abstraction has type
+$\tyArr{A}{\footnotesize m}{B}$ and mode $\Vm$. There are two points worth
+noting here. One is that the mode of the function body is carried by its arrow
+type. The other is that the function body must be closed with respect to affine
+variables, otherwise we would be able to duplicate read channels that are free
+in the body. This similarly applies to the fix rule.
+
+The dual application rule (app) says that applying a function, which carries a
+mode $m$ over its arrow type, to an argument, which must have mode $\Vm$, yields
+the mode $m$. And because lambda abstractions have mode $\Vm$, it follows that
+partially applying a function also yields mode $\Vm$. This means that only the
+rightmost arrow in a curried function type can carry a mode other than $\Vm$. In
+light of this fact, we also elide value modes carried over arrows in function
+signatures.
+
+We gave a taste of let-expression typing when we introduced the letrd rule. The
+rules for let and let! follow similarly, except they bind values in the
+intuitionistic context (and obviously, they need not read from a channel). The
+difference between let and let!, then, is that let binds an intuitionistic value
+in an intuitionistic body, but let! unpacks an affine value with type
+$\tyBang{A}$ to be used freely in an intuitionistic body. As with letrd, the
+modes of both forms of let expressions are derived by sequentially composing the
+mode of the bound expression with the mode of the body.
+
+The rules for message passing concurrency are more interesting. The nu rule adds
+the read-end of a channel $x_1: \tyRd{A}$ to the affine context $\Delta$ and its
+corresponding write-end $x_2 : \tyWr{A}$ to the intuitionistic context $\Gamma$
+before checking its body. We do not recap the wr and letrd rules here.
+
+The fork rule says that that if we can appropriately split the affine context
+such that the child process $e_1$ has type $A$ and mode $m_1$ and the
+``continue'' process $e_2$ has type $B$ and mode $m_2$, then the whole
+expression has type $B$ and mode $m_3$, which is derived by composing $m_1$ and
+$m_2$ in parallel. Again, we emphasize that composing two write mode processes
+in parallel violates type checking, i.e., $\Wm ;; \Wm => p$ cannot be derived
+for any mode $p$.
+
+Finally, the choice rule says that if we can appropriately split the affine
+context such that both subexpressions $A$ and mode $R$, then the whole
+expression follows exactly.
+
+\paragraph{Affine rules.} The affine typing rules are, for the most part, analagous to their
+intuitionistic counterparts. Two differences bear mentioning. First, the bang!
+rule only lifts intuitionistically typed expressions that are closed with
+respect to affine variables into an affinely typed expression. Otherwise, one
+could wrap an intuitionistically typed expression with free affine variables in
+a bang! and use it in an unrestricted manner. Second, in contrast with the abs
+rule, the lollipop rule does not require function bodies to be free with respect
+to affine variables.
+\end{comment}
+
+\subsection{Dynamic Semantics}
+\label{subsec:semantics}
+
+Figures~\ref{fig:configs} and~\ref{fig:semantics} define the dynamic syntax and
+semantics of ILC, respectively.
+%
+We define a \emph{configuration}~$C$ as a tuple of
+dynamic channel and process names~$\Sigma$, and a pool of running and terminated
+processes~$\pi$.
+%\Secref{sec:ilcproofs}.
+
+We read the configuration reduction judgment $C_1 ---> C_2$ as ``configuration
+$C_1$ steps to configuration $C_2$,'' 
+%
+and the local stepping judgment $e_1 \longrightarrow e_2$ for a single process~$e$ as
+``expression $e_1$ steps to expression $e_2$.''
+%
+The rules of local stepping follow a standard call-by-value semantics, 
+where we streamline the definition with an evaluation context~$E$.
+
+Configuration stepping consists of six rules. These include a congruence
+rule \Rule{congr} that permits some of the other rules to be simpler, by making
+the order of the pool unimportant. The relation
+$\Procs_1 \equiv_\textsf{perm} \Procs_2$ holds when $\Procs_2$ is a permutation of
+$\Procs_1$.
+%
+%
+The other five rules consist of local stepping (via \Rule{local}),
+creating new processes (via \Rule{fork}),
+creating new channels (via \Rule{nu}),
+read-write interactions (via \Rule{rw}),
+and choice-write interactions (via \Rule{cw}).
+%
+To avoid allocating the same name twice, 
+the name set~$\Names$ records names of allocated channels and processes.
+We define the relation
+$c_1 \leadsto c_2$ to hold when $c_1$ is the write endpoint of a corresponding
+read endpoint $c_2$.
+
+%
+%We assume an ambient, unspecified theory of channel names, including an
+%unspecified relation for relating the read and write ends of channel names,
+%written $c1 \leadsto c2$. As one possible definition, $c_1 \leadsto c_2$ iff $c_1$ has the
+%form $\textrm{WriteEndOf}(c)$ and $c_2$ has the form $\textrm{ReadEndOf}(c)$ for
+%some distinguished, injective functions WriteEndOf and ReadEndOf.
+%The relation $c_1 \leadsto c_2$ holds when 
+%channel names $c_1$ and $c_2$ refer to the 
+%write and read ends of a common channel.
+%
+%(The rules abstract over how channel names, and this relation, are structured.)
+
+
+%%% If you want more detail, you can uncomment this text below;
+%%% However, it doesn't add much intuition beyond just reading each rule:
+
+%% In the fork rule, the redex $\eFork{e_1}{e_2}$ in evaluation
+%% context $E$ spawns a new process $e_1$ and continues by evaluating $E[e_2]$. 
+%% %
+%% In the nu rule,
+%% the term $E[ \eNu{(x_1, x_2)}{e} ]$ reduces to $E[
+%% [\eChan{c_1}/x_1][\eChan{c_2}/x_2]e ]$, where $c_1$ and $c_2$ are fresh channel ends
+%% added to $\Sigma$. 
+%% %
+%% In the rw rule, given that $c_2$ is the corresponding write
+%% channel of $c_1$, denoted $c_2 \leadsto c_1$, the processes $E_1[R[ \eRd{\eChan{c_1}}]
+%% ]$ and $E_2[ \eWr{\eChan{c_2}}{v}]$ step to the processes $E_1[
+%% (v, \eChan{c_1})]$ and $E_2[ \eUnit]$, respectively.

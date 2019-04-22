@@ -1,0 +1,70 @@
+{- SaUCy prelude -}
+
+letrec loop c f =
+  let (v, c) = rd c in
+  let! v' = v in
+  let! f' = f in
+    f' v'; loop c f
+
+let fwd r w =
+  let! w' = w in
+  loop r !(lam x . wr x -> w')
+
+data Bit = Z | S
+
+{- Sample n bits from a bitstream. Can't use let due to modes. -}
+let sample n bits =
+  match splitAt n (@bits) with
+  | (bs, rest) => (let bits := rest) ; bs
+
+let xor a b = if a == b then Z else S
+
+let xors as bs =
+  map (lam x . let (a,b) = x in xor a b) (zip as bs)
+
+{- G_k : {0,1}^n -> {0,1}^4n -}
+let prg k bits = foldl (lam x . lam acc . x ++ acc) [] (replicate 4 bits)
+
+let tdp k bits = foldl (lam x . lam acc . x ++ acc) [] (replicate 4 bits)
+
+let hc r = S
+
+letrec prg' pk r k =
+  if k <= 0 then [hc r]
+  else hc (iterate k (tdp pk) r) : prg' pk r (k - 1)
+
+let prgg pk r k =
+  let n = 3 * k in
+    iterate n (tdp pk) r ++ prg' pk r (n - 1)
+
+{- KGen(1^n) : (td,pk) where td is a trapdoor and pk is a random public key -}
+let kgen k = (replicate k Z, replicate k S)
+
+{- Given trapdoor td to key pk, check whether y is in the range of G_pk -}
+let check td pk y = Z
+
+{- TODO: Can't use let without mode annotation. -}
+letrec splitBits2 bits =
+  match bits with
+  | b1:b2:bs => (match splitBits2 bs with
+		 | (bs1,bs2) => (b1:bs1,b2:bs2))
+  | _        => ([],[])
+
+letrec splitBits3 bits =
+  match bits with
+  | b1:b2:b3:bs => (match splitBits3 bs with
+                    | (bs1,bs2,bs3) => (b1:bs1,b2:bs2,b3:bs3))
+  | _           => ([],[],[])
+
+letrec splitBits4 bits =
+  match bits with
+  | b1:b2:b3:b4:bs => (match splitBits4 bs with
+                       | (bs1,bs2,bs3,bs4) => (b1:bs1,b2:bs2,b3:bs3,b4:bs4))
+  | _              => ([],[],[],[])
+
+letrec splitBits5 bits =
+  match bits with
+  | b1:b2:b3:b4:b5: bs =>
+    (match splitBits5 bs with
+     | (bs1,bs2,bs3,bs4,bs5) => (b1:bs1,b2:bs2,b3:bs3,b4:bs4,b5:bs5))
+  | _              => ([],[],[],[],[])

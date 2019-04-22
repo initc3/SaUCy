@@ -1,4 +1,0 @@
-urgent :: string $->$ {(string, string)} $->$ Rd a $->$ (a, Rd a) $|>$ W
-let urgent m R c =  wr ('Urgent, m, R) $->$ p2z ; rd c
-
-handle_urgent :: rcv: Rd a $->$ snd: Wr b $->$ $\{ () \mid \mathsf{*(R@rcv),(W@snd)*} \}$ $|>$ R

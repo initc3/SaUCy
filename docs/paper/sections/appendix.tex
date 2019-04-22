@@ -1,0 +1,183 @@
+\newpage
+
+\appendix
+
+\onecolumn
+
+%\section{Full Typing Rules}
+%
+%\input{figures/ilc/types-full}
+
+\section{Algorithmic Typing Rules}
+
+\input{figures/ilc/alg-types}
+
+\newpage
+
+\input{sections/ilcproofs}
+
+\newpage
+
+\section{ILC Implementation of \textsf{execUC} }
+\label{sec:full-execUC}
+The full implementation of the UC execution experiment is given in Figure~\ref{fig:execUC}.
+
+\begin{figure*}[h]
+\begin{subfigure}{.75\textwidth}
+\lstinputlisting[style=myilc]{listings/suc-colored.ilc}
+\end{subfigure}
+\begin{subfigure}{0.24\textwidth}
+\includegraphics[width=\linewidth]{graphics/execUC-colored}
+\end{subfigure}
+\caption{Full implementation of \textsf{execUC}. The channels follow a uniform
+naming scheme. The read end of a channel is prefixed with \textsf{r-} and the
+write end of a channel is prefixed with \textsf{w-}. The channel \textsf{rZ2P}
+denotes the read end of communications from the environment \textsf{z} to the
+party \textsf{p}. First, the random bitstring is split amongst each of the five
+parties. Then, the functionality, the adversary, and both protocol parties are
+spawned in a child process (given the appropriate channels and parameters), and
+the process continues as the environment process. Notice that parties are run in
+wrapper functions, which alter their behavior depending on whether or not they
+are corrupted. If a party is corrupted, then the adversary masquerades as the
+party.}
+\label{fig:execUC}
+\end{figure*}
+\newpage
+\twocolumn
+
+\section{Extending ILC with Trapdoor Permutations}
+
+UC Commitments are realized from cryptographic primitives, such as trapdoor
+permutations, which require extensions to ILC. The new syntactic forms are
+\textsf{kgen}, \textsf{tdp}, \textsf{inv}, and \textsf{hc} with the static and
+dynamic semantics shown in Figure~\ref{fig:extended-ilc}. The semantics are
+written in terms of the cryptographic objects themselves.
+
+The key generation function \textsf{keygen} takes as input a random bitstring
+and outputs a random public key $v_{pk}$ and a trapdoor $v_{td}$. The trapdoor
+permutation function
+\textsf{tdp} takes as inputs a key $v_{pk}$ and a bitstring $v_{in}$ and outputs
+a bitstring $v_{out}$. The \textsf{inv} function takes as inputs a key-trapdoor
+pair $(v_{pk}, v_{td})$ and a bitstring $v_{in}$ and outputs a bitstring
+$v_{out}$. The hardcore predicate function
+\textsf{hc} takes as input a key $v_{pk}$ and outputs a single bit.
+
+\input{figures/ilc/extended-syntax}
+
+We can use these to implement a special pseudorandom number generator $G_{pk}
+\colon \{0,1\}^k \to \{0,1\}^{4k}$ that has a trapdoor property, i.e., it is easy
+to compute, but difficult to invert except with special information called the
+``trapdoor.''
+\[ G_{pk}(r) = \big(\mathbf{f}_{pk}^{(3n)}(r),
+\mathbf{B}(\mathbf{f}_{pk}^{(3n-1)}(r)), \ldots, \mathbf{B}(\mathbf{f}_{pk}(r)),
+\mathbf{B}(r)\big)\]
+\noindent Here, $\mathbf{f}_{pk}$ is a trapdoor permutation over $\{0,1\}^{k}$,
+with $\mathbf{f}_{pk}^{(i)}(r)$ denoting the $i^{\textnormal{th}}$-fold
+application of $\mathbf{f}_{pk}$, and $\mathbf{B}$ is a hardcore predicate for
+$\mathbf{f}_{pk}$. In ILC, this can be implemented as:
+\lstinputlisting[style=myilc]{listings/prg.ilc}
+
+\section{Universally Composable Commitment Protocol}
+\label{app:ucc}
+In this section we give the full elaboration of our UC commitment instantiation.
+The specification functionality is given in the body in Figure~\ref{func:com},
+along with the protocol implementation in Section~\ref{subsec:example}.
+Our development follows closely from the psuedocode in the UC literature~\cite{canetti2001commitments}, which we show here in Algorithm~\ref{alg:com}.
+The protocol relies on the CRS functionality which we define here in Figure~\ref{fig:f-crs}.
+To briefly summarize what is going: the setup CRS samples a random string $\sigma$ and two trapdoor pseudorandom generators (prgs $\mathsf{pk}_0, \mathsf{pk}_1$).
+To commit to the bit $b$, the commiter produces a string $y$ that is the result of applying one or the other of the prgs, and if $b=1$ additionally applying xor with $\sigma$.
+The intuitive explanation why this is hiding is that without the trapdoor, it is difficult to tell whether a random $4k$-bit string is in the range of either prg. To open the commitment, the committer simply reveals the preimage and the receiver checks which of the two cases applies. The intuitive explanation why this is binding is that it is difficult to find a pair $y,y\oplus\sigma$ that are respectively in the range of both prgs.
+
+The UC proof consists of two simulators, one for the ideal world and one for the real world.
+The ideal world simulator, given in Figure~\ref{fig:sim} is ported directly from the UC literature~\cite{canetti2001commitments}, while the non-standard real world simulator, given in Figure~\ref{fig:simR}, is required because our protocol emulation definition requires simulation in both directions.
+The key to the ideal world simulator is to allow the simulator to generate its own ``fake'' CRS, for which it stores the trapdoors. The string $\sigma$ is not truly random, but instead is the result of combining two evaluations of the prgs.
+The ideal world simulator consists of two cases, depending on which of the parties is corrupt.
+
+In the case that the committer P is corrupt, the simulator needs to be able to \emph{extract} the committed value. The simulator is activated when $\mc{Z}$ sends a message $(\mathsf{Commit}' ~ y)$; in the real world, this is relayed by the dummy adversary to Q, who outputs \textsf{Committed} back to the environment. Hence to achieve the same effect in the ideal word, the simulator must send $(\mathsf{Commit}~b)$ to $\Func_{\textsc{Com}}$. To extract $b$ from $y$, the simulator makes use of the prg trapdoor check which one has $y$ in its range.
+It is necessary to argue by cryptographic reduction that this simulation is sound.
+To show this, we would define an alternative execution where the prg is substituted for a truly random function (i.e., a random oracle). If an environment $\mc{Z}$ could distinguish between these two worlds, then we could adapt the execution to distinguish the prg from random, violating the prg assumption.
+
+In the case that the receiver Q is corrupt, the simulator needs to \emph{equivocate}.
+The simulator is activated when $\mc{Z}$ inputs $(\mathsf{Commit}~b)$ to P, after which $\Func_{\textsc{Com}}$ sends $\mathsf{Committed}$ to the simulator.
+In the real world, the environment receives a commitment message $(\mathsf{Commit}'~y)$ from corrupted Q for some seemingly-random $y$. To achieve the same effect, the simulator must choose $y$. However, the simulator is next activated when the $\mc{Z}$ inputs $(\mathsf{Open}~b)$ to P, after which the simulator learns $b$ from $\Func_{\textsc{Com}}$. However, in the real world the environment receives a valid opening $(\mathsf{Opened}'~b~r)$ that is consistent with  $y$ and with the value chosen by the environment. Thus the simulator must initially choose $y$ so that it can later be opened to either value $b$ may take. The simulator achieves this by choosing $\sigma$ and $y$ ahead of time while generating the fake CRS. The reduction step is the same, and involves replacing prg with a true random function.
+
+Recall that the motivation for the real world simulator is to rule out degenerate protocols that diverge in some way.
+For every well behaved environment such that the ideal world is \textsf{PPT}, we need to demonstrate an adversary in the real world that is also \textsf{PPT}.
+Fortunately, the real world simulator, shown in Figure~\ref{fig:simR} is much simpler than ideal world simulator.
+Essentially the simulator runs a copy of the honest protocol for each of the corrupted parties. The simulation that results in this case is identical.
+
+\begin{algorithm}
+\SetAlgorithmName{Protocol}{protocol}{List of Protocols}
+\DontPrintSemicolon
+
+\SetKwBlock{Parameters}{\textnormal{\textsf{Public strings}:}}{}
+\Parameters{
+  $\sigma$: Random string in $\{0,1\}^{4n}$\;
+  ${pk}_0, {pk}_1$: Keys for generator $G_{k} \colon \{0,1\}^n \to \{0,1\}^{4n}$
+}\smallskip
+\SetKwBlock{Commit}{\textnormal{\textsf{Commit}($b$):}}{}
+\Commit{
+  $r \leftarrow \{0, 1\}^n$\;
+  $y \coloneqq G_{{pk}_b}(r)$\;
+  if $b=1$ then $y \coloneqq y \oplus \sigma$\;
+  Send $(\mathsf{Commit}, y)$ to receiver.\;
+  Upon receiving $(\mathsf{Commit}, y)$ from $A$, $B$ outputs $(\mathsf{Receipt})$.
+}\smallskip
+
+\SetKwBlock{Decommit}{\textnormal{\textsf{Decommit}($x$):}}{}
+\Decommit{
+  Send $(b, r)$ to receiver.\;
+  Receiver checks $y = G_{{pk}_b}(r)$ for $b = 0$, or $y = G_{{pk}_b}(r) \oplus \sigma$
+  for $b = 1$. If verification succeeds, then $B$ outputs $(\mathsf{Open}, b)$.
+}
+\caption{Universally Composable Commitment}
+\label{alg:com}
+\end{algorithm}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/dummy.ilc}
+\caption{Dummy adversary. The dummy adversary forwards messages from the
+environment to either the functionality (if the message has
+constructor \textsf{A2F}) or the party \textsf{p} (if the message has
+constructor \textsf{A2P}). Similarly, the dummy adversary forwards messages from
+the functionality or the procotol parties to the environment.}
+\label{fig:dummy-adversary}
+\end{figure*}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/dummyp.ilc}
+\caption{Dummy party. The dummy party simply relays information between the
+environment and the functionality.}
+\label{fig:dummy-party}
+\end{figure*}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/Fcrs.ilc}
+\caption{Ideal functionality for common reference string.}
+\label{fig:f-crs}
+\end{figure*}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/Bcrs.ilc}
+\caption{Bad ideal functionality for common reference string.}
+\label{fig:f-crs}
+\end{figure*}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/Fcom-full.ilc}
+\caption{Ideal functionality for one-time bit commitment.}
+\label{fig:f-com-full}
+\end{figure*}
+
+\begin{figure}
+\lstinputlisting[style=myilc]{listings/sim.ilc}
+\caption{Ideal world simulator for UC commitment.}
+\label{fig:sim}
+\end{figure}
+
+\begin{figure*}
+\lstinputlisting[style=myilc]{listings/simR.ilc}
+\caption{Real world simulator for UC commitment.}
+\label{fig:simR}
+\end{figure*}
+

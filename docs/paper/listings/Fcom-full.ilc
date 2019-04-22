@@ -1,0 +1,6 @@
+fCom :: $\tyNat -> [\tyBit] -> \mathsf{Crupt} -> \cdots \multimap_{\textsf{\tiny R}} \mathds{1}$
+let fCom k bits crupt toP toQ toA frP frQ frA =
+  let $($!(Commit b), frP$)$ = rd frP in
+    wr Receipt $->$ toQ ;
+    let $($!Open, frP$)$ = rd frP in
+      wr (Opened b) $->$ toQ

@@ -22,7 +22,6 @@ import qualified Text.Parsec.Expr as Ex
 import Text.Parsec.String (Parser)
 
 import Language.ILC.Decl
-import Language.ILC.Mode
 import Language.ILC.Lexer
 import Language.ILC.Type
 import Language.ILC.Syntax
@@ -58,15 +57,26 @@ eTuple = mklexer ETuple $ parens $ commaSep2 expr
 eList :: Parser Expr
 eList = mklexer EList $ brackets $ commaSep expr
 
-eSett :: Parser Expr
-eSett = mklexer ESett $ braces $ commaSep expr
-
 eLam :: Parser Expr
 eLam = do
   reserved "lam"
   x <- pat
   reserved "."
   ELam x <$> expr
+
+eLam1 :: Parser Expr
+eLam1 = do
+  reserved "lam1"
+  x <- pat
+  reserved "."
+  ELam1 x <$> expr
+
+eLamw :: Parser Expr
+eLamw = do
+  reserved "lamw"
+  x <- pat
+  reserved "."
+  ELamw x <$> expr    
 
 eApp :: Expr -> Parser Expr
 eApp f = do
@@ -78,7 +88,11 @@ atoms = atomExpr >>= \a ->
         eApp a <|> return a
 
 eFix :: Parser Expr
-eFix = $(todo "Parse fixed point expressions")
+eFix = do
+  reserved "fix"
+  x <- identifier
+  reserved "."
+  EFix x <$> expr
 
 eLets :: Parser Expr
 eLets = reserved "let" *> (try normalLet <|> eLetRd)
@@ -111,16 +125,6 @@ eLetRec = do
   e <- expr
   reserved "in"
   ELet p (EFix $ foldr ELam e (p:args)) <$> expr-}
-
-eLetBang :: Parser Expr
-eLetBang = do
-  reserved "let!"
-  ps <- commaSep1 pat
-  reservedOp "="
-  e1 <- expr
-  reserved "in"
-  e2 <- expr
-  return $ foldr (`ELetBang` e1) e2 ps
 
 eIf :: Parser Expr
 eIf = do
@@ -186,19 +190,6 @@ eWr = do
   reserved "->"
   EWr e <$> atomExpr
 
-eRef :: Parser Expr
-eRef = mklexer ERef $ reserved "ref" >> atomExpr
-
-eGet :: Parser Expr
-eGet = mklexer EGet $ reservedOp "@" >> atomExpr
-
-eSet :: Parser Expr
-eSet = do
-  reserved "let"
-  x <- identifier
-  reservedOp ":="
-  ESet x <$> expr
-
 eFork :: Expr -> Parser Expr
 eFork e = do
   reservedOp "|>"
@@ -212,7 +203,7 @@ eChoice e = do
 eSeq :: Expr -> Parser Expr
 eSeq e = do
   reserved ";"
-  ESeq e <$> expr
+  ELet PWildcard e <$> expr
   
 table :: [[Ex.Operator String () Identity Expr]]
 table = [ [ binaryOp "*" (EBin Mul) Ex.AssocLeft
@@ -262,7 +253,6 @@ atomExpr =
   <|> eBool
   <|> eString
   <|> eList
-  <|> eSett
   <|> eBang
   <|> try eUnit
   <|> try eTuple
@@ -270,16 +260,15 @@ atomExpr =
 
 term :: Parser Expr
 term = atoms
-  <|> eLam
-  <|> try eSet
-  <|> eLetBang
+  <|> eLam  
+  <|> eLam1
+  <|> eLamw
+  <|> eFix    
   <|> eLets
   <|> eIf
   <|> eMatch
   <|> eNu
   <|> eWr
-  <|> eRef
-  <|> eGet
   <|> eUn
 
 -- | Patterns
@@ -317,17 +306,19 @@ pCons = do
   _  <- colon
   PCons hd <$> pat
 
-pSet :: Parser Pattern
-pSet = mklexer PSet $ braces $ commaSep pat
-
 -- TODO: Fix parens parsing
 pCust :: Parser Pattern
 pCust = do
-  optional $ whitespace *> char '('
+  --optional $ whitespace *> char '('
   con <- constructor
   ps <- many pat
-  optional $ char ')' <* whitespace
+  --optional $ char ')' <* whitespace
   return $ PCust con ps
+
+pGnab :: Parser Pattern
+pGnab = do
+  reservedOp "!"
+  PGnab <$> pat
   
 -- TODO: Use chainl1?
 pat :: Parser Pattern
@@ -343,8 +334,9 @@ pat' =
   <|> pWildcard
   <|> try pTuple
   <|> pList
-  <|> pSet
   <|> pCust
+  <|> pGnab
+  <|> parens pat    
 
 -- | Parse toplevel declarations
 
@@ -365,7 +357,7 @@ dDeclLetRec :: Parser TopDecl
 dDeclLetRec = do
   reserved "letrec"
   (x, ps, e) <- parseLet
-  return $ Decl x (EFix $ foldr ELam e (PVar x : ps))
+  return $ Decl x (EFix x $ foldr ELam e (ps))  
 
 dDeclFun :: Parser TopDecl
 dDeclFun = do
@@ -386,59 +378,50 @@ parseValCon :: Name -> Parser ValCon
 parseValCon tyCon = do
   valCon <- constructor
   params <- sepBy ty whitespace
-  let ps = params ++ [TCon valCon]
-  return $ (valCon, foldr (\a b -> TArr a b V) (TCon tyCon) params)
+  let ps = (map (\(IType x) -> x) params) ++ [ICon valCon]
+  return $ (valCon, (foldr (\a b -> IType (IArr a b)) (IType (ICon tyCon)) ps))
 
 decl :: Parser TopDecl
 decl = dDeclCon <|> dDeclLetRec <|> try dExpr <|> dDeclFun
 
 -- | Parse types
 tInt, tBool, tString, tUnit :: Parser Type  
-tInt = mklexer (const tyInt) $ reserved "Int"
-tBool = mklexer (const tyBool) $ reserved "Bool"
-tString = mklexer (const tyString) $ reserved "String"
-tUnit = mklexer (const tyUnit) $ reserved "Unit"
+tInt = mklexer (const (IType tyInt)) $ reserved "Int"
+tBool = mklexer (const (IType tyBool)) $ reserved "Bool"
+tString = mklexer (const (IType tyString)) $ reserved "String"
+tUnit = mklexer (const (IType tyUnit)) $ reserved "Unit"
 
 tPrim :: Parser Type
 tPrim = tInt <|> tBool <|> tString <|> tUnit
 
-tVar = mklexer (TVar . TV) identifier
-tCon = mklexer TCon constructor
-tList = mklexer TList $ brackets $ ty
-tProd = mklexer TProd $ parens $ commaSep2 ty
-tSet = mklexer TSet $ braces $ ty
-tRef = mklexer TRef $ reserved "Ref" >> ty'
-tRd = mklexer (TLin . LRdChan) $ reserved "Rd" >> ty'
-tWr = mklexer TWrChan $ reserved "Wr" >> ty'
+stripi = \(IType x) -> return x
+strips = \(IType (ISend x)) -> return x
+
+tVar = mklexer (IType . IVar . TV) identifier
+tCon = mklexer (IType . ICon) constructor
+tList = mklexer (IType . IList) $ brackets $ (ty >>= stripi)
+tProd = mklexer (IType . IProd) $ parens $ commaSep2 (ty >>= stripi)
+tRd = mklexer (AType . ARdChan) $ reserved "Rd" >> (ty' >>= strips)
+tWr = mklexer (IType . IWrChan) $ reserved "Wr" >> (ty' >>= strips)
 
 tArrow = do
-  t1 <- ty'
+  IType t1 <- ty'
   reserved "->"
   t2 <- ty
-  m <- option V $ reservedOp "@" >> mode
-  return $ TArr t1 t2 m
-  
+  return $ IType (IArr t1 t2)
+
+ty :: Parser Type  
 ty = try tArrow <|> ty'
 
+ty' :: Parser Type
 ty' = tPrim
   <|> tVar
   <|> tCon
   <|> tList
   <|> try tProd
-  <|> tSet
-  <|> tRef
   <|> tRd
   <|> tWr
   <|> parens tArrow
-
--- | Parse modes
-mV, mW, mR :: Parser Mode
-mV = mklexer (const V) (reserved "V")
-mW = mklexer (const W) (reserved "W")
-mR = mklexer (const R) (reserved "R")
-
-mode :: Parser Mode
-mode = mV <|> mW <|> mR
 
 -- | Toplevel parser
 

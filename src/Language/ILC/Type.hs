@@ -12,11 +12,11 @@
 --------------------------------------------------------------------------------
 
 module Language.ILC.Type (
-    Type(..)
-  , LType(..)
-  , simpty
-  , simpFully
-  , linearize
+    TVar(..)
+  , Type(..)
+  , IType(..)
+  , AType(..)
+  , SType(..)    
   , Scheme(..)
   , tyInt
   , tyBool
@@ -28,92 +28,62 @@ module Language.ILC.Type (
   , extendTyEnv
   , lookupTyEnv
   , mergeTyEnv
+  , intersectTyEnv
+  , clearAffineTyEnv
+  , checkWrTok
+  , rmWrTok  
   , prettySignature
   , prettyTyEnv
-  , TML(..)
   ) where
 
 import qualified Data.Map as Map
 import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 
-import Language.ILC.Mode
 import Language.ILC.Pretty
 import Language.ILC.Syntax
 
--- | Intuitionistic types.
--- TODO: Fully separate intuitionistic and linear types.
-data Type = TVar TVar            -- ^ Type variable
-          | TCon String          -- ^ Type constructor
-          | TProd [Type]         -- ^ Product type
-          | TArr Type Type Mode  -- ^ Arrow type
-          | TList Type           -- ^ List type
-          | TSet Type            -- ^ Set type
-          | TRef Type            -- ^ Reference type
-          | TWrChan Type         -- ^ Write channel type
-          | TCust Type           -- ^ Custom data type
-          | TLin LType           -- ^ Linear type
-          | TUsed                -- ^ Used linear type
+-- | Type and mode variable
+newtype TVar = TV String deriving (Eq, Ord, Show)
+
+data Type = IType IType
+          | AType AType
           deriving (Eq, Ord, Show)
 
--- | Linear types.
-data LType = LVar TVar              -- ^ Linear type variable
-           | LRdChan Type           -- ^ Read channel type
-           | LArr LType LType Mode  -- ^ Lollipop type (linear arrows)
-           | LTensor LType LType    -- ^ Tensor type (linear pairs)
-           | LBang Type             -- ^ Intuitionistic type
+-- | Intuitionistic types.
+data IType = IVar TVar            -- ^ Type variable
+           | ICon String          -- ^ Type constructor
+           | IProd [IType]        -- ^ Product type
+           | IArr IType Type      -- ^ Arrow type
+           | IArrW IType Type     -- ^ Arrow type           
+           | IList IType          -- ^ List type
+           | IWrChan SType        -- ^ Write channel type
+           | ICust IType          -- ^ Custom data type
+           | ISend SType
            deriving (Eq, Ord, Show)
 
--- | Iteratively simplifies the modes in a type until it reaches a fixed point.
-simpFully :: Type -> Type
-simpFully ty = if ty == ty' then ty else simpFully ty'
-  where ty' = case simpty ty of
-                Nothing -> error "mode error"
-                Just x -> x
+-- | Affine types.
+data AType = AVar TVar
+           | ARdChan SType
+           | AProd [AType]        -- ^ Product type
+           | ABang IType
+           | AArr AType Type      -- ^ Arrow type           
+           deriving (Eq, Ord, Show)
 
--- | Simplifies modes in intuitionistic types.
-simpty :: Type -> Maybe Type
-simpty t@TVar{}       = Just t
-simpty t@TCon{}       = Just t
-simpty t@TUsed        = Just t
-simpty (TArr t1 t2 m) = TArr    <$> simpty  t1 <*> simpty t2 <*> mcompose m
-simpty (TList t)      = TList   <$> simpty  t
-simpty (TProd ts)     = TProd   <$> sequence (map simpty ts)
-simpty (TSet t)       = TSet    <$> simpty  t
-simpty (TRef t)       = TRef    <$> simpty  t
-simpty (TWrChan t)    = TWrChan <$> simpty  t
-simpty (TCust t)      = TCust   <$> simpty  t
-simpty (TLin l)       = TLin    <$> simplty l
-
--- | Simplifies modes in linear types.
-simplty :: LType -> Maybe LType
-simplty l@(LVar _)      = Just l
-simplty (LRdChan t)     = LRdChan <$> simpty  t
-simplty (LArr l1 l2 m)  = LArr    <$> simplty l1 <*> simplty l2 <*> mcompose m
-simplty (LTensor l1 l2) = LTensor <$> simplty l1 <*> simplty l2
-simplty (LBang t)       = LBang   <$> simpty  t
-
--- | Transforms an intuitionistic type into a linear type.
-linearize :: Type -> LType
-linearize (TVar a) = LVar a
-linearize (TArr t1 t2 m) = LArr (linearize t1) (linearize t2) m
-linearize (TLin l) = l
-linearize t = LBang t
-
--- | Wraps intuitionistic types, linear types, and modes.
-data TML = T Type
-         | L LType
-         | M Mode
-         deriving (Eq, Ord, Show)
+-- | Sendable types.
+data SType = SVar TVar            -- ^ Type variable
+           | SProd [SType]        -- ^ Product type
+           | SCon String          -- ^ Type constructor           
+           deriving (Eq, Ord, Show)
 
 -- | Type scheme
 data Scheme = Forall [TVar] Type deriving (Eq, Ord, Show)
 
 -- | Primitive types
-tyInt, tyBool, tyString, tyUnit :: Type
-tyInt    = TCon "Int"
-tyBool   = TCon "Bool"
-tyString = TCon "String"
-tyUnit   = TCon "Unit"
+tyInt, tyBool, tyString, tyUnit :: IType
+tyInt    = ISend $ SCon "Int"
+tyBool   = ISend $ SCon "Bool"
+tyString = ISend $ SCon "String"
+tyUnit   = ISend $ SCon "Unit"
 
 -- | Type environment
 newtype TypeEnv = TypeEnv { types :: Map.Map Name Scheme }
@@ -134,6 +104,25 @@ lookupTyEnv key (TypeEnv tys) = Map.lookup key tys
 mergeTyEnv :: TypeEnv -> TypeEnv -> TypeEnv
 mergeTyEnv (TypeEnv a) (TypeEnv b) = TypeEnv (Map.union a b)
 
+intersectTyEnv :: TypeEnv -> TypeEnv -> TypeEnv
+intersectTyEnv (TypeEnv a) (TypeEnv b) = TypeEnv (Map.intersection a b)
+
+clearAffineTyEnv :: TypeEnv -> TypeEnv
+clearAffineTyEnv (TypeEnv a) = TypeEnv $ Map.filter isInt a
+  where isInt (Forall _ IType{}) = True
+        isInt (Forall _ AType{}) = False
+
+checkWrTok :: TypeEnv -> Bool
+checkWrTok (TypeEnv env) =
+  case Map.lookup "WrTok" env of
+    Nothing -> False
+    Just _  -> True
+
+rmWrTok :: TypeEnv -> TypeEnv
+rmWrTok (TypeEnv a) = TypeEnv $ Map.filterWithKey isWrTok a
+  where isWrTok "WrTok" _ = False
+        isWrTok _       _ = True
+
 instance Monoid TypeEnv where
   mempty  = emptyTyEnv
   mappend = mergeTyEnv
@@ -142,50 +131,52 @@ instance Monoid TypeEnv where
 -- Pretty printing
 --------------------------------------------------------------------------------
 
-instance Pretty Type where
-  pretty (TVar a)    = pretty a
-  pretty (TCon a)    = pretty a
-  pretty (TArr a b V)  = maybeParens (isArrow a) (pretty a) <+> text "->"
-                                                            <+> pretty b
-      where
-        isArrow TArr {} = True
-        isArrow _       = False
-  pretty (TArr a b m)  = maybeParens (isArrow a) (pretty a) <+> text "->@"
-                                                            <>  pretty m
-                                                            <+> pretty b
-      where
-        isArrow TArr {} = True
-        isArrow _       = False
-  pretty (TList a)   = brackets $ pretty a
-  pretty (TProd as)  = _prettyTuple as
-  pretty (TSet a)    = pretty a
-  pretty (TRef a)    = text "Ref" <+> pretty a
-  pretty (TWrChan a) = text "Wr" <+> pretty a
-  pretty (TLin l) = pretty l
-  pretty (TCust a)  = pretty a
-  pretty TUsed = text "Used"
+instance Pretty TVar where
+  pretty (TV x) = text x
 
-instance Pretty LType where
-  pretty (LVar a) = pretty a
-  pretty (LRdChan a) = text "Rd" <+> pretty a
-  pretty (LArr a b V)  = maybeParens (isArrow a) (pretty a) <+> text "-o"
-                                                            <+> pretty b
+instance Pretty Type where
+  pretty (IType a) = pretty a
+  pretty (AType a) = pretty a
+
+instance Pretty IType where
+  pretty (IVar a)    = pretty a
+  pretty (ICon a)    = pretty a
+  pretty (IProd as)  = _prettyTuple as
+  pretty (IArr a b)  = maybeParens (isArrow a) (pretty a) <+> text "->"
+                                                          <+> pretty b
       where
-        isArrow LArr {} = True
+        isArrow IArr {} = True
         isArrow _       = False
-  pretty (LArr a b m)  = maybeParens (isArrow a) (pretty a) <+> text "-o@"
-                                                            <>  pretty m
-                                                            <+> pretty b
+  pretty (IArrW a b)  = maybeParens (isArrow a) (pretty a) <+> text "-*"
+                                                           <+> pretty b
       where
-        isArrow LArr {} = True
-        isArrow _       = False
-  pretty (LTensor a b)  = pretty a <> text "⊗" <> pretty b
-  pretty (LBang a)    = text "!(" <> pretty a <> text ")"
+        isArrow IArrW {} = True
+        isArrow _       = False        
+  pretty (IList a)   = brackets $ pretty a
+  pretty (IWrChan a) = text "Wr" <+> pretty a
+  pretty (ICust a)  = pretty a
+  pretty (ISend a)  = pretty a  
+
+instance Pretty AType where
+  pretty (AVar a)    = pretty a
+  pretty (ARdChan a) = text "Rd" <+> pretty a
+  pretty (AProd as)  = _prettyTuple as
+  pretty (ABang a)    = text "!" <+> pretty a
+  pretty (AArr a b)  = maybeParens (isArrow a) (pretty a) <+> text "-o"
+                                                          <+> pretty b
+      where
+        isArrow AArr {} = True
+        isArrow _       = False  
+
+instance Pretty SType where
+  pretty (SVar a)    = pretty a
+  pretty (SProd as)  = _prettyTuple as
+  pretty (SCon a)    = pretty a  
 
 instance Pretty Scheme where
   pretty (Forall [] t) = pretty t
   pretty (Forall ts t) = text "∀" <+> hsep (map pretty ts)
-                                  <+> text "." <+> pretty t
+                                  <+> text "." <+> pretty t  
 
 prettySignature :: (String, Scheme) -> Doc
 prettySignature (a, sc) = text a <+> text "::"
@@ -193,8 +184,3 @@ prettySignature (a, sc) = text a <+> text "::"
 
 prettyTyEnv :: TypeEnv -> [String]
 prettyTyEnv (TypeEnv env) = map (show . prettySignature) $ Map.toList env
-
-instance Pretty TML where
-  pretty (T t) = pretty t
-  pretty (L l) = pretty l
-  pretty (M m) = pretty m

@@ -1,6 +1,0 @@
-fCom :: $\forall$ ... . $\tyBang{\keyword{Crupt} \multimap \cdots \multimap \tyBang{\tyNat} \multimap_{\mathsf{R}} \tyBang{\tyUnit}}$
-let fCom crupt toP frP !toQ frQ toA frA k bits =
-  let $\langle$!(Commit b), frP$\rangle$ = rd frP in
-    wr Receipt $->$ toQ ;
-    let $\langle$!Open, frP$\rangle$ = rd frP in
-      !(wr (Opened b) $->$ toQ)

@@ -1,0 +1,698 @@
+\ProvidesClass{joshuadunfield}[2015/06/20 - Minor revision]
+
+\RequirePackage{etex}
+\RequirePackage{amsmath}
+
+%
+% Bring in \etal, \eg, etc.
+%
+\RequirePackage{etal}
+
+%
+% The mathpar package.
+%
+\RequirePackage{mathpartir}
+
+%
+% Colours
+%
+\RequirePackage{color}
+\RequirePackage{xcolor}
+
+% Yellow suitable for highlighting
+%
+\definecolor{dHilite}{rgb}{0.9, 0.9, 0.6}
+
+% Darker versions (dRed, dBlue, etc.) of common colours;
+% pure red/blue/green are violently garish, and too light in monochrome.
+%
+% dDkRed, etc. are darker still.
+% dLight[er]{Blue|Purple} are lighter colours suitable for backgrounds.
+%
+% dFaint, dGray, dDark, dAlmostBlack are shades of gray.
+%
+\definecolor{dRed}{rgb}{0.65, 0.0, 0.0}
+\definecolor{dDkRed}{rgb}{0.35, 0.0, 0.0}
+\definecolor{dGreen}{rgb}{0.0, 0.65, 0.0}
+\definecolor{dDkGreen}{rgb}{0.0, 0.35, 0.0}
+\definecolor{dBlue}{rgb}{0.0, 0.0, 0.65}
+\definecolor{dLightBlue}{rgb}{0.4, 0.4, 0.9}
+\definecolor{dLighterBlue}{rgb}{0.8, 0.8, 1.0}
+\definecolor{dDkBlue}{rgb}{0.0, 0.0, 0.45}
+\definecolor{dLightPurple}{rgb}{0.9, 0.5, 0.9}
+\definecolor{dLighterPurple}{rgb}{1.0, 0.7, 1.0}
+\definecolor{dPurple}{rgb}{0.65, 0.0, 0.65}
+\definecolor{dDigPurple}{rgb}{0.5, 0.0, 0.5}
+% \definecolor{DDIGPURPLE}{rgb}{0.5, 0.0, 0.5}  % laughable
+\definecolor{dFaint}{rgb}{0.7, 0.7, 0.7}
+\definecolor{dGray}{rgb}{0.5, 0.5, 0.5}
+\definecolor{dDark}{rgb}{0.2, 0.2, 0.2}
+\definecolor{dAlmostBlack}{rgb}{0.1, 0.1, 0.1}
+
+\definecolor{lred}{rgb}{1.0, 0.3, 0.3}
+
+
+\newcommand{\mathcolor}[2]{{\textcolor{#1}{\ensuremath{#2}}}}
+
+\newcommand{\textgraybox}[1]{\boxed{#1}}
+\newcommand{\graybox}[1]{\textgraybox{\ensuremath{#1}}}
+
+\newcommand{\tightcolorbox}[2]{\setlength{\fboxsep}{1pt}\colorbox{#1}{#2}}
+
+\definecolor{grayboxgray}{rgb}{0.85, 0.85, 0.85}
+\newcommand{\textcolorbox}[2]{\tightcolorbox{#1}{#2}}
+\newcommand{\textshadebox}[1]{\textcolorbox{grayboxgray}{#1}}
+\newcommand{\shadebox}[1]{\text{\textshadebox{\ensuremath{#1}}}}
+
+\newcommand{\mathcolorbox}[2]{\text{\tightcolorbox{#1}{$\displaystyle {#2}$}}}
+
+\newcommand{\hilite}[2]{\mathcolorbox{#1}{{#2}\mathstrut}}
+\newcommand{\redhi}[1]{\hilite{red!40}{#1}}
+\newcommand{\yellhi}[1]{\hilite{yellow}{#1}}
+\newcommand{\fighi}[1]{\hilite{yellow!40}{#1}}
+\newcommand{\purplehi}[1]{\hilite{purple!40}{#1}}
+\newcommand{\purpleop}[1]{\mathrel{\hilite{purple!40}{{#1}}}}
+
+
+%
+% Font handling.
+%
+% First, some generally useful macros:
+%
+%
+%  \textvtt{...}:  Like \texttt, but the *variable*-width CM typewriter font.
+%
+%  \textbi{...}:  Bold italic
+%  
+%
+
+
+%\newcommand{\textvtt}[1]{{\normalfont\fontfamily{cmvtt}\selectfont {#1}}}
+\newcommand{\textvtt}[1]{\text{\normalfont\fontfamily{cmvtt}\selectfont {#1}}}
+%\newcommand{\textvtt}[1]{\text{\normalfont\fontfamily{cmvtt}\selectfont\fontsz{11.0pt}{#1}}}
+\newcommand{\textbi}[1]{\textit{\bfseries#1}}
+
+%
+% Non-``run-on'' font macros that also set the line spacing to 1.2*the font size.
+% Examples:
+%
+%     \fontsz{18pt}{Eighteen-point text, in text mode}
+%     \mathsz{18pt}{18~pt~\in~\text{math} + \text{mode}}
+
+\newdimen\zzfontsz
+\newcommand{\fontsz}[2]{\zzfontsz=#1%
+{\fontsize{\zzfontsz}{1.2\zzfontsz}\selectfont{#2}}}
+
+\newcommand{\mathsz}[2]{\text{\fontsz{#1}{$#2$}}}
+
+
+%
+% Second, macros for particular animals (keywords, function names, etc.):
+%
+%  \keyword{...}:  Keyword (= \textvtt)
+%     (synonym: \textkw{...})
+%
+%  \textid{...}:  Identifier (= \textit)
+%
+%  \textfn{...}:  Function name (italic variable-width typewriter)
+%
+%  \datacon{...}:  Data constructor (= \mathsf)
+%
+%  \tyname{...}:  Type name (= \mathsf)
+%
+%  \sortname{...}:  Sort name (= \tyname)
+%
+
+
+%\newcommand{\textfn}[1]{\textit{#1}}
+\newcommand{\textfn}[1]{\text{\itshape\fontfamily{cmvtt}\selectfont {#1}}}
+\newcommand{\datacon}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\tyname}[1]{\ensuremath{\mathsf{#1}}}
+\newcommand{\sortname}[1]{\tyname{#1}}
+%\newcommand{\keyword}[1]{\textbf{#1}}%{\text{\usefont{T1}{phv}{b}{n}\fontsize{11pt}{13pt}\selectfont#1}}
+%\newcommand{\keyword}[1]{\text{\usefont{T1}{\rmdefault}{b}{n}\fontsize{\keywordfontsize}{12pt}\selectfont#1}}
+\newcommand{\keyword}[1]{\textnormal{\textsf{#1}}}
+\newcommand{\textkw}[1]{\keyword{#1}}
+\newcommand{\textid}[1]{\textit{#1}}
+
+%   Set the font size for \textkw and \keyword
+%
+\newcommand{\keywordfontsize}{9.7pt}  % should be about (document point size - 0.4pt)
+
+% Third, screaming red:
+%
+\newcommand{\flaming}[1]{\textcolor{red}{\fontsz{18pt}{\bf #1}}}
+\newcommand{\flamingmath}[1]{\textcolor{red}{\fontsz{18pt}{\bf \ensuremath{#1}}}}
+\newcommand{\semiflaming}[1]{\textcolor{dRed}{\sl #1}}
+
+% \normalfont capers:
+%
+% If your theorems, lemmas, etc. are italic or slanted, and they mention
+% judgments that have words (shocking, to use words), those words
+% tend to become italic or slanted too, which I think looks silly.
+%
+% Two solutions:
+%
+%  (1) Don't use a special style for theorems and lemmas.
+%
+%  (2) Use \normalfont a lot.
+%
+\newcommand{\textt}[1]{\text{\normalfont\texttt{#1}}}
+
+
+\newdimen{\zzzpbox}
+\newcommand{\pbox}[1]{\settowidth\zzzpbox{#1}\parbox{\zzzpbox}{#1}}
+
+\newlength{\zzsplatboldwidth}
+\newcommand{\xsplatbold}[2]{\settowidth{\zzsplatboldwidth}{{#2}}{#2}\addtolength{\zzsplatboldwidth}{-#1}\hspace{-\zzsplatboldwidth}\raisebox{#1}{{#2}}}
+\newcommand{\splatbold}[1]{\xsplatbold{-0.04mm}{#1}}
+
+%\newcommand{\stupidfontsz}[1]{\zzfontsz=#1%
+%{\fontsize{\zzfontsz}{1.2\zzfontsz}\selectfont}}
+
+\makeatletter
+\def\url@MGstyle{%
+\def\UrlFont{\tiny\ttfamily}% \tiny for 2-column dense papers (will not appear in final versions anyway)
+\def\do@url@hyp{\do\-}%Break at hyphens
+\Url@do
+}
+\makeatother
+\newcommand{\marginPseudoURL}{\begingroup \urlstyle{MG}\Url}
+
+\newcommand{\marginnote}[1]{\marginpar{\raggedright\scriptsize{#1}}}
+
+
+
+% Yes, \Lam and \Fix are defined to take only one argument (the binder).
+% This is on purpose: these macros don't render a closing delimiter,
+% so it's misleading to have a closing delimiter (of a 2nd argument) in
+% the LaTeX source.
+%
+% Since TeX doesn't care if you have extra {}, you won't get an error if you write
+%
+%    \Lam{x}{blabla(x)}
+%
+% but you shouldn't, because it doesn't match the rendering
+%
+%    \lambda x. blabla(x)
+%
+% Also, single-argument macros let you write (in an array)
+%
+%  \Lam{x} \\
+%  ~~blabla(x)
+%
+% without putting a silly {} after \Lam{x}.
+
+\newcommand{\xLam}{\lambda}
+\newcommand{\Lam}[1]{\xLam#1.\,}
+\newcommand{\lam}[1]{\Lam{#1}}
+
+\newcommand{\Pair}[2]{\textvtt{(}#1\textvtt{,}\;#2\textvtt{)}}
+\newcommand{\xFix}{\ensuremath{\keyword{fix}}}
+\newcommand{\Fix}[1]{\xFix~#1.\:}
+
+
+%
+% Characters that can't be easily quoted
+%
+\newcommand{\Backslash}{\char"5C}
+\newcommand{\Lbrack}{\char"5B}
+\newcommand{\Rbrack}{\char"5D}
+\newcommand{\Lbrace}{\char"7B}
+\newcommand{\Rbrace}{\char"7D}
+\newcommand{\tildesym}{\textt{\char"7E}}
+\newcommand{\caret}{\char94}
+
+
+%
+% Unfiled
+%
+\newcommand{\bnfas}{\ensuremath{\mathrel{::=}}}
+\newcommand{\bnfalt}{\mathrel{\mid}}
+\newcommand{\bnfaltbrk}{\hspace{-1.02ex}\bnfalt}
+\newcommand{\bnfaltBRK}{\) \\ &&& \(\bnfaltbrk}
+
+
+%
+% References (``Lemma \ref{...}'', etc.)
+%
+% Lots of people would put nonbreaking spaces in these, such as
+% 
+%   Figure~\ref{fig:foo}
+%
+% These macros don't.  Most of the time, the ~ makes no difference;
+% when it does make a difference, the line-layout effects are
+% unpredictable.  Having ``Figure'' and ``5'' on different lines is bad,
+% but it's less bad than having a line run into the gutter.  The cure shouldn't
+% be worse than the disease, and you always have the option of hand-writing
+% ``Figure~\ref{fig:foo}'' when that's really the lesser evil.
+%
+% Notes:
+%    \Lemmaref{...} uses \nameref to add the lemma name (in parentheses).
+%    \Lemref doesn't.
+
+\newcommand{\Appendixref}[1]{Appendix \ref{#1}}
+\newcommand{\Appref}[1]{App.\ \ref{#1}}
+\newcommand{\Figureref}[1]{Figure \ref{#1}}
+\newcommand{\Figref}[1]{Fig.\ \ref{#1}}
+\newcommand{\Sectionref}[1]{Section \ref{#1}}
+\newcommand{\Secref}[1]{Sec.\ \ref{#1}}
+
+\newcommand{\Lemmaref}[1]{Lemma \ref{#1} (\nameref{#1})}   % name and number
+\newcommand{\Lemref}[1]{\Lemma \ref{#1}}   % number only
+
+\newcommand{\Chapterref}[1]{Chapter \ref{#1}}
+\newcommand{\Listingref}[1]{Listing \ref{#1}}
+
+\newcommand{\Theoremref}[1]{Theorem \ref{#1}}
+\newcommand{\Thmref}[1]{Thm.\ \ref{#1}}
+\newcommand{\Corollaryref}[1]{Corollary \ref{#1}}
+\newcommand{\Corref}[1]{Cor.\ \ref{#1}}
+
+\newcommand{\Conjectureref}[1]{Conjecture \ref{#1}}
+\newcommand{\Propositionref}[1]{Proposition \ref{#1}}
+\newcommand{\Propertyref}[1]{Property \ref{#1}}
+\newcommand{\Remarkref}[1]{Remark \ref{#1}}
+\newcommand{\Tableref}[1]{Table \ref{#1}}
+
+\newcommand{\Definitionref}[1]{Definition \ref{#1}}
+\newcommand{\Defnref}[1]{Def.\ \ref{#1}}
+
+% Apparently I once used these macros, but I don't anymore:
+\newcommand{\nestedref}[2]{\ref{#1}(\textit{\ref{#1:#2}})}
+\newcommand{\nestedLemmaref}[2]{Lemma \nestedref{#1}{#2}}
+\newcommand{\nestedPropertyref}[2]{Property \nestedref{#1}{#2}}
+
+
+
+% ``Semantic'' synonyms for symbols.
+%
+% Ideally, LaTeX source would be almost as readable as the rendered output.
+% It never will be, but it should be made more readable wherever practical.
+% It is *entirely* practical to write \union instead of \cup, etc., giving the reader
+% (of the source) a fighting chance of reading the source out loud.  Compare
+%
+%       F(A) \union B
+%
+% to
+%
+%       F(A) \cup B
+%
+% If you actually pronounce set union "cup", you're putting the LaTeX cart
+% in front of the mathematical horse, and you're being rude to any members
+% of your audience who don't know much LaTeX---which means you're being
+% particularly and disproportionately rude to undergrads and early grad
+% students.  (Thus, if you're faculty, you're being rude to your students.)
+
+\newcommand{\union}{\cup}
+\newcommand{\sect}{\cap}
+
+\newcommand{\Union}{\bigcup}
+
+\newcommand{\contradiction}{{\Longrightarrow}{\Longleftarrow}}
+
+
+%
+% Example of the \foosym / \foo convention for (among others) binary operators:
+%
+%  \foosym is the ``raw'' symbol, usually with extra braces to defeat
+%  whatever spacing TeX might otherwise try to add.
+%
+%  \foo is the symbol you usually want to use, with \mathrel{} so it gets
+%
+%  Why do I defeat the spacing only to add it again?
+%
+%  First, if I want to build some big symbol with \foosym as a component,
+%  I probably don't want any extra space around \foosym (though I
+%  probably want space around the big symbol).
+%
+%  Second, TeX's spacing is not always correct.  A particularly irritating
+%  example that I've seen in many published papers is !.  TeX assumes
+%  that ! (in math mode) is factorial, which is a postfix operator.
+%  In programming languages, ! is usually a prefix operator.  So if you write
+%
+%    \Gamma \vdash !e : \tau
+%
+%  TeX will slam the ! right up against the \vdash, making it look like ! is
+%  decorating the turnstile.  If you write {!}, you avoid this; but why should
+%  you have to remember where to add random sets of braces?  Give ! a name,
+%  and put the extra braces in the macro definition.
+%
+%  (\usepackage{euler}, for some reason, solves this particular problem;
+%  but that seems fortuitous.)
+
+\newcommand{\subtypesym}{{\leq}}
+\newcommand{\subtype}{\mathrel{\subtypesym}}
+
+\newcommand{\supertypesym}{{\geq}}
+\newcommand{\supertype}{\mathrel{\supertypesym}}
+
+%\newcommand{\set}[1]{\left\{ #1 \right\}}
+\newcommand{\abs}[1]{\left| #1\right|}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+\newcommand{\twodots}{\mathinner{\ldotp\ldotp}}
+
+
+\newcommand{\where}{~\text{where}~}
+\newcommand{\forsome}{~\text{for some}~}
+\newcommand{\AND}{\textrm{~and~}}
+\newcommand{\OR}{\textrm{~or~}}
+
+%\renewcommand{\o}{\,{\circ}\,}    % Clashes with slash-o
+\newcommand{\composesubst}{\mathrel{\circ}}
+
+\newcommand{\arr}{\rightarrow}
+
+\newcommand{\entailssym}{{\vdash}}
+\newcommand{\entails}{\mathrel{\entailssym}}         % the |- symbol
+
+\newcommand{\notentailssym}{\printsavewidth{{\vdash}}\hspace{-0.9\zzskipwidthlen}\mathcolor{dRed}{\text{\tt /}}\hspace{0.1\zzskipwidthlen}}
+\newcommand{\notentails}{\mathrel{\notentailssym}}         % slashed |- symbol
+\newcommand{\lnotentails}{{\notentailssym}\;}         % slashed |- symbol
+\newcommand{\Entails}{\models\,}      % the |= symbol
+
+\newcommand{\aeq}{=_\alpha}
+\newcommand{\beq}{=_\beta}
+
+\newcommand{\diff}{\mathrel{\setminus}}
+\newcommand{\pfn}{\mathrel{\rightharpoonup}}   % partial-function arrow
+
+\newcommand{\xFV}{\mathit{FV}}
+\newcommand{\FV}[1]{\xFV(#1)}
+
+\newcommand{\sembr}[1]{\llbracket #1 \rrbracket}   % ``semantics'' brackets
+
+
+%
+%
+% Terser versions of array and tabular, with particular, tightly-spaced arguments
+%
+%
+
+\newcommand{\arrayenv}[1]{\renewcommand{\arraystretch}{1} \begin{array}[t]{@{}c@{}}#1\end{array}}
+\newcommand{\arrayenvc}[1]{\renewcommand{\arraystretch}{1} \begin{array}[c]{@{}c@{}}#1\end{array}}
+\newcommand{\arrayenvcl}[1]{\renewcommand{\arraystretch}{1} \begin{array}[c]{@{}l@{}}#1\end{array}}
+\newcommand{\arrayenvr}[1]{\renewcommand{\arraystretch}{1} \begin{array}[t]{@{}r@{}}#1\end{array}}
+\newcommand{\arrayenvbr}[1]{\renewcommand{\arraystretch}{1} \begin{array}[b]{@{}r@{}}#1\end{array}}
+\newcommand{\arrayenvl}[1]{\renewcommand{\arraystretch}{1} \begin{array}[t]{@{}l@{}}#1\end{array}}
+\newcommand{\arrayenvb}[1]{\renewcommand{\arraystretch}{1}  \begin{array}[b]{@{}c@{}}#1\end{array}} 
+\newcommand{\arrayenvbl}[1]{\renewcommand{\arraystretch}{1}  \begin{array}[b]{@{}l@{}}#1\end{array}}
+\newcommand{\arrayenvblll}[1]{\renewcommand{\arraystretch}{1}  \begin{array}[b]{@{}lll@{}}#1\end{array}}
+\newcommand{\pfarr}[1]{\begin{array}[b]{@{}l@{}}#1\end{array}}
+
+\newcommand{\tabularenv}[1]{\renewcommand{\arraystretch}{1} \begin{tabular}[t]{@{}c@{}}#1\end{tabular}}
+\newcommand{\tabularenvc}[1]{\renewcommand{\arraystretch}{1} \begin{tabular}[c]{@{}c@{}}#1\end{tabular}}
+\newcommand{\tabularenvcl}[1]{\renewcommand{\arraystretch}{1} \begin{tabular}[c]{@{}l@{}}#1\end{tabular}}
+\newcommand{\tabularenvr}[1]{\renewcommand{\arraystretch}{1} \begin{tabular}[t]{@{}r@{}}#1\end{tabular}}
+\newcommand{\tabularenvbr}[1]{\renewcommand{\arraystretch}{1} \begin{tabular}[b]{@{}r@{}}#1\end{tabular}}
+\newcommand{\tabularenvl}[1]{\renewcommand{\arraystretch}{1} \begin{tabular}[t]{@{}l@{}}#1\end{tabular}}
+\newcommand{\tabularenvb}[1]{\renewcommand{\arraystretch}{1}  \begin{tabular}[b]{@{}c@{}}#1\end{tabular}} 
+\newcommand{\tabularenvbl}[1]{\renewcommand{\arraystretch}{1}  \begin{tabular}[b]{@{}l@{}}#1\end{tabular}}
+\newcommand{\tabularenvblll}[1]{\renewcommand{\arraystretch}{1}  \begin{tabular}[b]{@{}lll@{}}#1\end{tabular}}
+
+
+
+%
+% Various formatting: 
+%
+%    `displ' for displayed text,
+%    `mathdispl' for displayed mathpar,
+%    `rclll' for equations (with extra left-aligned columns),
+%    `grammar' for BNF.
+%
+
+\newenvironment{displ}{\vspace{1pt} \begin{center} ~\!\!}{\end{center}}
+\newcommand{\vertcenter}[1]{\begin{tabular}{@{}c@{}}#1\end{tabular}}
+
+\newenvironment{rawrclll}{~\!\!\begin{array}[t]{@{}r@{~~}c@{~~}l@{}l@{}l@{}}}{\end{array}}
+\newenvironment{rclll}{\vspace{1pt} \begin{center} ~\!\!\begin{array}[t]{@{}r@{~~}c@{~~}l@{}l@{}l@{}}}{\end{array}\end{center}}
+\newenvironment{grammar}{\vspace{1pt} \begin{center} ~\!\!\begin{tabular}[t]{@{}lr@{~~}c@{~~}lll@{}}}{\end{tabular}\end{center}}
+
+
+% \newenvironment{mathdispl}{\begin{displ}~$\begin{mathpar} ~\!\!}{\end{mathpar}$\end{displ}}
+\newenvironment{mathdispl}{\begin{mathpar}}{\end{mathpar}\ignorespacesafterend}
+
+% \RequirePackage{environ}
+% \NewEnviron{mathdispl}{%
+%     \begin{mathpar}
+%         \BODY
+%     \end{mathpar}
+% }
+
+
+\newcommand{\parasection}[1]{\paragraph*{#1.}}
+
+
+%
+% Letters
+%
+
+%\newcommand{\C}{\mathcal{C}}
+\newcommand{\Dee}{\mathcal{D}}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\Judg}{\mathcal{J}}
+
+
+
+%
+% Miscellaneous
+%
+
+\newcommand{\hole}{\ensuremath{[\,]}}
+
+\newcommand{\Hand}{\text{\Pointinghand~~~~}}
+
+\newlength\zzskipwidthlen
+\newcommand{\skipwidth}[1]{\settowidth{\zzskipwidthlen}{\ensuremath{#1}}\hspace{\zzskipwidthlen}}
+\newcommand{\printsavewidth}[1]{\settowidth{\zzskipwidthlen}{\ensuremath{#1}}#1}
+\newcommand{\skipsavedwidth}{\hspace{\zzskipwidthlen}}
+
+\newcommand{\raiseline}[1]{\raisebox{2.5ex}[0pt]{#1}}
+\newcommand{\raisehalf}[1]{\raisebox{1.2ex}[0pt]{#1}}
+\newcommand{\drophalf}[1]{\raisebox{-1.2ex}[0pt]{#1}}
+\newcommand{\dropline}[1]{\raisebox{-2.5ex}[0pt]{#1}}
+\newcommand{\ghostbox}[1]{\raisebox{0pt}[0pt][0pt]{#1}}
+
+
+%
+% Better (to me) inference rules.
+%
+% \Infer:
+%
+%   -- takes three arguments, not two, which forces you to either give the rule
+%      a name (try to give your rules names, and I mean actual names, not
+%      random numbers), or at least to write {} for the name, which reminds you
+%      that you aren't giving the rule a name and you should probably fix that.
+%      (Every rule name should have its own macro, preferably with rulelinks.sty.)
+%
+%   -- places the rule name to the right (which forces more space between
+%      rules, which I think is more readable, at the cost of discouraging long
+%      rule names);
+%
+%   -- adds \strut/\mathstrut, making line heights consistent, so
+%
+%         \Infer{}
+%              {}
+%              {e : \tau}  % lowercase that nearly touches the horizontal line
+%
+%      doesn't look strange next to
+%
+%         \Infer{}
+%             {\text{UPPERCASE}}
+%             {\text{USING ENTIRE LINE HEIGHT}}
+%
+
+\def \TirNameStyle #1{{#1}}
+\newcommand{\Infer}[3]{\inferrule*[right={\text{\strut#1}}]{{}#2\mathstrut}{{}#3\mathstrut}}
+
+%
+% Inside a mathpar, I sometimes want to include some text, like
+%
+%   ``no intro rule for $\botty$''
+%
+% I'd like this to be centred, but mathpar bottom-aligns each row of rules.
+% Thus, use \centerruleplaceholder.  For example:
+%
+% \centerruleplaceholder{
+%     \Infer{foo}
+%         {\text{Some rule}}
+%         {\text{that will appear next to your text}}
+% }{
+%     Some text, in which you may include
+%     \\
+%     line breaks
+%     \\
+%     to keep the width from getting out of control
+% }
+
+\newcommand{\centerruleplaceholder}[2]{%
+   \text{%
+     \begin{tabular}[c]{c}
+         \ensuremath{#1}
+     \end{tabular}
+     ~~~~
+     \begin{tabular}[c]{l}
+         #2
+     \end{tabular}
+   }%
+}
+
+% failed attempt:
+\newcommand{\centerplaceholder}[1]{%
+   \text{%
+     \begin{tabular}[t]{c}
+         #1
+     \end{tabular}
+   }%
+}
+
+%
+% ``Judgment boxes'' that should precede a mathpar, so the reader
+% can instantly see which judgment is being defined by the rules.
+%
+% The first argument is the judgment form.
+% The second argument tells the reader how to interpret the judgment.
+% I don't mean *what* the judgment is, but literally how to *say* it:
+% If you're defining \Gamma \entails e : \tau, don't write
+%
+%   \judgbox{\Gamma \entails e : \tau}{Typing}
+%
+% Instead, write
+%
+%   \judgbox{\Gamma \entails e : \tau}
+%           {Under context $\Gamma$, expression $e$ has type $\tau$}
+%
+% This tells the reader what the judgment is supposed to mean.  It's also
+% an opportunity to remind the reader what your metavariables (like $e$)
+% stand for.  The reader doesn't know your system as well as you do,
+% and will lose track of all the kinds of animals you have in your zoo.
+%
+% For less familiar judgments than typing, this is even more important.
+% 
+
+\ifnum\OPTIONConf=1
+  \newcommand{\judgboxfontsize}[1]{\mathsz{11pt}{#1}}
+\else
+  \newcommand{\judgboxfontsize}[1]{\mathsz{10pt}{#1}}
+\fi
+
+\newcommand{\judgbox}[2]{%
+      {\raggedright \textgraybox{\ensuremath{\judgboxfontsize{#1}}}\!\begin{tabular}[c]{l} #2 \end{tabular} %
+      \ifnum\OPTIONConf=1 \\[-1.5ex] \else \\[-1.8ex] \fi%
+}}
+
+% Horribly named variants of \judgbox.  The \judgbox spacing is supposed
+% to be tuned for a following mathpar.  But sometimes I define
+% a judgment via equations, or something else, and the violent negative space
+% that I like for mathpar leads to disaster.
+%
+% Use \judgboxa when you are about to use \[ ... \].
+%
+% Use \judgboxx when you are about to write an ordinary paragraph.
+%
+\newcommand{\judgboxa}[2]{%
+      {\raggedright \textgraybox{\judgboxfontsize{\ensuremath{#1}}}\!\begin{tabular}[c]{l} #2 \end{tabular} %
+      \ifnum\OPTIONConf=1 \\[-1.3ex] \else \\[-1.0ex] \fi%
+}}
+\newcommand{\judgboxx}[2]{%
+      {\raggedright \textgraybox{\judgboxfontsize{\ensuremath{#1}}}\!\begin{tabular}[c]{l} #2 \end{tabular} %
+      \ifnum\OPTIONConf=1 \\[0.3ex] \else \\[0.6ex] \fi%
+}}
+
+%
+% Variant with another box, *after* the description, intended for a
+% Twelf expression.
+%
+\newcommand{\judgboxtwelf}[3]{%
+      {\raggedright \textgraybox{\judgboxfontsize{\ensuremath{#1}}}\!\begin{tabular}[c]{l} #2 \end{tabular} %
+      \!\!\textgraybox{\fontsz{8pt}{#3}}%
+      \ifnum\OPTIONConf=1 \\[3pt] \else \\[6pt] \fi%
+}}
+
+
+
+
+%
+% Showing derivations and other things in proofs.
+% These macros assume you use an `itemize' or `enumerate' environment
+% to list the cases of a proof.
+%
+
+\newcommand{\ProofCaseRule}[1]{\item \textbf{Case }\textrm{{#1}}: ~ }
+\newcommand{\ProofCaseThing}[1]{\ProofCaseRule{\ensuremath{#1}}}
+\newcommand{\ProofCasesRules}[1]{\item \textbf{Cases }\textrm{{#1}}: ~ }
+\newcommand{\ProofCaseRuleNoColon}[1]{\item \textbf{Case }\textrm{{#1}}}
+
+\gdef\xxDerivationProofCaseColor{N}
+\newcommand{\Begincolorcases}[1]{\gdef\xxDerivationProofCaseColor{#1}}
+\newcommand{\Endcolorcases}{\gdef\xxDerivationProofCaseColor{N}}
+
+%\newcommand{\DerivationProofCase}[3]{%
+%     \medskip
+%     \begin{samepage}
+%     \nopagebreak
+%     \item %
+%       \parbox[t]{100ex}{%
+%       \textbf{Case } \\[-0.95em]
+%       $~$\hspace{5ex}
+%       \if\xxDerivationProofCaseColor N%
+%           \ensuremath{%
+%              \Infer{#1}{#2}{#3}%
+%            }
+%       \else%
+%           \colorbox{\xxDerivationProofCaseColor}{%
+%              \ensuremath{%
+%                \Infer{#1}{#2}{#3}%
+%              }%
+%           }%
+%        \fi%
+%     }%
+%     \end{samepage}
+%     \nopagebreak \\[-2ex]
+%  }
+\newcommand{\DerivationProofCase}[3]{%
+     \smallskip
+     \item %
+       \parbox[t]{100ex}{%
+       \textbf{Case } \\[-0.5em]
+       $~$\hspace{5ex}
+       \if\xxDerivationProofCaseColor N%
+           \ensuremath{%
+              \Infer{#1}{#2}{#3}%
+            }
+       \else%
+           \colorbox{\xxDerivationProofCaseColor}{%
+              \ensuremath{%
+                \Infer{#1}{#2}{#3}%
+              }%
+           }%
+        \fi%
+     }%
+     \nopagebreak \\[0.2ex]
+  }
+
+\newcommand{\DoubleDerivationProofCase}[6]{%
+     \smallskip
+     \item %
+       \parbox[t]{100ex}{%
+       \textbf{Case } \\[-0.5em]
+       $~$\hspace{5ex}
+       \if\xxDerivationProofCaseColor N%
+           \ensuremath{%
+              \Infer{#1}{#2}{#3}%
+              ~~~~~
+              \Infer{#4}{#5}{#6}%
+            }
+       \else%
+           \colorbox{\xxDerivationProofCaseColor}{%
+              \ensuremath{%
+                \Infer{#1}{#2}{#3}%
+                ~~~~~
+                \Infer{#4}{#5}{#6}%
+              }%
+           }%
+        \fi%
+     }%
+     \nopagebreak \\[-0.8ex]
+  }

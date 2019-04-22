@@ -1,3 +1,0 @@
-let nonReentrantF ... =
-  loop frP !($\lambda$ m . wr m $->$ toA ;
-                let $\langle$!Ok, frA$\rangle$ = rd frA in wr m $->$ toQ)

@@ -58,10 +58,10 @@ match (PString s)  (VString s') | s == s'     = return ()
 match (PTuple ps)  (VTuple vs)  | eqlen ps vs = zipWithM_ match ps vs
 match (PList ps)   (VList vs)   | eqlen ps vs = zipWithM_ match ps vs
 match (PCons p ps) (VList (v:vs))             = match p v >> match ps (VList vs)
-match (PSet ps)    (VSet vs)    | eqlen ps vs = zipWithM_ match ps vs
 match PUnit        VUnit                      = return ()
 match PWildcard    _                          = return ()
-match (PCust x ps) (VCust x' vs)| x == x'     = zipWithM_ match ps vs 
+match (PCust x ps) (VCust x' vs)| x == x'     = zipWithM_ match ps vs
+match (PGnab p)    v                          = match p v
 match p            v                          = throwError $ MatchFail p v
 
 eqlen :: [a] -> [b] -> Bool

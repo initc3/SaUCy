@@ -1,4 +1,0 @@
-letrec loop c = 
-  let (v,c) = rd c in
-    let c = (wr 1 -> d $*&&$ let (_,c) = rd in c)
-    in loop c
