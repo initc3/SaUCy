@@ -26,22 +26,22 @@ examples :: [(String, String, String)]
 examples =
     [ ( "compose"
       , "let compose f g = lam x . f (g x)"
-      , "∀ a b c d . (a ->@c b) -> (d -> a) -> d ->@c b")
+      , "∀ a b c . (a -> b) -> (c -> a) -> c -> b")
     , ( "map"
       , "letrec map f lst = match lst with | [] => [] | x:xs => (f x) : (map f xs)"
       , "∀ a b . (a -> b) -> [a] -> [b]")
     , ( "assoclist"
       , "let f x = match x with | (a,b):[] => a"
       , "∀ a b . [(a,b)] -> a")
-    , ( "simple read 1"
-      , "let f () = nu (r, w) . let (v, r) = rd r in v"
-      , "∀ a . !(Unit) -o@R !(a)")
-    , ( "simple read 2"
-      , "let f () = nu (r, w) . let (v, r) = rd r in r"
-      , "∀ a . !(Unit) -o@R Rd a")
-    , ( "simple write"
-      , "let f () = nu c . wr 1 -> c'"
-      , "Unit ->@W Unit")
+--    , ( "simple read 1"
+--      , "let f () = nu (r, w) . let (v, r) = rd r in v"
+--      , "∀ a . !(Unit) -o@R !(a)")
+--    , ( "simple read 2"
+--      , "let f () = nu (r, w) . let (v, r) = rd r in r"
+--      , "∀ a . !(Unit) -o@R Rd a")
+--    , ( "simple write"
+--      , "let f () = nu c . wr 1 -> c'"
+--      , "Unit ->@W Unit")
     , ( "ill-typed chan"
       , "let f () = nu (rc, wc) . wr 1 -> wc |> wr () -> wc |> rc"
       , "ill-typed")
@@ -69,7 +69,7 @@ examples =
 --    , ( "loop"
 --      , "letrec loop c f = let (v, c) = rd c in let! v' = v in let! f' = f in f' v'; loop c f"
 --      , "∀ a b c d . Rd a -o !(a ->@c b) -o@R d")
-    , ("linear read channel violation"
-      , "let foo () = nu (r, w) . let (v, x) = rd r in r"
-      , "ill-typed")
+--    , ("linear read channel violation"
+--      , "let foo () = nu (r, w) . let (v, x) = rd r in r"
+--      , "ill-typed")
     ]
