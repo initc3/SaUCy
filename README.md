@@ -18,3 +18,14 @@ More details about ILC and SaUCy can be found in our
 [paper](https://eprint.iacr.org/2019/402.pdf).
 
 This repository is still work in progress. Stay tuned for more details.
+
+Install
+-------
+
+1. Install [Haskell platform](https://www.haskell.org/platform/).
+2. Run 'stack build'.
+
+Run
+---
+To run the ILC interactive interpreter, run 'stack exec -- saucy'.
+To run the ILC interpreter on an ILC program, run 'stack exec -- saucy <FILE>'.

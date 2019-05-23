@@ -1,0 +1,3 @@
+nu (frP,toQ) .
+     wr "Hello world" -> toQ
+  |> let (!msg, frP) = rd frP in msg
