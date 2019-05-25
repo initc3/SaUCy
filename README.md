@@ -19,13 +19,26 @@ More details about ILC and SaUCy can be found in our
 
 This repository is still work in progress. Stay tuned for more details.
 
-Install
--------
+Installation
+------------
 
 1. Install [Haskell platform](https://www.haskell.org/platform/).
-2. Run 'stack build'.
+2. Run `stack build`.
 
-Run
----
-To run the ILC interactive interpreter, run 'stack exec -- saucy'.
-To run the ILC interpreter on an ILC program, run 'stack exec -- saucy <FILE>'.
+Running ILC Programs
+--------------------
+The ILC implementation includes an interactive environment, in which ILC
+expressions can be interactively evaluated and programs can be interpreted. You
+can fire up the interactive environment with the command `stack exec -- saucy`.
+
+Here's a summary of commands available:
+
+| Command | Description |
+| --- | --- |
+| `:load <FILE>` | Load ILC source file |
+| `:browse` | List all variables in scope with their type signatures |
+| `:type <EXPR>` | Print type of ILC expression |
+| `:quit` | Quit |
+
+ILC source files can also be executed with the command `stack exec -- saucy
+<FILE>`.
