@@ -3,15 +3,9 @@ data Msg = Commit Int
 	 | Opened Int
 	 | Receipt
       
-let fCom crupt toP frP toQ frQ toA frA k bits =
-  let! crupt' = crupt in
-  let! toP' = toP in
-  let! toQ' = toQ in
-  let! toA' = toA in
-  let! bits' = bits in
-  let (msg, frP) = rd frP in
-  let! (Commit b) = msg in
-    wr Receipt -> toQ' ;
-    let (msg', frP) = rd frP in
-    let! Open = msg' in
-      wr (Opened b) -> toQ'
+let fCom = lam k . lam bits . lam crupt . lam toP . lam toQ . lam toA .
+           lam1 frP . lam1 frQ . lam1 frA .
+  let (!(Commit b), frP) = rd frP in 1
+    {-wr Receipt -> toQ ;
+    let (!Open, frP) = rd frP in
+      wr (Opened b) -> toQ-}
