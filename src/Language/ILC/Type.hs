@@ -14,6 +14,7 @@
 module Language.ILC.Type (
     TVar(..)
   , Type(..)
+  , UType(..)  
   , IType(..)
   , AType(..)
   , SType(..)    
@@ -47,7 +48,13 @@ newtype TVar = TV String deriving (Eq, Ord, Show)
 
 data Type = IType IType
           | AType AType
+          | UType UType
           deriving (Eq, Ord, Show)
+
+data UType = UVar TVar
+           | UIType IType
+           | UAType AType           
+           deriving (Eq, Ord, Show)
 
 -- | Intuitionistic types.
 data IType = IVar TVar            -- ^ Type variable
@@ -111,6 +118,7 @@ clearAffineTyEnv :: TypeEnv -> TypeEnv
 clearAffineTyEnv (TypeEnv a) = TypeEnv $ Map.filter isInt a
   where isInt (Forall _ IType{}) = True
         isInt (Forall _ AType{}) = False
+        isInt (Forall _ UType{}) = False        
 
 checkWrTok :: TypeEnv -> Bool
 checkWrTok (TypeEnv env) =
@@ -137,6 +145,12 @@ instance Pretty TVar where
 instance Pretty Type where
   pretty (IType a) = pretty a
   pretty (AType a) = pretty a
+  pretty (UType a) = pretty a
+
+instance Pretty UType where
+  pretty (UVar a) = pretty a
+  pretty (UIType a) = pretty a
+  pretty (UAType a) = pretty a    
 
 instance Pretty IType where
   pretty (IVar a)    = pretty a

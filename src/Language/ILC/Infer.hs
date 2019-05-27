@@ -70,9 +70,20 @@ class Substitutable a where
 instance Substitutable Type where
   apply s (IType t) = IType (apply s t)
   apply s (AType t) = AType (apply s t)
+  apply s (UType t) = UType (apply s t)  
 
   ftv (IType t) = ftv t
-  ftv (AType t) = ftv t  
+  ftv (AType t) = ftv t
+  ftv (UType t) = ftv t
+
+instance Substitutable UType where
+  apply (Subst s) t@(UVar a) = strip $ Map.findWithDefault (UType t) a s
+    where
+      strip (UType x) = x
+      strip (AType x) = UAType x
+      strip (IType x) = UIType x            
+
+  ftv (UVar a) = Set.singleton a      
 
 instance Substitutable IType where
   apply (Subst s) t@(IVar a) = strip $ Map.findWithDefault (IType t) a s
@@ -668,8 +679,8 @@ infer expr = case expr of
 
   EApp e1 e2 -> do
     (tyU1, cs1, ctxt2) <- infer e2
-    (tyU12U2, cs2, ctxt3) <- infer e1
-    case (tyU1, tyU12U2) of
+    (tyU12U2, cs2, ctxt3) <- local (const ctxt2) (infer e1)
+    case (tyU1, tyU12U2) of            
       (IType tyA1, IType (IArr tyA2 tyU2)) -> do
         return (tyU2, cs1 ++ cs2 ++ [(IType tyA1, IType tyA2)], ctxt3)
       (IType tyA1, IType (IArrW tyA2 tyU2)) -> do
@@ -677,8 +688,17 @@ infer expr = case expr of
       (AType tyX1, AType (AArr tyX2 tyU2)) -> do
         return (tyU2, cs1 ++ cs2 ++ [(AType tyX1, AType tyX2)], ctxt3)
       (IType tyA1, IType tyA12U2) -> do
-        tyU2 <- fresh (IType . IVar . TV)
+        tyU2 <- fresh (UType . UVar . TV)        
         return (tyU2, cs1 ++ cs2 ++ [(IType tyA12U2, IType (IArr tyA1 tyU2))], ctxt3)
+      (IType tyA1, UType tv) -> do
+        tyU2 <- fresh (UType . UVar . TV)        
+        return (tyU2, cs1 ++ cs2 ++ [(UType tv, IType (IArr tyA1 tyU2))], ctxt3)                        
+      (AType tyA1, AType tyA12U2) -> do
+        tyU2 <- fresh (UType . UVar . TV)        
+        return (tyU2, cs1 ++ cs2 ++ [(AType tyA12U2, AType (AArr tyA1 tyU2))], ctxt3)
+      (AType tyA1, UType tv) -> do
+        tyU2 <- fresh (UType . UVar . TV)        
+        return (tyU2, cs1 ++ cs2 ++ [(UType tv, AType (AArr tyA1 tyU2))], ctxt3)                
       _ -> error (show (tyU1, tyU12U2, cs1 ++ cs2))
 
   ERd e -> do
@@ -756,6 +776,11 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
 
     fv (IType a) = fvi a
     fv (AType a) = fva a
+    fv (UType a) = fvu a
+
+    fvu (UVar a) = [a]
+    fvu (UIType a) = fvi a
+    fvu (UAType a) = fva a    
 
     fvi (IVar a) = [a]
     fvi (ICon _) = []
@@ -779,6 +804,12 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
 
     normtype (IType a) = IType (normtypei a)
     normtype (AType a) = AType (normtypea a)
+    normtype (UType (UVar a)) =
+        case Prelude.lookup a ord of
+            Just x -> IType (IVar x)
+            Nothing -> error "type variable not in signature"
+    normtype (UType (UIType a)) = IType (normtypei a)
+    normtype (UType (UAType a)) = AType (normtypea a)
     
     normtypei (IVar a)   =
         case Prelude.lookup a ord of
@@ -827,7 +858,18 @@ unifies :: Type -> Type -> Solve Subst
 unifies t1 t2 | t1 == t2 = return emptySubst
 unifies (IType t1) (IType t2) = unifiesi t1 t2
 unifies (AType t1) (AType t2) = unifiesa t1 t2
+unifies t1 (UType t2) = unifiesu t1 (UType t2)
+unifies (UType t1) t2 = unifiesu (UType t1) t2
 unifies t1 t2 = throwError $ UnificationFail t1 t2
+
+unifiesu :: Type -> Type -> Solve Subst
+unifiesu t (UType (UVar v)) = v `bindu` t
+unifiesu (UType (UVar v)) t = v `bindu` t
+unifiesu (UType (UAType t1)) (AType t2) = unifiesa t1 t2
+unifiesu (AType t1) (UType (UAType t2)) = unifiesa t1 t2
+unifiesu (UType (UIType t1)) (IType t2) = unifiesi t1 t2
+unifiesu (IType t1) (UType (UIType t2)) = unifiesi t1 t2
+unifiesu t1 t2 = throwError $ UnificationFail t1 t2
 
 unifiesi :: IType -> IType -> Solve Subst
 unifiesi t1 t2 | t1 == t2 = return emptySubst
@@ -928,6 +970,14 @@ solver (su, cs) =
     ((t1, t2) : cs') -> do
       su1 <- unifies t1 t2
       solver (su1 `compose` su, apply su1 cs')
+
+bindu :: TVar -> Type -> Solve Subst
+bindu a t | t == IType (IVar a)     = return emptySubst
+          | t == AType (AVar a)     = return emptySubst
+bindu a (IType t) | occursCheck a t = throwError $ InfiniteType a (IType t)
+                  | otherwise       = return (Subst $ Map.singleton a (IType t))
+bindu a (AType t) | occursCheck a t = throwError $ InfiniteType a (AType t)
+                  | otherwise       = return (Subst $ Map.singleton a (AType t))                        
 
 bindi :: TVar -> IType -> Solve Subst
 bindi a t | t == IVar a     = return emptySubst
