@@ -1,3 +1,5 @@
+{- Ideal functionality for one-time commitment -}
+
 data Msg = Commit Int
          | Open
 	 | Opened Int
@@ -5,7 +7,7 @@ data Msg = Commit Int
       
 let fCom = lam k . lam bits . lam crupt . lam toP . lam toQ . lam toA .
            lam1 frP . lam1 frQ . lam1 frA .
-  let (!(Commit b), frP) = rd frP in 1
-    {-wr Receipt -> toQ ;
+  let (!(Commit b), frP) = rd frP in
+    wr Receipt -> toQ ;
     let (!Open, frP) = rd frP in
-      wr (Opened b) -> toQ-}
+      wr (Opened b) -> toQ

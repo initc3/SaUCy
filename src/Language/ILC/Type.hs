@@ -72,7 +72,7 @@ data AType = AVar TVar
 -- | Sendable types.
 data SType = SVar TVar            -- ^ Type variable
            | SProd [SType]        -- ^ Product type
-           | SCon String          -- ^ Type constructor           
+           | SCon String          -- ^ Type constructor
            deriving (Eq, Ord, Show)
 
 -- | Type scheme

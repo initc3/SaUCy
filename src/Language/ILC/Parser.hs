@@ -378,8 +378,16 @@ parseValCon :: Name -> Parser ValCon
 parseValCon tyCon = do
   valCon <- constructor
   params <- sepBy ty whitespace
+  --let ps = (map (\(IType x) -> x) params) ++ [ISend (SCon valCon)]
+  let ps = map (\(IType x) -> x) params
+  return $ (valCon, (foldr (\a b -> IType (IArr a b)) (IType (ISend (SCon tyCon))) ps))
+
+{-parseValCon :: Name -> Parser ValCon
+parseValCon tyCon = do
+  valCon <- constructor
+  params <- sepBy ty whitespace
   let ps = (map (\(IType x) -> x) params) ++ [ICon valCon]
-  return $ (valCon, (foldr (\a b -> IType (IArr a b)) (IType (ICon tyCon)) ps))
+  return $ (valCon, (foldr (\a b -> IType (IArr a b)) (IType (ICon tyCon)) ps))  -}
 
 decl :: Parser TopDecl
 decl = dDeclCon <|> dDeclLetRec <|> try dExpr <|> dDeclFun

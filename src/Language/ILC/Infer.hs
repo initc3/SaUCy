@@ -579,10 +579,10 @@ infer expr = case expr of
     case runSolve cs1 of
       Left err -> throwError err
       Right sub -> do
-        let sc t = generalize (apply sub ctxt1) (apply sub t)
-        (tyU, cs3, ctxt3) <- local (const ctxt2) (foldr (\(x, t) -> inEnv (x, sc t))
-                              (local (apply sub) (infer e2))
-                              binds)
+        let sc t   = generalize (apply sub ctxt1) (apply sub t)
+            binds' = TypeEnv $ Map.fromList $ map (\(x, t) -> (x, sc t)) binds
+            ctxt2' = apply sub (mergeTyEnv ctxt2 binds')
+        (tyU, cs3, ctxt3) <- local (const ctxt2') (infer e2)
         return (tyU, cs1 ++ cs2 ++ cs3, ctxt3)
 
   EBang e -> do
@@ -688,17 +688,17 @@ infer expr = case expr of
 
   ELetRd p e1 e2 -> do
     ctxt1 <- ask
-    -- TODO
     when (checkWrTok ctxt1) (throwError $ WrTokenInRd)
     (_, cs1, binds) <- inferPat p $ Just e1
     (_, cs2, ctxt2) <- infer e1
     case runSolve cs1 of
       Left err -> throwError err
       Right sub -> do
-        let sc t = generalize (apply sub ctxt1) (apply sub t)
-        (tyU, cs3, ctxt3) <- local (const ctxt2) (foldr (\(x, t) -> inEnv (x, sc t))
-                              (local (apply sub) (infer e2))
-                              binds)
+        let sc t   = generalize (apply sub ctxt1) (apply sub t)
+            binds' = TypeEnv $ Map.fromList $ map (\(x, t) -> (x, sc t)) binds
+            ctxt2' = apply sub (mergeTyEnv ctxt2 binds')
+            ctxt2'' = extendTyEnv ctxt2' ("WrTok", (Forall [] (IType tyUnit)))
+        (tyU, cs3, ctxt3) <- local (const ctxt2'') (infer e2)
         return (tyU, cs1 ++ cs2 ++ cs3, ctxt3)
 
   EWr e1 e2 -> do
@@ -707,7 +707,7 @@ infer expr = case expr of
     (IType (ISend tyS), cs1, ctxt2) <- local (rmWrTok) (infer e1)
     (tyWrS, cs2, ctxt3) <- local (const ctxt2) (infer e2)
     return (IType tyUnit, (IType (IWrChan tyS), tyWrS) : cs1 ++ cs2, ctxt3)
-
+    
   ENu (rdc, wrc) e -> do
     tyV <- fresh (SVar . TV)
     let newChans = [ (rdc, Forall [] $ AType (ARdChan tyV))
