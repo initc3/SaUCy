@@ -64,7 +64,7 @@ parseValCon :: Name -> Parser ValCon
 parseValCon tyCon = do
   valCon <- constructor
   params <- sepBy ty whitespace
-  let ps = map (\(IType x) -> x) params
+  let ps = map stripi params
   return (valCon, foldr (\a b -> IType (IArr a b)) (IType (ISend (SCon tyCon))) ps)
 
 decl :: Parser TopDecl

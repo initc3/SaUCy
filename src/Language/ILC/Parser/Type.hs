@@ -1,4 +1,3 @@
--- {-# OPTIONS_GHC -Wall #-}
 ------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Parser.Type
@@ -29,15 +28,13 @@ tPrim = tInt <|> tBool <|> tString <|> tUnit
     tString = reserved "String" >> return (IType tyString)
     tUnit   = reserved "Unit"   >> return (IType tyUnit)    
 
-stripi (IType x) = return x
-strips (IType (ISend x)) = return x
-
+tVar, tCon, tList, tProd, tRd, tWr :: Parser Type
 tVar  = mklexer (IType . IVar . TV) identifier
 tCon  = mklexer (IType . ICon) constructor
-tList = mklexer (IType . IList) $ brackets (ty >>= stripi)
-tProd = mklexer (IType . IProd) $ parens $ commaSep2 (ty >>= stripi)
-tRd   = mklexer (AType . ARdChan) $ reserved "Rd" >> (ty' >>= strips)
-tWr   = mklexer (IType . IWrChan) $ reserved "Wr" >> (ty' >>= strips)
+tList = mklexer (IType . IList) $ brackets $ stripi <$> ty
+tProd = mklexer (IType . IProd) $ parens $ commaSep2 $ stripi <$> ty
+tRd   = mklexer (AType . ARdChan) $ reserved "Rd" >> strips <$> ty'
+tWr   = mklexer (IType . IWrChan) $ reserved "Wr" >> strips <$> ty'
 
 tArrow :: Parser Type
 tArrow = do

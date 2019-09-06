@@ -1,4 +1,3 @@
-{-# OPTIONS_GHC -Wall  #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Type
@@ -32,7 +31,10 @@ module Language.ILC.Type (
   , intersectTyEnv
   , clearAffineTyEnv
   , checkWrTok
-  , rmWrTok  
+  , rmWrTok
+  , stripi
+  , stripa
+  , strips
   , prettySignature
   , prettyTyEnv
   ) where
@@ -134,6 +136,18 @@ rmWrTok (TypeEnv a) = TypeEnv $ Map.filterWithKey isWrTok a
 instance Monoid TypeEnv where
   mempty  = emptyTyEnv
   mappend = mergeTyEnv
+
+stripi :: Type -> IType
+stripi (IType ty) = ty
+stripi _          = error "Type.stripi"
+
+stripa :: Type -> AType
+stripa (AType ty) = ty
+stripa _          = error "Type.stripa"
+
+strips :: Type -> SType
+strips (IType (ISend ty)) = ty
+strips _                  = error "Type.strips"
     
 --------------------------------------------------------------------------------
 -- Pretty printing

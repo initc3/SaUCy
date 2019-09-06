@@ -23,15 +23,19 @@ import Text.PrettyPrint.ANSI.Leijen
 
 -- | Pretty prints a comma separated list
 -- TODO: Fix doc with to 80
+prettyTuple :: [Doc] -> Doc
 prettyTuple xs = encloseSep lparen rparen comma xs
 
 -- | No line breaks
+_prettyTuple :: Pretty a => [a] -> Doc
 _prettyTuple xs = parens $ hcat $ intersperse comma $ map pretty xs
 
 -- | Pretty prints a comma separated list
+prettySet :: [Doc] -> Doc
 prettySet xs = encloseSep lbrace rbrace comma xs
 
 -- | Pretty prints a space separated list
+prettySpace :: [Doc] -> Doc
 prettySpace xs = encloseSep empty empty space xs
 
 -- | Enclose a 'Doc' in parens if the flag is 'True'

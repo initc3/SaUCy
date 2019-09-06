@@ -2,7 +2,6 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
--- {-# OPTIONS_GHC -Wall             #-}
 
 --------------------------------------------------------------------------------
 -- |
@@ -104,11 +103,11 @@ evalDecl env (TyCon _ vcs) = do
 execi :: Bool -> String -> Repl ()
 execi update source = do
   st <- get
-  mod <- hoistErr $ parser source
-  let _mod = declToAssoc mod
-      custTys = TypeEnv (Map.fromList (getCustomData mod))
+  mod' <- hoistErr $ parser source
+  let _mod = declToAssoc mod'
+      custTys = TypeEnv (Map.fromList (getCustomData mod'))
   tyenv' <- hoistErr $ inferTop (mergeTyEnv (tyenv st) custTys) _mod
-  tmenv' <- liftIO $ foldM (evalDecl) (tmenv st) mod
+  tmenv' <- liftIO $ foldM (evalDecl) (tmenv st) mod'
   let st' = st { tmenv = tmenv'
                , tyenv = tyenv' <> (tyenv st)
                }
@@ -173,7 +172,7 @@ defaultMatcher :: MonadIO m => [(String, CompletionFunc m)]
 defaultMatcher = [(":load"  , fileCompleter)]
 
 -- Default tab completer
-comp :: (Monad m, MonadState IState m) => WordCompleter m
+comp :: (MonadState IState m) => WordCompleter m
 comp n = do
   let cmds = [":load", ":type", ":browse", ":quit"]
   TypeEnv ctx <- gets tyenv
@@ -197,7 +196,7 @@ shell pre = flip evalStateT initState
 
 main :: IO ()
 main = do
-  options <- execParser opts
-  case (optSrcFile options) of
+  opts' <- execParser opts
+  case (optSrcFile opts') of
     Just file -> readFile file >>= process
     Nothing   -> shell (return ())

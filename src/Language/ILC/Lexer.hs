@@ -139,12 +139,6 @@ reserved = Tok.reserved lexer
 colon :: Parser String
 colon = Tok.colon lexer
 
-semi :: Parser String
-semi = Tok.semi lexer
-
-semiSep :: Parser a -> Parser [a]
-semiSep = Tok.semiSep lexer
-
 comma :: Parser String
 comma = Tok.comma lexer
 

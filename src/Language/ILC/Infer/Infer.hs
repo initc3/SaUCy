@@ -210,12 +210,12 @@ inferPat pat expr = case (pat, expr) of
     case tes of
       IType _ -> do
         (ts, cs, ctxt) <- inferPatList ps $ map Just es
-        let ts'         = map (\(IType x) -> x) ts
+        let ts'         = map stripi ts
             constraints = (IType (IProd ts'), tes) : ces ++ cs
         return (IType (IProd ts'), constraints, ctxt)
       AType _ -> do
         (ts, cs, ctxt) <- inferPatList ps $ map Just es
-        let ts'         = map (\(AType x) -> x) ts
+        let ts'         = map stripa ts
             constraints = (AType (AProd ts'), tes) : ces ++ cs
         return (AType (AProd ts'), constraints, ctxt)
       UType _ -> error "todo"
@@ -235,20 +235,20 @@ inferPat pat expr = case (pat, expr) of
     (te, ce, _) <- infer e
     case te of
       IType _ -> do
-        let ts' = map (\(IType x) -> x) ts            
+        let ts' = map stripi ts            
         return (IType (IProd ts'), (IType (IProd ts'), te) : cs ++ ce, ctxt)
       AType _ -> do
-        let ts' = map (\(AType x) -> x) (traceShow ts ts)
+        let ts' = map stripa (traceShow ts ts)
         return (AType (AProd ts'), (AType (AProd ts'), te) : cs ++ ce, ctxt)
       UType _ -> error "todo"
   (PTuple ps, Nothing) -> do
     (ts, cs, ctxt) <- inferPatList ps $ repeat Nothing
     case head ts of
       IType _ -> do
-        let ts' = map (\(IType x) -> x) ts        
+        let ts' = map stripi ts        
         return (IType (IProd ts'), cs, ctxt)
       AType _ -> do
-        let ts' = map (\(AType x) -> x) ts        
+        let ts' = map stripa ts        
         return (AType (AProd ts'), cs, ctxt)
       UType _ -> error "todo"
 
@@ -257,43 +257,43 @@ inferPat pat expr = case (pat, expr) of
     (tes, ces, _) <- infer $ EList es
     (ts, cs, env) <- inferPatList ps $ map Just es
     (thd, cs') <- listConstraints ts cs
-    let constraints = (IType (IList ((\(IType x) -> x) thd)), tes) : ces ++ cs'
-    return (IType (IList ((\(IType x) -> x) thd)), constraints, env)
+    let constraints = (IType (IList (stripi thd)), tes) : ces ++ cs'
+    return (IType (IList (stripi thd)), constraints, env)
   (PList ps, Just e) -> do
     (te, ce, _) <- infer e
     (ts, cs, env) <- inferPatList ps $ repeat Nothing
     (thd, cs') <- listConstraints ts cs
-    let constraints = (IType (IList ((\(IType x) -> x) thd)), te) : ce ++ cs'
-    return (IType (IList ((\(IType x) -> x) thd)), constraints, env)
+    let constraints = (IType (IList (stripi thd)), te) : ce ++ cs'
+    return (IType (IList (stripi thd)), constraints, env)
   (PList ps, Nothing) -> do
     tces <- zipWithM inferPat ps $ repeat Nothing
     let (ts, cs, env) = concatTCEs tces
     (thd, cs') <- listConstraints ts cs
-    return (IType (IList ((\(IType x) -> x) thd)), cs', env)
+    return (IType (IList (stripi thd)), cs', env)
 
   (PCons phd ptl, Just e@(EList (hd:tl))) -> do
     (te, ce, _) <- infer e
     (thd, chd, ehd) <- inferPat phd $ Just hd
     (ttl, ctl, etl) <- inferPat ptl $ Just $ EList tl
-    let cs = ce ++ chd ++ ctl ++ [ (IType (IList ((\(IType x) -> x) thd)), te)
+    let cs = ce ++ chd ++ ctl ++ [ (IType (IList (stripi thd)), te)
                                  , (te, ttl) ]
         env = ehd ++ etl
-    return (IType (IList ((\(IType x) -> x) thd)), cs, env)
+    return (IType (IList (stripi thd)), cs, env)
   (PCons phd ptl, Just e) -> do
     (te, ce, _) <- infer e
     (thd, chd, ehd) <- inferPat phd Nothing
     (ttl, ctl, etl) <- inferPat ptl Nothing
-    let cs = ce ++ chd ++ ctl ++ [ (IType (IList ((\(IType x) -> x) thd)), te)
+    let cs = ce ++ chd ++ ctl ++ [ (IType (IList (stripi thd)), te)
                                  , (te, ttl)
-                                 , (IType (IList ((\(IType x) -> x) thd)), ttl) ]
+                                 , (IType (IList (stripi thd)), ttl) ]
         env = ehd ++ etl
-    return (IType (IList ((\(IType x) -> x) thd)), cs, env)
+    return (IType (IList (stripi thd)), cs, env)
   (PCons phd ptl, Nothing) -> do
     (thd, chd, ehd) <- inferPat phd Nothing
     (ttl, ctl, etl) <- inferPat ptl Nothing
-    let cs = (IType (IList ((\(IType x) -> x) thd)), ttl) : chd ++ ctl
+    let cs = (IType (IList (stripi thd)), ttl) : chd ++ ctl
         env = ehd ++ etl
-    return (IType (IList ((\(IType x) -> x) thd)), cs, env)
+    return (IType (IList (stripi thd)), cs, env)
 
   (PUnit, Just e) -> do
     (ty, cs,  _) <- infer e
@@ -391,8 +391,8 @@ infer expr = case expr of
     (tys, cons, env2) <- infers ([],[],env1) es
     -- TODO: Check all unrestricted or all affine
     let ty = case head tys of
-               IType _ -> IType . IProd . map  (\(IType x) -> x) $ tys
-               AType _ -> AType . AProd . map  (\(AType x) -> x) $ tys
+               IType _ -> IType . IProd . map  stripi $ tys
+               AType _ -> AType . AProd . map  stripa $ tys
                UType _ -> error "todo"
     return (ty, cons, env2)
 
@@ -403,7 +403,7 @@ infer expr = case expr of
   EList es -> do
     env1 <- ask
     (tys, cons1, env2) <- infers ([],[],env1) es
-    let ty    = (\(IType x) -> x) (head tys)
+    let ty    = stripi (head tys)
         cons2 = map (IType ty,) tys
     return (IType . IList $ ty, cons1 ++ cons2, env2)
 
