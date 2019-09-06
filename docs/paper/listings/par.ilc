@@ -1,3 +1,0 @@
-par :: $\forall$ a b c $\{(\textsf{m}, \textsf{n}) \mid \textsf{m} || \textsf{n}=> \textsf{p}\}$ .
-     (a ${->}_{\textsf{m}}$ b) $->$ (a${->}_{\textsf{n}}$ c) $->$ a ${->}_{\textsf{p}}$ c
-let par f g v = f v $\xFork$ g v

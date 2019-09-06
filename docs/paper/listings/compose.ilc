@@ -1,8 +1,0 @@
-let $(\circ)$ ($\rho_P$, $\rho_Q$) ($\pi_P$, $\pi_Q$)
-    	    ${\color{red}\sf w{\rho_P}2Z~w{\rho_Q}2Z}~{\color{Green}\sf w{\rho_P}2F~w{\rho_Q}2F}$
-	    ${\color{blue}\sf w{\rho_P}2{\rho_Q}~w{\rho_Q}2{\rho_P}}~{\color{red}\sf rZ2{\rho_P}~rZ2{\rho_Q}}$
-	    ${\color{Green}\sf rF2{\rho_P}~rF2{\rho_Q}}~{\color{blue}\sf r{\rho_Q}2{\rho_P}~r{\rho_P}2{\rho_Q}}$ =
-  $\nu$ ... . $\pi_P$ ${\color{orange}\sf w{\pi_P}2{\rho_P}~{\color{Green}\sf w{\rho_P}2F~{\color{blue}\sf w{\pi_P}2{\pi_Q}~r{\rho_P}2{\pi_P}}~rF2{\rho_P}}~r{\pi_Q}2{\pi_P}}$
-    $\xFork$ $\pi_Q$ ${\color{orange}\sf w{\pi_Q}2{\rho_Q}~{\color{Green}\sf w{\rho_Q}2F~{\color{blue}\sf w{\pi_Q}2{\pi_P}~r{\rho_Q}2{\pi_Q}}~rF2{\rho_Q}}~r{\pi_P}2{\pi_Q}}$
-    $\xFork$ $\rho_P$ ${\color{red}\sf w{\rho_P}2Z}~{\color{orange}\sf w{\rho_P}2{\pi_P}}~{\color{blue}\sf w{\rho_P}2{\rho_Q}}~{\color{red}\sf rZ2{\rho_P}}~{\color{orange}\sf r{\pi_P}2{\rho_P}}~{\color{blue}\sf r{\rho_Q}2{\rho_P}}$
-    $\xFork$ $\rho_Q$ ${\color{red}\sf w{\rho_Q}2Z}~{\color{orange}\sf w{\rho_Q}2{\pi_Q}}~{\color{blue}\sf w{\rho_Q}2{\rho_P}}~{\color{red} \sf rZ2{\rho_Q}}~{\color{orange}\sf r{\pi_Q}2{\rho_Q}}~{\color{blue}\sf r{\rho_P}2{\rho_Q}}$

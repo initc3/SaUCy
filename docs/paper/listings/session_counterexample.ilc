@@ -1,4 +1,0 @@
-let (v, c) = rd c in
-  match v with
-  | 'ToAlice $=>$ wr 0 $->$ a
-  | 'ToBob $\ \,=>$ wr 1 $->$ b

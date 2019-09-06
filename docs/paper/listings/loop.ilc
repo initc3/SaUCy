@@ -1,2 +1,0 @@
-loop :: $\forall$ a b . (a $->$ b) $->$ Rd a $\multimap$ b
-letrec loop f frS = let $($!v, frS$)$ = rd frS in f v; loop f frS

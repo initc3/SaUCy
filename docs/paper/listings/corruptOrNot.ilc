@@ -1,9 +1,0 @@
-corruptOrNot :: $\forall$ ... . $A_{\mathsf{p}} -> \tyNat -> [\tyBit] -> \tyBool -> \cdots$
-let corruptOrNot p k bits iscrupt ${\color{red}\sf toZ}$ ${\color{Green}\sf toF}$ toA ${\color{blue}\sf toQ}$ ${\color{red}\sf frZ}$ ${\color{Green}\sf frF}$ frA ${\color{blue}\sf frQ}$=
-      if iscrupt then
-	   loop ($\lambda$ _ . error "Z cannot write to corrupted party.") ${\color{red}\sf frZ}$
-	$\xFork$ fwd toA ${\color{Green}\sf frF}$
-	$\xFork$ fwd toA ${\color{blue}\sf frP}$
-	$\xFork$ fwd ${\color{Green}\sf toF}$ frA
-      else
-        p k bits toZ toF toQ frZ frF frQ

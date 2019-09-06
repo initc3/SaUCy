@@ -1,9 +1,0 @@
-let committer toZ frZ !toF frF !toQ frQ !k !bits =
-  let (!(Commit b), frZ)= rd frZ in
-    wr GetCRS $->$ toF ;
-    let (!(PublicStrings sigma pk0 pk1), frF) = rd frF in
-    let r = take k bits in 
-    let x = if b == 0 then prg pk0 r else xors (prg pk1 r) sigma in
-      wr Commit' x $->$ toQ ;
-      let (!Open, frZ)= rd frZ in
-        wr (Open' b r) $->$ toQ

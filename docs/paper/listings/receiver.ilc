@@ -1,9 +1,0 @@
-let receiver !toZ frZ toF frF toP frP k bits =
-  let (!(Commit' x), frP) = rd frP in
-    wr GetCRS $->$ toF ;
-    let (!(PublicStrings sigma pk0 pk1), frF) = rd frF in
-      wr Receipt $->$ toZ ;
-      let (!(Open' b r), frP) = rd frP in
-        if b == 0 && x == prg pk0 r || b == 1 && x == xors (prg pk1 r) sigma
-        then wr (Opened b) $->$ toZ
-	else error "Cannot occur in honest case"

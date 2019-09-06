@@ -1,9 +1,0 @@
-let ${\color{red} \tt F\_com}$ = lam S .
-  let ('Commit, sid, P_i, P_j, b) = rd ?p2f in
-    req mem b {0,1} in
-    wr (('Receipt, sid, P_i, P_j), {P_j, S}) -> ?f2p ;
-    let ('Open, sid, P_i, P_j) = rd ?p2f in
-    wr (('Open, sid, P_i, P_j, b), {P_j, S}) -> ?f2p
-in 
-  nu f2p, p2f .
-    |> (${\color{red} \tt F\_com}$ S)

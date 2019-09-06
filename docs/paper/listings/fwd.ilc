@@ -1,3 +1,0 @@
-fwd :: $\forall$ a b . Wr a $->$ Rd a $\multimap$ b
-letrec fwd toR frS =
-  let (!msg, frS) = rd frS in wr msg $->$ toR ; fwd toR frS
