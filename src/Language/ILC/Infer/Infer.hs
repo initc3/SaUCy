@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE TupleSections              #-}
--- {-# OPTIONS_GHC -Wall  #-}
+{-# OPTIONS_GHC -Wall                   #-}
 
 --------------------------------------------------------------------------------
 -- |
@@ -21,19 +21,18 @@ module Language.ILC.Infer.Infer (
 ) where
 
 import Control.Monad.Except
-import Control.Monad.Identity
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.List (nub, (\\))
-import qualified Data.Map as Map
-import qualified Data.Set as Set
-import Development.Placeholders
+import Data.List (nub)
 import Debug.Trace
 
 import Language.ILC.Infer.Solver
 import Language.ILC.Syntax
 import Language.ILC.Type
 import Language.ILC.TypeError
+
+import qualified Data.Map as Map
+import qualified Data.Set as Set
 
 -- | Inference monad
 type Infer a = ReaderT TypeEnv (StateT InferState (Except TypeError)) a
@@ -64,15 +63,15 @@ inferExpr env ex = case runInfer env (infer ex) of
     Right subst -> Right (closeOver $ apply subst ty)
 
 -- | Return internal constraints used in solving for type of expression
-constraintsExpr :: TypeEnv
-                -> Expr
-                -> Either TypeError ([Constraint], Subst, Type, Scheme)
-constraintsExpr env ex = case runInfer env (infer ex) of
-  Left       err -> Left err
-  Right (ty, cs, _) -> case runSolve cs of
-    Left err    -> Left err
-    Right subst -> Right (cs, subst, ty, sc)
-      where sc = closeOver $ apply subst ty
+--constraintsExpr :: TypeEnv
+--                -> Expr
+--                -> Either TypeError ([Constraint], Subst, Type, Scheme)
+--constraintsExpr env ex = case runInfer env (infer ex) of
+--  Left       err -> Left err
+--  Right (ty, cs, _) -> case runSolve cs of
+--    Left err    -> Left err
+--    Right subst -> Right (cs, subst, ty, sc)
+--      where sc = closeOver $ apply subst ty
 
 closeOver :: Type -> Scheme
 closeOver = normalize . generalize emptyTyEnv
@@ -81,11 +80,6 @@ inEnv :: (Name, Scheme) -> Infer a -> Infer a
 inEnv (x, sc) m = do
   let scope e = removeTyEnv e x `extendTyEnv` (x, sc)
   local scope m
-
-inEnvClearAffine :: (Name, Scheme) -> Infer a -> Infer a
-inEnvClearAffine (x, sc) m = do
-  let scope e = (removeTyEnv (clearAffineTyEnv e) x `extendTyEnv` (x, sc))
-  local scope m  
 
 lookupEnv :: Name -> Infer Type
 lookupEnv x = do
@@ -150,11 +144,6 @@ concatTCEnvs = foldr f ([], [], emptyTyEnv)
   where
     f (t, c, e) (t', c', e') = (t : t', c ++ c', mergeTyEnv e e')    
 
-concatTCs :: [(Type, [Constraint])] -> ([Type], [Constraint])
-concatTCs = foldr f ([], [])
-  where
-    f (t, c) (t', c') = (t : t', c ++ c')
-
 inferPatList :: [Pattern]
              -> [Maybe Expr]
              -> Infer ([Type], [Constraint], [(Name, Type)])
@@ -184,6 +173,7 @@ inferPat pat expr = case (pat, expr) of
       AType _ -> do
         tv <- fresh (AType . AVar . TV)
         return (tv, (tv, ty) : cs, [(x, tv)])
+      UType _ -> error "todo"
 
   -- TODO: Universal type variable
   (PVar x, Nothing) -> do
@@ -222,13 +212,14 @@ inferPat pat expr = case (pat, expr) of
         let ts'         = map (\(AType x) -> x) ts
             constraints = (AType (AProd ts'), tes) : ces ++ cs
         return (AType (AProd ts'), constraints, ctxt)
+      UType _ -> error "todo"
   (PTuple [PGnab (PVar v), PVar c], Just e@(ERd _)) -> do
     tyS <- fresh (SVar . TV)
     (te, cs, _) <- infer e
     let tyR = AType (AProd [ABang . ISend $ tyS, ARdChan tyS])
     return (tyR, (tyR, te) : cs, [(v, IType . ISend $ tyS), (c, AType . ARdChan $ tyS)])
   (PTuple [PGnab p, PVar c], Just e@(ERd _)) -> do
-    (ty, cs, binds) <- inferPat p Nothing
+    (_, _, binds) <- inferPat p Nothing
     tyS <- fresh (SVar . TV)
     (te, cs, _) <- infer e
     let tyR = AType (AProd [ABang . ISend $ tyS, ARdChan tyS])
@@ -243,6 +234,7 @@ inferPat pat expr = case (pat, expr) of
       AType _ -> do
         let ts' = map (\(AType x) -> x) (traceShow ts ts)
         return (AType (AProd ts'), (AType (AProd ts'), te) : cs ++ ce, ctxt)
+      UType _ -> error "todo"
   (PTuple ps, Nothing) -> do
     (ts, cs, ctxt) <- inferPatList ps $ repeat Nothing
     case head ts of
@@ -251,7 +243,8 @@ inferPat pat expr = case (pat, expr) of
         return (IType (IProd ts'), cs, ctxt)
       AType _ -> do
         let ts' = map (\(AType x) -> x) ts        
-        return (AType (AProd ts'), cs, ctxt)        
+        return (AType (AProd ts'), cs, ctxt)
+      UType _ -> error "todo"
 
   (PList ps, Just (EList es)) -> do
     when (length ps /= length es) (error "fail") -- TODO
@@ -310,21 +303,23 @@ inferPat pat expr = case (pat, expr) of
     let tyx' = typeSumDeconstruction tyx ps
     when (length ps /= length es) (error "fail1") -- TODO
     when (x /= x') (error "fail2") -- TODO
-    (ts, cs, env) <- inferPatList ps $ map Just es
+    (_, cs, env) <- inferPatList ps $ map Just es
     return (tyx', cs, env)
   (PCust x ps, Just e) -> do
     tyx <- lookupEnv x
     let tyx' = typeSumDeconstruction tyx ps
     (te, ce, _) <- infer e
-    (ts, cs, env) <- inferPatList ps $ repeat Nothing
+    (_, cs, env) <- inferPatList ps $ repeat Nothing
     let constraints = (tyx', te) : ce ++ cs
     return (tyx', constraints, env)
   (PCust x ps, Nothing) -> do
     tyx <- lookupEnv x
     let tyx' = typeSumDeconstruction tyx ps
     tces <- zipWithM inferPat ps $ repeat Nothing
-    let (ts, cs, env) = concatTCEs tces
+    let (_, cs, env) = concatTCEs tces
     return (tyx', cs, env)
+
+  (PGnab _, _) -> error "todo"
 
 -- | This function computes the type of a deconstructed sum type. The type of a
 -- value constructor should either be an arrow type leading to a custom type
@@ -332,20 +327,14 @@ inferPat pat expr = case (pat, expr) of
 -- itself (in the nullary case).
 -- TODO: Error handling.
 typeSumDeconstruction :: Type -> [Pattern] -> Type
-typeSumDeconstruction (IType (IArr _ t)) (p:ps) = typeSumDeconstruction t ps
+typeSumDeconstruction (IType (IArr _ t)) (_:ps) = typeSumDeconstruction t ps
 typeSumDeconstruction t            []     = t
 typeSumDeconstruction _            _      = error "Infer:typeSumDeconstruction"
-
-sumTypeBinds :: [Pattern] -> Type -> [(Name, Type)] -> [(Name, Type)]
-sumTypeBinds (PVar x:ps) (IType (IArr t t'@(IType IArr{}))) env =
-  sumTypeBinds ps t' ((x, (IType t)) : env)
-sumTypeBinds (PVar x:ps) (IType (IArr t _))         env = (x, (IType t)) : env
-sumTypeBinds _           _                    env = env
 
 inferBranch :: Expr
             -> (Pattern, Expr, Expr)
             -> Infer (Type, [Constraint], TypeEnv)
-inferBranch expr (pat, guard, branch) = do
+inferBranch expr (pat, grd, branch) = do
   env <- ask
   (_, c1, binds) <- inferPat pat $ Just expr
   (_, _, _Γ2) <- infer expr
@@ -354,7 +343,7 @@ inferBranch expr (pat, guard, branch) = do
     Right sub -> do
       let sc t = generalize (apply sub env) (apply sub t)
       (t2, c2, _Γ3) <- local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
-                        (local (apply sub) (infer guard))
+                        (local (apply sub) (infer grd))
                         binds)
       (t3, c3, _Γ4) <- local (const _Γ3) (foldr (\(x, t) -> inEnv (x, sc t))
                         (local (apply sub) (infer branch))
@@ -376,6 +365,7 @@ infer expr = case expr of
     let ctxt' = case t of
           IType _ -> ctxt
           AType _ -> removeTyEnv ctxt x
+          UType _ -> error "todo"
     return (t, [], ctxt')
 
   ELit (LInt _) -> do
@@ -401,7 +391,8 @@ infer expr = case expr of
       IType _ -> do
         return (IType . IProd . (map  (\(IType x) -> x)) . reverse $ tys, cs, ctxt2)
       AType _ -> do
-        return (AType . AProd . (map  (\(AType x) -> x)) . reverse $ tys, cs, ctxt2)        
+        return (AType . AProd . (map  (\(AType x) -> x)) . reverse $ tys, cs, ctxt2)
+      UType _ -> error "todo"
 
   EList [] -> do
     ctxt <- ask
@@ -619,13 +610,13 @@ infer expr = case expr of
   -- TODO: Universal type variable
   EError e  -> do
     tv <- fresh (IType . IVar . TV)
-    (IType tyString, cs, ctxt2) <- infer e
+    (IType _, cs, ctxt2) <- infer e
     return (tv, cs, ctxt2)
 
   ECustom x es -> do
     ctxt1 <- ask
     tyx <- lookupEnv x
-    (tys, cs, ctxt2) <- infers ([],[],ctxt1) es
+    (_, _, ctxt2) <- infers ([],[],ctxt1) es
     return (tyx, [], ctxt2)
 
 inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
