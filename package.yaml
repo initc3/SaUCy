@@ -28,6 +28,12 @@ dependencies:
 
 library:
   source-dirs: src
+  ghc-options: "-Wall
+                -Wincomplete-uni-patterns
+                -Wincomplete-record-updates
+                -Wcompat
+                -Widentities
+                -Wredundant-constraints"
 
 executables:
   saucy:

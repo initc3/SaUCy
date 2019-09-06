@@ -1,6 +1,4 @@
-{-# LANGUAGE TupleSections              #-}
-{-# OPTIONS_GHC -Wall                   #-}
-
+{-# LANGUAGE TupleSections #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Infer.Infer
@@ -135,7 +133,7 @@ binops op = case op of
     eqBinOp = do
       t1 <- fresh (IVar . TV)
       t2 <- fresh (IVar . TV)
-      return $ IType (IArr t1 (IType (IArr t2 (IType tyBool))))        
+      return $ IType (IArr t1 (IType (IArr t2 (IType tyBool))))
 
 unops :: Unop -> Type
 unops Not = IType (IArr tyBool (IType tyBool))
