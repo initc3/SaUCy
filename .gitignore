@@ -2,3 +2,4 @@
 saucy.cabal
 *~
 .history
+*.lock
