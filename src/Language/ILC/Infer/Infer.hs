@@ -112,7 +112,7 @@ generalize env t = Forall as t
 
 binops :: Binop -> Infer Type
 binops op = case op of
-  Add ->  tyArithOp
+  Add -> tyArithOp
   Sub -> tyArithOp
   Mul -> tyArithOp
   Div -> tyArithOp
@@ -418,13 +418,13 @@ infer expr = case expr of
    return (tyA, (tyA, tyB) : cons1 ++ cons2, env3)
    
   EBin op e1 e2 -> do
-    (IType tyA, cs1, ctxt2) <- infer e1
-    (IType tyB, cs2, ctxt3) <- localc ctxt2 (infer e2)
+    (IType tyA, cons1, env2) <- infer e1
+    (IType tyB, cons2, env3) <- localc env2 (infer e2)
     tv <- freshi
     let u1 = IType (IArr tyA (IType (IArr tyB tv)))
     u2 <- binops op
-    let cs = cs1 ++ cs2 ++ [(u1, u2), (IType tyA, IType tyB)]
-    return (tv, cs, ctxt3)       
+    let cons = cons1 ++ cons2 ++ [(u1, u2), (IType tyA, IType tyB)]
+    return (tv, cons, env3)       
 
   EUn op e -> do
     (IType tyA, cons, env2) <- infer e
