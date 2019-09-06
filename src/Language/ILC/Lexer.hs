@@ -51,7 +51,6 @@ langDef = Tok.LanguageDef
     , Tok.opStart = oneOf ":!#$%&*+.?<=>?@\\^|-~"
     , Tok.opLetter = oneOf ":!#$%&*+.?<=>?@\\^|-~"
     , Tok.reservedNames = [ "let"
-                          , "let!"
                           , "in"
                           , "letrec"
                           , "lam"
@@ -69,17 +68,16 @@ langDef = Tok.LanguageDef
                           , "false"
                           , "match"
                           , "with"
-                          , "ref"
                           , "when"
                           , "print"
                           , "error"
+                          , "data"                          
                           , "Int"
                           , "Bool"
                           , "String"
                           , "Chan"
                           , "Rd"
                           , "Wr"
-                          , "data"
                           ]
     , Tok.reservedOpNames = [ "+"
                             , "-"
@@ -96,13 +94,11 @@ langDef = Tok.LanguageDef
                             , "<>"
                             , "~"
                             , "|>"
-                            , "<|>"
                             , ";"
                             , ":"
                             , "++"
                             , "::"
                             , ":="
-                            , "@"
                             , "!"
                             ]
     , Tok.caseSensitive = True
@@ -118,10 +114,10 @@ identifier :: Parser Name
 identifier = Tok.identifier lexer
 
 constructor :: Parser Name
-constructor = do
-  whitespace *> (many1 upper) <> (many $ alphaNum <|> oneOf "_'?") <* whitespace
+constructor = whitespace *> many1 upper <> many (alphaNum <|> oneOf "_'?")  <*
+  whitespace
 
--- TODO: Fix this to parse only negative sign.
+-- TODO: Parse negative integers
 integer :: Parser Integer
 integer = Tok.natural lexer
 

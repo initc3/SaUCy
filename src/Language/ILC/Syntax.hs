@@ -36,21 +36,20 @@ data Expr = EVar Name                            -- ^ Variable
           | ELit Lit                             -- ^ Literal
           | ETuple [Expr]                        -- ^ Tuple
           | EList [Expr]                         -- ^ List
-          | ELam Pattern Expr                    -- ^ Intuitionistic abstraction
+          | ELam Pattern Expr                    -- ^ Unrestricted abstraction
           | ELamw Pattern Expr                   -- ^ Write abstraction
           | ELam1 Pattern Expr                   -- ^ Affine abstraction
           | EApp Expr Expr                       -- ^ Function application
-          -- | EFix Expr                            -- ^ Fixpoint
-          | EFix Name Expr                            -- ^ Fixpoint          
+          | EFix Name Expr                       -- ^ Fixpoint          
           | ELet Pattern Expr Expr               -- ^ Let binding
-          | ELetRd Pattern Expr Expr             -- ^ Rd binding
-          | EBang Expr                           -- ^ Bang TODO: Make unop
+          | ELetRd Pattern Expr Expr             -- ^ Read operation
+          | EBang Expr                           -- ^ Bang
           | EIf Expr Expr Expr                   -- ^ Conditional
           | EMatch Expr [(Pattern, Expr, Expr)]  -- ^ Pattern match 
           | ENu (Name, Name) Expr                -- ^ Channel allocation
           | ERd Expr                             -- ^ Read from channel
-          | EWr Expr Expr                        -- ^ Write to channel
-          | EFork Expr Expr                      -- ^ Fork new process
+          | EWr Expr Expr                        -- ^ Write operation
+          | EFork Expr Expr                      -- ^ Fork operation
           | EChoice Expr Expr                    -- ^ External choice
           | EPrint Expr                          -- ^ Print
           | EError Expr                          -- ^ Throw error

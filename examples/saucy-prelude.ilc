@@ -1,4 +1,0 @@
-{- SaUCy prelude -}
-
-letrec loop = lam f . lam1 frS .
-  let (!v, frS) = rd frS in f v ; loop f frS
