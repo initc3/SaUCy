@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE TupleSections              #-}
 {-# OPTIONS_GHC -Wall                   #-}
 
@@ -34,6 +33,10 @@ import Language.ILC.TypeError
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 
+-------------------------------------------------------------------------------
+-- Inference
+-------------------------------------------------------------------------------
+
 -- | Inference monad
 type Infer a = ReaderT TypeEnv (StateT InferState (Except TypeError)) a
 
@@ -44,20 +47,16 @@ newtype InferState = InferState { count :: Int }
 initInfer :: InferState
 initInfer = InferState { count = 0 }
 
--------------------------------------------------------------------------------
--- Inference
--------------------------------------------------------------------------------
-
 -- | Run the inference monad
 runInfer :: TypeEnv
          -> Infer (Type, [Constraint], TypeEnv)
          -> Either TypeError (Type, [Constraint], TypeEnv)
 runInfer env m = runExcept $ evalStateT (runReaderT m env) initInfer
 
--- | Solve for type of top-level expression in a given environment
+-- | Solve for type of toplevel expression in a given environment
 inferExpr :: TypeEnv -> Expr -> Either TypeError Scheme
 inferExpr env ex = case runInfer env (infer ex) of
-  Left err       -> Left err
+  Left err          -> Left err
   Right (ty, cs, _) -> case runSolve cs of
     Left err    -> Left err
     Right subst -> Right (closeOver $ apply subst ty)
@@ -73,6 +72,9 @@ inferExpr env ex = case runInfer env (infer ex) of
 --    Right subst -> Right (cs, subst, ty, sc)
 --      where sc = closeOver $ apply subst ty
 
+localc :: TypeEnv -> Infer a -> Infer a
+localc env = local (const env)
+
 closeOver :: Type -> Scheme
 closeOver = normalize . generalize emptyTyEnv
 
@@ -85,8 +87,8 @@ lookupEnv :: Name -> Infer Type
 lookupEnv x = do
   TypeEnv env <- ask
   case Map.lookup x env of
-    Nothing -> throwError $ UnboundVariable x
-    Just tyA  -> instantiate tyA
+    Nothing  -> throwError $ UnboundVariable x
+    Just ty  -> instantiate ty
 
 letters :: [String]
 letters = [1..] >>= flip replicateM ['a'..'z']
@@ -97,9 +99,12 @@ fresh f = do
   put s{count = count s + 1}
   return $ f (letters !! count s)
 
+freshi :: Infer Type
+freshi = fresh (IType . IVar . TV)  
+
 instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
-    as' <- mapM (const (fresh (IType . IVar . TV))) as
+    as' <- mapM (const freshi) as
     let s = Subst $ Map.fromList $ zip as as'
     return $ apply s t
 
@@ -158,7 +163,7 @@ listConstraints ts cs = do
   thd <- fresh (IVar . TV)
   return $ if null ts
            then (IType thd, cs)
-           else (head ts, cs ++ (map (IType thd,) ts))
+           else (head ts, cs ++ map (IType thd,) ts)
         
 inferPat :: Pattern
          -> Maybe Expr
@@ -168,7 +173,7 @@ inferPat pat expr = case (pat, expr) of
     (ty, cs, _) <- infer e
     case ty of
       IType _ -> do
-        tv <- fresh (IType . IVar . TV)
+        tv <- freshi
         return (tv, (tv, ty) : cs, [(x, tv)])
       AType _ -> do
         tv <- fresh (AType . AVar . TV)
@@ -295,7 +300,7 @@ inferPat pat expr = case (pat, expr) of
   (PUnit, Nothing) -> return (IType tyUnit, [], [])
 
   (PWildcard, _) -> do
-    tv <- fresh (IType . IVar . TV)            
+    tv <- freshi
     return (tv, [], [])
 
   (PCust x ps, Just (ECustom x' es)) -> do
@@ -342,103 +347,90 @@ inferBranch expr (pat, grd, branch) = do
     Left err -> throwError err
     Right sub -> do
       let sc t = generalize (apply sub env) (apply sub t)
-      (t2, c2, _Γ3) <- local (const _Γ2) (foldr (\(x, t) -> inEnv (x, sc t))
+      (t2, c2, _Γ3) <- localc _Γ2 (foldr (\(x, t) -> inEnv (x, sc t))
                         (local (apply sub) (infer grd))
                         binds)
-      (t3, c3, _Γ4) <- local (const _Γ3) (foldr (\(x, t) -> inEnv (x, sc t))
+      (t3, c3, _Γ4) <- localc _Γ3 (foldr (\(x, t) -> inEnv (x, sc t))
                         (local (apply sub) (infer branch))
                         binds)
       let _Γ4' = foldl (\_Γ (x, _) -> removeTyEnv _Γ x) _Γ4 binds
           cs = (t2, IType tyBool) : c1 ++ c2 ++ c3
       return (t3, cs, _Γ4')
 
-infers :: ([Type], [Constraint], TypeEnv) -> [Expr] -> Infer ([Type], [Constraint], TypeEnv)
-infers = foldM (\(tys, cs, ctxt) e -> do
-                   (ty', cs', ctxt') <- local (const ctxt) (infer e) 
-                   return (ty' : tys, cs ++ cs', ctxt'))
+-- | Infer types of expression list
+infers :: ([Type], [Constraint], TypeEnv)
+       -> [Expr]
+       -> Infer ([Type], [Constraint], TypeEnv)
+infers = foldM (\(tys, cs1, env1) e -> do
+                   (ty, cs2, env2) <- localc env1 (infer e) 
+                   return (tys ++ [ty], cs1 ++ cs2, env2))
 
+-- | Infer type of expression
 infer :: Expr -> Infer (Type, [Constraint], TypeEnv)
 infer expr = case expr of
   EVar x -> do
-    ctxt <- ask    
-    t    <- lookupEnv x
-    let ctxt' = case t of
-          IType _ -> ctxt
-          AType _ -> removeTyEnv ctxt x
+    env1 <- ask    
+    ty   <- lookupEnv x
+    let env2 = case ty of
+          IType _ -> env1
+          AType _ -> removeTyEnv env1 x
           UType _ -> error "todo"
-    return (t, [], ctxt')
+    return (ty, [], env2)
 
-  ELit (LInt _) -> do
-    ctxt <- ask
-    return (IType tyInt, [], ctxt)
-
-  ELit (LBool _) -> do
-    ctxt <- ask
-    return (IType tyBool, [], ctxt)
-    
-  ELit (LString _) -> do
-    ctxt <- ask
-    return (IType tyString, [], ctxt)
-  
-  ELit LUnit -> do
-    ctxt <- ask
-    return (IType tyUnit, [], ctxt)
+  ELit lit -> do
+    let ty = case lit of
+               LInt{}    -> tyInt
+               LBool{}   -> tyBool
+               LString{} -> tyString
+               LUnit     -> tyUnit
+    asks (IType ty, [],)
     
   ETuple es -> do
-    ctxt1 <- ask
-    (tys, cs, ctxt2) <- infers ([],[],ctxt1) es
-    case (head tys) of
-      IType _ -> do
-        return (IType . IProd . (map  (\(IType x) -> x)) . reverse $ tys, cs, ctxt2)
-      AType _ -> do
-        return (AType . AProd . (map  (\(AType x) -> x)) . reverse $ tys, cs, ctxt2)
-      UType _ -> error "todo"
+    env1 <- ask
+    (tys, cons, env2) <- infers ([],[],env1) es
+    -- TODO: Check all unrestricted or all affine
+    let ty = case head tys of
+               IType _ -> IType . IProd . map  (\(IType x) -> x) $ tys
+               AType _ -> AType . AProd . map  (\(AType x) -> x) $ tys
+               UType _ -> error "todo"
+    return (ty, cons, env2)
 
   EList [] -> do
-    ctxt <- ask
     ty <- fresh (IType . IList . IVar . TV)
-    return (ty, [], ctxt)
+    asks (ty, [],)
 
   EList es -> do
-    ctxt1 <- ask
-    (tys, cs1, ctxt2) <- infers ([],[],ctxt1) es    
-    let tyHd = (\(IType x) -> x) (head tys)
-        cs2  = map (IType tyHd,) tys
-    return (IType . IList $ tyHd, cs1 ++ cs2, ctxt2)
+    env1 <- ask
+    (tys, cons1, env2) <- infers ([],[],env1) es
+    let ty    = (\(IType x) -> x) (head tys)
+        cons2 = map (IType ty,) tys
+    return (IType . IList $ ty, cons1 ++ cons2, env2)
 
   EBin Cons e1 e2  -> do
-   (IType tyA, cs1, ctxt2) <- infer e1
-   (tyALst, cs2, ctxt3) <- local (const ctxt2) (infer e2)
-   return (tyALst, (IType (IList tyA), tyALst) : cs1 ++ cs2, ctxt3)
+   (IType tyA, cons1, env2) <- infer e1
+   (tyAs, cons2, env3)      <- localc env2 (infer e2)
+   return (tyAs, (IType (IList tyA), tyAs) : cons1 ++ cons2, env3)
 
   EBin Concat e1 e2  -> do
-   (tyA, cs1, ctxt2) <- infer e1
-   (tyB, cs2, ctxt3) <- local (const ctxt2) (infer e2)
-   return (tyA, (tyA, tyB) : cs1 ++ cs2, ctxt3)
-
+   (tyA, cons1, env2) <- infer e1
+   (tyB, cons2, env3) <- localc env2 (infer e2)
+   return (tyA, (tyA, tyB) : cons1 ++ cons2, env3)
+   
   EBin op e1 e2 -> do
     (IType tyA, cs1, ctxt2) <- infer e1
-    (IType tyB, cs2, ctxt3) <- local (const ctxt2) (infer e2)
-    tv <- fresh (IType . IVar . TV)
+    (IType tyB, cs2, ctxt3) <- localc ctxt2 (infer e2)
+    tv <- freshi
     let u1 = IType (IArr tyA (IType (IArr tyB tv)))
     u2 <- binops op
     let cs = cs1 ++ cs2 ++ [(u1, u2), (IType tyA, IType tyB)]
-    return (tv, cs, ctxt3)
+    return (tv, cs, ctxt3)       
 
   EUn op e -> do
-    (IType tyA, cs, ctxt2) <- infer e
-    tv <- fresh (IType . IVar . TV)
-    let u1 = IType (IArr tyA tv)
-        u2 = unops op
-    return (tv, (u1,u2) : cs, ctxt2)
+    (IType tyA, cons, env2) <- infer e
+    tv <- freshi
+    return (tv, (IType (IArr tyA tv), unops op) : cons, env2)
 
-  EIf e1 e2 e3 -> do
-    (tyA1, cs1, ctxt2) <- infer e1
-    (tyA2, cs2, ctxt3) <- local (const ctxt2) (infer e2)
-    (tyA3, cs3, ctxt3') <- local (const ctxt2) (infer e3)
-    let cs = cs1 ++ cs2 ++ cs3 ++ [(tyA1, IType tyBool), (tyA2, tyA3)]
-    return (tyA2, cs, intersectTyEnv ctxt3 ctxt3')
-
+  -- TODO
   ELet p e1 e2 -> do
     ctxt1 <- ask
     (_, cs1, binds) <- inferPat p $ Just e1
@@ -449,13 +441,21 @@ infer expr = case expr of
         let sc t   = generalize (apply sub ctxt1) (apply sub t)
             binds' = TypeEnv $ Map.fromList $ map (\(x, t) -> (x, sc t)) binds
             ctxt2' = apply sub (mergeTyEnv ctxt2 binds')
-        (tyU, cs3, ctxt3) <- local (const ctxt2') (infer e2)
+        (tyU, cs3, ctxt3) <- localc ctxt2' (infer e2)
         return (tyU, cs1 ++ cs2 ++ cs3, ctxt3)
 
   EBang e -> do
-    (IType tyA, cs, ctxt2) <- infer e
-    return (AType (ABang tyA), cs, ctxt2)
-    
+    (IType tyA, cons, env2) <- infer e
+    return (AType (ABang tyA), cons, env2)
+
+  EIf e1 e2 e3 -> do
+    (tyA, cons1, env2) <- infer e1
+    (tyB, cons2, env3) <- localc env2 (infer e2)
+    (tyB', cons2', env3') <- localc env2 (infer e3)
+    let cons = cons1 ++ cons2 ++ cons2' ++ [(tyA, IType tyBool), (tyB, tyB')]
+    return (tyB, cons, intersectTyEnv env3 env3')    
+
+  -- TODO
   EMatch e bs -> do
     tcmes <- mapM (inferBranch e) bs
     let (tys, cs, ctxts) = concatTCEnvs tcmes
@@ -463,11 +463,11 @@ infer expr = case expr of
         cs'      = map (ty,) (tail tys)
     return (ty, cs ++ cs', ctxts)
 
-  ELam p e -> do
+  ELam p e ->
     case p of
       PVar x -> do
         ty <- fresh (IVar . TV)
-        (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty))) (local clearAffineTyEnv (infer e))
+        (tyU, cs, ctxt2) <- inEnv (x, Forall [] (IType ty)) (local clearAffineTyEnv (infer e))
         return (IType (ty `IArr` tyU), cs, ctxt2)
       PUnit -> do
         (tyU, cs, ctxt2) <- local clearAffineTyEnv $ infer e
@@ -478,30 +478,30 @@ infer expr = case expr of
         return (IType (ty `IArr` tyU), cs, ctxt2)
       _ -> error "Infer.infer: ELam"
 
-  ELamw p e -> do
+  ELamw p e ->
     case p of
       PVar x -> do
         ty <- fresh (IVar . TV)
-        (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty)))
-                            (inEnv ("WrTok", (Forall [] (IType tyUnit)))
+        (tyU, cs, ctxt2) <- inEnv (x, Forall [] (IType ty))
+                            (inEnv ("WrTok", Forall [] (IType tyUnit))
                             (local clearAffineTyEnv (infer e)))
         return (IType (ty `IArrW` tyU), cs, ctxt2)
       PUnit -> do
-        (tyU, cs, ctxt2) <- inEnv ("WrTok", (Forall [] (IType tyUnit)))      
+        (tyU, cs, ctxt2) <- inEnv ("WrTok", Forall [] (IType tyUnit))      
                             (local clearAffineTyEnv (infer e))                
         return (IType (tyUnit `IArrW` tyU), cs, ctxt2)
       PWildcard -> do
         ty <- fresh (IVar . TV)
-        (tyU, cs, ctxt2) <- inEnv ("WrTok", (Forall [] (IType tyUnit)))        
+        (tyU, cs, ctxt2) <- inEnv ("WrTok", Forall [] (IType tyUnit))        
                             (local clearAffineTyEnv (infer e))                        
         return (IType (ty `IArrW` tyU), cs, ctxt2)
       _ -> error "Infer.infer: ELamW"      
 
-  ELam1 p e -> do
+  ELam1 p e ->
     case p of
       PVar x -> do
         ty <- fresh (AVar . TV)
-        (tyU, cs, ctxt2) <- inEnv (x, (Forall [] (AType ty))) (infer e)
+        (tyU, cs, ctxt2) <- inEnv (x, Forall [] (AType ty)) (infer e)
         return (AType (ty `AArr` tyU), cs, ctxt2)
         -- TODO
 --      PUnit -> do
@@ -515,33 +515,18 @@ infer expr = case expr of
 
   EFix x e -> do
     ty <- fresh (IVar . TV)    
-    (tyA2U, cs, ctxt2) <- inEnv (x, (Forall [] (IType ty))) (infer e)
+    (tyA2U, cs, ctxt2) <- inEnv (x, Forall [] (IType ty)) (infer e)
     return (tyA2U, (IType ty, tyA2U) : cs, ctxt2)
-
---  EFix e -> do
---    (tyA2A, c,  ctxt2) <- infer e
---    tyA2A' <- case runSolve c of
---             Left err -> throwError err
---             Right sub -> return $ apply sub tyA2A
---    (tyRes, tyConstraints) <- case tyA2A' of
---      TLin l -> do
---        tyV <- fresh (LVar . TV)
---        return (TLin tyV, TypeConstraint tyA2A (TLin (LArr tyV tyV)) : c)
---      _      -> do
---        tyV <- fresh (TVar . TV)
---        return (tyV, TypeConstraint tyA2A (TArr tyV tyV) : c)
---    let constraints = tyConstraints
---    return (tyRes, constraints, ctxt2)
 
   EApp e1 e2 -> do
     (tyU1, cs1, ctxt2) <- infer e2
-    (tyU12U2, cs2, ctxt3) <- local (const ctxt2) (infer e1)
+    (tyU12U2, cs2, ctxt3) <- localc ctxt2 (infer e1)
     case (tyU1, tyU12U2) of            
-      (IType tyA1, IType (IArr tyA2 tyU2)) -> do
+      (IType tyA1, IType (IArr tyA2 tyU2)) ->
         return (tyU2, cs1 ++ cs2 ++ [(IType tyA1, IType tyA2)], ctxt3)
-      (IType tyA1, IType (IArrW tyA2 tyU2)) -> do
+      (IType tyA1, IType (IArrW tyA2 tyU2)) ->
         return (tyU2, cs1 ++ cs2 ++ [(IType tyA1, IType tyA2)], ctxt3)
-      (AType tyX1, AType (AArr tyX2 tyU2)) -> do
+      (AType tyX1, AType (AArr tyX2 tyU2)) ->
         return (tyU2, cs1 ++ cs2 ++ [(AType tyX1, AType tyX2)], ctxt3)
       (IType tyA1, IType tyA12U2) -> do
         tyU2 <- fresh (UType . UVar . TV)        
@@ -564,7 +549,7 @@ infer expr = case expr of
 
   ELetRd p e1 e2 -> do
     ctxt1 <- ask
-    when (checkWrTok ctxt1) (throwError $ WrTokenInRd)
+    when (checkWrTok ctxt1) (throwError WrTokenInRd)
     (_, cs1, binds) <- inferPat p $ Just e1
     (_, cs2, ctxt2) <- infer e1
     case runSolve cs1 of
@@ -573,29 +558,33 @@ infer expr = case expr of
         let sc t   = generalize (apply sub ctxt1) (apply sub t)
             binds' = TypeEnv $ Map.fromList $ map (\(x, t) -> (x, sc t)) binds
             ctxt2' = apply sub (mergeTyEnv ctxt2 binds')
-            ctxt2'' = extendTyEnv ctxt2' ("WrTok", (Forall [] (IType tyUnit)))
-        (tyU, cs3, ctxt3) <- local (const ctxt2'') (infer e2)
+            ctxt2'' = extendTyEnv ctxt2' ("WrTok", Forall [] (IType tyUnit))
+        (tyU, cs3, ctxt3) <- localc ctxt2'' (infer e2)
         return (tyU, cs1 ++ cs2 ++ cs3, ctxt3)
 
+  -- End TODO
+
   EWr e1 e2 -> do
-    ctxt <- ask
-    when (not (checkWrTok ctxt)) (throwError NoWrTok)
-    (IType (ISend tyS), cs1, ctxt2) <- local (rmWrTok) (infer e1)
-    (tyWrS, cs2, ctxt3) <- local (const ctxt2) (infer e2)
-    return (IType tyUnit, (IType (IWrChan tyS), tyWrS) : cs1 ++ cs2, ctxt3)
+    env1 <- ask
+    unless (checkWrTok env1) (throwError NoWrTok)
+    -- TODO: Check sendable
+    (IType (ISend tyS), cons1, env2) <- local rmWrTok (infer e1)
+    (tyWrS, cons2, env3) <- localc env2 (infer e2)
+    return (IType tyUnit, (IType (IWrChan tyS), tyWrS) : cons1 ++ cons2, env3)
     
   ENu (rdc, wrc) e -> do
-    tyV <- fresh (SVar . TV)
-    let newChans = [ (rdc, Forall [] $ AType (ARdChan tyV))
-                   , (wrc, Forall [] $ IType (IWrChan tyV))]
-    (tyU, cs, ctxt2) <- foldr inEnv (infer e) newChans
-    return (tyU, cs , ctxt2)
+    tyS <- fresh (SVar . TV)
+    let newChans = [ (rdc, Forall [] $ AType (ARdChan tyS))
+                   , (wrc, Forall [] $ IType (IWrChan tyS))]
+    (tyU, cons, env2) <- foldr inEnv (infer e) newChans
+    return (tyU, cons, env2)
     
   EFork e1 e2 -> do
-    (_, cs1, ctxt2) <- infer e1
-    (tyV, cs2, ctxt3) <- local (const ctxt2) (infer e2)
-    return (tyV, cs1 ++ cs2,ctxt3)
+    (_, cons1, env2)   <- infer e1
+    (tyU, cons2, env3) <- localc env2 (infer e2)
+    return (tyU, cons1 ++ cons2, env3)
 
+  -- TODO: Update choice
   EChoice e1 e2 -> do
     ctxt1 <- ask
     when (checkWrTok ctxt1) (throwError WrTokenInChoice)    
@@ -604,20 +593,20 @@ infer expr = case expr of
     return (tyU1, (tyU1, tyU2) : cs1 ++ cs2, intersectTyEnv ctxt2 ctxt3)
 
   EPrint e -> do
-    (_, cs, ctxt2) <- infer e
-    return (IType tyUnit, cs, ctxt2)
+    (_, cons, env) <- infer e
+    return (IType tyUnit, cons, env)
 
   -- TODO: Universal type variable
   EError e  -> do
     tv <- fresh (IType . IVar . TV)
-    (IType _, cs, ctxt2) <- infer e
-    return (tv, cs, ctxt2)
+    (IType _, cons, env) <- infer e
+    return (tv, cons, env)
 
   ECustom x es -> do
-    ctxt1 <- ask
-    tyx <- lookupEnv x
-    (_, _, ctxt2) <- infers ([],[],ctxt1) es
-    return (tyx, [], ctxt2)
+    env1 <- ask
+    ty <- lookupEnv x
+    (_, _, env2) <- infers ([],[],env1) es
+    return (ty, [], env2)
 
 inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
 inferTop env [] = Right env

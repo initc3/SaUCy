@@ -166,7 +166,9 @@ reservedOp = Tok.reservedOp lexer
 prefixOp :: String -> (a -> a) -> Ex.Operator String () Identity a
 prefixOp s f = Ex.Prefix (reservedOp s >> return f)
 
-binaryOp :: String -> (a -> a -> a) -> Ex.Assoc -> Ex.Operator String () Identity a
+binaryOp :: String -> (a -> a -> a)
+         -> Ex.Assoc
+         -> Ex.Operator String () Identity a
 binaryOp s f = Ex.Infix (reservedOp s >> return f)
 
 mklexer :: (a -> b) -> Parser a -> Parser b
