@@ -1,3 +1,4 @@
+-- {-# OPTIONS_GHC -Wall #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Value
@@ -25,7 +26,7 @@ import Text.PrettyPrint.ANSI.Leijen
 import Language.ILC.Pretty
 import Language.ILC.Syntax
 
--- | Values in ILC.
+-- | Values in ILC
 data Value = VInt Integer                        -- ^ Integer value
            | VBool Bool                          -- ^ Boolean value
            | VString String                      -- ^ String value
@@ -57,17 +58,17 @@ instance Pretty Value where
   pretty (VCust x [])  = text x
   pretty (VCust x vs)  = text x <+> prettySpace (map pretty vs)
   
--- | A map from names to values.
+-- | A map from names to values
 type TermEnv = Map.Map Name Value
 
--- | The empty term environment.
+-- | The empty term environment
 emptyTmEnv :: TermEnv
 emptyTmEnv = Map.empty
 
--- | Extends the term environment with the given binding.
+-- | Extends the term environment with the given binding
 extendTmEnv :: TermEnv -> Name -> Value -> TermEnv
 extendTmEnv env x v = Map.insert x v env
 
--- | Extends the term environment with the given binding.
+-- | Extends the term environment with the given binding
 mergeTmEnv :: TermEnv -> TermEnv -> TermEnv
 mergeTmEnv = Map.union

@@ -38,13 +38,7 @@ import Language.ILC.Type
 import Language.ILC.TypeError
 
 -- | Inference monad
-type Infer a = (ReaderT
-                  TypeEnv
-                  (StateT
-                  InferState
-                  (Except
-                    TypeError))
-                  a)
+type Infer a = ReaderT TypeEnv (StateT InferState (Except TypeError)) a
 
 -- | Inference state
 newtype InferState = InferState { count :: Int }
@@ -211,38 +205,11 @@ fresh f = do
   put s{count = count s + 1}
   return $ f (letters !! count s)
 
---freshifyt :: Map.Map TVar TVar -> Type -> Infer (Type, Map.Map TVar TVar)
---freshifyt env t@(TVar _) = return (t, env)
---freshifyt env t@(TCon _) = return (t, env)
---freshifyt env (TArr t1 t2) = do
---  (t1', env1) <- freshifyt env t1
---  (t2', env2) <- freshifyt env1 t2
---  return (TArr t1' t2', env2)
---freshifyt env (TList t) = do
---  (t', env') <- freshifyt env t
---  return (TList t', env')
---freshifyt env (TProd ts) = do
---  (TProd ts', env') <- foldM (\(TProd acc, e) t -> (freshifyt e t) >>=
---                       \(t', e') -> return (TProd (t':acc), e)) (TProd [], env) ts
---  return (TProd (reverse ts'), env')
---freshifyt env (TWrChan t) = do
---  (t', env') <- freshifyt env t
---  return (TWrChan t', env')
---freshifyt _ _ = error "Infer.freshifyt"
-
 instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
     as' <- mapM (const (fresh (IType . IVar . TV))) as
     let s = Subst $ Map.fromList $ zip as as'
     return $ apply s t
-
---instantiate :: Scheme -> Infer Type
---instantiate (Forall as t) = do
---  as' <- mapM (const (fresh (TVar . TV))) as
---  let s = Subst $ Map.fromList $ zip as as'
---      s' = apply s t
---  (s'', _) <- freshifyt Map.empty s'
---  return s''
 
 generalize :: TypeEnv -> Type-> Scheme -- ^ T-Gen
 generalize env t = Forall as t

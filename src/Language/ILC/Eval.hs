@@ -1,7 +1,7 @@
 {-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE RecursiveDo #-}
+{-# LANGUAGE RecursiveDo     #-}
 {-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind #-}
 
 --------------------------------------------------------------------------------
@@ -266,7 +266,7 @@ eval env e = do
   takeMVar m
 
 -- | Evaluates a list of declarations to a value. The return value is the
--- evaluation of the last declaration in the list (i.e., the main function.)
+-- evaluation of the last declaration in the list (i.e., the main function).
 exec :: [TopDecl] -> Interpreter Value
 exec = go emptyTmEnv
   where

@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
---{-# OPTIONS_GHC -Wall             #-}
+-- {-# OPTIONS_GHC -Wall             #-}
 
 --------------------------------------------------------------------------------
 -- |
@@ -24,7 +24,6 @@ import Control.Monad.State.Strict
 import Data.List (isPrefixOf)
 import qualified Data.Map as Map
 import Data.Monoid
-import Debug.Trace
 import Options.Applicative
 import System.Console.Repline hiding (Options)
 import System.Exit
@@ -35,7 +34,6 @@ import Language.ILC.Decl
 import Language.ILC.Eval
 import Language.ILC.Infer
 import Language.ILC.Parser.Toplevel
-import Language.ILC.Syntax
 import Language.ILC.Type
 import Language.ILC.Value
 
@@ -93,7 +91,7 @@ hoistErr (Left err) = do
 evalDecl :: TermEnv -> TopDecl -> IO TermEnv
 --evalDecl env (Decl x expr) = silence $ eval env expr >>= return . extendTmEnv env x
 evalDecl env (Decl x expr) = eval env expr >>= return . extendTmEnv env x
-evalDecl env (TyCon dc vcs) = do
+evalDecl env (TyCon _ vcs) = do
   env'' <- env'
   return $ mergeTmEnv env (Map.fromList env'')
   where
@@ -135,7 +133,7 @@ process src = do
   let cmds = parser src
   case cmds of
     Left err -> print err
-    Right cmds -> exec cmds >>= putDoc . pretty
+    Right cmds' -> exec cmds' >>= putDoc . pretty
 
 --------------------------------------------------------------------------------
 -- Commands

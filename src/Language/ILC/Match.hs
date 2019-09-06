@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall #-}
 --------------------------------------------------------------------------------
 -- |
 -- Module      :  Language.ILC.Match
@@ -24,7 +25,6 @@ import Control.Monad.Writer
 import Data.Map.Strict (fromList)
 import Text.PrettyPrint.ANSI.Leijen
 
-import Language.ILC.Decl
 import Language.ILC.Syntax
 import Language.ILC.Value
 

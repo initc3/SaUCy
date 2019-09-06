@@ -7,7 +7,7 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Defines the syntax and contexts for both intuitionistic and linear types.
+-- Defines the syntax and contexts for both unrestricted and affine types.
 --
 --------------------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
 import Language.ILC.Pretty
 import Language.ILC.Syntax
 
--- | Type and mode variable
+-- | Type variable
 newtype TVar = TV String deriving (Eq, Ord, Show)
 
 data Type = IType IType
@@ -56,7 +56,7 @@ data UType = UVar TVar
            | UAType AType           
            deriving (Eq, Ord, Show)
 
--- | Intuitionistic types.
+-- | Unrestricted types
 data IType = IVar TVar            -- ^ Type variable
            | ICon String          -- ^ Type constructor
            | IProd [IType]        -- ^ Product type
@@ -68,7 +68,7 @@ data IType = IVar TVar            -- ^ Type variable
            | ISend SType
            deriving (Eq, Ord, Show)
 
--- | Affine types.
+-- | Affine types
 data AType = AVar TVar
            | ARdChan SType
            | AProd [AType]        -- ^ Product type
@@ -76,7 +76,7 @@ data AType = AVar TVar
            | AArr AType Type      -- ^ Arrow type           
            deriving (Eq, Ord, Show)
 
--- | Sendable types.
+-- | Sendable types
 data SType = SVar TVar            -- ^ Type variable
            | SProd [SType]        -- ^ Product type
            | SCon String          -- ^ Type constructor
@@ -193,8 +193,7 @@ instance Pretty Scheme where
                                   <+> text "." <+> pretty t  
 
 prettySignature :: (String, Scheme) -> Doc
-prettySignature (a, sc) = text a <+> text "::"
-                                      <+> pretty sc
+prettySignature (a, sc) = text a <+> text "::" <+> pretty sc
 
 prettyTyEnv :: TypeEnv -> [String]
 prettyTyEnv (TypeEnv env) = map (show . prettySignature) $ Map.toList env
