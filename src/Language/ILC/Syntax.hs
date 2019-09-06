@@ -87,7 +87,7 @@ data Binop = Add     -- ^ Addition
 data Unop = Not  -- ^ Logical not
   deriving (Eq, Show)
 
--- | Pattern match patterns in ILC.
+-- | Patterns in ILC.
 data Pattern = PVar Name              -- ^ Variable pattern
              | PInt Integer           -- ^ Integer literal pattern
              | PBool Bool             -- ^ Boolean literal pattern

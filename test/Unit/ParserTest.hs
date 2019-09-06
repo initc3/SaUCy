@@ -8,7 +8,7 @@ import Test.Tasty.HUnit
 
 import Language.ILC.Decl
 import Language.ILC.Eval
-import Language.ILC.Parser
+import Language.ILC.Parser.Toplevel
 import Language.ILC.Syntax
 
 test_parser :: TestTree

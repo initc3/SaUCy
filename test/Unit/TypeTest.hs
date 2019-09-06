@@ -10,7 +10,7 @@ import Test.Tasty.HUnit
 import Language.ILC.Decl
 import Language.ILC.Eval
 import Language.ILC.Infer (inferExpr)
-import Language.ILC.Parser
+import Language.ILC.Parser.Toplevel
 import Language.ILC.Type (emptyTyEnv)
 
 test_types = testGroup "Unit.TypeTest" $ map f examples

@@ -6,39 +6,40 @@
 -- Maintainer  :  Kevin Liao (kliao6@illinois.edu)
 -- Stability   :  experimental
 --
--- Lexing functions.
+-- Lexing functions
 --
 --------------------------------------------------------------------------------
 
 module Language.ILC.Lexer (
-      whitespace
-    , identifier
-    , constructor
-    , integer
-    , stringLit
-    , parens
-    , brackets
-    , braces
-    , reserved
-    , colon
-    , comma
-    , commaSep
-    , commaSep1
-    , commaSep2
-    , reservedOp
-    , binaryOp
-    , prefixOp
-    , mklexer
-    ) where
+    whitespace
+  , identifier
+  , constructor
+  , integer
+  , stringLit
+  , parens
+  , brackets
+  , braces
+  , reserved
+  , colon
+  , comma
+  , commaSep
+  , commaSep1
+  , commaSep2
+  , reservedOp
+  , binaryOp
+  , prefixOp
+  , mklexer
+) where
 
 import Data.Functor.Identity (Identity)
 import Data.Semigroup ((<>))
 import Text.Parsec
-import qualified Text.Parsec.Expr as Ex
 import Text.Parsec.String (Parser)
-import qualified Text.Parsec.Token as Tok
 
 import Language.ILC.Syntax
+
+import qualified Text.Parsec.Expr as Ex
+import qualified Text.Parsec.Token as Tok
 
 langDef :: Tok.LanguageDef ()
 langDef = Tok.LanguageDef
@@ -47,7 +48,7 @@ langDef = Tok.LanguageDef
     , Tok.commentLine  = "--"
     , Tok.nestedComments = True
     , Tok.identStart = lower
-    , Tok.identLetter = alphaNum <|> oneOf "_'?"
+    , Tok.identLetter = alphaNum <|> oneOf "_'"
     , Tok.opStart = oneOf ":!#$%&*+.?<=>?@\\^|-~"
     , Tok.opLetter = oneOf ":!#$%&*+.?<=>?@\\^|-~"
     , Tok.reservedNames = [ "let"
@@ -114,8 +115,7 @@ identifier :: Parser Name
 identifier = Tok.identifier lexer
 
 constructor :: Parser Name
-constructor = whitespace *> many1 upper <> many (alphaNum <|> oneOf "_'?")  <*
-  whitespace
+constructor = many1 upper <> many (alphaNum <|> oneOf "_'") <* whitespace
 
 -- TODO: Parse negative integers
 integer :: Parser Integer
