@@ -9,7 +9,7 @@ import Test.Tasty.HUnit
 
 import Language.ILC.Decl
 import Language.ILC.Eval
-import Language.ILC.Infer (inferExpr)
+import Language.ILC.Infer.Infer (inferExpr)
 import Language.ILC.Parser.Toplevel
 import Language.ILC.Type (emptyTyEnv)
 
