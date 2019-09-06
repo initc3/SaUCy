@@ -2,7 +2,7 @@ module Unit.TypeTest (
     test_types
   ) where
 
-import Text.PrettyPrint.ANSI.Leijen hiding ((<$>))
+import Text.PrettyPrint.ANSI.Leijen
 import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit

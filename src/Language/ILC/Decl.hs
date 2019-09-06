@@ -19,7 +19,7 @@ module Language.ILC.Decl (
   , custTyToExpr
   ) where
 
-import Language.ILC.Infer
+import Language.ILC.Infer.Infer
 import Language.ILC.Syntax
 import Language.ILC.Type
 
