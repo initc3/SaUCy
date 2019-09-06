@@ -113,26 +113,29 @@ generalize env t = Forall as t
   where as = Set.toList $ ftv t `Set.difference` ftv env
 
 binops :: Binop -> Infer Type
-binops Add = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyInt))))
-binops Sub = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyInt))))
-binops Mul = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyInt))))
-binops Div = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyInt))))
-binops Mod = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyInt))))
-binops And = return $ IType (IArr tyBool (IType (IArr tyBool (IType tyBool))))
-binops Or  = return $ IType (IArr tyBool (IType (IArr tyBool (IType tyBool))))
-binops Lt  = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyBool))))
-binops Gt  = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyBool))))
-binops Leq = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyBool))))
-binops Geq = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyBool))))
-binops Eql = eqbinop
-binops Neq = eqbinop
-binops _   = error "Infer.binops"
-
-eqbinop :: Infer Type
-eqbinop = do
-  t1 <- fresh (IVar . TV)
-  t2 <- fresh (IVar . TV)
-  return $ IType (IArr t1 (IType (IArr t2 (IType tyBool))))
+binops op = case op of
+  Add ->  tyArithOp
+  Sub -> tyArithOp
+  Mul -> tyArithOp
+  Div -> tyArithOp
+  Mod -> tyArithOp
+  And -> tyLogOp
+  Or  -> tyLogOp
+  Lt  -> tyRelOp
+  Gt  -> tyRelOp
+  Leq -> tyRelOp
+  Geq -> tyRelOp
+  Eql -> eqBinOp
+  Neq -> eqBinOp
+  _   -> error "Infer.binops"
+  where
+    tyArithOp = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyInt))))
+    tyLogOp = return $ IType (IArr tyBool (IType (IArr tyBool (IType tyBool))))
+    tyRelOp = return $ IType (IArr tyInt (IType (IArr tyInt (IType tyBool))))
+    eqBinOp = do
+      t1 <- fresh (IVar . TV)
+      t2 <- fresh (IVar . TV)
+      return $ IType (IArr t1 (IType (IArr t2 (IType tyBool))))        
 
 unops :: Unop -> Type
 unops Not = IType (IArr tyBool (IType tyBool))
@@ -623,64 +626,60 @@ normalize (Forall _ body) = Forall (map snd ord) (normtype body)
     fv (AType a) = fva a
     fv (UType a) = fvu a
 
-    fvu (UVar a) = [a]
+    fvu (UVar a)   = [a]
     fvu (UIType a) = fvi a
     fvu (UAType a) = fva a    
 
-    fvi (IVar a) = [a]
-    fvi (ICon _) = []
-    fvi (IProd as) = concatMap fvi as    
-    fvi (IArr a b) = fvi a ++ fv b
+    fvi (IVar a)    = [a]
+    fvi (ICon _)    = []
+    fvi (IProd as)  = concatMap fvi as    
+    fvi (IArr a b)  = fvi a ++ fv b
     fvi (IArrW a b) = fvi a ++ fv b    
-    fvi (IList a) = fvi a
+    fvi (IList a)   = fvi a
     fvi (IWrChan a) = fvs a
-    fvi (ICust a) = fvi a
-    fvi (ISend a) = fvs a
+    fvi (ICust a)   = fvi a
+    fvi (ISend a)   = fvs a
 
-    fva (AVar a) = [a]
+    fva (AVar a)    = [a]
     fva (ARdChan a) = fvs a
-    fva (AProd as) = concatMap fva as
-    fva (ABang a) = fvi a
-    fva (AArr a b) = fva a ++ fv b    
+    fva (AProd as)  = concatMap fva as
+    fva (ABang a)   = fvi a
+    fva (AArr a b)  = fva a ++ fv b    
 
-    fvs (SVar a) = [a]
+    fvs (SVar a)   = [a]
     fvs (SProd as) = concatMap fvs as
-    fvs (SCon _) = []
+    fvs (SCon _)   = []
 
     normtype (IType a) = IType (normtypei a)
     normtype (AType a) = AType (normtypea a)
-    normtype (UType (UVar a)) =
-        case Prelude.lookup a ord of
-            Just x -> IType (IVar x)
-            Nothing -> error "type variable not in signature"
+    normtype (UType (UVar a))   = case Prelude.lookup a ord of
+                                    Just x -> IType (IVar x)
+                                    Nothing -> error "type variable not in signature"
     normtype (UType (UIType a)) = IType (normtypei a)
     normtype (UType (UAType a)) = AType (normtypea a)
     
-    normtypei (IVar a)   =
-        case Prelude.lookup a ord of
-            Just x -> IVar x
-            Nothing -> error "type variable not in signature"
-    normtypei (ICon a)   = ICon a
-    normtypei (IProd as)   = IProd (map normtypei as)    
-    normtypei (IArr a b) = IArr (normtypei a) (normtype b)
+    normtypei (IVar a)    = case Prelude.lookup a ord of
+                              Just x -> IVar x
+                              Nothing -> error "type variable not in signature"
+    normtypei (ICon a)    = ICon a
+    normtypei (IProd as)  = IProd (map normtypei as)    
+    normtypei (IArr a b)  = IArr (normtypei a) (normtype b)
     normtypei (IArrW a b) = IArrW (normtypei a) (normtype b)    
     normtypei (IList a)   = IList (normtypei a)
-    normtypei (IWrChan a)   = IWrChan (normtypes a)
+    normtypei (IWrChan a) = IWrChan (normtypes a)
     normtypei (ICust a)   = ICust (normtypei a)
     normtypei (ISend a)   = ISend (normtypes a)
 
-    normtypea (AVar a)   =
-        case Prelude.lookup a ord of
-            Just x -> AVar x
-            Nothing -> error "type variable not in signature"
-    normtypea (AProd as)   = AProd (map normtypea as)
+    normtypea (AVar a)    = case Prelude.lookup a ord of
+                              Just x -> AVar x
+                              Nothing -> error "type variable not in signature"
+    normtypea (AProd as)  = AProd (map normtypea as)
     normtypea (ABang a)   = ABang (normtypei a)    
-    normtypea (ARdChan a)   = ARdChan (normtypes a)
-    normtypea (AArr a b) = AArr (normtypea a) (normtype b)    
+    normtypea (ARdChan a) = ARdChan (normtypes a)
+    normtypea (AArr a b)  = AArr (normtypea a) (normtype b)    
 
-    normtypes (SVar a)   =
-        case Prelude.lookup a ord of
-            Just x -> SVar x
-            Nothing -> error "type variable not in signature"
-    normtypes (SProd as)   = SProd (map normtypes as)                
+    normtypes (SVar a)   = case Prelude.lookup a ord of
+                             Just x -> SVar x
+                             Nothing -> error "type variable not in signature"
+    normtypes (SProd as) = SProd (map normtypes as)                
     normtypes (SCon a)   = SCon a
