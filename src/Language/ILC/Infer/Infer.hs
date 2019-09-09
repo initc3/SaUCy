@@ -98,7 +98,10 @@ fresh f = do
   return $ f (letters !! count s)
 
 freshi :: Infer Type
-freshi = fresh (IType . IVar . TV)  
+freshi = fresh (IType . IVar . TV)
+
+fresha :: Infer Type
+fresha = fresh (AType . AVar . TV)
 
 instantiate :: Scheme -> Infer Type
 instantiate (Forall as t) = do
@@ -327,6 +330,20 @@ inferPat pat expr = case (pat, expr) of
 
   (PGnab _, _) -> error "todo"
 
+inferPat' :: Pattern
+          -> Maybe Expr
+          -> Infer (Type, [Constraint], TypeEnv, [(Name, Type)])
+inferPat' pat expr = case (pat, expr) of
+  (PVar x, Just e) -> do
+    (ty, cons, env2) <- infer e
+    tv <- case ty of
+      IType _ -> freshi
+      AType _ -> fresha
+      UType _ -> error "todo"
+    return (ty, (tv, ty) : cons, env2, [(x, tv)])
+
+  (_,_) -> error "todo"
+
 -- | This function computes the type of a deconstructed sum type. The type of a
 -- value constructor should either be an arrow type leading to a custom type
 -- constructor (in the non-nullary case) or simply the custom type constructor
@@ -433,17 +450,15 @@ infer expr = case expr of
 
   -- TODO
   ELet p e1 e2 -> do
-    ctxt1 <- ask
-    (_, cs1, binds) <- inferPat p $ Just e1
-    (_, cs2, ctxt2) <- infer e1
-    case runSolve cs1 of
-      Left err -> throwError err
+    (_, cons1, env2, binds) <- inferPat' p $ Just e1
+    case runSolve cons1 of
+      Left err  -> throwError err
       Right sub -> do
-        let sc t   = generalize (apply sub ctxt1) (apply sub t)
+        let sc t   = generalize (apply sub env2) (apply sub t)
             binds' = TypeEnv $ Map.fromList $ map (\(x, t) -> (x, sc t)) binds
-            ctxt2' = apply sub (mergeTyEnv ctxt2 binds')
-        (tyU, cs3, ctxt3) <- localc ctxt2' (infer e2)
-        return (tyU, cs1 ++ cs2 ++ cs3, ctxt3)
+            env2'  = apply sub (mergeTyEnv env2 binds')
+        (tyU, cons2, env3) <- localc env2' (infer e2)
+        return (tyU, cons1 ++ cons2, env3)        
 
   EBang e -> do
     (IType tyA, cons, env2) <- infer e
