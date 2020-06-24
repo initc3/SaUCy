@@ -207,7 +207,8 @@ instance Pretty Scheme where
                                   <+> text "." <+> pretty t  
 
 prettySignature :: (String, Scheme) -> Doc
-prettySignature (a, sc) = text a <+> text "::" <+> pretty sc
+{-prettySignature (a, sc) = text a <+> text "::" <+> pretty sc-}
+prettySignature (a, sc) = text a
 
 prettyTyEnv :: TypeEnv -> [String]
 prettyTyEnv (TypeEnv env) = map (show . prettySignature) $ Map.toList env

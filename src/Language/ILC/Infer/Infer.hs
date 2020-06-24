@@ -626,9 +626,12 @@ infer expr = case expr of
 
 inferTop :: TypeEnv -> [(Name, Expr)] -> Either TypeError TypeEnv
 inferTop env [] = Right env
-inferTop env ((name, ex):xs) = case inferExpr env ex of
+{-inferTop env ((name, ex):xs) = case inferExpr env ex of
   Left err -> Left err
-  Right ty -> inferTop (extendTyEnv env (name, ty)) xs
+  Right ty -> inferTop (extendTyEnv env (name, ty)) xs-}
+
+inferTop env ((name, ex):xs) =
+  inferTop (extendTyEnv env (name, closeOver (IType tyUnit))) xs
 
 normalize :: Scheme -> Scheme
 normalize (Forall _ body) = Forall (map snd ord) (normtype body)
